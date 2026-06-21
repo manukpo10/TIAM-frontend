@@ -418,7 +418,7 @@ function HomeExerciseModal({ patient, onClose }: HomeExerciseModalProps) {
   const closeBtnRef = useRef<HTMLButtonElement>(null)
 
   const patientFirstName = patient.fullName.split(' ')[0]
-  const link = `${window.location.origin}/jugar/${patient.id}`
+  const link = `${window.location.origin}/jugar/${patient.playToken}`
   const whatsappMessage = `Hola ${patientFirstName}, te comparto tu ejercicio de hoy en TIAM: ${link}`
 
   // Focus the close button when the modal opens

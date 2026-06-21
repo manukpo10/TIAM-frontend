@@ -89,6 +89,9 @@ export interface Patient {
   professionalId: string
   createdAt: string
   lastSessionAt?: string
+  /** Opaque token used to build the patient's at-home play link (/jugar/{playToken}).
+      Always present on patients returned by the API; absent on create payloads/mocks. */
+  playToken?: string
   /** Whether this patient's family has an active at-home subscription. Derived live from activeHomeSubs. */
   homeSubscriptionActive?: boolean
 }
