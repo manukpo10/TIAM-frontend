@@ -9,8 +9,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { api } from '@/lib/api'
-import { COGNITIVE_AREAS } from '@/lib/utils'
-import type { Exercise } from '@/types'
+import type { Exercise, CognitiveArea } from '@/types'
 
 const schema = z.object({
   title: z.string().min(3, 'Mínimo 3 caracteres'),
@@ -36,6 +35,13 @@ export function AdminExerciseFormPage() {
     enabled: isEdit,
   })
 
+  // Cognitive areas come from the backend (single source of truth) instead of a
+  // hardcoded list, so the selector stays in sync if areas are ever added/reordered.
+  const { data: areas } = useQuery({
+    queryKey: ['cognitive-areas'],
+    queryFn: () => api.get<CognitiveArea[]>('/cognitive-areas'),
+  })
+
   const {
     register,
     handleSubmit,
@@ -50,7 +56,7 @@ export function AdminExerciseFormPage() {
           instructions: existing.instructions,
           difficulty: existing.difficulty,
           materialType: existing.materialType,
-          cognitiveAreaIds: existing.cognitiveAreas.map(a => a.id),
+          cognitiveAreaIds: existing.cognitiveAreas.map(a => String(a.id)),
           status: existing.status,
         }
       : {
@@ -170,16 +176,17 @@ export function AdminExerciseFormPage() {
             control={control}
             render={({ field }) => (
               <div className="flex flex-wrap gap-2">
-                {COGNITIVE_AREAS.map(area => {
-                  const selected = field.value.includes(area.id)
+                {(areas ?? []).map(area => {
+                  const areaId = String(area.id)
+                  const selected = field.value.includes(areaId)
                   return (
                     <button
-                      key={area.id}
+                      key={areaId}
                       type="button"
                       onClick={() => {
                         const next = selected
-                          ? field.value.filter(id => id !== area.id)
-                          : [...field.value, area.id]
+                          ? field.value.filter(id => id !== areaId)
+                          : [...field.value, areaId]
                         field.onChange(next)
                       }}
                       className={`rounded-full px-3 py-1 text-sm transition-colors ${
