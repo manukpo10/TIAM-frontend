@@ -365,15 +365,16 @@ export function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 md:px-6 md:py-10">
+    <div className="mx-auto max-w-4xl px-4 py-8 md:px-6 md:py-10">
       {/* Page header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">Mi perfil</h1>
         <p className="mt-1 text-slate-500">Gestioná tu información y tu cuenta.</p>
       </div>
 
-      {/* Cards */}
-      <div className="flex flex-col gap-6">
+      {/* Cards — two columns on large screens so the width is used deliberately
+          and each form keeps a comfortable ~430px width instead of stretching. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
         <PersonalInfoCard user={user} />
         <AccountCard user={user} />
         <SecurityCard />
