@@ -372,9 +372,9 @@ export function ProfilePage() {
         <p className="mt-1 text-slate-500">Gestioná tu información y tu cuenta.</p>
       </div>
 
-      {/* Cards — two columns on large screens so the width is used deliberately
-          and each form keeps a comfortable ~430px width instead of stretching. */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
+      {/* Cards — masonry-style columns so the width is used deliberately and the
+          cards pack tightly instead of leaving row gaps under the shorter ones. */}
+      <div className="gap-6 columns-1 lg:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
         <PersonalInfoCard user={user} />
         <AccountCard user={user} />
         <SecurityCard />
