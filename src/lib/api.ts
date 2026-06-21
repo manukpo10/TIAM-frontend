@@ -42,10 +42,33 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return json as T
 }
 
+// Binary download (e.g. PDF fichas). Bypasses the JSON envelope unwrapping and the mock
+// layer — file generation always needs the real backend.
+async function requestBlob(path: string, body: unknown): Promise<Blob> {
+  const token = getToken()
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const error: ApiError = await res.json().catch(() => ({
+      message: 'Error de conexión',
+      status: res.status,
+    }))
+    throw error
+  }
+  return res.blob()
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  postBlob: (path: string, body: unknown) => requestBlob(path, body),
   put: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>

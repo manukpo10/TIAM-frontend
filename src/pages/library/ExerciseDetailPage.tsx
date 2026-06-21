@@ -30,7 +30,7 @@ export function ExerciseDetailPage() {
 
   async function handleDownloadPdf() {
     const res = await fetch(
-      `${import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api'}/exercises/${id}/pdf`,
+      `${import.meta.env.VITE_API_URL ?? 'http://localhost:8080'}/exercises/${id}/pdf`,
       { headers: { Authorization: `Bearer ${localStorage.getItem('tiam_token')}` } },
     )
     const blob = await res.blob()

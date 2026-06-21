@@ -99,6 +99,7 @@ export function SessionBuilderPage() {
     useSessionStore()
 
   const [patientError, setPatientError] = useState<string | null>(null)
+  const [printing, setPrinting] = useState(false)
 
   const resolvedTitle = title || getTodayTitle()
 
@@ -149,6 +150,28 @@ export function SessionBuilderPage() {
       notes: notes || undefined,
       exercises: mappedExercises,
     })
+  }
+
+  async function handlePrint() {
+    if (exercises.length === 0) return
+    try {
+      setPrinting(true)
+      const blob = await api.postBlob('/exercises/pdf', {
+        exerciseIds: exercises.map(ex => Number(ex.id)),
+        patientId: patientId ? Number(patientId) : undefined,
+        sessionTitle: resolvedTitle,
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'fichas-sesion.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('No se pudo generar el PDF de fichas')
+    } finally {
+      setPrinting(false)
+    }
   }
 
   return (
@@ -237,7 +260,9 @@ export function SessionBuilderPage() {
               variant="primary"
               size="md"
               className="w-full"
-              onClick={() => toast.info('Próximamente: generación de PDF de fichas')}
+              loading={printing}
+              disabled={exercises.length === 0}
+              onClick={handlePrint}
             >
               Imprimir fichas
             </Button>
