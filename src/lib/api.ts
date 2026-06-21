@@ -1,10 +1,26 @@
 import type { ApiError } from '@/types'
 import { MOCK_ENABLED, mockRequest } from '@/lib/mock'
+import { useAuthStore } from '@/store/auth'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
 function getToken(): string | null {
   return localStorage.getItem('tiam_token')
+}
+
+// When an authenticated request comes back 401/403 the stored token is missing,
+// expired or invalid. Clear it and bounce to /login instead of leaving the user stuck
+// on a generic error screen whose "Reintentar" can never succeed with the same bad token.
+// /auth/* is excluded so a bad-credentials login shows its own error (no redirect loop),
+// and requests with no token are ignored (e.g. the public /play patient page).
+function handleAuthFailure(status: number, path: string): void {
+  if (status !== 401 && status !== 403) return
+  if (path.startsWith('/auth/')) return
+  if (!getToken()) return
+  useAuthStore.getState().clearAuth()
+  if (window.location.pathname !== '/login') {
+    window.location.assign('/login')
+  }
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -24,6 +40,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
 
   if (!res.ok) {
+    handleAuthFailure(res.status, path)
     const error: ApiError = await res.json().catch(() => ({
       message: 'Error de conexión',
       status: res.status,
@@ -55,6 +72,7 @@ async function requestBlob(path: string, body: unknown): Promise<Blob> {
     body: JSON.stringify(body),
   })
   if (!res.ok) {
+    handleAuthFailure(res.status, path)
     const error: ApiError = await res.json().catch(() => ({
       message: 'Error de conexión',
       status: res.status,
