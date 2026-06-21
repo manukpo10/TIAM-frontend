@@ -686,7 +686,8 @@ function filterAndPage(source: Exercise[], params: URLSearchParams): PagedRespon
   }
   if (areas) {
     const slugs = areas.split(',')
-    items = items.filter(e => e.cognitiveAreas.some(a => slugs.includes(a.slug)))
+    // AND semantics: the exercise must contain ALL selected areas.
+    items = items.filter(e => slugs.every(slug => e.cognitiveAreas.some(a => a.slug === slug)))
   }
   if (owner === 'tiam') {
     items = items.filter(e => e.ownerId === null)
