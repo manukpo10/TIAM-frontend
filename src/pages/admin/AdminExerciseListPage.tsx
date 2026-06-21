@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Plus, Edit, Eye, EyeOff } from 'lucide-react'
+import { Plus, Edit, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
+import { useToast } from '@/components/ui/Toast'
 import { api } from '@/lib/api'
 import { cn, DIFFICULTY_LABELS, DIFFICULTY_COLORS, DIFFICULTY_ICONS } from '@/lib/utils'
 import type { Exercise, PagedResponse } from '@/types'
@@ -13,6 +14,25 @@ export function AdminExerciseListPage() {
     queryKey: ['admin', 'exercises'],
     queryFn: () => api.get<PagedResponse<Exercise>>('/admin/exercises?size=50'),
   })
+
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete<void>(`/admin/exercises/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'exercises'] })
+      queryClient.invalidateQueries({ queryKey: ['exercises'] })
+      toast.success('Ejercicio eliminado')
+    },
+    onError: () => toast.error('No se pudo eliminar el ejercicio'),
+  })
+
+  function handleDelete(exercise: Exercise) {
+    if (window.confirm(`¿Eliminar "${exercise.title}"? Esta acción no se puede deshacer desde el panel.`)) {
+      deleteMutation.mutate(exercise.id)
+    }
+  }
 
   return (
     <div className="p-6">
@@ -80,12 +100,23 @@ export function AdminExerciseListPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link to={`/admin/exercises/${exercise.id}/edit`}>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-3.5 w-3.5" />
-                        Editar
+                    <div className="flex items-center justify-end gap-1">
+                      <Link to={`/admin/exercises/${exercise.id}/edit`}>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3.5 w-3.5" />
+                          Editar
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => handleDelete(exercise)}
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                    </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
