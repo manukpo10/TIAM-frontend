@@ -1,7 +1,7 @@
 import type { ApiError } from '@/types'
 import { MOCK_ENABLED, mockRequest } from '@/lib/mock'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api'
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
 function getToken(): string | null {
   return localStorage.getItem('tiam_token')
@@ -32,7 +32,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (res.status === 204) return undefined as T
-  return res.json() as Promise<T>
+
+  const json = await res.json()
+  // The real backend wraps every response in an ApiResponse envelope: { success, data, message }.
+  // Unwrap it so callers receive the same shape the mock returns (the raw payload).
+  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+    return (json as { data: T }).data
+  }
+  return json as T
 }
 
 export const api = {

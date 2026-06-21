@@ -533,7 +533,7 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
     return delay({ success: true } as T)
   }
 
-  if (method === 'POST' && rawPath === '/auth/change-password') {
+  if (method === 'POST' && rawPath === '/profile/change-password') {
     return delay({ success: true } as T)
   }
 

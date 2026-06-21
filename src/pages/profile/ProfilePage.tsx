@@ -205,7 +205,7 @@ function SecurityCard() {
 
   const mutation = useMutation({
     mutationFn: (data: PasswordFormData) =>
-      api.post<{ success: boolean }>('/auth/change-password', {
+      api.post<{ success: boolean }>('/profile/change-password', {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       }),
