@@ -82,11 +82,38 @@ async function requestBlob(path: string, body: unknown): Promise<Blob> {
   return res.blob()
 }
 
+// Multipart file upload (e.g. exercise images). Lets the browser set the multipart
+// Content-Type/boundary; only the auth header is added.
+async function uploadFile<T>(path: string, file: File): Promise<T> {
+  const token = getToken()
+  const form = new FormData()
+  form.append('file', file)
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: form,
+  })
+  if (!res.ok) {
+    handleAuthFailure(res.status, path)
+    const error: ApiError = await res.json().catch(() => ({
+      message: 'Error de conexión',
+      status: res.status,
+    }))
+    throw error
+  }
+  const json = await res.json()
+  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+    return (json as { data: T }).data
+  }
+  return json as T
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
   postBlob: (path: string, body: unknown) => requestBlob(path, body),
+  upload: <T>(path: string, file: File) => uploadFile<T>(path, file),
   put: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>

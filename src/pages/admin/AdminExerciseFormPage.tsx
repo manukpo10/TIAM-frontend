@@ -1,3 +1,4 @@
+import { useState, type ChangeEvent } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -19,6 +20,7 @@ const schema = z.object({
   materialType: z.enum(['PRINTABLE', 'SENSORIAL', 'VERBAL', 'IMAGE_SEQUENCE']),
   cognitiveAreaIds: z.array(z.string()).min(1, 'Seleccioná al menos un área cognitiva'),
   status: z.enum(['DRAFT', 'PUBLISHED']),
+  previewImageUrl: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -46,6 +48,8 @@ export function AdminExerciseFormPage() {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -58,6 +62,7 @@ export function AdminExerciseFormPage() {
           materialType: existing.materialType,
           cognitiveAreaIds: existing.cognitiveAreas.map(a => String(a.id)),
           status: existing.status,
+          previewImageUrl: existing.previewImageUrl ?? '',
         }
       : {
           difficulty: 'BASIC',
@@ -67,8 +72,28 @@ export function AdminExerciseFormPage() {
           title: '',
           description: '',
           instructions: '',
+          previewImageUrl: '',
         },
   })
+
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const imageUrl = watch('previewImageUrl')
+
+  async function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadError(null)
+    try {
+      setUploading(true)
+      const { url } = await api.upload<{ url: string }>('/admin/exercises/image', file)
+      setValue('previewImageUrl', url, { shouldDirty: true })
+    } catch {
+      setUploadError('No se pudo subir la imagen. Probá con un PNG o JPG.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
@@ -215,6 +240,42 @@ export function AdminExerciseFormPage() {
           <option value="DRAFT">Borrador</option>
           <option value="PUBLISHED">Publicado</option>
         </Select>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-slate-700">
+            Imagen del ejercicio{' '}
+            <span className="font-normal text-slate-400">(opcional · PNG o JPG)</span>
+          </label>
+          {imageUrl ? (
+            <div className="flex items-start gap-3">
+              <img
+                src={imageUrl}
+                alt="Vista previa"
+                className="h-28 w-28 rounded-lg border border-slate-200 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setValue('previewImageUrl', '', { shouldDirty: true })}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Quitar imagen
+              </button>
+            </div>
+          ) : (
+            <input
+              type="file"
+              accept="image/png,image/jpeg"
+              onChange={handleImageChange}
+              disabled={uploading}
+              className="text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-tiam-blue file:px-3 file:py-1.5 file:text-white hover:file:bg-tiam-blue/90"
+            />
+          )}
+          {uploading && <p className="text-xs text-slate-500">Subiendo imagen…</p>}
+          {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+          <p className="text-xs text-slate-400">
+            Si el ejercicio tiene imagen, se imprime en la ficha en lugar del recuadro en blanco.
+          </p>
+        </div>
 
         {mutation.isError && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
