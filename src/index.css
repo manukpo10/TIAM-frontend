@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@source inline("bg-tiam-blue text-tiam-blue border-tiam-blue ring-tiam-blue");
+@source inline("focus:ring-tiam-blue focus:border-tiam-blue hover:bg-tiam-blue");
+@source inline("bg-tiam-blue-dark text-tiam-blue-dark hover:bg-tiam-blue-dark");
+@source inline("bg-tiam-blue/10 bg-tiam-blue/15 hover:bg-tiam-blue/10 hover:bg-tiam-blue/15 focus:ring-tiam-blue/20 border-tiam-blue/20");
+@source inline("bg-tiam-blue/5 bg-tiam-blue/20 bg-tiam-blue/30 border-tiam-blue/30 bg-tiam-green/10 border-tiam-green text-tiam-green/80");
+@source inline("border-tiam-green/30 border-tiam-blue/30 border-red-200");
+@source inline("text-tiam-orange bg-tiam-orange text-tiam-green bg-tiam-green text-tiam-gray bg-tiam-gray");
+@source inline("hover:text-tiam-blue");
+@source inline("from-tiam-blue/5 to-white bg-gradient-to-b from-tiam-blue to-tiam-blue-dark from-tiam-blue-dark to-tiam-blue");
+@source inline("from-tiam-blue via-tiam-blue-dark to-tiam-blue-dark bg-tiam-blue/90");
+@source inline("text-tiam-blue-dark border-tiam-blue-dark hover:border-tiam-blue");
+@source inline("bg-tiam-orange/5 bg-tiam-orange/10 bg-tiam-orange/20 bg-tiam-orange/80 border-tiam-orange border-tiam-orange/20 border-tiam-orange/30 hover:bg-tiam-orange/10");
+@source inline("text-tiam-orange/20 text-tiam-orange/60");
+@source inline("bg-tiam-green/5 bg-tiam-green/20 border-tiam-green/20 border-tiam-green/30 hover:bg-tiam-green/10");
+@source inline("from-tiam-orange via-tiam-blue to-tiam-green from-tiam-orange/80 to-tiam-green/80");
+@source inline("from-tiam-blue/10 from-tiam-orange/10 from-tiam-green/10");
+@source inline("shadow-tiam-blue/5 shadow-tiam-blue/10 shadow-tiam-blue/20 shadow-tiam-orange/10");
+@source inline("ring-tiam-orange ring-tiam-green ring-tiam-blue/30");
+@source inline("text-tiam-orange/90 text-tiam-blue/90 text-tiam-green/90");
+@source inline("hover:shadow-tiam-blue/10 hover:shadow-tiam-orange/10");
+@source inline("bg-tiam-blue/8 hover:border-tiam-blue/20 focus-visible:ring-tiam-blue/30 hover:shadow-tiam-blue/5");
+@source inline("bg-tiam-orange bg-tiam-orange/90 hover:bg-tiam-orange hover:bg-tiam-orange/90");
+@source inline("shadow-tiam-green/10 shadow-tiam-orange/10");
+@source inline("bg-tiam-green/15 shadow-tiam-green/20 border-t-tiam-blue");
+@source inline("focus-visible:ring-tiam-blue focus-visible:ring-tiam-blue focus-visible:ring-gray-300");
+@source inline("to-tiam-green/5 to-tiam-blue to-tiam-green text-tiam-orange/10");
+@source inline("from-tiam-blue-dark from-tiam-orange from-tiam-blue/5 from-tiam-blue-dark");
+@source inline("via-tiam-blue via-white");
+
+@theme {
+  --color-tiam-blue: #1E73D8;
+  --color-tiam-blue-dark: #0F4FA8;
+  --color-tiam-orange: #E67E22;
+  --color-tiam-green: #7AC943;
+  --color-tiam-gray: #555555;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+}
+
+#root {
+  min-height: 100dvh;
+}

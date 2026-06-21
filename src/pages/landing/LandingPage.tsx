@@ -1,0 +1,872 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  Brain, Target, MessageCircle, Compass, Zap, Hand, Eye, Music,
+  BookOpen, Printer, MousePointerClick, TrendingUp, Check,
+  ChevronRight, Search, ClipboardList, FileText,
+  HeartPulse, Activity, Home, Sparkles, ShieldCheck, ChevronDown,
+} from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import logoImg from '@/assets/logo-sinfondo.png'
+import logoGrande from '@/assets/logogrande-sinfondo.png'
+import { useAuthStore } from '@/store/auth'
+import { COGNITIVE_AREAS, AREA_COLORS } from '@/lib/utils'
+
+// ─── Static data (hoisted outside component) ────────────────────────────────
+
+const BENEFITS = [
+  {
+    icon: BookOpen,
+    title: 'Biblioteca curada por área cognitiva',
+    description:
+      'Encontrá ejercicios organizados por las 8 áreas cognitivas. Filtrá por dificultad, tipo de material o nombre en segundos.',
+  },
+  {
+    icon: Printer,
+    title: 'Fichas A4 listas para imprimir',
+    description:
+      'Generá fichas con formato profesional al instante. Sin diseño, sin edición: directas a la impresora.',
+  },
+  {
+    icon: MousePointerClick,
+    title: 'Armá sesiones en un clic',
+    description:
+      'Seleccioná ejercicios, ordenalos y asignalos a tu paciente en minutos. Una sesión entera lista antes de empezar.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Seguí el progreso de cada paciente',
+    description:
+      'Registrá la evolución individual. Revisá qué trabajaste, qué mejoró y qué ajustar en la próxima sesión.',
+  },
+]
+
+const HOW_IT_WORKS = [
+  {
+    step: '01',
+    icon: Search,
+    title: 'Buscá ejercicios',
+    description: 'Filtrá por área cognitiva, nivel de dificultad o nombre. Toda la biblioteca en un solo lugar.',
+  },
+  {
+    step: '02',
+    icon: ClipboardList,
+    title: 'Armá la sesión',
+    description: 'Seleccioná los ejercicios y asignalos al paciente. TIAM organiza todo por vos.',
+  },
+  {
+    step: '03',
+    icon: FileText,
+    title: 'Imprimí y trabajá',
+    description: 'Generá las fichas A4 al instante y llevá la sesión lista a tu próximo encuentro.',
+  },
+]
+
+const STATS = [
+  { value: '8', label: 'Áreas cognitivas' },
+  { value: '30+', label: 'Ejercicios listos' },
+  { value: '2-3 hs', label: 'Ahorradas por semana' },
+  { value: 'A4', label: 'Fichas en segundos' },
+]
+
+const PRICING_PLANS = [
+  {
+    id: 'trial',
+    badge: null,
+    label: 'Prueba gratuita',
+    price: 'Gratis',
+    priceSub: '7 días de acceso completo',
+    features: [
+      'Acceso completo a todas las funciones',
+      'Sin tarjeta de crédito requerida',
+      'Por tiempo limitado',
+    ],
+    ctaLabel: 'Empezar gratis',
+    ctaVariant: 'secondary' as const,
+    featured: false,
+  },
+  {
+    id: 'pro',
+    badge: 'Recomendado',
+    label: 'Profesional',
+    price: '$20.000',
+    priceSub: 'por mes · o $200.000/año',
+    features: [
+      'Biblioteca completa de ejercicios TIAM',
+      'Ejercicios propios ilimitados',
+      'Pacientes ilimitados',
+      'Armado de sesiones e impresión de fichas',
+      'Seguimiento de evolución por paciente',
+    ],
+    ctaLabel: 'Empezar gratis 7 días',
+    ctaVariant: 'primary' as const,
+    featured: true,
+  },
+  {
+    id: 'inst',
+    badge: null,
+    label: 'Institucional',
+    price: 'A consultar',
+    priceSub: 'Para geriátricos, centros de día e instituciones',
+    features: [
+      'Todo lo del plan Profesional',
+      'Múltiples profesionales',
+      'Panel de administración institucional',
+      'Facturación centralizada',
+      'Soporte prioritario',
+    ],
+    ctaLabel: 'Contactanos',
+    ctaVariant: 'secondary' as const,
+    featured: false,
+  },
+]
+
+const AREA_ICONS: Record<string, typeof Brain> = {
+  memoria: Brain,
+  atencion: Target,
+  'fluencia-verbal': MessageCircle,
+  'orientacion-espacial': Compass,
+  'funciones-ejecutivas': Zap,
+  praxias: Hand,
+  agnosias: Eye,
+  'estimulacion-sensorial': Music,
+}
+
+const USE_CASES = [
+  {
+    icon: Brain,
+    title: 'Deterioro cognitivo leve',
+    description: 'Ejercicios graduales para mantener y estimular las funciones preservadas.',
+  },
+  {
+    icon: HeartPulse,
+    title: 'Alzheimer y demencias',
+    description: 'Material adaptado a distintos niveles de avance de la enfermedad.',
+  },
+  {
+    icon: Activity,
+    title: 'ACV y daño cerebral',
+    description: 'Actividades para la rehabilitación de funciones afectadas.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Enfermedad de Parkinson',
+    description: 'Estimulación cognitiva y motora complementaria.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Envejecimiento saludable',
+    description: 'Prevención y mantenimiento cognitivo en adultos mayores.',
+  },
+  {
+    icon: Home,
+    title: 'Rehabilitación en el hogar',
+    description: 'Continuidad del tratamiento entre sesiones presenciales.',
+  },
+]
+
+const FAQ_ITEMS = [
+  {
+    question: '¿Necesito tarjeta de crédito para la prueba gratuita?',
+    answer: 'No. Probás TIAM 7 días sin tarjeta y sin compromiso. Solo creás tu cuenta y empezás.',
+  },
+  {
+    question: '¿Puedo cancelar cuando quiera?',
+    answer: 'Sí, cancelás cuando quieras desde tu cuenta, sin penalidades ni trámites complicados.',
+  },
+  {
+    question: '¿Los ejercicios se imprimen?',
+    answer: 'Sí. Generás fichas A4 listas para imprimir en segundos y trabajar en la sesión presencial.',
+  },
+  {
+    question: '¿Puedo subir mis propios ejercicios?',
+    answer: 'Sí. Además de la biblioteca de TIAM, podés crear y guardar tus propios ejercicios, visibles solo para vos.',
+  },
+  {
+    question: '¿Sirve para distintas patologías?',
+    answer: 'Sí. Los ejercicios están clasificados por área cognitiva y nivel de dificultad, para adaptarse a cada paciente y diagnóstico.',
+  },
+  {
+    question: '¿Cómo accede el paciente a los ejercicios en casa?',
+    answer: 'Próximamente vas a poder enviarle ejercicios para que los haga desde casa con un enlace simple. Por ahora podés imprimirlos o mostrarlos en pantalla durante la sesión.',
+  },
+  {
+    question: '¿Mis datos y los de mis pacientes están protegidos?',
+    answer: 'Sí. La privacidad de la información clínica es una prioridad. Tus datos y los de tus pacientes están resguardados y no se comparten con terceros.',
+  },
+]
+
+// ─── Static SVG decorations ─────────────────────────────────────────────────
+
+const HeroBlobs = (
+  <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-tiam-blue/5 blur-3xl" />
+    <div className="absolute top-40 -left-16 h-64 w-64 rounded-full bg-tiam-blue/5 blur-3xl" />
+  </div>
+)
+
+// Hero visual: floating exercise fiche mockup with area chips
+const HeroVisual = (
+  <div
+    aria-hidden="true"
+    className="relative w-full max-w-sm lg:max-w-md shrink-0 select-none"
+  >
+    {/* Background blobs behind the card — very subtle */}
+    <div className="absolute -top-6 -right-6 h-48 w-48 rounded-full bg-tiam-blue/8 blur-2xl" />
+    <div className="absolute -bottom-6 -left-6 h-40 w-40 rounded-full bg-tiam-blue/5 blur-2xl" />
+
+    {/* Main card — exercise fiche mockup */}
+    <div className="relative z-10 mx-auto w-[300px] sm:w-[320px] rounded-3xl bg-white shadow-xl shadow-tiam-blue/10 p-5 border border-slate-100">
+      {/* Card header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-tiam-blue flex items-center justify-center">
+            <Brain className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <div className="h-2.5 w-24 rounded-full bg-slate-200" />
+            <div className="h-2 w-16 rounded-full bg-slate-100 mt-1" />
+          </div>
+        </div>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+          BÁSICO
+        </span>
+      </div>
+
+      {/* Exercise title */}
+      <div className="mb-3">
+        <div className="h-3 w-3/4 rounded-full bg-slate-800" />
+        <div className="h-2.5 w-1/2 rounded-full bg-slate-300 mt-2" />
+      </div>
+
+      {/* Grid exercise content */}
+      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 mb-4">
+        <div className="grid grid-cols-4 gap-1.5">
+          {[3,7,1,9,4,2,8,5,6,0,3,7].map((n, i) => (
+            <div
+              key={i}
+              className="aspect-square rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center text-sm font-bold text-slate-700"
+            >
+              {n}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Instruction line */}
+      <div className="space-y-1.5 mb-4">
+        <div className="h-2 w-full rounded-full bg-slate-100" />
+        <div className="h-2 w-4/5 rounded-full bg-slate-100" />
+      </div>
+
+      {/* Footer action */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-7 rounded-lg bg-tiam-blue/10" />
+        <div className="h-7 w-7 rounded-lg bg-tiam-blue flex items-center justify-center">
+          <Printer className="h-3.5 w-3.5 text-white" />
+        </div>
+      </div>
+    </div>
+
+    {/* Floating area chips */}
+    <div className="absolute -left-10 top-8 z-20 rounded-2xl bg-white shadow-lg shadow-slate-200/80 border border-slate-100 px-3 py-2 flex items-center gap-2">
+      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
+        <Brain className="h-3 w-3 text-white" />
+      </div>
+      <span className="text-xs font-semibold text-slate-700">Memoria</span>
+    </div>
+
+    <div className="absolute -right-8 top-16 z-20 rounded-2xl bg-white shadow-lg shadow-slate-200/80 border border-slate-100 px-3 py-2 flex items-center gap-2">
+      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
+        <Target className="h-3 w-3 text-white" />
+      </div>
+      <span className="text-xs font-semibold text-slate-700">Atención</span>
+    </div>
+
+    <div className="absolute -left-8 bottom-20 z-20 rounded-2xl bg-white shadow-lg shadow-slate-200/80 border border-slate-100 px-3 py-2 flex items-center gap-2">
+      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
+        <MessageCircle className="h-3 w-3 text-white" />
+      </div>
+      <span className="text-xs font-semibold text-slate-700">Fluencia Verbal</span>
+    </div>
+
+    <div className="absolute -right-6 bottom-12 z-20 rounded-2xl bg-white shadow-lg border border-slate-100 px-3 py-2 flex items-center gap-2">
+      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
+        <Zap className="h-3 w-3 text-white" />
+      </div>
+      <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">Func. Ejecutivas</span>
+    </div>
+  </div>
+)
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function FeatureCheck({ text }: { text: string }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <Check className="mt-0.5 h-4 w-4 shrink-0 text-tiam-blue" />
+      <span className="text-sm text-slate-600">{text}</span>
+    </li>
+  )
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="border-b border-slate-100 last:border-b-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-4 py-5 text-left text-sm font-medium text-slate-800 hover:text-tiam-blue transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30 focus-visible:ring-offset-2 rounded"
+      >
+        <span>{question}</span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-tiam-blue transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          aria-hidden="true"
+        />
+      </button>
+      <div
+        hidden={!open}
+        id={`faq-answer-${question.slice(0, 20).replace(/\s+/g, '-')}`}
+        className="pb-5 text-sm text-slate-600 leading-relaxed"
+      >
+        {answer}
+      </div>
+    </div>
+  )
+}
+
+function SectionEyebrow({ text, accent = 'blue' }: { text: string; accent?: 'blue' | 'orange' }) {
+  const cls = accent === 'orange'
+    ? 'border-tiam-orange/20 bg-tiam-orange/10 text-tiam-orange'
+    : 'border-tiam-blue/20 bg-tiam-blue/5 text-tiam-blue'
+  return (
+    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4 ${cls}`}>
+      <span className="text-xs font-semibold uppercase tracking-wide">{text}</span>
+    </div>
+  )
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export function LandingPage() {
+  const user = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
+
+  const primaryCta = user
+    ? { label: 'Ir a la biblioteca', href: '/library' }
+    : { label: 'Probá gratis 7 días', href: '/register' }
+
+  function handlePricingCta(planId: string) {
+    if (planId === 'inst') {
+      return
+    }
+    navigate(user ? '/subscription' : '/register')
+  }
+
+  return (
+    <div className="min-h-dvh bg-white overflow-x-hidden">
+      {/* ── 1. Sticky navbar ───────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
+        {/* Thin brand accent — single tiam-blue line, not a 3-color rainbow */}
+        <div className="h-[3px] w-full bg-tiam-blue" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="TIAM Digital — inicio">
+            <img src={logoImg} alt="TIAM" className="h-12 w-12 object-contain" />
+            <span className="font-bold text-slate-900 text-lg leading-none hidden sm:block">TIAM Digital</span>
+          </Link>
+
+          <nav className="flex items-center gap-2">
+            {user ? (
+              <Link to="/library">
+                <Button size="md">Ir a la biblioteca</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="hidden sm:inline-flex">
+                  <Button variant="ghost" size="md">Iniciar sesión</Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="md">Probá gratis</Button>
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        {/* ── 2. Hero ──────────────────────────────────────────────────────── */}
+        <section
+          aria-labelledby="hero-heading"
+          className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white"
+        >
+          {HeroBlobs}
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            {/* Text */}
+            <div className="flex-1 text-center lg:text-left">
+              {/* Eyebrow */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 mb-6">
+                <span className="h-2 w-2 rounded-full bg-tiam-blue" />
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  Estimulación cognitiva profesional
+                </span>
+              </div>
+
+              <h1
+                id="hero-heading"
+                className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-slate-900 leading-tight tracking-tight"
+              >
+                El material que necesitás,{' '}
+                <span className="text-tiam-blue">
+                  cuando lo necesitás.
+                </span>
+              </h1>
+              <p className="mt-5 text-lg sm:text-xl text-slate-600 max-w-xl mx-auto lg:mx-0">
+                La plataforma de estimulación cognitiva para profesionales de la salud que trabajan con adultos mayores.{' '}
+                <strong className="font-semibold text-slate-800">Dejá de buscar, empezá a trabajar.</strong>
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                <Link to={primaryCta.href}>
+                  <Button size="lg" className="w-full sm:w-auto min-h-[44px]">
+                    {primaryCta.label}
+                  </Button>
+                </Link>
+                <a href="#como-funciona">
+                  <Button variant="ghost" size="lg" className="w-full sm:w-auto min-h-[44px]">
+                    Ver cómo funciona
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+
+              {/* Trust signals */}
+              <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
+                <div className="flex -space-x-2">
+                  {['bg-tiam-blue', 'bg-tiam-blue-dark', 'bg-slate-400', 'bg-slate-600'].map((c, i) => (
+                    <div key={i} className={`h-7 w-7 rounded-full ${c} border-2 border-white`} />
+                  ))}
+                </div>
+                <span className="text-sm text-slate-500">
+                  Profesionales ya lo usan · Sin tarjeta requerida
+                </span>
+              </div>
+            </div>
+
+            {/* Hero visual */}
+            {HeroVisual}
+          </div>
+        </section>
+
+        {/* ── 3. Stats band ────────────────────────────────────────────────── */}
+        <section
+          aria-label="Estadísticas"
+          className="relative py-12 bg-slate-50 overflow-hidden"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+              opacity: 0.3,
+            }}
+          />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {STATS.map(({ value, label }, i) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center text-center p-5 rounded-2xl bg-white shadow-sm border border-slate-100"
+                >
+                  <dt className={`text-4xl font-extrabold tracking-tight ${i === 2 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>{value}</dt>
+                  <dd className="mt-1 text-sm text-slate-500 font-medium">{label}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
+        {/* ── 4. Benefits ──────────────────────────────────────────────────── */}
+        <section aria-labelledby="benefits-heading" className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Funcionalidades" />
+              <h2 id="benefits-heading" className="text-3xl font-bold text-slate-900">
+                Todo lo que necesitás para tus sesiones
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Diseñado para que dediqués tu tiempo a tus pacientes, no a buscar material.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {BENEFITS.map(({ icon: Icon, title, description }, i) => {
+                const isOrange = i === 1 || i === 3
+                return (
+                  <article
+                    key={title}
+                    className="group rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-xl hover:shadow-tiam-blue/5 hover:-translate-y-1 transition-all duration-200"
+                  >
+                    <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${isOrange ? 'bg-tiam-orange/10 text-tiam-orange' : 'bg-tiam-blue/10 text-tiam-blue'}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
+                    <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                  </article>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. How it works ──────────────────────────────────────────────── */}
+        <section
+          id="como-funciona"
+          aria-labelledby="how-heading"
+          className="relative py-16 md:py-24 bg-slate-50 overflow-hidden"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #e2e8f0 1.5px, transparent 1.5px)',
+              backgroundSize: '32px 32px',
+              opacity: 0.5,
+            }}
+          />
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Proceso" />
+              <h2 id="how-heading" className="text-3xl font-bold text-slate-900">
+                Cómo funciona
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Tres pasos. Sin curva de aprendizaje.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+              {/* Connector line on desktop */}
+              <div
+                aria-hidden="true"
+                className="hidden md:block absolute top-10 left-[calc(16.666%+2rem)] right-[calc(16.666%+2rem)] h-0.5 bg-tiam-blue/20"
+              />
+              {HOW_IT_WORKS.map(({ step, icon: Icon, title, description }, i) => (
+                <div key={step} className="flex flex-col items-center text-center">
+                  <div className="relative z-10 mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-tiam-blue text-white shadow-md shadow-tiam-blue/20">
+                    <Icon className="h-8 w-8" />
+                    <span className={`absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow border border-slate-100 text-[10px] font-black ${i === 1 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>
+                      {step}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-lg mb-2">{title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed max-w-xs">{description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 6. Cognitive areas ───────────────────────────────────────────── */}
+        <section aria-labelledby="areas-heading" className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Cobertura clínica" />
+              <h2 id="areas-heading" className="text-3xl font-bold text-slate-900">
+                Cubrí todas las áreas cognitivas
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Ejercicios curados para las 8 áreas clave de la estimulación cognitiva en adultos mayores.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {COGNITIVE_AREAS.map((area) => {
+                const color = AREA_COLORS[area.slug]
+                const Icon = AREA_ICONS[area.slug] ?? Brain
+                return (
+                  <div
+                    key={area.id}
+                    className="group rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:-translate-y-1 hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200 cursor-default"
+                  >
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${color.bg} shadow-sm`}>
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="font-semibold text-sm text-slate-700 leading-tight">{area.name}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 7. Who it's for ──────────────────────────────────────────────── */}
+        <section aria-labelledby="usecases-heading" className="py-16 md:py-24 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Para quién es" accent="orange" />
+              <h2 id="usecases-heading" className="text-3xl font-bold text-slate-900">
+                Pensado para tu práctica clínica
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                TIAM acompaña a profesionales que trabajan con adultos mayores en una amplia variedad de contextos y diagnósticos.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {USE_CASES.map(({ icon: Icon, title, description }, i) => {
+                const isOrange = i % 2 === 1
+                return (
+                  <article
+                    key={title}
+                    className="rounded-2xl bg-white border border-slate-100 p-6 flex gap-4 items-start shadow-sm hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200"
+                  >
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isOrange ? 'bg-tiam-orange/10 text-tiam-orange' : 'bg-tiam-blue/10 text-tiam-blue'}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 text-sm mb-1">{title}</h3>
+                      <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 8. Pricing ───────────────────────────────────────────────────── */}
+        <section
+          id="planes"
+          aria-labelledby="pricing-heading"
+          className="py-16 md:py-24 bg-white"
+        >
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Planes" />
+              <h2 id="pricing-heading" className="text-3xl font-bold text-slate-900">
+                Empezá gratis, crecé cuando quieras
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Empezá gratis 7 días sin tarjeta. Después elegís el plan que mejor se adapte a tu práctica.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+              {PRICING_PLANS.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`relative flex flex-col rounded-3xl bg-white overflow-hidden transition-all duration-200 ${
+                    plan.featured
+                      ? 'border-2 border-tiam-blue shadow-xl shadow-tiam-blue/10 lg:scale-105'
+                      : 'border border-slate-200 shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  {/* Top accent stripe */}
+                  <div className={`h-1.5 w-full ${plan.featured ? 'bg-tiam-blue' : 'bg-slate-100'}`} />
+
+                  {plan.badge && (
+                    <div className="absolute top-4 right-4">
+                      <span className="inline-block bg-tiam-blue text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm uppercase tracking-wide">
+                        {plan.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col flex-1 p-6">
+                    <div className="mb-5">
+                      <p className={`text-xs font-bold uppercase tracking-wider ${plan.featured ? 'text-tiam-blue' : 'text-slate-500'}`}>
+                        {plan.label}
+                      </p>
+                      <p className="mt-4 text-4xl font-extrabold text-slate-900">{plan.price}</p>
+                      <p className="mt-1 text-sm text-slate-500">{plan.priceSub}</p>
+                    </div>
+
+                    <ul className="mb-6 flex flex-1 flex-col gap-3">
+                      {plan.features.map((f) => (
+                        <FeatureCheck key={f} text={f} />
+                      ))}
+                    </ul>
+
+                    <Button
+                      variant={plan.ctaVariant}
+                      className="w-full min-h-[44px]"
+                      onClick={() => handlePricingCta(plan.id)}
+                    >
+                      {plan.ctaLabel}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-8 text-center text-xs text-slate-400">
+              Los pagos se procesan de forma segura con Mercado Pago. Podés cancelar cuando quieras.
+            </p>
+          </div>
+        </section>
+
+        {/* ── 9. Testimonial ───────────────────────────────────────────────── */}
+        <section aria-label="Testimonio" className="py-16 md:py-24 bg-slate-50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <figure className="relative rounded-3xl bg-white border border-slate-100 p-8 md:p-12 text-center shadow-sm overflow-hidden">
+              <div
+                aria-hidden="true"
+                className="absolute top-4 left-6 text-8xl leading-none font-black text-tiam-orange/20 select-none"
+              >
+                "
+              </div>
+              <blockquote className="relative">
+                <p className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed italic">
+                  "Perdía 2-3 horas por semana buscando material. Ahora lo tengo todo en un solo lugar y mis pacientes notan la diferencia."
+                </p>
+              </blockquote>
+              <figcaption className="mt-6 flex items-center justify-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tiam-blue text-white text-xs font-bold shrink-0">
+                  LP
+                </div>
+                <span className="text-sm text-slate-500 font-medium">
+                  Especialista en estimulación cognitiva, La Plata
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        {/* ── 10. FAQ ──────────────────────────────────────────────────────── */}
+        <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-white">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10">
+              <SectionEyebrow text="FAQ" accent="orange" />
+              <h2 id="faq-heading" className="text-3xl font-bold text-slate-900">
+                Preguntas frecuentes
+              </h2>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-6">
+              {FAQ_ITEMS.map((item) => (
+                <FaqItem key={item.question} question={item.question} answer={item.answer} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 11. Final CTA band ───────────────────────────────────────────── */}
+        <section
+          aria-labelledby="cta-band-heading"
+          className="relative overflow-hidden bg-tiam-blue py-20 md:py-28"
+          style={{ background: 'linear-gradient(135deg, #1E73D8 0%, #0F4FA8 100%)' }}
+        >
+          {/* Very subtle white blobs — barely visible */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-16 -left-16 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+            <div className="absolute -bottom-16 -right-16 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+          </div>
+          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            {/* Large logo */}
+            <div className="flex justify-center mb-8">
+              <img
+                src={logoGrande}
+                alt=""
+                aria-hidden="true"
+                className="h-24 w-auto object-contain opacity-90"
+                loading="lazy"
+              />
+            </div>
+
+            <h2 id="cta-band-heading" className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+              Empezá a ahorrar horas esta semana.
+            </h2>
+            <p className="mt-5 text-white/80 text-lg max-w-xl mx-auto">
+              Más tiempo con tus pacientes, menos tiempo buscando material.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to={primaryCta.href}>
+                <Button
+                  size="lg"
+                  className="bg-white text-tiam-blue hover:bg-slate-50 min-h-[44px] px-8 font-semibold shadow-lg"
+                >
+                  {primaryCta.label}
+                </Button>
+              </Link>
+              <a href="#planes">
+                <Button
+                  size="lg"
+                  className="bg-white/10 text-white border border-white/30 hover:bg-white/20 min-h-[44px] px-8 font-semibold"
+                >
+                  Ver planes
+                </Button>
+              </a>
+            </div>
+
+            {/* Mini stats */}
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
+              {[
+                { label: 'Sin tarjeta requerida', dot: 'bg-white/60' },
+                { label: '7 días gratis', dot: 'bg-tiam-orange/80' },
+                { label: 'Cancelás cuando quieras', dot: 'bg-white/60' },
+              ].map(({ label, dot }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${dot}`} />
+                  <span className="text-sm text-white/80">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ── Footer ───────────────────────────────────────────────────────────── */}
+      <footer className="bg-slate-900 text-slate-400">
+        {/* Single tiam-blue thin line — not a 3-color gradient */}
+        <div className="h-[3px] w-full bg-tiam-blue" />
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-10 border-b border-slate-800">
+            {/* Brand */}
+            <div className="sm:col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3">
+                <img src={logoImg} alt="TIAM" className="h-10 w-10 object-contain" />
+                <span className="font-bold text-white">TIAM Digital</span>
+              </div>
+              <p className="text-sm leading-relaxed max-w-xs">
+                Estimulación cognitiva profesional para adultos mayores. Todo el material que necesitás, en un solo lugar.
+              </p>
+            </div>
+
+            {/* Producto */}
+            <nav aria-label="Producto">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Producto</p>
+              <ul className="flex flex-col gap-3 text-sm">
+                <li><a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
+                <li><a href="#planes" className="hover:text-white transition-colors">Planes</a></li>
+              </ul>
+            </nav>
+
+            {/* Cuenta */}
+            <nav aria-label="Cuenta">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Cuenta</p>
+              <ul className="flex flex-col gap-3 text-sm">
+                <li><Link to="/login" className="hover:text-white transition-colors">Iniciar sesión</Link></li>
+                <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>
+              </ul>
+            </nav>
+
+            {/* Legal */}
+            <nav aria-label="Legal">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Legal</p>
+              <ul className="flex flex-col gap-3 text-sm">
+                <li><Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
+                <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
+              </ul>
+            </nav>
+          </div>
+
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <p>© 2026 TIAM Digital. Todos los derechos reservados.</p>
+            <div className="flex gap-4">
+              <Link to="/terms" className="hover:text-slate-400 transition-colors">Términos</Link>
+              <Link to="/privacy" className="hover:text-slate-400 transition-colors">Privacidad</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
