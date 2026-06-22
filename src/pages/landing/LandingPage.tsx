@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import logoGrande from '@/assets/logogrande-sinfondo.png'
+import heroBanner from '@/assets/hero-banner.webp'
 import { useAuthStore } from '@/store/auth'
 import { COGNITIVE_AREAS, AREA_COLORS } from '@/lib/utils'
 
@@ -197,109 +198,6 @@ const FAQ_ITEMS = [
   },
 ]
 
-// ─── Static SVG decorations ─────────────────────────────────────────────────
-
-const HeroBlobs = (
-  <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-    <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-tiam-blue/5 blur-3xl" />
-    <div className="absolute top-40 -left-16 h-64 w-64 rounded-full bg-tiam-blue/5 blur-3xl" />
-  </div>
-)
-
-// Hero visual: floating exercise fiche mockup with area chips
-const HeroVisual = (
-  <div
-    aria-hidden="true"
-    className="relative w-full max-w-sm lg:max-w-md shrink-0 select-none"
-  >
-    {/* Background blobs behind the card — very subtle */}
-    <div className="absolute -top-6 -right-6 h-48 w-48 rounded-full bg-tiam-blue/8 blur-2xl" />
-    <div className="absolute -bottom-6 -left-6 h-40 w-40 rounded-full bg-tiam-blue/5 blur-2xl" />
-
-    {/* Main card — exercise fiche mockup */}
-    <div className="relative z-10 mx-auto w-[300px] sm:w-[320px] rounded-3xl bg-white shadow-xl shadow-tiam-blue/10 p-5 border border-slate-100">
-      {/* Card header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-tiam-blue flex items-center justify-center">
-            <Brain className="h-4 w-4 text-white" />
-          </div>
-          <div>
-            <div className="h-2.5 w-24 rounded-full bg-slate-200" />
-            <div className="h-2 w-16 rounded-full bg-slate-100 mt-1" />
-          </div>
-        </div>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-          BÁSICO
-        </span>
-      </div>
-
-      {/* Exercise title */}
-      <div className="mb-3">
-        <div className="h-3 w-3/4 rounded-full bg-slate-800" />
-        <div className="h-2.5 w-1/2 rounded-full bg-slate-300 mt-2" />
-      </div>
-
-      {/* Grid exercise content */}
-      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 mb-4">
-        <div className="grid grid-cols-4 gap-1.5">
-          {[3,7,1,9,4,2,8,5,6,0,3,7].map((n, i) => (
-            <div
-              key={i}
-              className="aspect-square rounded-lg bg-white shadow-sm border border-slate-100 flex items-center justify-center text-sm font-bold text-slate-700"
-            >
-              {n}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Instruction line */}
-      <div className="space-y-1.5 mb-4">
-        <div className="h-2 w-full rounded-full bg-slate-100" />
-        <div className="h-2 w-4/5 rounded-full bg-slate-100" />
-      </div>
-
-      {/* Footer action */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 h-7 rounded-lg bg-tiam-blue/10" />
-        <div className="h-7 w-7 rounded-lg bg-tiam-blue flex items-center justify-center">
-          <Printer className="h-3.5 w-3.5 text-white" />
-        </div>
-      </div>
-    </div>
-
-    {/* Floating area chips */}
-    <div className="absolute -left-10 top-8 z-20 rounded-2xl bg-white shadow-lg shadow-slate-200/80 border border-slate-100 px-3 py-2 flex items-center gap-2">
-      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
-        <Brain className="h-3 w-3 text-white" />
-      </div>
-      <span className="text-xs font-semibold text-slate-700">Memoria</span>
-    </div>
-
-    <div className="absolute -right-8 top-16 z-20 rounded-2xl bg-white shadow-lg shadow-slate-200/80 border border-slate-100 px-3 py-2 flex items-center gap-2">
-      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
-        <Target className="h-3 w-3 text-white" />
-      </div>
-      <span className="text-xs font-semibold text-slate-700">Atención</span>
-    </div>
-
-    <div className="absolute -left-8 bottom-20 z-20 rounded-2xl bg-white shadow-lg shadow-slate-200/80 border border-slate-100 px-3 py-2 flex items-center gap-2">
-      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
-        <MessageCircle className="h-3 w-3 text-white" />
-      </div>
-      <span className="text-xs font-semibold text-slate-700">Fluencia Verbal</span>
-    </div>
-
-    <div className="absolute -right-6 bottom-12 z-20 rounded-2xl bg-white shadow-lg border border-slate-100 px-3 py-2 flex items-center gap-2">
-      <div className="h-6 w-6 rounded-lg bg-tiam-blue flex items-center justify-center shrink-0">
-        <Zap className="h-3 w-3 text-white" />
-      </div>
-      <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">Func. Ejecutivas</span>
-    </div>
-  </div>
-)
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function FeatureCheck({ text }: { text: string }) {
@@ -340,8 +238,10 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 }
 
 function SectionEyebrow({ text, accent = 'blue' }: { text: string; accent?: 'blue' | 'orange' }) {
+  // Orange text on white fails WCAG AA at small sizes; keep the orange chip
+  // identity (bg + border) but use navy text for readability.
   const cls = accent === 'orange'
-    ? 'border-tiam-orange/20 bg-tiam-orange/10 text-tiam-orange'
+    ? 'border-tiam-orange/30 bg-tiam-orange/10 text-tiam-navy'
     : 'border-tiam-blue/20 bg-tiam-blue/5 text-tiam-blue'
   return (
     <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 mb-4 ${cls}`}>
@@ -376,14 +276,26 @@ export function LandingPage() {
         {/* ── 2. Hero ──────────────────────────────────────────────────────── */}
         <section
           aria-labelledby="hero-heading"
-          className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white"
+          className="relative overflow-hidden bg-slate-100 min-h-[460px] sm:min-h-[540px] lg:min-h-[620px] flex items-center"
         >
-          {HeroBlobs}
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-            {/* Text */}
-            <div className="flex-1 text-center lg:text-left">
+          {/* Background image */}
+          <img
+            src={heroBanner}
+            alt="Profesional de la salud acompañando a una adulta mayor mientras completan juntas una ficha de estimulación cognitiva de TIAM"
+            className="absolute inset-0 h-full w-full object-cover object-[right_30%]"
+            fetchPriority="high"
+          />
+          {/* Readability wash — white from the left so the text reads over the wall */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30 sm:via-white/80 sm:to-transparent lg:from-white/95 lg:via-white/65"
+          />
+
+          {/* Text over the image (left side) */}
+          <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16">
+            <div className="max-w-xl text-left">
               {/* Eyebrow */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 backdrop-blur px-4 py-1.5 mb-6">
                 <span className="h-2 w-2 rounded-full bg-tiam-blue" />
                 <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                   Estimulación cognitiva profesional
@@ -399,39 +311,36 @@ export function LandingPage() {
                   cuando lo necesitás.
                 </span>
               </h1>
-              <p className="mt-5 text-lg sm:text-xl text-slate-600 max-w-xl mx-auto lg:mx-0">
+              <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-lg">
                 La plataforma de estimulación cognitiva para profesionales de la salud que trabajan con adultos mayores.{' '}
-                <strong className="font-semibold text-slate-800">Dejá de buscar, empezá a trabajar.</strong>
+                <strong className="font-semibold text-slate-900">Dejá de buscar, empezá a trabajar.</strong>
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-start">
                 <Link to={primaryCta.href}>
                   <Button size="lg" className="w-full sm:w-auto min-h-[44px]">
                     {primaryCta.label}
                   </Button>
                 </Link>
-                <a href="#como-funciona">
-                  <Button variant="ghost" size="lg" className="w-full sm:w-auto min-h-[44px]">
-                    Ver cómo funciona
+                <Link to="/demo">
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto min-h-[44px]">
+                    Ver la demo
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-                </a>
+                </Link>
               </div>
 
               {/* Trust signals */}
-              <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
+              <div className="mt-8 flex items-center gap-4 justify-start">
                 <div className="flex -space-x-2">
                   {['bg-tiam-blue', 'bg-tiam-blue-dark', 'bg-slate-400', 'bg-slate-600'].map((c, i) => (
                     <div key={i} className={`h-7 w-7 rounded-full ${c} border-2 border-white`} />
                   ))}
                 </div>
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-slate-600">
                   Profesionales ya lo usan · Sin tarjeta requerida
                 </span>
               </div>
             </div>
-
-            {/* Hero visual */}
-            {HeroVisual}
           </div>
         </section>
 

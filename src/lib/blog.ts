@@ -20,6 +20,7 @@ export interface BlogPost {
   author: string
   category: string
   readingMinutes: number
+  cover?: string
   body: string
 }
 
@@ -29,6 +30,18 @@ const rawPosts = import.meta.glob('../content/blog/*.md', {
   import: 'default',
   eager: true,
 }) as Record<string, string>
+
+// Cover images live in src/assets/blog/<slug>.webp and resolve to bundled URLs.
+const coverUrls = import.meta.glob('../assets/blog/*.webp', {
+  query: '?url',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
+
+function coverFor(slug: string): string | undefined {
+  const entry = Object.entries(coverUrls).find(([path]) => path.endsWith(`/${slug}.webp`))
+  return entry?.[1]
+}
 
 /** Minimal frontmatter parser — splits the leading `---` fenced block. */
 function parseFrontmatter(raw: string): { meta: Record<string, string>; body: string } {
@@ -64,6 +77,7 @@ function buildPost(path: string, raw: string): BlogPost {
     author: meta.author ?? 'Equipo TIAM',
     category: meta.category ?? 'General',
     readingMinutes: Number(meta.readingMinutes) || estimateReadingMinutes(body),
+    cover: coverFor(slugFromPath(path)),
     body,
   }
 }

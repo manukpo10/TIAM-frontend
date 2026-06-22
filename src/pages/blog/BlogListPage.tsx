@@ -41,8 +41,17 @@ export function BlogListPage() {
               {posts.map((post) => (
                 <article
                   key={post.slug}
-                  className="group relative rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md"
                 >
+                  {post.cover && (
+                    <img
+                      src={post.cover}
+                      alt=""
+                      className="aspect-[1200/630] w-full object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="flex flex-1 flex-col p-6">
                   <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
                     <span className="inline-flex items-center rounded-full bg-tiam-blue/10 px-2.5 py-0.5 font-medium text-tiam-blue">
                       {post.category}
@@ -67,7 +76,8 @@ export function BlogListPage() {
                     {post.excerpt}
                   </p>
 
-                  <p className="mt-4 text-sm font-medium text-tiam-blue">Leer artículo →</p>
+                  <p className="mt-auto pt-4 text-sm font-medium text-tiam-blue">Leer artículo →</p>
+                  </div>
                 </article>
               ))}
             </div>

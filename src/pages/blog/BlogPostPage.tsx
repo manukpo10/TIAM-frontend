@@ -41,8 +41,18 @@ export function BlogPostPage() {
               Volver al blog
             </Link>
 
+            {/* Cover */}
+            {post.cover && (
+              <img
+                src={post.cover}
+                alt=""
+                className="mt-6 aspect-[1200/630] w-full rounded-2xl object-cover"
+                fetchPriority="high"
+              />
+            )}
+
             {/* Header */}
-            <header className="mt-6 mb-8">
+            <header className="mt-8 mb-8">
               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mb-4">
                 <span className="inline-flex items-center rounded-full bg-tiam-blue/10 px-2.5 py-0.5 font-medium text-tiam-blue">
                   {post.category}
@@ -61,8 +71,8 @@ export function BlogPostPage() {
 
             <hr className="mb-8 border-slate-100" />
 
-            {/* Body */}
-            <div className="text-[15px] sm:text-base">
+            {/* Body — 17px for older-adult readability */}
+            <div className="text-[17px] leading-relaxed">
               <Markdown>{post.body}</Markdown>
             </div>
 

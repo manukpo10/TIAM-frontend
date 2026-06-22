@@ -23,6 +23,7 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Cómo funciona', href: '/#como-funciona' },
   { label: 'Planes', href: '/#planes' },
   { label: 'Autoevaluación', href: '/autoevaluacion', route: true },
+  { label: 'Preguntas', href: '/preguntas-frecuentes', route: true },
   { label: 'Blog', href: '/blog', route: true },
 ]
 
@@ -38,12 +39,11 @@ export function PublicHeader() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="TIAM Digital — inicio">
-          <img src={logoImg} alt="TIAM" className="h-12 w-12 object-contain" />
-          <span className="font-bold text-slate-900 text-lg leading-none hidden sm:block">TIAM Digital</span>
+          <img src={logoImg} alt="TIAM Digital" className="h-12 w-12 object-contain" />
         </Link>
 
         {/* Desktop nav links */}
-        <nav className="hidden md:flex items-center gap-7" aria-label="Navegación principal">
+        <nav className="hidden lg:flex items-center gap-6" aria-label="Navegación principal">
           {NAV_LINKS.map((link) =>
             link.route ? (
               <Link
@@ -84,7 +84,7 @@ export function PublicHeader() {
 
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            className="lg:hidden inline-flex items-center justify-center h-10 w-10 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
             aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -97,7 +97,7 @@ export function PublicHeader() {
       {/* Mobile dropdown panel */}
       {open && (
         <nav
-          className="md:hidden border-t border-slate-100 bg-white px-4 sm:px-6 py-4"
+          className="lg:hidden border-t border-slate-100 bg-white px-4 sm:px-6 py-4"
           aria-label="Navegación móvil"
         >
           <ul className="flex flex-col gap-1">

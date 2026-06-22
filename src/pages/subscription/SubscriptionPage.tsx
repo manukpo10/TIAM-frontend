@@ -242,7 +242,7 @@ export function SubscriptionPage() {
         {/* Institutional */}
         <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6">
           <div className="mb-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-tiam-orange">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
               Institucional
             </p>
             <p className="mt-4 text-4xl font-bold text-slate-900">A consultar</p>
