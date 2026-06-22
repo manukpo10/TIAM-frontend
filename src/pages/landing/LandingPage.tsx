@@ -82,6 +82,7 @@ const PRICING_PLANS = [
     label: 'Prueba gratuita',
     price: 'Gratis',
     priceSub: '7 días de acceso completo',
+    roiNote: null,
     features: [
       'Acceso completo a todas las funciones',
       'Sin tarjeta de crédito requerida',
@@ -97,6 +98,7 @@ const PRICING_PLANS = [
     label: 'Profesional',
     price: '$20.000',
     priceSub: 'por mes · o $200.000/año',
+    roiNote: 'Ahorrás 2-3 hs por semana. Menos de lo que cobrás por una sesión.',
     features: [
       'Biblioteca completa de ejercicios TIAM',
       'Ejercicios propios ilimitados',
@@ -114,6 +116,7 @@ const PRICING_PLANS = [
     label: 'Institucional',
     price: 'A consultar',
     priceSub: 'Para geriátricos, centros de día e instituciones',
+    roiNote: null,
     features: [
       'Todo lo del plan Profesional',
       'Múltiples profesionales',
@@ -217,7 +220,7 @@ export function LandingPage() {
 
   const primaryCta = user
     ? { label: 'Ir a la biblioteca', href: '/library' }
-    : { label: 'Probá gratis 7 días', href: '/register' }
+    : { label: 'Armá tu primera sesión gratis', href: '/register' }
 
   function handlePricingCta(planId: string) {
     if (planId === 'inst') {
@@ -265,9 +268,9 @@ export function LandingPage() {
                 id="hero-heading"
                 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-slate-900 leading-tight tracking-tight"
               >
-                Todo tu trabajo de estimulación cognitiva,{' '}
+                La estimulación cognitiva que te{' '}
                 <span className="text-tiam-blue">
-                  en un solo lugar.
+                  devuelve 2 horas por semana.
                 </span>
               </h1>
               <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-xl">
@@ -296,7 +299,7 @@ export function LandingPage() {
                   ))}
                 </div>
                 <span className="text-sm text-slate-600">
-                  Profesionales ya lo usan · Sin tarjeta requerida
+                  Profesionales de toda Argentina ya lo usan · Sin tarjeta · Cancelás cuando quieras
                 </span>
               </div>
             </div>
@@ -603,6 +606,11 @@ export function LandingPage() {
                       </p>
                       <p className="mt-4 text-4xl font-extrabold text-slate-900">{plan.price}</p>
                       <p className="mt-1 text-sm text-slate-500">{plan.priceSub}</p>
+                      {plan.roiNote && (
+                        <p className="mt-3 rounded-lg bg-tiam-blue/5 px-3 py-2 text-sm font-medium text-tiam-blue">
+                          {plan.roiNote}
+                        </p>
+                      )}
                     </div>
 
                     <ul className="mb-6 flex flex-1 flex-col gap-3">
