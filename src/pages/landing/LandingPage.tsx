@@ -14,6 +14,7 @@ import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
 import profTO from '@/assets/profesionales/terapia-ocupacional.webp'
 import profGeriatria from '@/assets/profesionales/geriatria.webp'
 import profFono from '@/assets/profesionales/fonoaudiologia.webp'
+import claudiaImg from '@/assets/testimonial-claudia.webp'
 import { useAuthStore } from '@/store/auth'
 import { COGNITIVE_AREAS } from '@/lib/utils'
 
@@ -549,9 +550,7 @@ export function LandingPage() {
                 </p>
               </blockquote>
               <figcaption className="mt-6 flex items-center justify-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tiam-blue text-white text-xs font-bold shrink-0">
-                  CR
-                </div>
+                <img src={claudiaImg} alt="Claudia Romero" className="h-10 w-10 rounded-full object-cover object-top shrink-0" />
                 <span className="text-sm text-slate-500 font-medium">
                   Claudia Romero, especialista en estimulación cognitiva, La Plata
                 </span>

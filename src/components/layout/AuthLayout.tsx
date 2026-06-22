@@ -2,6 +2,7 @@ import { Outlet, Link } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 import authSide from '@/assets/auth-side.webp'
+import claudiaImg from '@/assets/testimonial-claudia.webp'
 
 const BENEFITS = [
   'Biblioteca curada de ejercicios por área cognitiva',
@@ -59,7 +60,10 @@ export function AuthLayout() {
           <p className="text-sm italic text-white/80">
             "Perdía 2-3 horas por semana buscando material. Ahora lo tengo todo en un solo lugar y mis pacientes notan la diferencia."
           </p>
-          <p className="mt-3 text-xs font-semibold text-white/70">— Claudia Romero, especialista en estimulación cognitiva, La Plata</p>
+          <div className="mt-3 flex items-center gap-2">
+            <img src={claudiaImg} alt="Claudia Romero" className="h-8 w-8 rounded-full object-cover object-top shrink-0" />
+            <p className="text-xs font-semibold text-white/70">Claudia Romero, especialista en estimulación cognitiva, La Plata</p>
+          </div>
         </div>
       </div>
 
