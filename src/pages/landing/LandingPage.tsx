@@ -7,7 +7,8 @@ import {
   HeartPulse, Activity, Home, Sparkles, ShieldCheck, ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import logoImg from '@/assets/logo-sinfondo.png'
+import { PublicHeader } from '@/components/layout/PublicHeader'
+import { PublicFooter } from '@/components/layout/PublicFooter'
 import logoGrande from '@/assets/logogrande-sinfondo.png'
 import { useAuthStore } from '@/store/auth'
 import { COGNITIVE_AREAS, AREA_COLORS } from '@/lib/utils'
@@ -368,34 +369,8 @@ export function LandingPage() {
 
   return (
     <div className="min-h-dvh bg-white overflow-x-hidden">
-      {/* ── 1. Sticky navbar ───────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
-        {/* Thin brand accent — single tiam-blue line, not a 3-color rainbow */}
-        <div className="h-[3px] w-full bg-tiam-blue" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="TIAM Digital — inicio">
-            <img src={logoImg} alt="TIAM" className="h-12 w-12 object-contain" />
-            <span className="font-bold text-slate-900 text-lg leading-none hidden sm:block">TIAM Digital</span>
-          </Link>
-
-          <nav className="flex items-center gap-2">
-            {user ? (
-              <Link to="/library">
-                <Button size="md">Ir a la biblioteca</Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/login" className="hidden sm:inline-flex">
-                  <Button variant="ghost" size="md">Iniciar sesión</Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="md">Probá gratis</Button>
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      {/* ── 1. Sticky navbar (shared) ──────────────────────────────────────── */}
+      <PublicHeader />
 
       <main>
         {/* ── 2. Hero ──────────────────────────────────────────────────────── */}
@@ -812,61 +787,8 @@ export function LandingPage() {
         </section>
       </main>
 
-      {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="bg-slate-900 text-slate-400">
-        {/* Single tiam-blue thin line — not a 3-color gradient */}
-        <div className="h-[3px] w-full bg-tiam-blue" />
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-10 border-b border-slate-800">
-            {/* Brand */}
-            <div className="sm:col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3">
-                <img src={logoImg} alt="TIAM" className="h-10 w-10 object-contain" />
-                <span className="font-bold text-white">TIAM Digital</span>
-              </div>
-              <p className="text-sm leading-relaxed max-w-xs">
-                Estimulación cognitiva profesional para adultos mayores. Todo el material que necesitás, en un solo lugar.
-              </p>
-            </div>
-
-            {/* Producto */}
-            <nav aria-label="Producto">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Producto</p>
-              <ul className="flex flex-col gap-3 text-sm">
-                <li><a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
-                <li><a href="#planes" className="hover:text-white transition-colors">Planes</a></li>
-              </ul>
-            </nav>
-
-            {/* Cuenta */}
-            <nav aria-label="Cuenta">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Cuenta</p>
-              <ul className="flex flex-col gap-3 text-sm">
-                <li><Link to="/login" className="hover:text-white transition-colors">Iniciar sesión</Link></li>
-                <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>
-              </ul>
-            </nav>
-
-            {/* Legal */}
-            <nav aria-label="Legal">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Legal</p>
-              <ul className="flex flex-col gap-3 text-sm">
-                <li><Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
-                <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
-              </ul>
-            </nav>
-          </div>
-
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-            <p>© 2026 TIAM Digital. Todos los derechos reservados.</p>
-            <div className="flex gap-4">
-              <Link to="/terms" className="hover:text-slate-400 transition-colors">Términos</Link>
-              <Link to="/privacy" className="hover:text-slate-400 transition-colors">Privacidad</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* ── Footer (shared) ──────────────────────────────────────────────────── */}
+      <PublicFooter />
     </div>
   )
 }

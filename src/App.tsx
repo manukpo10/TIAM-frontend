@@ -25,6 +25,9 @@ import { ProfilePage } from '@/pages/profile/ProfilePage'
 import { TermsPage } from '@/pages/legal/TermsPage'
 import { PrivacyPage } from '@/pages/legal/PrivacyPage'
 import { PatientPlayPage } from '@/pages/play/PatientPlayPage'
+import { BlogListPage } from '@/pages/blog/BlogListPage'
+import { BlogPostPage } from '@/pages/blog/BlogPostPage'
+import { ScreeningTestPage } from '@/pages/screening/ScreeningTestPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,6 +50,11 @@ export default function App() {
             {/* Public — legal */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+
+            {/* Public — content & lead-gen */}
+            <Route path="/blog" element={<BlogListPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/autoevaluacion" element={<ScreeningTestPage />} />
 
             {/* Public — patient at-home exercise (WhatsApp link) */}
             <Route path="/jugar/:token" element={<PatientPlayPage />} />
