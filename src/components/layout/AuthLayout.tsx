@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, Link } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
 import logoImg from '@/assets/logo-sinfondo.png'
 import authSide from '@/assets/auth-side.webp'
@@ -29,7 +29,9 @@ export function AuthLayout() {
 
         {/* Logo */}
         <div className="relative">
-          <img src={logoImg} alt="TIAM" className="h-20 w-20 object-contain" />
+          <Link to="/" aria-label="TIAM Digital — volver al inicio" className="inline-block">
+            <img src={logoImg} alt="TIAM" className="h-20 w-20 object-contain" />
+          </Link>
         </div>
 
         {/* Hero copy */}
@@ -64,10 +66,10 @@ export function AuthLayout() {
       {/* Right — form panel */}
       <div className="flex flex-1 flex-col items-center justify-center bg-slate-50 px-6 py-12">
         {/* Mobile logo */}
-        <div className="mb-8 flex items-center gap-2 lg:hidden">
+        <Link to="/" aria-label="TIAM Digital — volver al inicio" className="mb-8 flex items-center gap-2 lg:hidden">
           <img src={logoImg} alt="TIAM" className="h-10 w-10 object-contain" />
           <span className="text-xl font-bold text-slate-900">TIAM Digital</span>
-        </div>
+        </Link>
 
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
