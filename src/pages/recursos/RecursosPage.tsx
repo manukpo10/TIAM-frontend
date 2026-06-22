@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Download, FileText, Check, Gift } from 'lucide-react'
+import { Download, FileText, Check, Gift, Brain, Target, Hand, type LucideIcon } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
@@ -12,13 +12,13 @@ interface Ficha {
   file: string
   area: string
   title: string
-  emoji: string
+  icon: LucideIcon
 }
 
 const FICHAS: Ficha[] = [
-  { file: '/recursos/ficha-memoria.pdf', area: 'Memoria', title: 'Categorías: escribí 4 ejemplos', emoji: '🧠' },
-  { file: '/recursos/ficha-atencion.pdf', area: 'Atención', title: 'Encontrá las estrellas', emoji: '🎯' },
-  { file: '/recursos/ficha-praxias.pdf', area: 'Praxias', title: 'Copiá la figura en la cuadrícula', emoji: '🧩' },
+  { file: '/recursos/ficha-memoria.pdf', area: 'Memoria', title: 'Categorías: escribí 4 ejemplos', icon: Brain },
+  { file: '/recursos/ficha-atencion.pdf', area: 'Atención', title: 'Encontrá las estrellas', icon: Target },
+  { file: '/recursos/ficha-praxias.pdf', area: 'Praxias', title: 'Copiá la figura en la cuadrícula', icon: Hand },
 ]
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -98,19 +98,19 @@ export function RecursosPage() {
                 Qué incluye
               </h2>
               <ul className="space-y-3">
-                {FICHAS.map((f) => (
+                {FICHAS.map(({ file, area, title, icon: Icon }) => (
                   <li
-                    key={f.file}
+                    key={file}
                     className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-sm"
                   >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10 text-2xl">
-                      {f.emoji}
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">
+                      <Icon className="h-5 w-5 text-tiam-blue" aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
                       <span className="inline-flex items-center rounded-full bg-tiam-green/10 px-2 py-0.5 text-xs font-medium text-tiam-green">
-                        {f.area}
+                        {area}
                       </span>
-                      <p className="mt-1 font-semibold text-slate-900">{f.title}</p>
+                      <p className="mt-1 font-semibold text-slate-900">{title}</p>
                     </div>
                     <FileText className="ml-auto h-5 w-5 shrink-0 text-slate-300" aria-hidden="true" />
                   </li>
