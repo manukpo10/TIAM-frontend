@@ -89,6 +89,7 @@ export function ExerciseCard({ exercise, onAddToSession, inSession = false }: Ex
 
           {onAddToSession && (
             <button
+              data-tour="add-exercise-btn"
               onClick={() => onAddToSession(exercise)}
               title={inSession ? 'Agregado a sesión' : 'Agregar a sesión'}
               className={cn(

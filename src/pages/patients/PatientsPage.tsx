@@ -62,7 +62,7 @@ function PatientFormCard({ initial = emptyForm, onSave, onCancel, loading }: Pat
     'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-tiam-blue focus:bg-white focus:outline-none focus:ring-2 focus:ring-tiam-blue/20 transition-colors'
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl border border-tiam-blue/20 bg-white p-5 shadow-sm">
+    <form data-tour="patient-form" onSubmit={handleSubmit} className="rounded-2xl border border-tiam-blue/20 bg-white p-5 shadow-sm">
       <h3 className="mb-4 text-sm font-semibold text-slate-900">
         {initial.fullName ? 'Editar paciente' : 'Nuevo paciente'}
       </h3>
@@ -110,7 +110,7 @@ function PatientFormCard({ initial = emptyForm, onSave, onCancel, loading }: Pat
         </div>
       </div>
       <div className="mt-4 flex gap-2">
-        <Button type="submit" variant="primary" size="sm" loading={loading}>
+        <Button data-tour="patient-form-submit" type="submit" variant="primary" size="sm" loading={loading}>
           Guardar
         </Button>
         <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
@@ -284,6 +284,7 @@ export function PatientsPage() {
             </p>
           </div>
           <Button
+            data-tour="new-patient-btn"
             variant="primary"
             size="sm"
             onClick={() => {

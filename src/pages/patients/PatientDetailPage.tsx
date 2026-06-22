@@ -572,6 +572,7 @@ function HomeExerciseModal({ patient, onClose }: HomeExerciseModalProps) {
             </Button>
 
             <button
+              data-tour="whatsapp-share-btn"
               type="button"
               onClick={handleWhatsApp}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1ebe5d] focus:outline-none focus:ring-2 focus:ring-[#25D366]/40 focus:ring-offset-2"
@@ -794,6 +795,7 @@ export function PatientDetailPage() {
           )}
 
           <Button
+            data-tour="send-exercise-btn"
             variant="primary"
             size="sm"
             onClick={() => setShowHomeModal(true)}

@@ -201,6 +201,7 @@ export function SessionBuilderPage() {
             <div className="mb-3">
               <label className="mb-1 block text-xs font-medium text-slate-600">Paciente</label>
               <select
+                data-tour="session-patient-select"
                 value={patientId ?? ''}
                 onChange={e => {
                   setPatient(e.target.value || null)
@@ -247,6 +248,7 @@ export function SessionBuilderPage() {
 
           <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
             <Button
+              data-tour="save-session-btn"
               variant="secondary"
               size="md"
               className="w-full"

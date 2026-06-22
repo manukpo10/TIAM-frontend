@@ -87,7 +87,7 @@ export function LibraryPage() {
                   >
                     <X className="h-4 w-4" />
                   </button>
-                  <Button variant="primary" size="sm" onClick={() => navigate('/sessions/builder')}>
+                  <Button data-tour="build-session-btn" variant="primary" size="sm" onClick={() => navigate('/sessions/builder')}>
                     <Layers className="h-4 w-4" />
                     Armar sesión ({sessionExercises.length})
                   </Button>
