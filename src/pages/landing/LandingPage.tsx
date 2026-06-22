@@ -550,10 +550,10 @@ export function LandingPage() {
               </blockquote>
               <figcaption className="mt-6 flex items-center justify-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tiam-blue text-white text-xs font-bold shrink-0">
-                  LP
+                  CR
                 </div>
                 <span className="text-sm text-slate-500 font-medium">
-                  Especialista en estimulación cognitiva, La Plata
+                  Claudia Romero, especialista en estimulación cognitiva, La Plata
                 </span>
               </figcaption>
             </figure>
