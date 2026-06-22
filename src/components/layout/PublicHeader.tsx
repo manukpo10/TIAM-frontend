@@ -20,7 +20,7 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: 'Cómo funciona', href: '/#como-funciona' },
+  { label: 'Cómo funciona', href: '/demo', route: true },
   { label: 'Planes', href: '/#planes' },
   { label: 'Autoevaluación', href: '/autoevaluacion', route: true },
   { label: 'Preguntas', href: '/preguntas-frecuentes', route: true },

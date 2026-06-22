@@ -25,8 +25,7 @@ export function PublicFooter() {
           <nav aria-label="Producto">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Producto</p>
             <ul className="flex flex-col gap-3 text-sm">
-              <li><a href="/#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
-              <li><Link to="/demo" className="hover:text-white transition-colors">Demo guiada</Link></li>
+              <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
               <li><a href="/#planes" className="hover:text-white transition-colors">Planes</a></li>
               <li><Link to="/autoevaluacion" className="hover:text-white transition-colors">Autoevaluación</Link></li>
             </ul>

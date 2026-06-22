@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, ImageOff } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ImageOff, ZoomIn, X } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
@@ -62,7 +62,7 @@ const STEPS: Step[] = [
   },
 ]
 
-function ScreenFrame({ step }: { step: Step }) {
+function ScreenFrame({ step, onZoom }: { step: Step; onZoom: (src: string, alt: string) => void }) {
   const src = shotFor(step.slug)
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60">
@@ -73,7 +73,19 @@ function ScreenFrame({ step }: { step: Step }) {
         <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
       </div>
       {src ? (
-        <img src={src} alt={step.title} className="block w-full" />
+        <button
+          type="button"
+          onClick={() => onZoom(src, step.title)}
+          className="group relative block w-full cursor-zoom-in"
+          aria-label={`Ampliar captura: ${step.title}`}
+        >
+          <img src={src} alt={step.title} className="block w-full" />
+          {/* Hover hint */}
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-slate-900/70 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+            <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
+            Ampliar
+          </span>
+        </button>
       ) : (
         <div className="flex aspect-[16/10] flex-col items-center justify-center gap-3 bg-slate-50 text-slate-400">
           <ImageOff className="h-8 w-8" aria-hidden="true" />
@@ -89,11 +101,26 @@ function ScreenFrame({ step }: { step: Step }) {
 
 export function DemoTourPage() {
   const [current, setCurrent] = useState(0)
+  const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
     document.title = 'Demo guiada — TIAM Digital'
   }, [])
+
+  // Close the lightbox on Escape and lock body scroll while open.
+  useEffect(() => {
+    if (!zoom) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setZoom(null)
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [zoom])
 
   const step = STEPS[current]
   const isFirst = current === 0
@@ -121,7 +148,7 @@ export function DemoTourPage() {
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 md:py-16">
           <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             {/* Screenshot */}
-            <ScreenFrame step={step} />
+            <ScreenFrame step={step} onZoom={(src, alt) => setZoom({ src, alt })} />
 
             {/* Step copy + nav */}
             <div>
@@ -190,6 +217,32 @@ export function DemoTourPage() {
           </div>
         </section>
       </main>
+
+      {/* Lightbox */}
+      {zoom && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Captura ampliada: ${zoom.alt}`}
+          onClick={() => setZoom(null)}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/85 p-4 sm:p-8"
+        >
+          <button
+            type="button"
+            onClick={() => setZoom(null)}
+            aria-label="Cerrar"
+            className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={zoom.src}
+            alt={zoom.alt}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-2xl object-contain cursor-default"
+          />
+        </div>
+      )}
 
       <PublicFooter />
     </div>
