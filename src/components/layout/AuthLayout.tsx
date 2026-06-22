@@ -38,11 +38,11 @@ export function AuthLayout() {
         {/* Hero copy */}
         <div className="relative">
           <h1 className="mb-4 text-4xl font-bold leading-tight text-white">
-            El material que necesitás,<br />
-            cuando lo necesitás.
+            Todo tu trabajo de estimulación cognitiva,<br />
+            en un solo lugar.
           </h1>
           <p className="mb-8 text-lg text-white/90">
-            La plataforma de estimulación cognitiva para profesionales de la salud que trabajan con adultos mayores.
+            Biblioteca, fichas, pacientes y sesiones — todo lo que necesitás para trabajar, siempre a mano.
           </p>
 
           <ul className="flex flex-col gap-3">
