@@ -138,6 +138,13 @@ const AREA_ICONS: Record<string, typeof Brain> = {
   'estimulacion-sensorial': Music,
 }
 
+// Mostly blue (brand-dominant), with a few orange/green accents for life (60/30/10).
+const AREA_ACCENTS: Record<string, 'orange' | 'green'> = {
+  atencion: 'orange',
+  'funciones-ejecutivas': 'green',
+  'estimulacion-sensorial': 'orange',
+}
+
 const PROFESSIONALS = [
   { img: profNeuro, label: 'Neuropsicólogos' },
   { img: profTO, label: 'Terapeutas ocupacionales' },
@@ -510,13 +517,18 @@ export function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {COGNITIVE_AREAS.map((area) => {
                 const Icon = AREA_ICONS[area.slug] ?? Brain
+                const accent = AREA_ACCENTS[area.slug]
+                const boxClass =
+                  accent === 'orange' ? 'bg-tiam-orange/10' : accent === 'green' ? 'bg-tiam-green/10' : 'bg-tiam-blue/10'
+                const iconClass =
+                  accent === 'orange' ? 'text-tiam-orange' : accent === 'green' ? 'text-tiam-green' : 'text-tiam-blue'
                 return (
                   <div
                     key={area.id}
                     className="group rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:-translate-y-1 hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200 cursor-default"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">
-                      <Icon className="h-5 w-5 text-tiam-blue" />
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${boxClass}`}>
+                      <Icon className={`h-5 w-5 ${iconClass}`} />
                     </div>
                     <span className="font-semibold text-sm text-slate-700 leading-tight">{area.name}</span>
                   </div>
