@@ -6,6 +6,7 @@ import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import type { ApiError } from '@/types'
+import recursosHero from '@/assets/recursos-hero.jpg'
 
 interface Ficha {
   file: string
@@ -63,16 +64,28 @@ export function RecursosPage() {
         {/* Intro */}
         <section className="border-b border-slate-100 bg-gradient-to-b from-tiam-blue/5 to-white">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-14 md:py-20">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-tiam-blue/10 mb-5">
-              <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
+            <div className="grid items-center gap-10 lg:grid-cols-[1fr_480px]">
+              <div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-tiam-blue/10 mb-5">
+                  <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                  3 fichas gratis para tus sesiones
+                </h1>
+                <p className="mt-4 max-w-2xl text-lg text-slate-600 leading-relaxed">
+                  Una muestra del material de TIAM: tres fichas imprimibles en A4, listas para trabajar
+                  memoria, atención y praxias. Dejanos tu email y las descargás al instante.
+                </p>
+              </div>
+              <img
+                src={recursosHero}
+                alt="Vista previa de las 3 fichas gratuitas de TIAM: memoria, atención y praxias, listas para imprimir en A4"
+                className="w-full rounded-2xl"
+                width={1024}
+                height={572}
+                fetchPriority="high"
+              />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-              3 fichas gratis para tus sesiones
-            </h1>
-            <p className="mt-4 max-w-2xl text-lg text-slate-600 leading-relaxed">
-              Una muestra del material de TIAM: tres fichas imprimibles en A4, listas para trabajar
-              memoria, atención y praxias. Dejanos tu email y las descargás al instante.
-            </p>
           </div>
         </section>
 
