@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { useSessionStore } from '@/store/session'
 import { AREA_COLORS } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
+import { ClinicalProgressPanel } from './ClinicalProgressPanel'
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -751,6 +752,9 @@ export function PatientDetailPage() {
             )}
           </div>
         </div>
+
+        {/* ── Clinical progress ── */}
+        <ClinicalProgressPanel sessions={sessions} />
 
         {/* ── Home exercises ── */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
