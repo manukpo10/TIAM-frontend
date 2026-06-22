@@ -334,7 +334,7 @@ export function LandingPage() {
                 </Link>
                 <Link to="/demo">
                   <Button variant="secondary" size="lg" className="w-full sm:w-auto min-h-[44px]">
-                    Ver la demo
+                    Ver el recorrido
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -482,13 +482,13 @@ export function LandingPage() {
               ))}
             </div>
 
-            {/* Link to the deeper interactive demo */}
+            {/* Link to the deeper guided tour */}
             <div className="mt-12 text-center">
               <Link
                 to="/demo"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
               >
-                ¿Querés verlo en acción? Ver la demo
+                ¿Querés ver cómo se ve por dentro? Ver el recorrido
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>

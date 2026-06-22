@@ -105,7 +105,7 @@ export function DemoTourPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    document.title = 'Demo guiada — TIAM Digital'
+    document.title = 'Recorrido guiado — TIAM Digital'
   }, [])
 
   // Close the lightbox on Escape and lock body scroll while open.
@@ -134,7 +134,7 @@ export function DemoTourPage() {
         {/* Intro */}
         <section className="border-b border-slate-100 bg-gradient-to-b from-tiam-blue/5 to-white">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-14 md:py-16 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">Demo guiada</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">Recorrido guiado</p>
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
               Mirá cómo funciona TIAM por dentro
             </h1>
