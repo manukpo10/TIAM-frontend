@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Brain, Target, MessageCircle, Compass, Zap, Hand, Eye, Music,
   BookOpen, Printer, MousePointerClick, TrendingUp, Check,
   ChevronRight, Search, ClipboardList,
-  HeartPulse, Activity, Home, Sparkles, ShieldCheck, ChevronDown,
+  HeartPulse, Activity, Home, Sparkles, ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { PublicHeader } from '@/components/layout/PublicHeader'
@@ -185,37 +184,6 @@ const USE_CASES = [
   },
 ]
 
-const FAQ_ITEMS = [
-  {
-    question: '¿Necesito tarjeta de crédito para la prueba gratuita?',
-    answer: 'No. Probás TIAM 7 días sin tarjeta y sin compromiso. Solo creás tu cuenta y empezás.',
-  },
-  {
-    question: '¿Puedo cancelar cuando quiera?',
-    answer: 'Sí, cancelás cuando quieras desde tu cuenta, sin penalidades ni trámites complicados.',
-  },
-  {
-    question: '¿Los ejercicios se imprimen?',
-    answer: 'Sí. Generás fichas A4 listas para imprimir en segundos y trabajar en la sesión presencial.',
-  },
-  {
-    question: '¿Puedo subir mis propios ejercicios?',
-    answer: 'Sí. Además de la biblioteca de TIAM, podés crear y guardar tus propios ejercicios, visibles solo para vos.',
-  },
-  {
-    question: '¿Sirve para distintas patologías?',
-    answer: 'Sí. Los ejercicios están clasificados por área cognitiva y nivel de dificultad, para adaptarse a cada paciente y diagnóstico.',
-  },
-  {
-    question: '¿Cómo accede el paciente a los ejercicios en casa?',
-    answer: 'Próximamente vas a poder enviarle ejercicios para que los haga desde casa con un enlace simple. Por ahora podés imprimirlos o mostrarlos en pantalla durante la sesión.',
-  },
-  {
-    question: '¿Mis datos y los de mis pacientes están protegidos?',
-    answer: 'Sí. La privacidad de la información clínica es una prioridad. Tus datos y los de tus pacientes están resguardados y no se comparten con terceros.',
-  },
-]
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function FeatureCheck({ text }: { text: string }) {
@@ -224,34 +192,6 @@ function FeatureCheck({ text }: { text: string }) {
       <Check className="mt-0.5 h-4 w-4 shrink-0 text-tiam-blue" />
       <span className="text-sm text-slate-600">{text}</span>
     </li>
-  )
-}
-
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <div className="border-b border-slate-100 last:border-b-0">
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left text-sm font-medium text-slate-800 hover:text-tiam-blue transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30 focus-visible:ring-offset-2 rounded"
-      >
-        <span>{question}</span>
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-tiam-blue transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-          aria-hidden="true"
-        />
-      </button>
-      <div
-        hidden={!open}
-        id={`faq-answer-${question.slice(0, 20).replace(/\s+/g, '-')}`}
-        className="pb-5 text-sm text-slate-600 leading-relaxed"
-      >
-        {answer}
-      </div>
-    </div>
   )
 }
 
@@ -502,44 +442,8 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 6. Cognitive areas ───────────────────────────────────────────── */}
-        <section aria-labelledby="areas-heading" className="py-16 md:py-24 bg-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <SectionEyebrow text="Cobertura clínica" />
-              <h2 id="areas-heading" className="text-3xl font-bold text-slate-900">
-                Cubrí todas las áreas cognitivas
-              </h2>
-              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
-                Ejercicios curados para las 8 áreas clave de la estimulación cognitiva en adultos mayores.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {COGNITIVE_AREAS.map((area) => {
-                const Icon = AREA_ICONS[area.slug] ?? Brain
-                const accent = AREA_ACCENTS[area.slug]
-                const boxClass =
-                  accent === 'orange' ? 'bg-tiam-orange/10' : accent === 'green' ? 'bg-tiam-green/10' : 'bg-tiam-blue/10'
-                const iconClass =
-                  accent === 'orange' ? 'text-tiam-orange' : accent === 'green' ? 'text-tiam-green' : 'text-tiam-blue'
-                return (
-                  <div
-                    key={area.id}
-                    className="group rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:-translate-y-1 hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200 cursor-default"
-                  >
-                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${boxClass}`}>
-                      <Icon className={`h-5 w-5 ${iconClass}`} />
-                    </div>
-                    <span className="font-semibold text-sm text-slate-700 leading-tight">{area.name}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ── 7. Who it's for ──────────────────────────────────────────────── */}
-        <section aria-labelledby="usecases-heading" className="py-16 md:py-24 bg-slate-50">
+        {/* ── 6. Who it's for ──────────────────────────────────────────────── */}
+        <section aria-labelledby="usecases-heading" className="py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <SectionEyebrow text="Para quién es" accent="orange" />
@@ -593,11 +497,74 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 8. Pricing ───────────────────────────────────────────────────── */}
+        {/* ── 7. Cognitive areas ───────────────────────────────────────────── */}
+        <section aria-labelledby="areas-heading" className="py-16 md:py-24 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Cobertura clínica" />
+              <h2 id="areas-heading" className="text-3xl font-bold text-slate-900">
+                Cubrí todas las áreas cognitivas
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Ejercicios curados para las 8 áreas clave de la estimulación cognitiva en adultos mayores.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {COGNITIVE_AREAS.map((area) => {
+                const Icon = AREA_ICONS[area.slug] ?? Brain
+                const accent = AREA_ACCENTS[area.slug]
+                const boxClass =
+                  accent === 'orange' ? 'bg-tiam-orange/10' : accent === 'green' ? 'bg-tiam-green/10' : 'bg-tiam-blue/10'
+                const iconClass =
+                  accent === 'orange' ? 'text-tiam-orange' : accent === 'green' ? 'text-tiam-green' : 'text-tiam-blue'
+                return (
+                  <div
+                    key={area.id}
+                    className="group rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:-translate-y-1 hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200 cursor-default"
+                  >
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${boxClass}`}>
+                      <Icon className={`h-5 w-5 ${iconClass}`} />
+                    </div>
+                    <span className="font-semibold text-sm text-slate-700 leading-tight">{area.name}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 8. Testimonial ───────────────────────────────────────────────── */}
+        <section aria-label="Testimonio" className="py-16 md:py-24 bg-white">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <figure className="relative rounded-3xl bg-white border border-slate-100 p-8 md:p-12 text-center shadow-sm overflow-hidden">
+              <div
+                aria-hidden="true"
+                className="absolute top-4 left-6 text-8xl leading-none font-black text-tiam-orange/20 select-none"
+              >
+                "
+              </div>
+              <blockquote className="relative">
+                <p className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed italic">
+                  "Perdía 2-3 horas por semana buscando material. Ahora lo tengo todo en un solo lugar y mis pacientes notan la diferencia."
+                </p>
+              </blockquote>
+              <figcaption className="mt-6 flex items-center justify-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tiam-blue text-white text-xs font-bold shrink-0">
+                  LP
+                </div>
+                <span className="text-sm text-slate-500 font-medium">
+                  Especialista en estimulación cognitiva, La Plata
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        {/* ── 9. Pricing ───────────────────────────────────────────────────── */}
         <section
           id="planes"
           aria-labelledby="pricing-heading"
-          className="py-16 md:py-24 bg-white"
+          className="py-16 md:py-24 bg-slate-50"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
@@ -662,51 +629,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 9. Testimonial ───────────────────────────────────────────────── */}
-        <section aria-label="Testimonio" className="py-16 md:py-24 bg-slate-50">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <figure className="relative rounded-3xl bg-white border border-slate-100 p-8 md:p-12 text-center shadow-sm overflow-hidden">
-              <div
-                aria-hidden="true"
-                className="absolute top-4 left-6 text-8xl leading-none font-black text-tiam-orange/20 select-none"
-              >
-                "
-              </div>
-              <blockquote className="relative">
-                <p className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed italic">
-                  "Perdía 2-3 horas por semana buscando material. Ahora lo tengo todo en un solo lugar y mis pacientes notan la diferencia."
-                </p>
-              </blockquote>
-              <figcaption className="mt-6 flex items-center justify-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-tiam-blue text-white text-xs font-bold shrink-0">
-                  LP
-                </div>
-                <span className="text-sm text-slate-500 font-medium">
-                  Especialista en estimulación cognitiva, La Plata
-                </span>
-              </figcaption>
-            </figure>
-          </div>
-        </section>
-
-        {/* ── 10. FAQ ──────────────────────────────────────────────────────── */}
-        <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-white">
-          <div className="max-w-2xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10">
-              <SectionEyebrow text="FAQ" accent="orange" />
-              <h2 id="faq-heading" className="text-3xl font-bold text-slate-900">
-                Preguntas frecuentes
-              </h2>
-            </div>
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-6">
-              {FAQ_ITEMS.map((item) => (
-                <FaqItem key={item.question} question={item.question} answer={item.answer} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── 11. Final CTA band ───────────────────────────────────────────── */}
+        {/* ── 10. Final CTA band ───────────────────────────────────────────── */}
         <section
           aria-labelledby="cta-band-heading"
           className="relative overflow-hidden bg-gradient-to-br from-tiam-blue to-tiam-blue-dark py-20 md:py-28"

@@ -138,6 +138,38 @@ const FAQ: QA[] = [
   },
 ]
 
+// Commercial questions about the service (moved from the landing).
+const FAQ_SERVICIO: QA[] = [
+  {
+    question: '¿Necesito tarjeta de crédito para la prueba gratuita?',
+    answer: 'No. Probás TIAM 7 días sin tarjeta y sin compromiso. Solo creás tu cuenta y empezás.',
+  },
+  {
+    question: '¿Puedo cancelar cuando quiera?',
+    answer: 'Sí, cancelás cuando quieras desde tu cuenta, sin penalidades ni trámites complicados.',
+  },
+  {
+    question: '¿Los ejercicios se imprimen?',
+    answer: 'Sí. Generás fichas A4 listas para imprimir en segundos y trabajar en la sesión presencial.',
+  },
+  {
+    question: '¿Puedo subir mis propios ejercicios?',
+    answer: 'Sí. Además de la biblioteca de TIAM, podés crear y guardar tus propios ejercicios, visibles solo para vos.',
+  },
+  {
+    question: '¿Sirve para distintas patologías?',
+    answer: 'Sí. Los ejercicios están clasificados por área cognitiva y nivel de dificultad, para adaptarse a cada paciente y diagnóstico.',
+  },
+  {
+    question: '¿Cómo accede el paciente a los ejercicios en casa?',
+    answer: 'Próximamente vas a poder enviarle ejercicios para que los haga desde casa con un enlace simple. Por ahora podés imprimirlos o mostrarlos en pantalla durante la sesión.',
+  },
+  {
+    question: '¿Mis datos y los de mis pacientes están protegidos?',
+    answer: 'Sí. La privacidad de la información clínica es una prioridad. Tus datos y los de tus pacientes están resguardados y no se comparten con terceros.',
+  },
+]
+
 function FaqAccordionItem({ item }: { item: QA }) {
   const [open, setOpen] = useState(false)
   return (
@@ -192,8 +224,20 @@ export function ClinicalFaqPage() {
 
         {/* Accordion */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+            Sobre la estimulación cognitiva
+          </h2>
           <div className="rounded-2xl border border-slate-100 bg-white px-6 sm:px-8 shadow-sm">
             {FAQ.map((item) => (
+              <FaqAccordionItem key={item.question} item={item} />
+            ))}
+          </div>
+
+          <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+            Sobre TIAM
+          </h2>
+          <div className="rounded-2xl border border-slate-100 bg-white px-6 sm:px-8 shadow-sm">
+            {FAQ_SERVICIO.map((item) => (
               <FaqAccordionItem key={item.question} item={item} />
             ))}
           </div>
