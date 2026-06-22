@@ -317,14 +317,14 @@ export function LandingPage() {
                 id="hero-heading"
                 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-slate-900 leading-tight tracking-tight"
               >
-                El material que necesitás,{' '}
+                Todo tu trabajo de estimulación cognitiva,{' '}
                 <span className="text-tiam-blue">
-                  cuando lo necesitás.
+                  en un solo lugar.
                 </span>
               </h1>
-              <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-lg">
-                La plataforma de estimulación cognitiva para profesionales de la salud que trabajan con adultos mayores.{' '}
-                <strong className="font-semibold text-slate-900">Dejá de buscar, empezá a trabajar.</strong>
+              <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-xl">
+                Encontrá ejercicios por área cognitiva, armá la sesión en minutos y seguí la evolución de tus pacientes adultos mayores.{' '}
+                <strong className="font-semibold text-slate-900">Dejá de saltar entre PDFs sueltos.</strong>
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-start">
                 <Link to={primaryCta.href}>
