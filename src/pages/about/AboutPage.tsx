@@ -4,6 +4,7 @@ import { Heart, Clock, ShieldCheck, MapPin, Sparkles } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import nosotrosHero from '@/assets/nosotros-hero.jpg'
 
 const VALUES = [
   {
@@ -45,21 +46,33 @@ export function AboutPage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="bg-slate-50 py-16 md:py-24">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-6">
-              <Heart className="h-3.5 w-3.5 text-tiam-blue" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-tiam-blue">
-                Sobre nosotros
-              </span>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-6">
+                  <Heart className="h-3.5 w-3.5 text-tiam-blue" />
+                  <span className="text-xs font-semibold uppercase tracking-wide text-tiam-blue">
+                    Sobre nosotros
+                  </span>
+                </div>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
+                  Le devolvemos horas a quienes cuidan la cognición de los adultos mayores.
+                </h1>
+                <p className="mt-6 text-lg text-slate-700 leading-relaxed">
+                  TIAM nació de una frustración concreta: los profesionales que trabajan la estimulación
+                  cognitiva pierden horas cada semana buscando material entre PDFs sueltos, fotocopias y
+                  carpetas. Creímos que ese tiempo tenía que volver a donde importa — al paciente.
+                </p>
+              </div>
+              <img
+                src={nosotrosHero}
+                alt="Una profesional de la salud acompaña a un adulto mayor mientras completan juntos una ficha de estimulación cognitiva, junto a una ventana con luz natural"
+                className="w-full rounded-2xl shadow-sm"
+                width={1024}
+                height={572}
+                fetchPriority="high"
+              />
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
-              Le devolvemos horas a quienes cuidan la cognición de los adultos mayores.
-            </h1>
-            <p className="mt-6 text-lg text-slate-700 leading-relaxed">
-              TIAM nació de una frustración concreta: los profesionales que trabajan la estimulación
-              cognitiva pierden horas cada semana buscando material entre PDFs sueltos, fotocopias y
-              carpetas. Creímos que ese tiempo tenía que volver a donde importa — al paciente.
-            </p>
           </div>
         </section>
 
