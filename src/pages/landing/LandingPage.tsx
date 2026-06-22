@@ -71,6 +71,7 @@ const HOW_IT_WORKS = [
 const STATS = [
   { value: '8', label: 'Áreas cognitivas' },
   { value: '40+', label: 'Ejercicios listos' },
+  { value: '2-3 hs', label: 'Ahorradas por semana' },
   { value: 'A4', label: 'Fichas en 1 clic' },
 ]
 
@@ -368,15 +369,15 @@ export function LandingPage() {
               opacity: 0.3,
             }}
           />
-          <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
-            <dl className="grid grid-cols-3 gap-3 sm:gap-6">
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {STATS.map(({ value, label }, i) => (
                 <div
                   key={label}
                   className="flex flex-col items-center text-center p-5 rounded-2xl bg-white shadow-sm border border-slate-100"
                 >
-                  <dt className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${i === 1 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>{value}</dt>
-                  <dd className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">{label}</dd>
+                  <dt className={`text-4xl font-extrabold tracking-tight ${i === 2 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>{value}</dt>
+                  <dd className="mt-1 text-sm text-slate-500 font-medium">{label}</dd>
                 </div>
               ))}
             </dl>
