@@ -4,9 +4,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { Check, CreditCard, LogOut, Sparkles, User as UserIcon } from 'lucide-react'
+import { Check, CreditCard, GraduationCap, LogOut, Sparkles, User as UserIcon } from 'lucide-react'
 
 import { api } from '@/lib/api'
+import { START_TOUR_EVENT } from '@/features/onboarding/OnboardingTour'
 import { useAuthStore } from '@/store/auth'
 import { useToast } from '@/components/ui/Toast'
 import { Input } from '@/components/ui/Input'
@@ -379,6 +380,21 @@ export function ProfilePage() {
         <AccountCard user={user} />
         <SecurityCard />
         <SubscriptionCard />
+
+        {/* Tutorial */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">Tutorial</h2>
+          <p className="text-sm text-slate-500 mb-4">
+            ¿Querés repasar cómo usar TIAM? Volvé a ver la guía paso a paso.
+          </p>
+          <Button
+            variant="secondary"
+            onClick={() => window.dispatchEvent(new Event(START_TOUR_EVENT))}
+          >
+            <GraduationCap className="h-4 w-4" />
+            Ver el tutorial de nuevo
+          </Button>
+        </div>
 
         {/* Logout */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">

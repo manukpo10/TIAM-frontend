@@ -1,0 +1,53 @@
+/* Brand theming for the driver.js onboarding popover (popoverClass="tiam-tour"). */
+
+.driver-popover.tiam-tour {
+  border-radius: 14px;
+  padding: 18px 18px 14px;
+  max-width: 320px;
+  box-shadow: 0 12px 40px rgba(22, 38, 63, 0.22);
+}
+
+.driver-popover.tiam-tour .driver-popover-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #16263f;
+}
+
+.driver-popover.tiam-tour .driver-popover-description {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.driver-popover.tiam-tour .driver-popover-progress-text {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.driver-popover.tiam-tour .driver-popover-navigation-btns button.driver-popover-next-btn {
+  background: #1b6fc4;
+  color: #fff;
+  border: none;
+  text-shadow: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.driver-popover.tiam-tour .driver-popover-navigation-btns button.driver-popover-next-btn:hover {
+  background: #15436f;
+}
+
+.driver-popover.tiam-tour .driver-popover-navigation-btns button.driver-popover-prev-btn {
+  background: transparent;
+  color: #64748b;
+  border: none;
+  text-shadow: none;
+  font-size: 13px;
+}
+
+/* Brand color for the spotlight ring around the highlighted element. */
+.driver-popover.tiam-tour .driver-popover-arrow {
+  color: #fff;
+}

@@ -3,12 +3,13 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { BookOpen, CreditCard, LogOut, Menu, Settings, Users, X } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
+import { OnboardingTour } from '@/features/onboarding/OnboardingTour'
 import logoImg from '@/assets/logo-sinfondo.png'
 
 const NAV_ITEMS = [
-  { to: '/library', icon: BookOpen, label: 'Biblioteca' },
-  { to: '/patients', icon: Users, label: 'Pacientes' },
-  { to: '/subscription', icon: CreditCard, label: 'Suscripción' },
+  { to: '/library', icon: BookOpen, label: 'Biblioteca', tour: 'nav-library' },
+  { to: '/patients', icon: Users, label: 'Pacientes', tour: 'nav-patients' },
+  { to: '/subscription', icon: CreditCard, label: 'Suscripción', tour: undefined },
 ]
 
 const ADMIN_NAV_ITEMS = [
@@ -41,12 +42,13 @@ export function AppLayout() {
 
   const navLinks = (
     <nav className="flex flex-1 flex-col gap-0.5 p-3 pt-4">
-      {NAV_ITEMS.map(({ to, icon: Icon, label }) => {
+      {NAV_ITEMS.map(({ to, icon: Icon, label, tour }) => {
         const active = location.pathname.startsWith(to)
         return (
           <Link
             key={to}
             to={to}
+            data-tour={tour}
             onClick={() => setDrawerOpen(false)}
             className={cn(
               'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
@@ -176,6 +178,9 @@ export function AppLayout() {
       <main className="flex flex-1 flex-col overflow-auto pt-14 lg:pt-0">
         <Outlet />
       </main>
+
+      {/* First-time onboarding walkthrough */}
+      <OnboardingTour />
     </div>
   )
 }
