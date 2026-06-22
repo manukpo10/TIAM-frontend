@@ -1,37 +1,90 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, ShieldCheck, RotateCcw } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ShieldCheck, RotateCcw, User, Users } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
 import screeningIllustration from '@/assets/autoevaluacion.webp'
 
 /**
- * Orientational cognitive self-assessment. This is an AWARENESS tool, not a
- * diagnostic instrument. Answers never leave the browser — nothing is stored or
- * sent. The result always points toward consulting a professional.
+ * Orientational cognitive screening. AWARENESS tool, NOT a diagnostic instrument.
+ *
+ * Methodology is inspired by validated brief screening interviews (notably the AD8,
+ * Galvin et al. 2005, and its Rioplatense validation AD8-arg): it asks about CHANGE
+ * relative to how things used to be — the most sensitive signal — across the same
+ * cognitive/functional domains (judgment, interest, repetition, learning to use
+ * devices, temporal orientation, finances, appointments, day-to-day memory).
+ *
+ * Questions are ORIGINAL wording (the AD8 is copyrighted; we don't reproduce it).
+ * Answers never leave the browser. Score = number of "Sí, es un cambio". The
+ * cutoff of 2 mirrors the AD8-arg validated cutoff, but framed as orientational.
  */
+
+type Perspective = 'self' | 'other'
 
 interface Question {
   id: string
-  text: string
+  domain: string
+  self: string
+  other: string
 }
 
 const QUESTIONS: Question[] = [
-  { id: 'q1', text: '¿Con qué frecuencia olvidás conversaciones o acontecimientos recientes?' },
-  { id: 'q2', text: '¿Repetís preguntas o comentarios sin darte cuenta de que ya los hiciste?' },
-  { id: 'q3', text: '¿Te cuesta encontrar la palabra justa al hablar?' },
-  { id: 'q4', text: '¿Te desorientás con la fecha, el día de la semana o el lugar donde estás?' },
-  { id: 'q5', text: '¿Extraviás objetos cotidianos (llaves, anteojos) más que antes?' },
-  { id: 'q6', text: '¿Tenés dificultad para seguir los pasos de una tarea conocida, como una receta o manejar dinero?' },
-  { id: 'q7', text: '¿Te cuesta concentrarte para seguir una película, una charla o una lectura?' },
-  { id: 'q8', text: '¿Notás que tareas que antes hacías con facilidad ahora te demandan más esfuerzo?' },
+  {
+    id: 'q1',
+    domain: 'Juicio y decisiones',
+    self: '¿Notás un cambio en tu capacidad para tomar decisiones o resolver problemas cotidianos respecto a cómo lo hacías antes?',
+    other: '¿Notás un cambio en su capacidad para tomar decisiones o resolver problemas cotidianos respecto a cómo lo hacía antes?',
+  },
+  {
+    id: 'q2',
+    domain: 'Interés en actividades',
+    self: '¿Perdiste interés en pasatiempos o actividades que antes disfrutabas?',
+    other: '¿Perdió interés en pasatiempos o actividades que antes disfrutaba?',
+  },
+  {
+    id: 'q3',
+    domain: 'Repetición',
+    self: '¿Repetís las mismas preguntas, relatos o comentarios sin darte cuenta de que ya los hiciste?',
+    other: '¿Repite las mismas preguntas, relatos o comentarios sin darse cuenta de que ya los hizo?',
+  },
+  {
+    id: 'q4',
+    domain: 'Uso de dispositivos',
+    self: '¿Te cuesta más que antes aprender a usar un aparato o dispositivo nuevo (celular, control remoto, microondas)?',
+    other: '¿Le cuesta más que antes aprender a usar un aparato o dispositivo nuevo (celular, control remoto, microondas)?',
+  },
+  {
+    id: 'q5',
+    domain: 'Orientación temporal',
+    self: '¿Te confundís con el día, el mes o el año más seguido que antes?',
+    other: '¿Se confunde con el día, el mes o el año más seguido que antes?',
+  },
+  {
+    id: 'q6',
+    domain: 'Manejo del dinero',
+    self: '¿Se te complica manejar temas de dinero que antes resolvías sin problema (pagar cuentas, controlar gastos)?',
+    other: '¿Se le complica manejar temas de dinero que antes resolvía sin problema (pagar cuentas, controlar gastos)?',
+  },
+  {
+    id: 'q7',
+    domain: 'Citas y compromisos',
+    self: '¿Olvidás citas o compromisos más seguido que antes?',
+    other: '¿Olvida citas o compromisos más seguido que antes?',
+  },
+  {
+    id: 'q8',
+    domain: 'Memoria cotidiana',
+    self: '¿Sentís que los problemas de memoria o de pensamiento aparecen casi todos los días, y no solo de vez en cuando?',
+    other: '¿Notás que los problemas de memoria o de pensamiento aparecen casi todos los días, y no solo de vez en cuando?',
+  },
 ]
 
+// Only "Sí, es un cambio" scores a point — mirrors the AD8 scoring.
 const ANSWERS = [
-  { label: 'Nunca', value: 0 },
-  { label: 'A veces', value: 1 },
-  { label: 'A menudo', value: 2 },
+  { label: 'Sí, es un cambio', value: 1 },
+  { label: 'No, sin cambios', value: 0 },
+  { label: 'No estoy seguro/a', value: 0 },
 ]
 
 interface ResultBucket {
@@ -45,27 +98,27 @@ interface ResultBucket {
 const BUCKETS: ResultBucket[] = [
   {
     min: 0,
-    max: 4,
+    max: 1,
     tone: 'green',
-    title: 'Pocas señales de alerta',
+    title: 'Pocas señales de cambio',
     message:
-      'Tus respuestas no muestran señales destacadas en este momento. Es un buen momento para mantener hábitos saludables: actividad mental, vida social, ejercicio físico y buen descanso. La prevención es la mejor estrategia.',
+      'Las respuestas están dentro de lo esperable: no aparecen cambios cognitivos destacados respecto a antes. Es un buen momento para sostener hábitos protectores: actividad mental, vida social, ejercicio físico y buen descanso.',
   },
   {
-    min: 5,
-    max: 9,
+    min: 2,
+    max: 3,
     tone: 'amber',
-    title: 'Algunas señales para tener en cuenta',
+    title: 'Algunas señales de cambio',
     message:
-      'Aparecen algunas señales que vale la pena observar. No significan que haya un problema, pero podría ser una buena idea conversarlo con un profesional de la salud, sobre todo si notás que se sostienen o aumentan con el tiempo.',
+      'Aparecen algunas señales de cambio respecto a cómo eran las cosas antes. En los instrumentos de cribado validados, este nivel ya sugiere conversarlo con un profesional de la salud, sobre todo si los cambios se sostienen o aumentan. No significa que exista un diagnóstico.',
   },
   {
-    min: 10,
-    max: 16,
+    min: 4,
+    max: 8,
     tone: 'orange',
-    title: 'Varias señales: te sugerimos consultar',
+    title: 'Varias señales de cambio',
     message:
-      'Tus respuestas reflejan varias señales que conviene evaluar. Te recomendamos consultar con un profesional (neurólogo, neuropsicólogo o tu médico de cabecera) para una valoración adecuada. Detectar a tiempo permite intervenir mejor.',
+      'Las respuestas reflejan varios cambios respecto a antes. Te recomendamos consultar con un profesional (neurólogo, neuropsicólogo o tu médico de cabecera) para una valoración adecuada. Detectar a tiempo permite intervenir mejor.',
   },
 ]
 
@@ -81,6 +134,7 @@ const TONE_STYLES: Record<ResultBucket['tone'], string> = {
 
 export function ScreeningTestPage() {
   const [phase, setPhase] = useState<'intro' | 'questions' | 'result'>('intro')
+  const [perspective, setPerspective] = useState<Perspective>('self')
   const [current, setCurrent] = useState(0)
   const [answers, setAnswers] = useState<Record<string, number>>({})
 
@@ -88,6 +142,14 @@ export function ScreeningTestPage() {
     window.scrollTo(0, 0)
     document.title = 'Autoevaluación cognitiva — TIAM Digital'
   }, [])
+
+  function start(p: Perspective) {
+    setPerspective(p)
+    setAnswers({})
+    setCurrent(0)
+    setPhase('questions')
+    window.scrollTo(0, 0)
+  }
 
   function selectAnswer(value: number) {
     const q = QUESTIONS[current]
@@ -108,6 +170,7 @@ export function ScreeningTestPage() {
   }
 
   const score = Object.values(answers).reduce((a, b) => a + b, 0)
+  const flaggedDomains = QUESTIONS.filter((q) => answers[q.id] === 1).map((q) => q.domain)
   const progress = Math.round((current / QUESTIONS.length) * 100)
 
   return (
@@ -128,11 +191,14 @@ export function ScreeningTestPage() {
                 Autoevaluación
               </p>
               <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                Cuestionario orientativo de memoria y cognición
+                Cuestionario orientativo de cambios cognitivos
               </h1>
-              <p className="mt-4 text-slate-600 leading-relaxed">
-                Son 8 preguntas rápidas sobre situaciones de la vida diaria. Al terminar, vas a
-                recibir una orientación general. Te lleva menos de 2 minutos.
+              <p className="mt-4 text-[17px] text-slate-600 leading-relaxed">
+                Basado en la metodología de instrumentos de cribado validados (como el{' '}
+                <strong className="font-semibold text-slate-700">AD8</strong>), este cuestionario
+                observa <strong className="font-semibold text-slate-700">cambios respecto a cómo
+                eran las cosas antes</strong> —el indicador más sensible—, no simples olvidos
+                aislados. Son 8 preguntas y te lleva menos de 2 minutos.
               </p>
 
               {/* Medical disclaimer */}
@@ -143,9 +209,9 @@ export function ScreeningTestPage() {
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" aria-hidden="true" />
                 <p className="text-sm text-amber-800 leading-relaxed">
                   <strong className="font-semibold">Importante:</strong> este cuestionario{' '}
-                  <strong>no es un diagnóstico</strong> ni reemplaza una consulta profesional. Es
-                  solo una herramienta de orientación. Únicamente una evaluación realizada por un
-                  profesional de la salud puede determinar un diagnóstico.
+                  <strong>no es un diagnóstico</strong> ni reemplaza una consulta profesional. Es una
+                  herramienta de orientación. Únicamente una evaluación realizada por un profesional
+                  de la salud puede determinar un diagnóstico.
                 </p>
               </div>
 
@@ -159,10 +225,33 @@ export function ScreeningTestPage() {
                 </p>
               </div>
 
+              {/* Perspective selector */}
               <div className="mt-8">
-                <Button size="lg" onClick={() => setPhase('questions')}>
-                  Empezar el cuestionario
-                </Button>
+                <p className="font-semibold text-slate-900 mb-3">¿Sobre quién querés responder?</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => start('self')}
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-left transition-colors hover:border-tiam-blue hover:bg-tiam-blue/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30"
+                  >
+                    <User className="h-5 w-5 shrink-0 text-tiam-blue" aria-hidden="true" />
+                    <span>
+                      <span className="block font-semibold text-slate-900">Sobre mí</span>
+                      <span className="block text-sm text-slate-500">Respondo por mi cuenta</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => start('other')}
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-left transition-colors hover:border-tiam-blue hover:bg-tiam-blue/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30"
+                  >
+                    <Users className="h-5 w-5 shrink-0 text-tiam-blue" aria-hidden="true" />
+                    <span>
+                      <span className="block font-semibold text-slate-900">Sobre un ser querido</span>
+                      <span className="block text-sm text-slate-500">Respondo como familiar</span>
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -184,17 +273,20 @@ export function ScreeningTestPage() {
                 </div>
               </div>
 
-              <h2 className="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[3.5rem]">
-                {QUESTIONS[current].text}
+              <p className="text-xs font-semibold uppercase tracking-wide text-tiam-blue mb-2">
+                {QUESTIONS[current].domain}
+              </p>
+              <h2 className="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4.5rem]">
+                {QUESTIONS[current][perspective]}
               </h2>
 
               <div className="mt-6 flex flex-col gap-3">
                 {ANSWERS.map((a) => (
                   <button
-                    key={a.value}
+                    key={a.label}
                     type="button"
                     onClick={() => selectAnswer(a.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-left text-slate-700 font-medium transition-colors hover:border-tiam-blue hover:bg-tiam-blue/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-left text-[17px] text-slate-700 font-medium transition-colors hover:border-tiam-blue hover:bg-tiam-blue/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30"
                   >
                     {a.label}
                   </button>
@@ -225,8 +317,31 @@ export function ScreeningTestPage() {
                 const bucket = bucketFor(score)
                 return (
                   <div className={`rounded-2xl border px-6 py-6 ${TONE_STYLES[bucket.tone]}`}>
-                    <h1 className="text-2xl font-bold text-slate-900">{bucket.title}</h1>
+                    <div className="flex items-baseline justify-between gap-4">
+                      <h1 className="text-2xl font-bold text-slate-900">{bucket.title}</h1>
+                      <span className="shrink-0 text-sm font-semibold text-slate-500 tabular-nums">
+                        {score} de 8 señales
+                      </span>
+                    </div>
                     <p className="mt-3 text-slate-700 leading-relaxed">{bucket.message}</p>
+
+                    {flaggedDomains.length > 0 && (
+                      <div className="mt-4 border-t border-slate-900/5 pt-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                          Áreas donde marcaste un cambio
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {flaggedDomains.map((d) => (
+                            <span
+                              key={d}
+                              className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-medium text-slate-700 border border-slate-900/5"
+                            >
+                              {d}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })()}
@@ -238,9 +353,9 @@ export function ScreeningTestPage() {
               >
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" aria-hidden="true" />
                 <p className="text-sm text-amber-800 leading-relaxed">
-                  Recordá: este resultado es <strong>orientativo</strong> y no constituye un
-                  diagnóstico. Ante cualquier duda o preocupación, consultá con un profesional de la
-                  salud.
+                  Este resultado es <strong>orientativo</strong>. Está inspirado en la metodología de
+                  instrumentos de cribado validados, pero no los reemplaza ni constituye un
+                  diagnóstico. Ante cualquier duda, consultá con un profesional de la salud.
                 </p>
               </div>
 
