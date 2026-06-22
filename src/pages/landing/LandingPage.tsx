@@ -413,6 +413,27 @@ export function LandingPage() {
                 )
               })}
             </div>
+
+            {/* Upcoming feature — WhatsApp / at-home (in development) */}
+            <div className="mt-6 rounded-3xl border border-dashed border-tiam-blue/30 bg-tiam-blue/5 p-6 sm:flex sm:items-center sm:gap-5">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-tiam-blue shadow-sm">
+                <MessageCircle className="h-6 w-6" />
+              </div>
+              <div className="mt-4 sm:mt-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-slate-900">
+                    Enviá ejercicios por WhatsApp para practicar en casa
+                  </h3>
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                    Próximamente
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Tu paciente va a recibir un enlace por WhatsApp y va a hacer juegos interactivos
+                  desde el celular, entre sesión y sesión. Lo estamos desarrollando.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
