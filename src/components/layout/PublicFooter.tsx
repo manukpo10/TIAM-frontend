@@ -36,6 +36,7 @@ export function PublicFooter() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Recursos</p>
             <ul className="flex flex-col gap-3 text-sm">
               <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+              <li><Link to="/recursos" className="hover:text-white transition-colors">Fichas gratis</Link></li>
               <li><Link to="/preguntas-frecuentes" className="hover:text-white transition-colors">Preguntas frecuentes</Link></li>
               <li><Link to="/login" className="hover:text-white transition-colors">Iniciar sesión</Link></li>
               <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>

@@ -30,6 +30,7 @@ import { BlogPostPage } from '@/pages/blog/BlogPostPage'
 import { ScreeningTestPage } from '@/pages/screening/ScreeningTestPage'
 import { ClinicalFaqPage } from '@/pages/faq/ClinicalFaqPage'
 import { DemoTourPage } from '@/pages/demo/DemoTourPage'
+import { RecursosPage } from '@/pages/recursos/RecursosPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/autoevaluacion" element={<ScreeningTestPage />} />
             <Route path="/preguntas-frecuentes" element={<ClinicalFaqPage />} />
             <Route path="/demo" element={<DemoTourPage />} />
+            <Route path="/recursos" element={<RecursosPage />} />
 
             {/* Public — patient at-home exercise (WhatsApp link) */}
             <Route path="/jugar/:token" element={<PatientPlayPage />} />

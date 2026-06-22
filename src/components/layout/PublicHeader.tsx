@@ -23,6 +23,7 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Cómo funciona', href: '/demo', route: true },
   { label: 'Planes', href: '/#planes' },
   { label: 'Autoevaluación', href: '/autoevaluacion', route: true },
+  { label: 'Recursos', href: '/recursos', route: true },
   { label: 'Preguntas', href: '/preguntas-frecuentes', route: true },
   { label: 'Blog', href: '/blog', route: true },
 ]
