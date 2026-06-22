@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   Brain, Target, MessageCircle, Compass, Zap, Hand, Eye, Music,
   BookOpen, Printer, MousePointerClick, TrendingUp, Check,
-  ChevronRight, Search, ClipboardList, FileText,
+  ChevronRight, Search, ClipboardList,
   HeartPulse, Activity, Home, Sparkles, ShieldCheck, ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -62,9 +62,9 @@ const HOW_IT_WORKS = [
   },
   {
     step: '03',
-    icon: FileText,
-    title: 'Imprimí y trabajá',
-    description: 'Generá las fichas A4 al instante y llevá la sesión lista a tu próximo encuentro.',
+    icon: TrendingUp,
+    title: 'Trabajá y seguí',
+    description: 'Imprimí las fichas A4, trabajá la sesión y registrá la evolución de cada paciente para ajustar la próxima.',
   },
 ]
 
@@ -480,6 +480,17 @@ export function LandingPage() {
                   <p className="text-slate-600 text-sm leading-relaxed max-w-xs">{description}</p>
                 </div>
               ))}
+            </div>
+
+            {/* Link to the deeper interactive demo */}
+            <div className="mt-12 text-center">
+              <Link
+                to="/demo"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
+              >
+                ¿Querés verlo en acción? Ver la demo
+                <ChevronRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </section>
