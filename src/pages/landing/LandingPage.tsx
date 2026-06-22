@@ -68,13 +68,6 @@ const HOW_IT_WORKS = [
   },
 ]
 
-const STATS = [
-  { value: '8', label: 'Áreas cognitivas' },
-  { value: '30+', label: 'Ejercicios listos' },
-  { value: '2-3 hs', label: 'Ahorradas por semana' },
-  { value: 'A4', label: 'Fichas en segundos' },
-]
-
 const PRICING_PLANS = [
   {
     id: 'trial',
@@ -352,35 +345,6 @@ export function LandingPage() {
                 </span>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ── 3. Stats band ────────────────────────────────────────────────── */}
-        <section
-          aria-label="Estadísticas"
-          className="relative py-12 bg-slate-50 overflow-hidden"
-        >
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-              opacity: 0.3,
-            }}
-          />
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-            <dl className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {STATS.map(({ value, label }, i) => (
-                <div
-                  key={label}
-                  className="flex flex-col items-center text-center p-5 rounded-2xl bg-white shadow-sm border border-slate-100"
-                >
-                  <dt className={`text-4xl font-extrabold tracking-tight ${i === 2 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>{value}</dt>
-                  <dd className="mt-1 text-sm text-slate-500 font-medium">{label}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </section>
 
