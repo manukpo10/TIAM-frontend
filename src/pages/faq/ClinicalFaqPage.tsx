@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, HelpCircle } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import faqIllustration from '@/assets/faq.webp'
 
 // ─── Educational, clinical FAQ — distinct from the commercial FAQ on the landing.
 // Aimed at families and professionals researching cognitive stimulation. ──────────
@@ -174,9 +175,11 @@ export function ClinicalFaqPage() {
         {/* Intro */}
         <section className="border-b border-slate-100 bg-gradient-to-b from-tiam-blue/5 to-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14 md:py-20">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-tiam-blue/10 mb-5">
-              <HelpCircle className="h-5 w-5 text-primary" aria-hidden="true" />
-            </div>
+            <img
+              src={faqIllustration}
+              alt=""
+              className="mb-6 w-full rounded-2xl border border-slate-100"
+            />
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
               Preguntas frecuentes sobre estimulación cognitiva
             </h1>
