@@ -59,9 +59,10 @@ export function AboutPage() {
                   Le devolvemos horas a quienes cuidan la cognición de los adultos mayores.
                 </h1>
                 <p className="mt-6 text-lg text-slate-700 leading-relaxed">
-                  TIAM nació de una frustración concreta: los profesionales que trabajan la estimulación
-                  cognitiva pierden horas cada semana buscando material entre PDFs sueltos, fotocopias y
-                  carpetas. Creímos que ese tiempo tenía que volver a donde importa — al paciente.
+                  TIAM Digital nació en un lugar concreto: el Taller Interactivo para Adultos Mayores,
+                  un espacio presencial de estimulación cognitiva que funciona en La Plata desde 2024.
+                  Lo que empezó como material hecho a mano para acompañar a adultos mayores se convirtió
+                  en la herramienta que hoy ponemos en manos de otros profesionales.
                 </p>
               </div>
               <img
@@ -84,18 +85,23 @@ export function AboutPage() {
             </h2>
             <div className="space-y-4 text-slate-600 leading-relaxed">
               <p>
-                La estimulación cognitiva es un trabajo profundamente humano, pero gran parte del día
-                se va en tareas que no lo son: buscar ejercicios, adaptarlos, imprimirlos, registrar a
-                mano qué se trabajó y qué hay que ajustar para la próxima sesión.
+                Todo arrancó en un taller real. Desde principios de 2024, una terapeuta ocupacional
+                coordina encuentros de estimulación cognitiva para adultos mayores en La Plata: trabajo
+                de memoria, atención, funciones ejecutivas y, sobre todo, integración social.
               </p>
               <p>
-                Reunimos todo eso en un solo lugar. Una biblioteca curada por área cognitiva, fichas
-                A4 listas para imprimir, armado de sesiones en minutos y seguimiento de la evolución de
-                cada paciente. Para que el profesional dedique su energía a lo que sabe hacer, no a la
-                logística.
+                Cada encuentro exigía horas previas de preparación: buscar ejercicios, adaptarlos,
+                imprimirlos y registrar a mano qué se trabajó con cada persona. Ese trabajo invisible
+                era el que más tiempo se llevaba — y el que menos se notaba.
               </p>
               <p>
-                Lo construimos en Argentina, para el contexto argentino: con lenguaje cercano, foco en
+                Así nació TIAM Digital: para reunir todo en un solo lugar. Una biblioteca curada por
+                área cognitiva, fichas A4 listas para imprimir, armado de sesiones en minutos y
+                seguimiento de la evolución de cada paciente. La herramienta que el taller necesitaba,
+                ahora al alcance de cualquier profesional.
+              </p>
+              <p>
+                La construimos en Argentina, para el contexto argentino: con lenguaje cercano, foco en
                 adultos mayores y un modelo de precios en pesos que no depende del dólar.
               </p>
             </div>
