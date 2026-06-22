@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowLeft, ShieldCheck, RotateCcw } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import screeningIllustration from '@/assets/autoevaluacion.webp'
 
 /**
  * Orientational cognitive self-assessment. This is an AWARENESS tool, not a
@@ -118,6 +119,11 @@ export function ScreeningTestPage() {
           {/* ── Intro ─────────────────────────────────────────────────────── */}
           {phase === 'intro' && (
             <div>
+              <img
+                src={screeningIllustration}
+                alt=""
+                className="mb-6 w-full rounded-2xl border border-slate-100"
+              />
               <p className="text-xs font-semibold uppercase tracking-wider text-tiam-blue mb-3">
                 Autoevaluación
               </p>
