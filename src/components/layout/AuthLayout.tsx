@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
 import logoImg from '@/assets/logo-sinfondo.png'
+import authSide from '@/assets/auth-side.webp'
 
 const BENEFITS = [
   'Biblioteca curada de ejercicios por área cognitiva',
@@ -13,13 +14,18 @@ export function AuthLayout() {
   return (
     <div className="flex min-h-dvh">
       {/* Left — brand panel */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-tiam-blue p-12 lg:flex">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -left-20 -top-20 h-96 w-96 rounded-full bg-white" />
-          <div className="absolute -bottom-32 -right-20 h-[500px] w-[500px] rounded-full bg-white" />
-          <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
-        </div>
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-tiam-blue-dark p-12 lg:flex">
+        {/* Background photo + brand scrim for text readability */}
+        <img
+          src={authSide}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-tiam-blue-dark/90 via-tiam-blue/70 to-tiam-blue-dark/92"
+        />
 
         {/* Logo */}
         <div className="relative">
