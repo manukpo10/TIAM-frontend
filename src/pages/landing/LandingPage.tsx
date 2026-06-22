@@ -666,8 +666,7 @@ export function LandingPage() {
         {/* ── 11. Final CTA band ───────────────────────────────────────────── */}
         <section
           aria-labelledby="cta-band-heading"
-          className="relative overflow-hidden bg-tiam-blue py-20 md:py-28"
-          style={{ background: 'linear-gradient(135deg, #1E73D8 0%, #0F4FA8 100%)' }}
+          className="relative overflow-hidden bg-gradient-to-br from-tiam-blue to-tiam-blue-dark py-20 md:py-28"
         >
           {/* Very subtle white blobs — barely visible */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
