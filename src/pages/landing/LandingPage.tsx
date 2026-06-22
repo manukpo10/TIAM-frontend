@@ -11,6 +11,10 @@ import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import logoGrande from '@/assets/logogrande-sinfondo.png'
 import heroBanner from '@/assets/hero-banner.webp'
+import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
+import profTO from '@/assets/profesionales/terapia-ocupacional.webp'
+import profGeriatria from '@/assets/profesionales/geriatria.webp'
+import profFono from '@/assets/profesionales/fonoaudiologia.webp'
 import { useAuthStore } from '@/store/auth'
 import { COGNITIVE_AREAS, AREA_COLORS } from '@/lib/utils'
 
@@ -133,6 +137,13 @@ const AREA_ICONS: Record<string, typeof Brain> = {
   agnosias: Eye,
   'estimulacion-sensorial': Music,
 }
+
+const PROFESSIONALS = [
+  { img: profNeuro, label: 'Neuropsicólogos' },
+  { img: profTO, label: 'Terapeutas ocupacionales' },
+  { img: profGeriatria, label: 'Médicos geriatras' },
+  { img: profFono, label: 'Fonoaudiólogos' },
+]
 
 const USE_CASES = [
   {
@@ -493,9 +504,30 @@ export function LandingPage() {
                 Pensado para tu práctica clínica
               </h2>
               <p className="mt-3 text-slate-600 max-w-xl mx-auto">
-                TIAM acompaña a profesionales que trabajan con adultos mayores en una amplia variedad de contextos y diagnósticos.
+                TIAM acompaña a los profesionales que trabajan la cognición de adultos mayores, sea cual sea su disciplina.
               </p>
             </div>
+
+            {/* Professional types */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-14">
+              {PROFESSIONALS.map((p) => (
+                <figure key={p.label} className="text-center">
+                  <img
+                    src={p.img}
+                    alt={p.label}
+                    loading="lazy"
+                    className="aspect-square w-full rounded-2xl object-cover shadow-sm"
+                  />
+                  <figcaption className="mt-3 text-sm font-semibold text-slate-900">{p.label}</figcaption>
+                </figure>
+              ))}
+            </div>
+
+            {/* Contexts sub-heading */}
+            <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-400 mb-6">
+              Y en una amplia variedad de contextos y diagnósticos
+            </p>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {USE_CASES.map(({ icon: Icon, title, description }, i) => {
                 const isOrange = i % 2 === 1
