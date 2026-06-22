@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
-import logoImg from '@/assets/logo-sinfondo.png'
+import logoImg from '@/assets/logogrande-sinfondo.png'
 import authSide from '@/assets/auth-side.webp'
 
 const BENEFITS = [
@@ -30,7 +30,7 @@ export function AuthLayout() {
         {/* Logo */}
         <div className="relative">
           <Link to="/" aria-label="TIAM Digital — volver al inicio" className="inline-block">
-            <img src={logoImg} alt="TIAM" className="h-20 w-20 object-contain" />
+            <img src={logoImg} alt="TIAM" className="h-14 w-auto object-contain" />
           </Link>
         </div>
 
@@ -59,7 +59,7 @@ export function AuthLayout() {
           <p className="text-sm italic text-white/80">
             "Perdía 2-3 horas por semana buscando material. Ahora lo tengo todo en un solo lugar y mis pacientes notan la diferencia."
           </p>
-          <p className="mt-3 text-xs font-semibold text-white/70">— Especialista en estimulación cognitiva, La Plata</p>
+          <p className="mt-3 text-xs font-semibold text-white/70">— Claudia Romero, especialista en estimulación cognitiva, La Plata</p>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export function AuthLayout() {
       <div className="flex flex-1 flex-col items-center justify-center bg-slate-50 px-6 py-12">
         {/* Mobile logo */}
         <Link to="/" aria-label="TIAM Digital — volver al inicio" className="mb-8 flex items-center gap-2 lg:hidden">
-          <img src={logoImg} alt="TIAM" className="h-10 w-10 object-contain" />
+          <img src={logoImg} alt="TIAM" className="h-8 w-auto object-contain" />
           <span className="text-xl font-bold text-slate-900">TIAM Digital</span>
         </Link>
 
