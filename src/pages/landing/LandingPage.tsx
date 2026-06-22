@@ -16,7 +16,7 @@ import profTO from '@/assets/profesionales/terapia-ocupacional.webp'
 import profGeriatria from '@/assets/profesionales/geriatria.webp'
 import profFono from '@/assets/profesionales/fonoaudiologia.webp'
 import { useAuthStore } from '@/store/auth'
-import { COGNITIVE_AREAS, AREA_COLORS } from '@/lib/utils'
+import { COGNITIVE_AREAS } from '@/lib/utils'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
@@ -509,15 +509,14 @@ export function LandingPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {COGNITIVE_AREAS.map((area) => {
-                const color = AREA_COLORS[area.slug]
                 const Icon = AREA_ICONS[area.slug] ?? Brain
                 return (
                   <div
                     key={area.id}
                     className="group rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:-translate-y-1 hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200 cursor-default"
                   >
-                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${color.bg} shadow-sm`}>
-                      <Icon className="h-5 w-5 text-white" />
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">
+                      <Icon className="h-5 w-5 text-tiam-blue" />
                     </div>
                     <span className="font-semibold text-sm text-slate-700 leading-tight">{area.name}</span>
                   </div>
