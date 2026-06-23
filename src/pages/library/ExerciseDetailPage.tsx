@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Check, Download, Layers, Plus, BookOpen } from 'lucide-react'
+import { ArrowLeft, Check, Download, Layers, Plus, BookOpen, Image as ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
@@ -121,6 +121,24 @@ export function ExerciseDetailPage() {
               </Badge>
             </div>
 
+            {/* Preview image */}
+            {exercise.previewImageUrl && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-tiam-blue" />
+                  <h2 className="font-semibold text-slate-900">Vista previa del material</h2>
+                </div>
+                <a href={exercise.previewImageUrl} target="_blank" rel="noreferrer" className="block">
+                  <img
+                    src={exercise.previewImageUrl}
+                    alt={`Material del ejercicio ${exercise.title}`}
+                    className="mx-auto max-h-[600px] w-full rounded-xl border border-slate-100 object-contain"
+                  />
+                </a>
+                <p className="mt-2 text-center text-xs text-slate-400">Clic para ampliar</p>
+              </div>
+            )}
+
             {/* Instructions */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6">
               <div className="mb-4 flex items-center gap-2">
@@ -136,9 +154,24 @@ export function ExerciseDetailPage() {
           {/* Sidebar actions */}
           <div className="flex flex-col gap-3">
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
-              <div className={cn('mb-4 flex h-40 items-center justify-center rounded-xl', areaColor.bg)}>
-                <AreaIcon className="h-16 w-16 text-white/90" />
-              </div>
+              {exercise.previewImageUrl ? (
+                <a
+                  href={exercise.previewImageUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mb-4 block overflow-hidden rounded-xl border border-slate-200"
+                >
+                  <img
+                    src={exercise.previewImageUrl}
+                    alt={`Vista previa de ${exercise.title}`}
+                    className="h-40 w-full bg-white object-contain"
+                  />
+                </a>
+              ) : (
+                <div className={cn('mb-4 flex h-40 items-center justify-center rounded-xl', areaColor.bg)}>
+                  <AreaIcon className="h-16 w-16 text-white/90" />
+                </div>
+              )}
 
               <Button size="lg" onClick={handleDownloadPdf} className="mb-2 w-full">
                 <Download className="h-4 w-4" />
