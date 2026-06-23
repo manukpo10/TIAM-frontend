@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { BookOpen, CreditCard, LogOut, Menu, Settings, Users, X } from 'lucide-react'
+import { BookOpen, CreditCard, HelpCircle, LogOut, Menu, Settings, Users, X } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
-import { OnboardingTour } from '@/features/onboarding/OnboardingTour'
+import { OnboardingTour, START_TOUR_EVENT, OPEN_DRAWER_EVENT } from '@/features/onboarding/OnboardingTour'
 import logoImg from '@/assets/logo-sinfondo.png'
 
 const NAV_ITEMS = [
@@ -26,6 +26,18 @@ export function AppLayout() {
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname])
+
+  // Let the onboarding tour open the drawer to highlight nav links on mobile.
+  useEffect(() => {
+    const open = () => setDrawerOpen(true)
+    window.addEventListener(OPEN_DRAWER_EVENT, open)
+    return () => window.removeEventListener(OPEN_DRAWER_EVENT, open)
+  }, [])
+
+  function startTutorial() {
+    setDrawerOpen(false)
+    window.dispatchEvent(new Event(START_TOUR_EVENT))
+  }
 
   function handleLogout() {
     clearAuth()
@@ -109,6 +121,13 @@ export function AppLayout() {
             <p className="truncate text-xs text-slate-400">{user?.specialty ?? user?.email}</p>
           </div>
         </Link>
+        <button
+          onClick={startTutorial}
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-tiam-blue transition-colors hover:bg-white"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          Ver tutorial
+        </button>
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-slate-400 transition-colors hover:bg-white hover:text-slate-600"

@@ -26,8 +26,13 @@ import './onboarding-tour.css'
 
 const TOUR_FLAG = 'tiam_tour_completed'
 export const START_TOUR_EVENT = 'tiam:start-tour'
+/** Ask AppLayout to open the mobile navigation drawer. */
+export const OPEN_DRAWER_EVENT = 'tiam:open-drawer'
 
 const ACTION_ONLY: ('next' | 'previous' | 'close')[] = ['previous', 'close']
+
+/** Below the `lg` breakpoint the sidebar is an off-canvas drawer. */
+const isMobile = () => window.matchMedia('(max-width: 1023px)').matches
 
 const sel = {
   navPatients: '[data-tour="nav-patients"]',
@@ -80,6 +85,23 @@ export function OnboardingTour() {
 
     let advancing = false
 
+    // Steps whose target lives inside the (mobile) navigation drawer.
+    const drawerSteps = new Set<string>([sel.navPatients, sel.navLibrary])
+
+    /**
+     * Move to the next step. On mobile, if that step's target is a drawer nav
+     * link, open the drawer first and wait for the slide-in before highlighting.
+     */
+    function goNext() {
+      const nextSel = steps[(tour.getActiveIndex() ?? 0) + 1]?.element as string | undefined
+      if (isMobile() && nextSel && drawerSteps.has(nextSel)) {
+        window.dispatchEvent(new Event(OPEN_DRAWER_EVENT))
+        window.setTimeout(() => tour.moveNext(), 320)
+      } else {
+        tour.moveNext()
+      }
+    }
+
     /**
      * Move to the next step once `ready()` becomes true. Polls up to ~12s and
      * then STOPS (never jumps to a missing element) so a deviation just waits.
@@ -95,7 +117,7 @@ export function OnboardingTour() {
         }
         if (ready()) {
           advancing = false
-          tour.moveNext()
+          goNext()
         } else if (tries++ < 120) {
           window.setTimeout(tick, 100)
         } else {
@@ -132,6 +154,8 @@ export function OnboardingTour() {
           title: '¡Bienvenido/a a TIAM! 👋',
           description:
             'Te acompaño a hacer las 3 cosas clave: crear un paciente, armar una sesión y enviar un ejercicio. Vas haciendo cada paso vos. Podés salir cuando quieras con la ×.',
+          // Opens the mobile drawer before highlighting the first nav link.
+          onNextClick: () => goNext(),
         },
       },
       // ── Flow 1 · Create a patient ───────────────────────────────────────────
