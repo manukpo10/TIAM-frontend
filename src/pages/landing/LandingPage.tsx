@@ -26,24 +26,32 @@ const BENEFITS = [
     title: 'Biblioteca curada por área cognitiva',
     description:
       'Encontrá ejercicios organizados por las 8 áreas cognitivas. Filtrá por dificultad, tipo de material o nombre en segundos.',
+    stripClass: 'border-t-tiam-blue',
+    iconClass: 'bg-tiam-blue/10 text-tiam-blue',
   },
   {
     icon: Printer,
     title: 'Fichas A4 listas para imprimir',
     description:
       'Generá fichas con formato profesional al instante. Sin diseño, sin edición: directas a la impresora.',
+    stripClass: 'border-t-tiam-orange',
+    iconClass: 'bg-tiam-orange/10 text-tiam-orange',
   },
   {
     icon: MousePointerClick,
     title: 'Armá sesiones en un clic',
     description:
       'Seleccioná ejercicios, ordenalos y asignalos a tu paciente en minutos. Una sesión entera lista antes de empezar.',
+    stripClass: 'border-t-tiam-blue-dark',
+    iconClass: 'bg-tiam-blue/10 text-tiam-blue-dark',
   },
   {
     icon: TrendingUp,
     title: 'Seguí el progreso de cada paciente',
     description:
       'Registrá la evolución individual. Revisá qué trabajaste, qué mejoró y qué ajustar en la próxima sesión.',
+    stripClass: 'border-t-tiam-green',
+    iconClass: 'bg-tiam-green/10 text-tiam-green',
   },
 ]
 
@@ -357,21 +365,21 @@ export function LandingPage() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {BENEFITS.map(({ icon: Icon, title, description }, i) => {
-                const isOrange = i === 1 || i === 3
-                return (
-                  <article
-                    key={title}
-                    className="group rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-xl hover:shadow-tiam-blue/10 motion-safe:hover:-translate-y-1 transition-[transform,box-shadow,border-color] duration-200"
-                  >
-                    <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${isOrange ? 'bg-tiam-orange/10 text-tiam-orange' : 'bg-tiam-blue/10 text-tiam-blue'}`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
-                    <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-                  </article>
-                )
-              })}
+              {BENEFITS.map(({ icon: Icon, title, description, stripClass, iconClass }, i) => (
+                <article
+                  key={title}
+                  className={`rounded-3xl border border-slate-100 border-t-2 ${stripClass} bg-white px-6 pt-5 pb-6 shadow-sm hover:shadow-md transition-[box-shadow] duration-200`}
+                >
+                  <p className="mb-3 text-[10px] font-bold tracking-widest text-slate-300 uppercase">
+                    {String(i + 1).padStart(2, '0')}
+                  </p>
+                  <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${iconClass}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                </article>
+              ))}
             </div>
 
             {/* Upcoming feature — WhatsApp / at-home (in development) */}

@@ -23,7 +23,7 @@
 @source inline("bg-tiam-blue/8 hover:border-tiam-blue/20 focus-visible:ring-tiam-blue/30 hover:shadow-tiam-blue/5");
 @source inline("bg-tiam-orange bg-tiam-orange/90 hover:bg-tiam-orange hover:bg-tiam-orange/90");
 @source inline("shadow-tiam-green/10 shadow-tiam-orange/10");
-@source inline("bg-tiam-green/15 shadow-tiam-green/20 border-t-tiam-blue");
+@source inline("bg-tiam-green/15 shadow-tiam-green/20 border-t-tiam-blue border-t-tiam-orange border-t-tiam-green border-t-tiam-blue-dark");
 @source inline("focus-visible:ring-tiam-blue focus-visible:ring-tiam-blue focus-visible:ring-gray-300");
 @source inline("to-tiam-green/5 to-tiam-blue to-tiam-green text-tiam-orange/10");
 @source inline("from-tiam-blue-dark from-tiam-orange from-tiam-blue/5 from-tiam-blue-dark");
