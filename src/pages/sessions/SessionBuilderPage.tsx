@@ -30,9 +30,9 @@ function ExerciseRow({ exercise, index, total, onMove, onRemove }: ExerciseRowPr
     : AREA_COLORS['funciones-ejecutivas']
 
   return (
-    <div className="flex items-stretch gap-0 rounded-xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+    <div className="flex items-stretch gap-0 rounded-xl border border-slate-100 bg-white shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200 overflow-hidden">
       {/* Area color strip */}
-      <div className={cn('w-1.5 shrink-0', areaColor.bg)} />
+      <div className={cn('w-1.5 shrink-0 border-l-2 border-l-tiam-blue/30', areaColor.bg)} />
 
       {/* Reorder controls */}
       <div className="flex flex-col items-center justify-center border-r border-slate-100 px-1.5 py-2 gap-0.5">
@@ -43,7 +43,7 @@ function ExerciseRow({ exercise, index, total, onMove, onRemove }: ExerciseRowPr
         >
           <ChevronUp className="h-4 w-4" />
         </button>
-        <span className="text-[10px] font-bold text-slate-300 select-none">{index + 1}</span>
+        <span className="text-[10px] font-extrabold text-tiam-blue tabular-nums select-none">{index + 1}</span>
         <button
           onClick={() => onMove(index, index + 1)}
           disabled={index === total - 1}
@@ -287,9 +287,14 @@ export function SessionBuilderPage() {
           </h2>
 
           {exercises.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <Library className="h-12 w-12 text-slate-200" />
-              <p className="text-slate-500">Volvé a la biblioteca para agregar ejercicios</p>
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-br from-tiam-blue/5 to-white border border-slate-100 py-16 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-tiam-blue/10">
+                <Library className="h-8 w-8 text-tiam-blue/60" />
+              </div>
+              <div>
+                <p className="font-medium text-slate-700">Todavía no hay ejercicios</p>
+                <p className="mt-1 text-sm text-slate-400">Volvé a la biblioteca para agregar ejercicios</p>
+              </div>
               <Link to="/library">
                 <Button variant="secondary" size="sm">
                   Ir a la biblioteca
@@ -297,7 +302,7 @@ export function SessionBuilderPage() {
               </Link>
             </div>
           ) : (
-            <>
+            <div className="rounded-2xl border border-slate-100 shadow-lg shadow-tiam-blue/10 bg-white p-4">
               <div className="flex flex-col gap-2">
                 {exercises.map((exercise, index) => (
                   <ExerciseRow
@@ -319,7 +324,7 @@ export function SessionBuilderPage() {
                   </Button>
                 </Link>
               </div>
-            </>
+            </div>
           )}
         </main>
       </div>

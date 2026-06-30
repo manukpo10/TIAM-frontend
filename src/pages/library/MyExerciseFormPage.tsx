@@ -74,7 +74,7 @@ export function MyExerciseFormPage() {
         Volver a la biblioteca
       </button>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
         <h1 className="text-xl font-bold text-slate-900">Agregar ejercicio propio</h1>
         <p className="mt-1 text-sm text-slate-500">Este ejercicio solo lo verás vos.</p>
 
@@ -121,7 +121,7 @@ export function MyExerciseFormPage() {
           </div>
 
           {/* Cognitive areas */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 border-t border-slate-100 pt-6 mt-1">
             <label className="text-sm font-medium text-slate-700">
               Áreas cognitivas <span className="text-red-500">*</span>
             </label>
@@ -144,8 +144,8 @@ export function MyExerciseFormPage() {
                         }}
                         className={`rounded-full px-3 py-1 text-sm transition-colors ${
                           selected
-                            ? 'bg-tiam-blue text-white'
-                            : 'border border-slate-200 text-slate-600 hover:border-tiam-blue/30'
+                            ? 'bg-tiam-blue text-white shadow-sm'
+                            : 'border border-slate-200 text-slate-600 hover:border-tiam-blue/30 hover:bg-tiam-blue/5'
                         }`}
                       >
                         {area.name}
@@ -161,7 +161,7 @@ export function MyExerciseFormPage() {
           </div>
 
           {/* Difficulty */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 border-t border-slate-100 pt-6 mt-1">
             <label className="text-sm font-medium text-slate-700">Nivel de dificultad</label>
             <div className="flex flex-col gap-1.5">
               {DIFFICULTY_OPTIONS.map(({ value, label }) => (
@@ -182,7 +182,7 @@ export function MyExerciseFormPage() {
           </div>
 
           {/* Material type */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 border-t border-slate-100 pt-6 mt-1">
             <label className="text-sm font-medium text-slate-700">Tipo de material</label>
             <div className="flex flex-col gap-1.5">
               {MATERIAL_OPTIONS.map(({ value, label }) => (
@@ -208,7 +208,7 @@ export function MyExerciseFormPage() {
             </p>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-2 border-t border-slate-100 mt-1">
             <Button type="submit" loading={isSubmitting || mutation.isPending}>
               Guardar ejercicio
             </Button>

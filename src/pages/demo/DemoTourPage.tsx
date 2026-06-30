@@ -65,7 +65,7 @@ const STEPS: Step[] = [
 function ScreenFrame({ step, onZoom }: { step: Step; onZoom: (src: string, alt: string) => void }) {
   const src = shotFor(step.slug)
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60">
+    <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
       {/* Fake browser top bar */}
       <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
@@ -79,7 +79,7 @@ function ScreenFrame({ step, onZoom }: { step: Step; onZoom: (src: string, alt: 
           className="group relative block w-full cursor-zoom-in"
           aria-label={`Ampliar captura: ${step.title}`}
         >
-          <img src={src} alt={step.title} className="block w-full" />
+          <img src={src} alt={step.title} className="block w-full rounded-xl shadow-md border border-slate-100" />
           {/* Hover hint */}
           <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-slate-900/70 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
             <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
@@ -152,7 +152,7 @@ export function DemoTourPage() {
 
             {/* Step copy + nav */}
             <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+              <div className="flex items-center gap-2 text-sm font-extrabold text-tiam-blue">
                 <span>Paso {current + 1}</span>
                 <span className="text-slate-300">/</span>
                 <span className="text-slate-400">{STEPS.length}</span>

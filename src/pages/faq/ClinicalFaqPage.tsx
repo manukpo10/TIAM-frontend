@@ -173,20 +173,20 @@ const FAQ_SERVICIO: QA[] = [
 function FaqAccordionItem({ item }: { item: QA }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="border-b border-slate-100 last:border-b-0">
+    <div className="border border-slate-100 rounded-xl shadow-sm hover:shadow-md hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left text-base font-semibold text-slate-900 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 rounded"
+        className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left text-base font-semibold text-slate-900 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 rounded-xl"
       >
         <span>{item.question}</span>
         <ChevronDown
-          className={`h-5 w-5 shrink-0 text-primary transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`h-5 w-5 shrink-0 text-tiam-blue transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           aria-hidden="true"
         />
       </button>
-      <div hidden={!open} className="pb-6 text-[17px] leading-relaxed text-slate-600 max-w-2xl">
+      <div hidden={!open} className="border-t border-slate-100 px-5 pt-4 pb-5 text-[17px] leading-relaxed text-slate-600 max-w-2xl">
         {item.answer}
       </div>
     </div>
@@ -205,7 +205,7 @@ export function ClinicalFaqPage() {
 
       <main className="flex-1">
         {/* Intro */}
-        <section className="border-b border-slate-100 bg-gradient-to-b from-tiam-blue/5 to-white">
+        <section className="border-b border-slate-100 bg-gradient-to-br from-tiam-blue/5 to-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14 md:py-20">
             <img
               src={faqIllustration}
@@ -227,7 +227,7 @@ export function ClinicalFaqPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
             Sobre la estimulación cognitiva
           </h2>
-          <div className="rounded-2xl border border-slate-100 bg-white px-6 sm:px-8 shadow-sm">
+          <div className="space-y-3">
             {FAQ.map((item) => (
               <FaqAccordionItem key={item.question} item={item} />
             ))}
@@ -236,7 +236,7 @@ export function ClinicalFaqPage() {
           <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
             Sobre TIAM
           </h2>
-          <div className="rounded-2xl border border-slate-100 bg-white px-6 sm:px-8 shadow-sm">
+          <div className="space-y-3">
             {FAQ_SERVICIO.map((item) => (
               <FaqAccordionItem key={item.question} item={item} />
             ))}

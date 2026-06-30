@@ -56,8 +56,10 @@ export function LibraryPage() {
   return (
     <div className="flex flex-1 flex-col lg:flex-row h-full">
       {/* ── Filter sidebar: desktop (lg+) only ── */}
-      <aside className="hidden lg:flex w-56 shrink-0 flex-col border-r border-slate-100 bg-white px-4 py-6 overflow-y-auto">
-        <ExerciseFilters filters={filters} onChange={handleFiltersChange} />
+      <aside className="hidden lg:flex w-56 shrink-0 flex-col border-r border-slate-100 bg-white px-4 py-6 overflow-y-auto shadow-sm">
+        <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+          <ExerciseFilters filters={filters} onChange={handleFiltersChange} />
+        </div>
       </aside>
 
       {/* ── Main area ── */}

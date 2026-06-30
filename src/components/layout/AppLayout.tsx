@@ -63,13 +63,13 @@ export function AppLayout() {
             data-tour={tour}
             onClick={() => setDrawerOpen(false)}
             className={cn(
-              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors',
               active
-                ? 'bg-tiam-blue/10 text-tiam-blue-dark'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800',
+                ? 'border-l-2 border-l-tiam-blue bg-tiam-blue/10 pl-[calc(theme(spacing.3)-2px)] font-semibold text-tiam-blue'
+                : 'font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800',
             )}
           >
-            <Icon className={cn('h-4 w-4', active ? 'text-tiam-blue' : 'text-slate-400')} />
+            <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-tiam-blue' : 'text-slate-400')} />
             {label}
           </Link>
         )
@@ -77,7 +77,7 @@ export function AppLayout() {
 
       {isAdmin && (
         <>
-          <div className="my-3 mx-1">
+          <div className="my-3 mx-1 border-t border-slate-100 pt-3">
             <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">
               Administración
             </p>
@@ -90,13 +90,13 @@ export function AppLayout() {
                 to={to}
                 onClick={() => setDrawerOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors',
                   active
-                    ? 'bg-tiam-blue/10 text-tiam-blue-dark'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800',
+                    ? 'border-l-2 border-l-tiam-blue bg-tiam-blue/10 pl-[calc(theme(spacing.3)-2px)] font-semibold text-tiam-blue'
+                    : 'font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800',
                 )}
               >
-                <Icon className={cn('h-4 w-4', active ? 'text-tiam-blue' : 'text-slate-400')} />
+                <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-tiam-blue' : 'text-slate-400')} />
                 {label}
               </Link>
             )
@@ -179,7 +179,7 @@ export function AppLayout() {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-4 py-4">
+        <div className="flex items-center gap-2.5 px-4 pb-4 pt-4">
           <img src={logoImg} alt="TIAM" className="h-10 w-10 shrink-0 object-contain" />
           <div>
             <span className="block text-sm font-bold text-slate-900">TIAM Digital</span>

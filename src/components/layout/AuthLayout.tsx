@@ -48,7 +48,7 @@ export function AuthLayout() {
           <ul className="flex flex-col gap-3">
             {BENEFITS.map(b => (
               <li key={b} className="flex items-start gap-3">
-                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-white/70" />
+                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-white" />
                 <span className="text-white/80">{b}</span>
               </li>
             ))}
@@ -76,7 +76,7 @@ export function AuthLayout() {
         </Link>
 
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white p-8 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
             <Outlet />
           </div>
         </div>

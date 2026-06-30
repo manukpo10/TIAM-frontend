@@ -58,7 +58,7 @@ export function AdminExerciseListPage() {
       )}
 
       {data && (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md">
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
@@ -71,7 +71,7 @@ export function AdminExerciseListPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {data.content.map(exercise => (
-                <tr key={exercise.id} className="hover:bg-slate-50">
+                <tr key={exercise.id} className="border-b border-slate-100 transition-[background-color,box-shadow] duration-200 hover:bg-tiam-blue/5 hover:shadow-[inset_2px_0_0_0_theme(colors.tiam-blue/0.3)]">
                   <td className="px-4 py-3 font-medium text-slate-900">{exercise.title}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
@@ -90,13 +90,13 @@ export function AdminExerciseListPage() {
                   </td>
                   <td className="px-4 py-3">
                     {exercise.status === 'PUBLISHED' ? (
-                      <span className="flex items-center gap-1 text-green-700">
+                      <Badge className="inline-flex items-center gap-1 bg-tiam-green/10 text-tiam-green">
                         <Eye className="h-3.5 w-3.5" /> Publicado
-                      </span>
+                      </Badge>
                     ) : (
-                      <span className="flex items-center gap-1 text-slate-400">
+                      <Badge className="inline-flex items-center gap-1 bg-slate-100 text-slate-500">
                         <EyeOff className="h-3.5 w-3.5" /> Borrador
-                      </span>
+                      </Badge>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -110,7 +110,7 @@ export function AdminExerciseListPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
                         onClick={() => handleDelete(exercise)}
                         title="Eliminar"
                       >

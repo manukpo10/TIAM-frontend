@@ -7,7 +7,11 @@ import { MOCK_ENABLED, MOCK_USER, MOCK_SUBSCRIPTION } from '@/lib/mock'
  */
 export function seedMockAuth() {
   if (!MOCK_ENABLED) return
-  const { user, setAuth } = useAuthStore.getState()
-  if (user) return
+  const { user, subscription, setAuth } = useAuthStore.getState()
+  const trialExpired =
+    subscription?.status === 'TRIAL' &&
+    subscription.trialEndsAt &&
+    new Date(subscription.trialEndsAt) < new Date()
+  if (user && !trialExpired) return
   setAuth(MOCK_USER, MOCK_SUBSCRIPTION, 'mock-token')
 }

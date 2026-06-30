@@ -123,7 +123,7 @@ export function ExerciseDetailPage() {
 
             {/* Preview image */}
             {exercise.previewImageUrl && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
                 <div className="mb-4 flex items-center gap-2">
                   <ImageIcon className="h-5 w-5 text-tiam-blue" />
                   <h2 className="font-semibold text-slate-900">Vista previa del material</h2>
@@ -132,7 +132,7 @@ export function ExerciseDetailPage() {
                   <img
                     src={exercise.previewImageUrl}
                     alt={`Material del ejercicio ${exercise.title}`}
-                    className="mx-auto max-h-[600px] w-full rounded-xl border border-slate-100 object-contain"
+                    className="mx-auto max-h-[600px] w-full rounded-xl border border-slate-100 shadow-md object-contain"
                   />
                 </a>
                 <p className="mt-2 text-center text-xs text-slate-400">Clic para ampliar</p>
@@ -140,7 +140,7 @@ export function ExerciseDetailPage() {
             )}
 
             {/* Instructions */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
               <div className="mb-4 flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-tiam-blue" />
                 <h2 className="font-semibold text-slate-900">Instrucciones para el profesional</h2>
@@ -153,13 +153,13 @@ export function ExerciseDetailPage() {
 
           {/* Sidebar actions */}
           <div className="flex flex-col gap-3">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+            <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
               {exercise.previewImageUrl ? (
                 <a
                   href={exercise.previewImageUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mb-4 block overflow-hidden rounded-xl border border-slate-200"
+                  className="mb-4 block overflow-hidden rounded-xl border border-slate-200 shadow-md"
                 >
                   <img
                     src={exercise.previewImageUrl}
@@ -201,7 +201,7 @@ export function ExerciseDetailPage() {
               )}
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Detalles</p>
               <dl className="flex flex-col gap-2 text-sm">
                 <div className="flex justify-between">

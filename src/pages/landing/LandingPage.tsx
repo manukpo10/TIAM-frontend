@@ -231,14 +231,21 @@ export function LandingPage() {
 
   return (
     <div className="min-h-dvh bg-white overflow-x-hidden">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-tiam-blue focus:shadow-md focus:ring-2 focus:ring-tiam-blue"
+      >
+        Ir al contenido principal
+      </a>
+
       {/* ── 1. Sticky navbar (shared) ──────────────────────────────────────── */}
       <PublicHeader />
 
-      <main>
+      <main id="main-content">
         {/* ── 2. Hero ──────────────────────────────────────────────────────── */}
         <section
           aria-labelledby="hero-heading"
-          className="relative overflow-hidden bg-slate-100 min-h-[460px] sm:min-h-[540px] lg:min-h-[620px] flex items-center"
+          className="relative overflow-hidden bg-gradient-to-br from-tiam-blue/5 to-slate-50 min-h-[460px] sm:min-h-[540px] lg:min-h-[620px] flex items-center"
         >
           {/* Background image */}
           <img
@@ -292,15 +299,17 @@ export function LandingPage() {
               </div>
 
               {/* Trust signals */}
-              <div className="mt-8 flex items-center gap-4 justify-start">
-                <div className="flex -space-x-2">
-                  {['bg-tiam-blue', 'bg-tiam-blue-dark', 'bg-slate-400', 'bg-slate-600'].map((c, i) => (
-                    <div key={i} className={`h-7 w-7 rounded-full ${c} border-2 border-white`} />
-                  ))}
-                </div>
-                <span className="text-sm text-slate-600">
-                  Profesionales de toda Argentina ya lo usan · Sin tarjeta · Cancelás cuando quieras
-                </span>
+              <div className="mt-8 flex flex-wrap items-center gap-2 justify-start">
+                {[
+                  { icon: ShieldCheck, text: 'Sin tarjeta requerida' },
+                  { icon: Check, text: '7 días de acceso completo' },
+                  { icon: TrendingUp, text: 'Cancelás cuando quieras' },
+                ].map(({ icon: Icon, text }) => (
+                  <div key={text} className="inline-flex items-center gap-1.5 rounded-full border border-tiam-blue/20 bg-white/80 backdrop-blur px-3 py-1.5">
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-tiam-blue" />
+                    <span className="text-xs font-semibold text-slate-700">{text}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -317,7 +326,7 @@ export function LandingPage() {
             style={{
               backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)',
               backgroundSize: '24px 24px',
-              opacity: 0.3,
+              opacity: 0.5,
             }}
           />
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
@@ -325,9 +334,9 @@ export function LandingPage() {
               {STATS.map(({ value, label }, i) => (
                 <div
                   key={label}
-                  className="flex flex-col items-center text-center p-5 rounded-2xl bg-white shadow-sm border border-slate-100"
+                  className="flex flex-col items-center text-center p-5 rounded-2xl bg-white shadow-sm border border-slate-100 border-t-2 border-t-tiam-blue"
                 >
-                  <dt className={`text-4xl font-extrabold tracking-tight ${i === 2 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>{value}</dt>
+                  <dt className={`text-4xl font-extrabold tracking-tight ${i === 2 ? 'text-tiam-blue-dark' : 'text-tiam-blue'}`}>{value}</dt>
                   <dd className="mt-1 text-sm text-slate-500 font-medium">{label}</dd>
                 </div>
               ))}
@@ -353,7 +362,7 @@ export function LandingPage() {
                 return (
                   <article
                     key={title}
-                    className="group rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-xl hover:shadow-tiam-blue/5 hover:-translate-y-1 transition-all duration-200"
+                    className="group rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-xl hover:shadow-tiam-blue/10 motion-safe:hover:-translate-y-1 transition-[transform,box-shadow,border-color] duration-200"
                   >
                     <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${isOrange ? 'bg-tiam-orange/10 text-tiam-orange' : 'bg-tiam-blue/10 text-tiam-blue'}`}>
                       <Icon className="h-5 w-5" />
@@ -421,7 +430,7 @@ export function LandingPage() {
               />
               {HOW_IT_WORKS.map(({ step, icon: Icon, title, description }, i) => (
                 <div key={step} className="flex flex-col items-center text-center">
-                  <div className="relative z-10 mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-tiam-blue text-white shadow-md shadow-tiam-blue/20">
+                  <div className="relative z-10 mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-tiam-blue to-tiam-blue-dark text-white shadow-lg shadow-tiam-blue/20">
                     <Icon className="h-8 w-8" />
                     <span className={`absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow border border-slate-100 text-[10px] font-black ${i === 1 ? 'text-tiam-orange' : 'text-tiam-blue'}`}>
                       {step}
@@ -485,7 +494,7 @@ export function LandingPage() {
                 return (
                   <article
                     key={title}
-                    className="rounded-2xl bg-white border border-slate-100 p-6 flex gap-4 items-start shadow-sm hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200"
+                    className="rounded-2xl bg-white border border-slate-100 p-6 flex gap-4 items-start shadow-sm hover:shadow-md hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200"
                   >
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isOrange ? 'bg-tiam-orange/10 text-tiam-orange' : 'bg-tiam-blue/10 text-tiam-blue'}`}>
                       <Icon className="h-5 w-5" />
@@ -524,7 +533,7 @@ export function LandingPage() {
                 return (
                   <div
                     key={area.id}
-                    className="group rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:-translate-y-1 hover:shadow-md hover:border-tiam-blue/20 transition-all duration-200 cursor-default"
+                    className="rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:border-tiam-blue/20 transition-colors duration-200 cursor-default"
                   >
                     <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${boxClass}`}>
                       <Icon className={`h-5 w-5 ${iconClass}`} />
@@ -540,7 +549,7 @@ export function LandingPage() {
         {/* ── 8. Testimonial ───────────────────────────────────────────────── */}
         <section aria-label="Testimonio" className="py-16 md:py-24 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <figure className="relative rounded-3xl bg-white border border-slate-100 p-8 md:p-12 text-center shadow-sm overflow-hidden">
+            <figure className="relative rounded-3xl bg-gradient-to-br from-tiam-blue/5 to-white border border-tiam-blue/20 p-8 md:p-12 text-center shadow-md shadow-tiam-blue/10 overflow-hidden">
               <div
                 aria-hidden="true"
                 className="absolute top-4 left-6 text-8xl leading-none font-black text-tiam-orange/20 select-none"
@@ -582,9 +591,9 @@ export function LandingPage() {
               {PRICING_PLANS.map((plan) => (
                 <div
                   key={plan.id}
-                  className={`relative flex flex-col rounded-3xl bg-white overflow-hidden transition-all duration-200 ${
+                  className={`relative flex flex-col rounded-3xl bg-white overflow-hidden transition-[box-shadow,border-color] duration-200 ${
                     plan.featured
-                      ? 'border-2 border-tiam-blue shadow-xl shadow-tiam-blue/10 lg:scale-105'
+                      ? 'border-2 border-tiam-blue shadow-2xl shadow-tiam-blue/15 bg-gradient-to-b from-tiam-blue/5 to-white'
                       : 'border border-slate-200 shadow-sm hover:shadow-md'
                   }`}
                 >

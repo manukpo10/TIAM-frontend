@@ -131,7 +131,7 @@ interface PatientCardProps {
 function PatientCard({ patient, onEdit, onDelete, onClick }: PatientCardProps) {
   return (
     <div
-      className="group relative rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
+      className="group relative rounded-2xl border border-slate-100 bg-white p-5 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200 cursor-pointer"
       onClick={() => onClick(patient.id)}
     >
       {/* Action buttons — visible on hover */}

@@ -99,13 +99,13 @@ function PersonalInfoCard({ user }: { user: User }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-6">
       <h2 className="text-lg font-semibold text-slate-900 mb-1">Información personal</h2>
       <p className="text-sm text-slate-500 mb-6">Actualizá tu nombre y especialidad.</p>
 
       {/* Avatar */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-2xl font-bold text-white">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tiam-blue to-tiam-blue-dark text-2xl font-bold text-white shadow-md">
           {getInitials(user.fullName)}
         </div>
         <div>
@@ -163,10 +163,10 @@ function PersonalInfoCard({ user }: { user: User }) {
 
 function AccountCard({ user }: { user: User }) {
   const roleLabel = user.role === 'ADMIN' ? 'Administrador' : 'Profesional'
-  const roleBgClass = user.role === 'ADMIN' ? 'bg-tiam-blue/10 text-tiam-blue-dark' : 'bg-slate-100 text-slate-600'
+  const roleBgClass = user.role === 'ADMIN' ? 'bg-tiam-blue/10 text-tiam-blue font-semibold' : 'bg-slate-100 text-slate-600'
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-6">
       <h2 className="text-lg font-semibold text-slate-900 mb-1">Cuenta</h2>
       <p className="text-sm text-slate-500 mb-6">Información de tu cuenta.</p>
 
@@ -224,7 +224,7 @@ function SecurityCard() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-6">
       <h2 className="text-lg font-semibold text-slate-900 mb-1">Seguridad</h2>
       <p className="text-sm text-slate-500 mb-6">Cambiá tu contraseña de acceso.</p>
 
@@ -284,7 +284,7 @@ function SubscriptionCard() {
   })
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-6">
       <h2 className="text-lg font-semibold text-slate-900 mb-1">Suscripción</h2>
       <p className="text-sm text-slate-500 mb-6">Estado actual de tu plan.</p>
 
@@ -382,7 +382,7 @@ export function ProfilePage() {
         <SubscriptionCard />
 
         {/* Tutorial */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-1">Tutorial</h2>
           <p className="text-sm text-slate-500 mb-4">
             ¿Querés repasar cómo usar TIAM? Volvé a ver la guía paso a paso.
@@ -397,7 +397,7 @@ export function ProfilePage() {
         </div>
 
         {/* Logout */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-1">Sesión</h2>
           <p className="text-sm text-slate-500 mb-4">Cerrá la sesión en este dispositivo.</p>
           <Button variant="danger" onClick={handleLogout}>

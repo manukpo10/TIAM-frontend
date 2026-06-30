@@ -267,30 +267,42 @@ export function ScreeningTestPage() {
                 </div>
                 <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-tiam-blue transition-all"
+                    className="h-full rounded-full bg-gradient-to-r from-tiam-blue to-tiam-blue-dark transition-[width] duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </div>
 
-              <p className="text-xs font-semibold uppercase tracking-wide text-tiam-blue mb-2">
-                {QUESTIONS[current].domain}
-              </p>
-              <h2 className="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4.5rem]">
-                {QUESTIONS[current][perspective]}
-              </h2>
+              <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
+                <p className="text-xs font-semibold uppercase tracking-wide text-tiam-blue mb-2">
+                  {QUESTIONS[current].domain}
+                </p>
+                <h2 className="text-xl md:text-2xl font-semibold text-slate-900 leading-snug min-h-[4.5rem]">
+                  {QUESTIONS[current][perspective]}
+                </h2>
 
-              <div className="mt-6 flex flex-col gap-3">
-                {ANSWERS.map((a) => (
-                  <button
-                    key={a.label}
-                    type="button"
-                    onClick={() => selectAnswer(a.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-5 py-4 text-left text-[17px] text-slate-700 font-medium transition-colors hover:border-tiam-blue hover:bg-tiam-blue/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30"
-                  >
-                    {a.label}
-                  </button>
-                ))}
+                <div className="mt-6 flex flex-col gap-3">
+                  {ANSWERS.map((a) => {
+                    const currentQId = QUESTIONS[current].id
+                    // Only highlight the unique-value answer (value===1) to avoid
+                    // marking both zero-scored options when the user goes back.
+                    const isSelected = a.value === 1 && currentQId in answers && answers[currentQId] === 1
+                    return (
+                      <button
+                        key={a.label}
+                        type="button"
+                        onClick={() => selectAnswer(a.value)}
+                        className={`w-full rounded-xl px-5 py-4 text-left text-[17px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30 transition-colors ${
+                          isSelected
+                            ? 'bg-tiam-blue text-white border border-tiam-blue'
+                            : 'border border-slate-200 bg-white text-slate-700 hover:border-tiam-blue/30'
+                        }`}
+                      >
+                        {a.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               {current > 0 && (
@@ -316,7 +328,7 @@ export function ScreeningTestPage() {
               {(() => {
                 const bucket = bucketFor(score)
                 return (
-                  <div className={`rounded-2xl border px-6 py-6 ${TONE_STYLES[bucket.tone]}`}>
+                  <div className={`rounded-2xl border px-6 py-6 shadow-lg shadow-tiam-blue/10 ${TONE_STYLES[bucket.tone]}`}>
                     <div className="flex items-baseline justify-between gap-4">
                       <h1 className="text-2xl font-bold text-slate-900">{bucket.title}</h1>
                       <span className="shrink-0 text-sm font-semibold text-slate-500 tabular-nums">
