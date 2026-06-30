@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Brain, Target, MessageCircle, Compass, Zap, Hand, Eye, Music,
@@ -149,11 +150,15 @@ const AREA_ICONS: Record<string, typeof Brain> = {
   'estimulacion-sensorial': Music,
 }
 
-// Mostly blue (brand-dominant), with a few orange/green accents for life (60/30/10).
-const AREA_ACCENTS: Record<string, 'orange' | 'green'> = {
-  atencion: 'orange',
-  'funciones-ejecutivas': 'green',
-  'estimulacion-sensorial': 'orange',
+const AREA_STYLES: Record<string, { card: CSSProperties; icon: CSSProperties; color: string }> = {
+  memoria:                  { card: { backgroundColor: '#EEF5FC', borderColor: '#B5D4F4' }, icon: { backgroundColor: '#1B6FC420' }, color: '#1B6FC4' },
+  atencion:                 { card: { backgroundColor: '#FDF1EC', borderColor: '#F5C4B3' }, icon: { backgroundColor: '#E8531E20' }, color: '#E8531E' },
+  'fluencia-verbal':        { card: { backgroundColor: '#EAF5F0', borderColor: '#9FE1CB' }, icon: { backgroundColor: '#0F6E5620' }, color: '#0F6E56' },
+  'orientacion-espacial':   { card: { backgroundColor: '#F0EEFF', borderColor: '#AFA9EC' }, icon: { backgroundColor: '#534AB720' }, color: '#534AB7' },
+  'funciones-ejecutivas':   { card: { backgroundColor: '#EEF7E9', borderColor: '#C0DD97' }, icon: { backgroundColor: '#4CA52E20' }, color: '#3B6D11' },
+  praxias:                  { card: { backgroundColor: '#EDF0F4', borderColor: '#B6C4D6' }, icon: { backgroundColor: '#16263F20' }, color: '#16263F' },
+  agnosias:                 { card: { backgroundColor: '#EEF1FB', borderColor: '#B5C5F0' }, icon: { backgroundColor: '#2B4DB820' }, color: '#2B4DB8' },
+  'estimulacion-sensorial': { card: { backgroundColor: '#FEF5E7', borderColor: '#FAC775' }, icon: { backgroundColor: '#BA751720' }, color: '#854F0B' },
 }
 
 const PROFESSIONALS = [
@@ -533,20 +538,20 @@ export function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {COGNITIVE_AREAS.map((area) => {
                 const Icon = AREA_ICONS[area.slug] ?? Brain
-                const accent = AREA_ACCENTS[area.slug]
-                const boxClass =
-                  accent === 'orange' ? 'bg-tiam-orange/10' : accent === 'green' ? 'bg-tiam-green/10' : 'bg-tiam-blue/10'
-                const iconClass =
-                  accent === 'orange' ? 'text-tiam-orange' : accent === 'green' ? 'text-tiam-green' : 'text-tiam-blue'
+                const s = AREA_STYLES[area.slug] ?? AREA_STYLES['memoria']
                 return (
                   <div
                     key={area.id}
-                    className="rounded-2xl bg-white border border-slate-100 p-5 flex flex-col items-start gap-3 hover:border-tiam-blue/20 transition-colors duration-200 cursor-default"
+                    className="rounded-2xl border p-5 flex flex-col items-center gap-3 cursor-default"
+                    style={s.card}
                   >
-                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${boxClass}`}>
-                      <Icon className={`h-5 w-5 ${iconClass}`} />
+                    <div
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                      style={{ ...s.icon, color: s.color }}
+                    >
+                      <Icon className="h-6 w-6" />
                     </div>
-                    <span className="font-semibold text-sm text-slate-700 leading-tight">{area.name}</span>
+                    <span className="font-semibold text-sm text-slate-800 text-center leading-tight">{area.name}</span>
                   </div>
                 )
               })}
