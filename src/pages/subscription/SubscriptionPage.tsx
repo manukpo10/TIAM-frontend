@@ -137,7 +137,7 @@ export function SubscriptionPage() {
         <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1">
           <button
             onClick={() => setPeriod('monthly')}
-            className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
+            className={`rounded-full px-5 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-200 ${
               period === 'monthly'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
@@ -147,7 +147,7 @@ export function SubscriptionPage() {
           </button>
           <button
             onClick={() => setPeriod('annual')}
-            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-200 ${
               period === 'annual'
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
@@ -188,7 +188,9 @@ export function SubscriptionPage() {
         </div>
 
         {/* Professional — featured */}
-        <div className="relative flex flex-col rounded-2xl border-2 border-tiam-blue bg-white p-6 shadow-lg">
+        <div className="relative flex flex-col rounded-2xl border-2 border-tiam-blue bg-gradient-to-b from-tiam-blue/5 to-white p-6 shadow-lg shadow-tiam-blue/10 overflow-hidden">
+          {/* Top accent stripe */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-tiam-blue to-tiam-blue-dark" />
           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
             <Badge className="bg-tiam-blue text-white px-3 py-0.5 text-xs font-semibold shadow-sm">
               Recomendado
@@ -201,14 +203,14 @@ export function SubscriptionPage() {
             </p>
             {period === 'monthly' ? (
               <>
-                <p className="mt-4 text-4xl font-bold text-slate-900">
+                <p className="mt-4 text-4xl font-extrabold text-tiam-blue">
                   {formatPrice(20000)}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">por mes</p>
               </>
             ) : (
               <>
-                <p className="mt-4 text-4xl font-bold text-slate-900">
+                <p className="mt-4 text-4xl font-extrabold text-tiam-blue">
                   {formatPrice(200000)}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">

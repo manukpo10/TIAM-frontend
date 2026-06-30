@@ -16,7 +16,7 @@
 @source inline("bg-tiam-green/5 bg-tiam-green/20 border-tiam-green/20 border-tiam-green/30 hover:bg-tiam-green/10");
 @source inline("from-tiam-orange via-tiam-blue to-tiam-green from-tiam-orange/80 to-tiam-green/80");
 @source inline("from-tiam-blue/10 from-tiam-orange/10 from-tiam-green/10");
-@source inline("shadow-tiam-blue/5 shadow-tiam-blue/10 shadow-tiam-blue/20 shadow-tiam-orange/10");
+@source inline("shadow-tiam-blue/5 shadow-tiam-blue/10 shadow-tiam-blue/15 shadow-tiam-blue/20 shadow-tiam-orange/10");
 @source inline("ring-tiam-orange ring-tiam-green ring-tiam-blue/30");
 @source inline("text-tiam-orange/90 text-tiam-blue/90 text-tiam-green/90");
 @source inline("hover:shadow-tiam-blue/10 hover:shadow-tiam-orange/10");
@@ -92,6 +92,10 @@ body {
 /* Títulos con la fuente display (Sora) */
 h1, h2, h3, h4 {
   font-family: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 #root {

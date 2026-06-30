@@ -62,7 +62,7 @@ export function RecursosPage() {
 
       <main className="flex-1">
         {/* Intro */}
-        <section className="border-b border-slate-100 bg-gradient-to-b from-tiam-blue/5 to-white">
+        <section className="border-b border-slate-100 bg-gradient-to-br from-tiam-blue/5 to-white">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-14 md:py-20">
             <div className="grid items-center gap-10 lg:grid-cols-[1fr_480px]">
               <div>
@@ -101,7 +101,7 @@ export function RecursosPage() {
                 {FICHAS.map(({ file, area, title, icon: Icon }) => (
                   <li
                     key={file}
-                    className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-sm"
+                    className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200"
                   >
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">
                       <Icon className="h-5 w-5 text-tiam-blue" aria-hidden="true" />
@@ -153,29 +153,33 @@ export function RecursosPage() {
                       <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
                         Email <span className="text-tiam-orange">*</span>
                       </label>
-                      <input
-                        id="email"
-                        type="email"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="vos@ejemplo.com"
-                        className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
+                      <div className="shadow-sm rounded-lg">
+                        <input
+                          id="email"
+                          type="email"
+                          autoComplete="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="vos@ejemplo.com"
+                          className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">
                         Nombre <span className="text-slate-400">(opcional)</span>
                       </label>
-                      <input
-                        id="name"
-                        type="text"
-                        autoComplete="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Tu nombre"
-                        className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
+                      <div className="shadow-sm rounded-lg">
+                        <input
+                          id="name"
+                          type="text"
+                          autoComplete="name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Tu nombre"
+                          className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
                     </div>
 
                     <label className="flex items-start gap-2.5 text-sm text-slate-600">

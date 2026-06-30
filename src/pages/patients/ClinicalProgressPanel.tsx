@@ -65,9 +65,9 @@ interface SummaryTileProps {
 
 function SummaryTile({ label, value }: SummaryTileProps) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+    <div className="rounded-xl border border-slate-100 border-t-2 border-t-tiam-blue bg-white shadow-sm p-3">
       <p className="text-xs font-medium text-slate-400 mb-1">{label}</p>
-      <p className="text-xl font-bold text-slate-900 tabular-nums">{value}</p>
+      <p className="text-xl font-extrabold text-tiam-blue tabular-nums">{value}</p>
     </div>
   )
 }
@@ -133,7 +133,7 @@ function CoverageBar({ area, count, maxCount }: CoverageBarProps) {
             sin trabajar
           </span>
         ) : (
-          <span className="shrink-0 text-xs font-semibold text-slate-500 tabular-nums w-5 text-right">
+          <span className="shrink-0 text-xs font-semibold text-tiam-green tabular-nums w-5 text-right">
             {count}
           </span>
         )}
@@ -170,7 +170,7 @@ export function ClinicalProgressPanel({ sessions }: ClinicalProgressPanelProps) 
   // Empty state — no sessions at all
   if (sessions.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
+      <div className="bg-gradient-to-br from-tiam-blue/5 to-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-4 sm:p-6">
         <div className="flex items-start gap-3 mb-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">
             <Activity className="h-4 w-4 text-tiam-blue" aria-hidden="true" />
@@ -190,7 +190,7 @@ export function ClinicalProgressPanel({ sessions }: ClinicalProgressPanelProps) 
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
+    <div className="bg-gradient-to-br from-tiam-blue/5 to-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-4 sm:p-6">
       {/* Panel header */}
       <div className="flex items-start gap-3 mb-5">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">

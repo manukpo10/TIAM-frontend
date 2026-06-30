@@ -350,7 +350,7 @@ function SessionCard({ session }: SessionCardProps) {
   const allSlugs = session.exercises.flatMap(e => e.cognitiveAreaSlugs)
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 p-4 hover:border-slate-200 hover:shadow-sm transition-all">
+    <div className="bg-white rounded-xl border border-slate-100 p-4 pl-5 border-l-2 border-l-tiam-blue/30 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200">
       {/* Header: date + status */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-sm font-medium text-slate-700">
@@ -715,13 +715,13 @@ export function PatientDetailPage() {
         {/* ── Stats row ── */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Completed sessions */}
-          <div className="bg-white rounded-xl border border-slate-100 p-4">
+          <div className="bg-white rounded-xl border border-slate-100 border-t-2 border-t-tiam-blue shadow-sm p-4">
             <p className="text-xs font-medium text-slate-400 mb-1">Sesiones completadas</p>
-            <p className="text-2xl font-bold text-slate-900">{completed.length}</p>
+            <p className="text-2xl font-extrabold text-tiam-blue tabular-nums">{completed.length}</p>
           </div>
 
           {/* Last session */}
-          <div className="bg-white rounded-xl border border-slate-100 p-4">
+          <div className="bg-white rounded-xl border border-slate-100 border-t-2 border-t-tiam-blue shadow-sm p-4">
             <p className="text-xs font-medium text-slate-400 mb-1">Última sesión</p>
             <p className="text-sm font-semibold text-slate-900">
               {lastSession ? formatShort(lastSession.scheduledDate) : 'Sin sesiones'}
@@ -729,7 +729,7 @@ export function PatientDetailPage() {
           </div>
 
           {/* Top areas */}
-          <div className="bg-white rounded-xl border border-slate-100 p-4">
+          <div className="bg-white rounded-xl border border-slate-100 border-t-2 border-t-tiam-blue shadow-sm p-4">
             <p className="text-xs font-medium text-slate-400 mb-2">Áreas más trabajadas</p>
             {topAreas.length === 0 ? (
               <p className="text-sm text-slate-300 italic">—</p>

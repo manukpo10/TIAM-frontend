@@ -27,7 +27,7 @@ export function ExerciseCard({ exercise, onAddToSession, inSession = false }: Ex
   const MaterialIcon = MATERIAL_TYPE_ICONS[exercise.materialType] ?? MATERIAL_TYPE_ICONS['PRINTABLE']
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
+    <div className="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-md overflow-hidden transition-[box-shadow,border-color] duration-200 hover:border-tiam-blue/20 hover:shadow-lg">
 
       {/* Colored thumbnail */}
       <Link to={`/exercises/${exercise.id}`} className="block">

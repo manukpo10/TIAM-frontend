@@ -32,10 +32,11 @@ export function BlogPostPage() {
           </div>
         ) : (
           <article className="max-w-2xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+            <div className="shadow-md rounded-2xl border border-slate-100 bg-white p-8 md:p-12">
             {/* Back link */}
             <Link
               to="/blog"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-tiam-blue transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-tiam-blue hover:underline"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Volver al blog
@@ -52,7 +53,7 @@ export function BlogPostPage() {
             )}
 
             {/* Header */}
-            <header className="mt-8 mb-8">
+            <header className="mt-8 border-b border-slate-100 pb-6 mb-8">
               <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mb-4">
                 <span className="inline-flex items-center rounded-full bg-tiam-blue/10 px-2.5 py-0.5 font-medium text-tiam-blue">
                   {post.category}
@@ -68,8 +69,6 @@ export function BlogPostPage() {
               </h1>
               <p className="mt-3 text-sm text-slate-500">Por {post.author}</p>
             </header>
-
-            <hr className="mb-8 border-slate-100" />
 
             {/* Body — 17px for older-adult readability */}
             <div className="text-[17px] leading-relaxed">
@@ -88,6 +87,7 @@ export function BlogPostPage() {
               >
                 Probá TIAM gratis 7 días
               </Link>
+            </div>
             </div>
           </article>
         )}
