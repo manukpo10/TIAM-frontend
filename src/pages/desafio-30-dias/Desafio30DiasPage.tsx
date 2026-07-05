@@ -13,8 +13,7 @@ import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
-// TODO(pricing): confirm the final one-time price for the challenge.
-const PRICE_ARS = 9900
+const PRICE_ARS = 15000
 
 const formatPrice = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
