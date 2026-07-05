@@ -1,13 +1,17 @@
-import type { MouseEvent } from 'react'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import {
   Brain, MessageCircle, CalendarCheck, Check, ChevronRight,
-  ShieldCheck, Heart, Clock, Smartphone, Send, Gift, Sparkles,
+  ShieldCheck, Heart, Clock, Smartphone, Send, Gift, Sparkles, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
-import { useToast } from '@/components/ui/Toast'
+import { api } from '@/lib/api'
 import desafioHero from '@/assets/desafio-hero.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 
@@ -17,6 +21,16 @@ const PRICE_ARS = 15000
 
 const formatPrice = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+
+// Buyer details collected BEFORE checkout — the phone is captured up front because
+// Mercado Pago Checkout Pro navigates away and we can't rely on the user coming back.
+const checkoutSchema = z.object({
+  buyerName: z.string().min(2, 'Ingresá tu nombre'),
+  phone: z.string().min(6, 'Ingresá tu número de WhatsApp'),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+})
+
+type CheckoutForm = z.infer<typeof checkoutSchema>
 
 const HOW_IT_WORKS = [
   {
@@ -115,17 +129,126 @@ function SectionEyebrow({ text }: { text: string }) {
   )
 }
 
+function CheckoutModal({ onClose }: { onClose: () => void }) {
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<CheckoutForm>({ resolver: zodResolver(checkoutSchema) })
+
+  // Close on Escape — matches the modal pattern in PatientDetailPage.
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  async function onSubmit(data: CheckoutForm) {
+    try {
+      const res = await api.post<{ checkoutUrl: string }>('/challenge/purchases', {
+        buyerName: data.buyerName,
+        phone: data.phone,
+        email: data.email || null,
+      })
+      // Hand off to Mercado Pago Checkout Pro.
+      window.location.href = res.checkoutUrl
+    } catch (err: unknown) {
+      const apiErr = err as { message?: string }
+      setError('root', {
+        message: apiErr.message ?? 'No pudimos iniciar el pago. Probá de nuevo en un momento.',
+      })
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-6"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkout-title"
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="checkout-title" className="text-xl font-bold text-slate-900">Empezá el desafío</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Dejanos tus datos y te llevamos al pago seguro.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar"
+            className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
+          <Input
+            id="buyerName"
+            label="Tu nombre"
+            placeholder="María García"
+            autoComplete="name"
+            autoFocus
+            error={errors.buyerName?.message}
+            {...register('buyerName')}
+          />
+          <Input
+            id="phone"
+            label="Tu WhatsApp"
+            placeholder="11 2345 6789"
+            inputMode="tel"
+            autoComplete="tel"
+            error={errors.phone?.message}
+            {...register('phone')}
+          />
+          <Input
+            id="email"
+            type="email"
+            label="Email (opcional)"
+            placeholder="tu@email.com"
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register('email')}
+          />
+          <p className="flex items-start gap-2 text-xs text-slate-500">
+            <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-tiam-green" />
+            Te vamos a enviar el ejercicio de cada día por WhatsApp a este número.
+          </p>
+
+          {errors.root && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{errors.root.message}</p>
+          )}
+
+          <Button type="submit" size="lg" loading={isSubmitting} className="mt-2 w-full min-h-[44px]">
+            <Send className="h-4 w-4" />
+            Ir al pago · {formatPrice(PRICE_ARS)}
+          </Button>
+          <p className="text-center text-xs text-slate-400">
+            Pago único y seguro con Mercado Pago.
+          </p>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function Desafio30DiasPage() {
-  const { toast } = useToast()
+  const [showCheckout, setShowCheckout] = useState(false)
 
-  // CTA is intentionally disconnected: the Mercado Pago checkout + WhatsApp
-  // delivery are not wired up yet. Mirrors the placeholder pattern in
-  // SubscriptionPage.handleSubscribe.
-  function handleBuy(e?: MouseEvent) {
-    e?.preventDefault()
-    toast.info('Próximamente vas a poder comprar el desafío con Mercado Pago.')
+  function handleBuy() {
+    setShowCheckout(true)
   }
 
   return (
@@ -341,7 +464,7 @@ export function Desafio30DiasPage() {
               </ul>
 
               <p className="mt-6 text-xs text-slate-400 text-center">
-                El pago se procesa de forma segura con Mercado Pago. Próximamente.
+                El pago se procesa de forma segura con Mercado Pago.
               </p>
             </div>
           </div>
@@ -399,6 +522,8 @@ export function Desafio30DiasPage() {
       </main>
 
       <PublicFooter />
+
+      {showCheckout && <CheckoutModal onClose={() => setShowCheckout(false)} />}
     </div>
   )
 }

@@ -667,6 +667,13 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
     return delay(results as T)
   }
 
+  // ── Challenge (Desafío 30 días) one-time purchase ────────────────────────
+  if (method === 'POST' && rawPath === '/challenge/purchases') {
+    // Mock: returns a placeholder checkout URL. In production this creates a
+    // Mercado Pago preference and returns the real init_point to redirect to.
+    return delay({ checkoutUrl: 'https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=MOCK' } as T)
+  }
+
   return null
 }
 
