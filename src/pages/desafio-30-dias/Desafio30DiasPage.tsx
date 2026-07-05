@@ -1,0 +1,405 @@
+import type { MouseEvent } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  Brain, MessageCircle, CalendarCheck, Check, ChevronRight,
+  ShieldCheck, Heart, Clock, Smartphone, Send, Gift, Sparkles,
+} from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { PublicHeader } from '@/components/layout/PublicHeader'
+import { PublicFooter } from '@/components/layout/PublicFooter'
+import { useToast } from '@/components/ui/Toast'
+import desafioHero from '@/assets/desafio-hero.webp'
+import desafioAbuelo from '@/assets/desafio-abuelo.webp'
+
+// ─── Static data (hoisted outside component) ────────────────────────────────
+
+// TODO(pricing): confirm the final one-time price for the challenge.
+const PRICE_ARS = 9900
+
+const formatPrice = (n: number) =>
+  n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+
+const HOW_IT_WORKS = [
+  {
+    step: '01',
+    icon: Gift,
+    title: 'Comprás una sola vez',
+    description: 'Un pago único, sin suscripción ni renovaciones. El desafío queda tuyo para siempre.',
+  },
+  {
+    step: '02',
+    icon: MessageCircle,
+    title: 'Te llega por WhatsApp',
+    description: 'Recibís el enlace del primer ejercicio directo en tu WhatsApp. Sin apps que instalar ni claves que recordar.',
+  },
+  {
+    step: '03',
+    icon: CalendarCheck,
+    title: 'Un ejercicio nuevo cada día',
+    description: 'Durante 30 días recibís una actividad distinta para hacer en casa, a tu ritmo, en pocos minutos.',
+  },
+]
+
+const INCLUDES = [
+  {
+    icon: Brain,
+    title: '30 ejercicios, uno por día',
+    description: 'Actividades pensadas para estimular la memoria, la atención y el lenguaje, sin repetirse.',
+    stripClass: 'border-t-tiam-blue',
+    iconClass: 'bg-tiam-blue/10 text-tiam-blue',
+  },
+  {
+    icon: Smartphone,
+    title: 'Simple para adultos mayores',
+    description: 'Se hacen desde el celular o impresos. Letra grande, instrucciones claras, cero pantallas complicadas.',
+    stripClass: 'border-t-tiam-orange',
+    iconClass: 'bg-tiam-orange/10 text-tiam-orange',
+  },
+  {
+    icon: Heart,
+    title: 'Para hacer acompañado',
+    description: 'Ideal para compartir un rato con quien querés. El desafío se disfruta más en familia.',
+    stripClass: 'border-t-tiam-green',
+    iconClass: 'bg-tiam-green/10 text-tiam-green',
+  },
+  {
+    icon: Clock,
+    title: 'Pocos minutos por día',
+    description: 'Cada actividad lleva entre 10 y 15 minutos. Lo justo para sumar una rutina sin que pese.',
+    stripClass: 'border-t-tiam-blue-dark',
+    iconClass: 'bg-tiam-blue/10 text-tiam-blue-dark',
+  },
+]
+
+const AUDIENCE = [
+  'Querés ayudar a tu mamá, papá o abuelo a mantener la memoria activa',
+  'Buscás una rutina simple para hacer en casa, sin depender de un turno',
+  'Preferís algo que llegue por WhatsApp y no una app más para aprender',
+  'Te gustaría acompañar los ejercicios y compartir un momento juntos',
+]
+
+const FAQS = [
+  {
+    q: '¿Cómo recibo los ejercicios?',
+    a: 'Después de la compra te llega un enlace por WhatsApp. Cada día vas a recibir una actividad nueva para hacer desde el celular o para imprimir.',
+  },
+  {
+    q: '¿Necesito instalar alguna aplicación?',
+    a: 'No. Todo funciona desde WhatsApp y el navegador del celular. No hay apps que descargar ni usuarios que crear.',
+  },
+  {
+    q: '¿Sirve si mi familiar no es de usar el celular?',
+    a: 'Sí. Los ejercicios están pensados para hacerse acompañados y también se pueden imprimir en papel. La idea es que sea un momento compartido.',
+  },
+  {
+    q: '¿Es un pago mensual?',
+    a: 'No. Es un único pago por los 30 días del desafío. Sin suscripciones ni cobros automáticos.',
+  },
+]
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function FeatureCheck({ text }: { text: string }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <Check className="mt-0.5 h-4 w-4 shrink-0 text-tiam-green" />
+      <span className="text-sm text-slate-600">{text}</span>
+    </li>
+  )
+}
+
+function SectionEyebrow({ text }: { text: string }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-4 text-tiam-blue">
+      <span className="text-xs font-semibold uppercase tracking-wide">{text}</span>
+    </div>
+  )
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export function Desafio30DiasPage() {
+  const { toast } = useToast()
+
+  // CTA is intentionally disconnected: the Mercado Pago checkout + WhatsApp
+  // delivery are not wired up yet. Mirrors the placeholder pattern in
+  // SubscriptionPage.handleSubscribe.
+  function handleBuy(e?: MouseEvent) {
+    e?.preventDefault()
+    toast.info('Próximamente vas a poder comprar el desafío con Mercado Pago.')
+  }
+
+  return (
+    <div className="min-h-dvh bg-white overflow-x-hidden">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-tiam-blue focus:shadow-md focus:ring-2 focus:ring-tiam-blue"
+      >
+        Ir al contenido principal
+      </a>
+
+      {/* ── 1. Sticky navbar (shared) ──────────────────────────────────────── */}
+      <PublicHeader />
+
+      <main id="main-content">
+        {/* ── 2. Hero ──────────────────────────────────────────────────────── */}
+        <section
+          aria-labelledby="hero-heading"
+          className="relative overflow-hidden bg-gradient-to-br from-tiam-blue/5 to-slate-50 min-h-[460px] sm:min-h-[540px] lg:min-h-[620px] flex items-center"
+        >
+          {/* Background image */}
+          <img
+            src={desafioHero}
+            alt="Una hija acompaña a su mamá mientras resuelven juntas un ejercicio de estimulación cognitiva en la mesa de casa"
+            className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+            fetchPriority="high"
+          />
+          {/* Readability wash — white from the left so the text reads over the photo */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30 sm:via-white/80 sm:to-transparent lg:from-white/95 lg:via-white/65"
+          />
+
+          <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16">
+            <div className="max-w-xl text-left">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 backdrop-blur px-4 py-1.5 mb-6">
+                <span className="h-2 w-2 rounded-full bg-tiam-orange" />
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  Desafío TIAM · 30 días
+                </span>
+              </div>
+
+              <h1
+                id="hero-heading"
+                className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-slate-900 leading-tight tracking-tight"
+              >
+                30 días para cuidar la memoria de{' '}
+                <span className="text-tiam-blue">quien más querés.</span>
+              </h1>
+              <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-xl">
+                Un ejercicio cognitivo por día, directo al WhatsApp. Simple, ameno y pensado para hacer en casa junto a tu ser querido.{' '}
+                <strong className="font-semibold text-slate-900">Sin turnos, sin apps, sin complicaciones.</strong>
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Button size="lg" className="w-full sm:w-auto min-h-[44px]" onClick={handleBuy}>
+                  Quiero empezar el desafío
+                </Button>
+                <a href="#como-funciona">
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto min-h-[44px]">
+                    Ver cómo funciona
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+
+              {/* Trust signals */}
+              <div className="mt-8 flex flex-wrap items-center gap-2">
+                {[
+                  { icon: CalendarCheck, text: 'Un ejercicio por día' },
+                  { icon: MessageCircle, text: 'Llega por WhatsApp' },
+                  { icon: ShieldCheck, text: 'Un solo pago' },
+                ].map(({ icon: Icon, text }) => (
+                  <div key={text} className="inline-flex items-center gap-1.5 rounded-full border border-tiam-blue/20 bg-white/80 backdrop-blur px-3 py-1.5">
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-tiam-blue" />
+                    <span className="text-xs font-semibold text-slate-700">{text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 3. How it works ──────────────────────────────────────────────── */}
+        <section id="como-funciona" aria-labelledby="how-heading" className="py-16 md:py-24 bg-white scroll-mt-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Cómo funciona" />
+              <h2 id="how-heading" className="text-3xl font-bold text-slate-900">
+                Empezar es así de fácil
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                En tres pasos tenés el desafío andando. No hace falta saber de tecnología.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {HOW_IT_WORKS.map(({ step, icon: Icon, title, description }) => (
+                <article
+                  key={step}
+                  className="relative rounded-3xl border border-slate-100 bg-white px-6 pt-6 pb-7 shadow-sm"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-tiam-blue to-tiam-blue-dark text-white">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <p className="mb-1 text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso {step}</p>
+                  <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4. What's included ───────────────────────────────────────────── */}
+        <section aria-labelledby="includes-heading" className="py-16 md:py-24 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Qué incluye" />
+              <h2 id="includes-heading" className="text-3xl font-bold text-slate-900">
+                Todo lo que tiene el desafío
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Pensado para que sea un hábito lindo de sostener, no una obligación más.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {INCLUDES.map(({ icon: Icon, title, description, stripClass, iconClass }, i) => (
+                <article
+                  key={title}
+                  className={`rounded-3xl border border-slate-100 border-t-2 ${stripClass} bg-white px-6 pt-5 pb-6 shadow-sm hover:shadow-md transition-[box-shadow] duration-200`}
+                >
+                  <p className="mb-3 text-[10px] font-bold tracking-widest text-slate-300 uppercase">
+                    {String(i + 1).padStart(2, '0')}
+                  </p>
+                  <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${iconClass}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. Who it's for ──────────────────────────────────────────────── */}
+        <section aria-labelledby="audience-heading" className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <SectionEyebrow text="Para vos" />
+              <h2 id="audience-heading" className="text-3xl font-bold text-slate-900">
+                El desafío es para vos si…
+              </h2>
+              <p className="mt-3 text-slate-600">
+                No hace falta ser profesional de la salud ni experto en nada. Solo querer acompañar.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {AUDIENCE.map((text) => (
+                  <FeatureCheck key={text} text={text} />
+                ))}
+              </ul>
+            </div>
+            <div className="overflow-hidden rounded-3xl border border-tiam-blue/15 bg-tiam-blue/5">
+              <img
+                src={desafioAbuelo}
+                alt="Un adulto mayor sonríe mientras mira el celular en la mesa de su cocina, recibiendo el ejercicio del día"
+                className="h-64 w-full object-cover sm:h-72"
+              />
+              <div className="p-8">
+                <Sparkles className="h-6 w-6 text-tiam-orange" />
+                <p className="mt-3 text-lg font-medium text-slate-800 leading-relaxed">
+                  “Mantener la mente activa es uno de los mejores regalos que le podés hacer a un ser querido. El desafío lo vuelve una rutina simple y compartida.”
+                </p>
+                {/* TODO(social-proof): replace with a real testimonial once available. */}
+                <p className="mt-4 text-sm font-semibold text-slate-500">Equipo TIAM Digital</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 6. Pricing ───────────────────────────────────────────────────── */}
+        <section id="precio" aria-labelledby="pricing-heading" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <SectionEyebrow text="Precio" />
+            <h2 id="pricing-heading" className="text-3xl font-bold text-slate-900">
+              Un solo pago, el desafío completo
+            </h2>
+
+            <div className="mt-8 rounded-3xl border border-slate-100 border-t-4 border-t-tiam-blue bg-white p-8 shadow-sm text-left">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Desafío 30 días</p>
+                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-slate-900">
+                    {formatPrice(PRICE_ARS)}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">Pago único · acceso a los 30 ejercicios</p>
+                </div>
+                <Button size="lg" className="w-full sm:w-auto min-h-[44px]" onClick={handleBuy}>
+                  <Send className="h-4 w-4" />
+                  Empezar ahora
+                </Button>
+              </div>
+
+              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+                {[
+                  '30 ejercicios, uno por día',
+                  'Entrega por WhatsApp',
+                  'Para hacer en casa, a tu ritmo',
+                  'Sin suscripción ni renovaciones',
+                ].map((text) => (
+                  <FeatureCheck key={text} text={text} />
+                ))}
+              </ul>
+
+              <p className="mt-6 text-xs text-slate-400 text-center">
+                El pago se procesa de forma segura con Mercado Pago. Próximamente.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 7. FAQ ───────────────────────────────────────────────────────── */}
+        <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-white">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Dudas frecuentes" />
+              <h2 id="faq-heading" className="text-3xl font-bold text-slate-900">
+                Preguntas que quizás tengas
+              </h2>
+            </div>
+            <dl className="space-y-4">
+              {FAQS.map(({ q, a }) => (
+                <div key={q} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                  <dt className="font-semibold text-slate-900">{q}</dt>
+                  <dd className="mt-2 text-sm text-slate-600 leading-relaxed">{a}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
+        {/* ── 8. Final CTA band ────────────────────────────────────────────── */}
+        <section aria-labelledby="cta-heading" className="py-16 md:py-20 bg-gradient-to-br from-tiam-blue to-tiam-blue-dark">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <h2 id="cta-heading" className="text-3xl font-bold text-white">
+              Empezá hoy a cuidar su memoria
+            </h2>
+            <p className="mt-3 text-lg text-white/85 max-w-xl mx-auto">
+              30 días, un ejercicio por vez. Un hábito simple que hace la diferencia.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto min-h-[44px] bg-white text-tiam-blue hover:bg-slate-100"
+                onClick={handleBuy}
+              >
+                Quiero empezar el desafío
+              </Button>
+              <Link to="/preguntas-frecuentes">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="w-full sm:w-auto min-h-[44px] bg-transparent border-white/40 text-white hover:bg-white/10"
+                >
+                  Tengo más preguntas
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <PublicFooter />
+    </div>
+  )
+}

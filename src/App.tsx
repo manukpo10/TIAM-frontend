@@ -32,6 +32,7 @@ import { ClinicalFaqPage } from '@/pages/faq/ClinicalFaqPage'
 import { DemoTourPage } from '@/pages/demo/DemoTourPage'
 import { RecursosPage } from '@/pages/recursos/RecursosPage'
 import { AboutPage } from '@/pages/about/AboutPage'
+import { Desafio30DiasPage } from '@/pages/desafio-30-dias/Desafio30DiasPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="/demo" element={<DemoTourPage />} />
             <Route path="/recursos" element={<RecursosPage />} />
             <Route path="/nosotros" element={<AboutPage />} />
+            <Route path="/desafio-30-dias" element={<Desafio30DiasPage />} />
 
             {/* Public — patient at-home exercise (WhatsApp link) */}
             <Route path="/jugar/:token" element={<PatientPlayPage />} />
