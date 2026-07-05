@@ -16,6 +16,7 @@ import profTO from '@/assets/profesionales/terapia-ocupacional.webp'
 import profGeriatria from '@/assets/profesionales/geriatria.webp'
 import profFono from '@/assets/profesionales/fonoaudiologia.webp'
 import claudiaImg from '@/assets/testimonial-claudia.webp'
+import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import { useAuthStore } from '@/store/auth'
 import { COGNITIVE_AREAS } from '@/lib/utils'
 
@@ -357,7 +358,35 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 4. Benefits ──────────────────────────────────────────────────── */}
+        {/* ── 4. Family bridge — for non-professional visitors ─────────────── */}
+        <section aria-labelledby="familias-heading" className="py-12 md:py-16 bg-gradient-to-br from-tiam-orange/5 to-white border-y border-tiam-orange/10">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 rounded-3xl bg-white border border-slate-100 shadow-sm p-6 sm:p-8">
+              <img
+                src={desafioAbuelo}
+                alt="Un adulto mayor sonríe mientras recibe un ejercicio por WhatsApp en su celular"
+                className="h-28 w-28 sm:h-32 sm:w-32 shrink-0 rounded-2xl object-cover"
+              />
+              <div className="flex-1 text-center sm:text-left">
+                <SectionEyebrow text="Para familias" accent="orange" />
+                <h2 id="familias-heading" className="text-xl sm:text-2xl font-bold text-slate-900">
+                  ¿Buscás algo para tu familia, no para tu consultorio?
+                </h2>
+                <p className="mt-2 text-slate-600 max-w-lg">
+                  Conocé el Desafío 30 días: un ejercicio cognitivo por día que le llega a tu ser querido directo por WhatsApp. Pago único, sin suscripción.
+                </p>
+              </div>
+              <Link to="/desafio-30-dias" className="w-full shrink-0 sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto min-h-[44px] bg-tiam-orange text-white hover:bg-tiam-orange/90 focus:ring-tiam-orange">
+                  Conocer el desafío
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. Benefits ──────────────────────────────────────────────────── */}
         <section aria-labelledby="benefits-heading" className="py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
@@ -410,7 +439,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 5. How it works ──────────────────────────────────────────────── */}
+        {/* ── 6. How it works ──────────────────────────────────────────────── */}
         <section
           id="como-funciona"
           aria-labelledby="how-heading"
@@ -468,7 +497,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 6. Who it's for ──────────────────────────────────────────────── */}
+        {/* ── 7. Who it's for ──────────────────────────────────────────────── */}
         <section aria-labelledby="usecases-heading" className="py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
@@ -523,7 +552,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 7. Cognitive areas ───────────────────────────────────────────── */}
+        {/* ── 8. Cognitive areas ───────────────────────────────────────────── */}
         <section aria-labelledby="areas-heading" className="py-16 md:py-24 bg-slate-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
@@ -559,7 +588,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 8. Testimonial ───────────────────────────────────────────────── */}
+        {/* ── 9. Testimonial ───────────────────────────────────────────────── */}
         <section aria-label="Testimonio" className="py-16 md:py-24 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <figure className="relative rounded-3xl bg-gradient-to-br from-tiam-blue/5 to-white border border-tiam-blue/20 p-8 md:p-12 text-center shadow-md shadow-tiam-blue/10 overflow-hidden">
@@ -584,7 +613,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 9. Pricing ───────────────────────────────────────────────────── */}
+        {/* ── 10. Pricing ──────────────────────────────────────────────────── */}
         <section
           id="planes"
           aria-labelledby="pricing-heading"
@@ -658,7 +687,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── 10. Final CTA band ───────────────────────────────────────────── */}
+        {/* ── 11. Final CTA band ───────────────────────────────────────────── */}
         <section
           aria-labelledby="cta-band-heading"
           className="relative overflow-hidden bg-gradient-to-br from-tiam-blue to-tiam-blue-dark py-20 md:py-28"
