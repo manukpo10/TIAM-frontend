@@ -667,6 +667,14 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
     return delay(results as T)
   }
 
+  // ── Challenge (Desafío 30 días) — daily content access by token ──────────
+  const challengeAccessMatch = rawPath.match(/^\/challenge\/([\w-]+)$/)
+  if (method === 'GET' && challengeAccessMatch) {
+    // Mock access state. Bump currentDay to 30 to preview all cards unlocked in dev;
+    // in production the backend computes this from the purchase date.
+    return delay({ buyerFirstName: 'Manuel', currentDay: 30, totalDays: 30 } as T)
+  }
+
   // ── Challenge (Desafío 30 días) one-time purchase ────────────────────────
   if (method === 'POST' && rawPath === '/challenge/purchases') {
     // Mock: returns a placeholder checkout URL. In production this creates a
