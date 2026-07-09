@@ -9,7 +9,7 @@ import { PublicFooter } from '@/components/layout/PublicFooter'
 // TIAM's WhatsApp business number in international format (no "+"), for wa.me links.
 // Argentine mobiles carry the "9" right after the "54" country code.
 const WHATSAPP_NUMBER = '5492214817297'
-const ACTIVATION_TEXT = 'Quiero empezar mi Desafío 30 días 💙'
+const ACTIVATION_TEXT = '¡Hola! Ya compré el Desafío 30 días y quiero empezar. ¿Me mandan mi primer ejercicio? 💙'
 const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(ACTIVATION_TEXT)}`
 
 type Phase = 'ready' | 'pending' | 'error'
