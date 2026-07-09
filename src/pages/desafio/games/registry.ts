@@ -9,6 +9,7 @@ import { CadaCosaEnSuGrupo } from './CadaCosaEnSuGrupo'
 import { CuatroPalabras } from './CuatroPalabras'
 import { QueSera } from './QueSera'
 import { QueObjetoEs } from './QueObjetoEs'
+import { ListaDelMercado } from './ListaDelMercado'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -18,6 +19,7 @@ import { QueObjetoEs } from './QueObjetoEs'
  * to 'game' in challengeContent.ts.
  */
 export const GAMES: Record<number, ComponentType> = {
+  2: ListaDelMercado,
   4: CazadorDeLetras,
   7: CadaCosaEnSuGrupo,
   8: OrdenarLaFrase,

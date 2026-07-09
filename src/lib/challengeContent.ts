@@ -65,8 +65,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 1 — arranque suave (un paso, generar confianza) ────────────────
   { day: 1, type: 'card', area: 'orientacion', title: 'Empecemos por hoy',
     instructions: 'Sin mirar el celular: ¿qué día de la semana es? ¿Qué fecha, mes y año? ¿En qué estación estamos? Decilo en voz alta o escribilo.' },
-  { day: 2, type: 'card', area: 'memoria', title: 'La lista del mercado',
-    instructions: 'Leé y memorizá esta lista: pan, leche, manzanas, café, huevos. Tapala, contá hasta 20, y escribí todos los que recuerdes.' },
+  { day: 2, type: 'game', area: 'memoria', title: 'La lista del mercado',
+    instructions: 'Un juego de memoria: mirá la lista de productos y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 3, type: 'card', area: 'lenguaje', title: 'Un animal por letra',
     instructions: 'Nombrá en voz alta un animal por cada letra del abecedario: A de araña, B de burro… Si te trabás, saltá la letra y seguí.' },
   { day: 4, type: 'game', area: 'atencion', title: 'Cazador de letras',
