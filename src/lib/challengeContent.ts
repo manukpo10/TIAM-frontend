@@ -75,8 +75,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Pagás con un billete de $1.000 algo que cuesta $650. ¿Cuánto te dan de vuelto? Cuando te salga, probá con dos compras más.' },
   { day: 6, type: 'card', area: 'memoria', title: 'Tu primera casa',
     instructions: 'Recordá la casa de tu infancia. ¿Cuántas habitaciones tenía? ¿De qué color era la puerta? ¿Qué se veía desde la ventana? Contáselo a alguien.' },
-  { day: 7, type: 'card', area: 'ejecutivas', title: 'Cada cosa en su grupo',
-    instructions: 'Agrupá estas palabras según lo que tienen en común: manzana, perro, banana, gato, pera, caballo. Ponele un nombre a cada grupo.' },
+  { day: 7, type: 'game', area: 'ejecutivas', title: 'Cada cosa en su grupo',
+    instructions: 'Un juego de razonamiento: tocá el grupo correcto para cada palabra. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 2 — dos pasos, primeras interferencias ─────────────────────────
   { day: 8, type: 'game', area: 'lenguaje', title: 'Ordená la frase',
@@ -109,8 +109,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Leé dos veces una noticia corta del diario. Después, sin mirar, contá: ¿de qué se trataba? ¿qué nombres y lugares aparecían?' },
   { day: 20, type: 'card', area: 'lenguaje', title: '¿Qué objeto es?',
     instructions: 'Adiviná: “Tiene dos ruedas, pedales y un manubrio; sirve para pasear.” Después inventá una definición parecida para otro objeto.' },
-  { day: 21, type: 'card', area: 'ejecutivas', title: 'Planificá la mañana',
-    instructions: 'Tenés que ir al médico, comprar pan y llamar a un familiar. Escribí en qué orden lo harías y explicá por qué ese orden.' },
+  { day: 21, type: 'game', area: 'ejecutivas', title: 'Planificá la mañana',
+    instructions: 'Un juego de razonamiento: ordená las tareas de la mañana en el orden correcto. Subís de dificultad a medida que avanzás.' },
   { day: 22, type: 'card', area: 'calculo', title: 'La receta doble',
     instructions: 'Una torta para 4 personas lleva 2 huevos y 200 g de harina. ¿Cuánto necesitás para 8 personas? ¿Y para 6?' },
 
