@@ -115,3 +115,27 @@ html {
   70% { transform: scale(1.15); opacity: 1; }
   100% { transform: scale(1); }
 }
+
+/* ── Study-phase progress bar (¿Qué hay en la mesa?) ──
+   A plain keyframe animation on a freshly-keyed DOM node (see the `key`
+   prop in QueHayEnLaMesa.tsx) always plays from 0% on mount — no JS state
+   toggling, so it can't get stuck like a manually-restarted CSS transition
+   can on some mobile browsers. Duration is set inline per level. */
+@keyframes growBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+.study-progress-fill {
+  width: 0%;
+  animation-name: growBar;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-progress-fill {
+    animation: none;
+    width: 100%;
+  }
+}

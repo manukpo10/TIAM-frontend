@@ -175,22 +175,24 @@ export function QueHayEnLaMesa() {
 
   const [phase, setPhase] = useState<Phase>('study')
   const [canContinueEarly, setCanContinueEarly] = useState(false)
-  const [barGrown, setBarGrown] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
 
-  // Fresh study phase whenever the level or round changes: reset selection,
-  // kick the calm progress bar, and arm the auto-advance + early-continue timers.
+  // Fresh study phase whenever the level or round changes: reset selection
+  // and arm the auto-advance + early-continue timers. The progress bar itself
+  // is a CSS keyframe animation keyed on [levelIdx, roundKey] (see JSX below),
+  // not JS-driven state — restarting a CSS *transition* via a boolean + rAF
+  // flip is a known cross-browser trap (relies on the browser committing an
+  // intermediate paint before the next state flip, which mobile Safari/Chrome
+  // don't reliably guarantee). A fresh DOM node with a keyframe animation
+  // always plays from the start, no timing tricks required.
   useEffect(() => {
     setPhase('study')
     setSelected(new Set())
     setCanContinueEarly(false)
-    setBarGrown(false)
-    const raf = requestAnimationFrame(() => setBarGrown(true))
     const floorTimer = window.setTimeout(() => setCanContinueEarly(true), level.minEarlySeconds * 1000)
     const autoTimer = window.setTimeout(() => setPhase('test'), level.studySeconds * 1000)
     return () => {
-      cancelAnimationFrame(raf)
       window.clearTimeout(floorTimer)
       window.clearTimeout(autoTimer)
     }
@@ -239,11 +241,9 @@ export function QueHayEnLaMesa() {
             <p className="mt-2 text-base text-slate-500">Dentro de un rato te voy a preguntar cuáles había.</p>
             <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
               <div
-                className="h-full rounded-full bg-tiam-blue"
-                style={{
-                  width: barGrown ? '100%' : '0%',
-                  transition: barGrown ? `width ${level.studySeconds}s linear` : 'none',
-                }}
+                key={`${levelIdx}-${roundKey}`}
+                className="study-progress-fill h-full rounded-full bg-tiam-blue"
+                style={{ animationDuration: `${level.studySeconds}s` }}
               />
             </div>
           </>
