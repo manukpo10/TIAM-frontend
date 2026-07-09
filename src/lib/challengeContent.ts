@@ -85,8 +85,10 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Mirá la figura de la tarjeta y copiala en una hoja lo más parecida posible, prestando atención a las proporciones y los detalles.' },
   { day: 10, type: 'card', area: 'memoria', title: 'Cuatro palabras',
     instructions: 'Aprendé de memoria estas cuatro palabras: río, martillo, azul, domingo. Seguí con tu día y, dentro de un rato, escribilas sin mirar.' },
-  { day: 11, type: 'card', area: 'atencion', title: '¿Qué hay en la mesa?',
-    instructions: 'Observá el dibujo durante un minuto. Después tapalo y anotá todos los objetos que puedas recordar.' },
+  // area stays 'atencion' (not 'memoria') so it doesn't repeat day 10 back-to-back —
+  // the task itself is a recognition-memory exercise, just labeled by rotation slot.
+  { day: 11, type: 'game', area: 'atencion', title: '¿Qué hay en la mesa?',
+    instructions: 'Un juego de memoria: observá los objetos de la mesa y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'card', area: 'ejecutivas', title: 'La charla desordenada',
     instructions: 'Estas cuatro frases de una conversación están desordenadas. Numeralas del 1 al 4 para que la charla tenga sentido.' },
   { day: 13, type: 'card', area: 'calculo', title: 'Contá para atrás',

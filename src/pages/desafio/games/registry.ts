@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import { BuscarLosRojos } from './BuscarLosRojos'
+import { QueHayEnLaMesa } from './QueHayEnLaMesa'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -9,5 +10,6 @@ import { BuscarLosRojos } from './BuscarLosRojos'
  * to 'game' in challengeContent.ts.
  */
 export const GAMES: Record<number, ComponentType> = {
+  11: QueHayEnLaMesa,
   24: BuscarLosRojos,
 }
