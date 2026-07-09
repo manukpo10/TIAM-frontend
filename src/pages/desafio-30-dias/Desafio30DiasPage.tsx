@@ -42,14 +42,14 @@ const HOW_IT_WORKS = [
   {
     step: '02',
     icon: MessageCircle,
-    title: 'Te llega por WhatsApp',
-    description: 'Recibís el enlace del primer ejercicio directo en tu WhatsApp. Sin apps que instalar ni claves que recordar.',
+    title: 'Lo activás por WhatsApp',
+    description: 'Después de pagar, activás el desafío con un toque por WhatsApp y recibís tu primer ejercicio. Sin apps que instalar ni claves que recordar.',
   },
   {
     step: '03',
     icon: CalendarCheck,
     title: 'Un ejercicio nuevo cada día',
-    description: 'Durante 30 días recibís una actividad distinta para hacer en casa, a tu ritmo, en pocos minutos.',
+    description: 'Durante 30 días, cada día pedís tu actividad por WhatsApp con un simple mensaje. Para hacer en casa, a tu ritmo, en pocos minutos.',
   },
 ]
 
@@ -94,7 +94,7 @@ const AUDIENCE = [
 const FAQS = [
   {
     q: '¿Cómo recibo los ejercicios?',
-    a: 'Después de la compra te llega un enlace por WhatsApp. Cada día vas a recibir una actividad nueva para hacer desde el celular o para imprimir.',
+    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer ejercicio al instante. Cada día le escribís “desafío” y te pasamos la actividad nueva, para hacer desde el celular o imprimir.',
   },
   {
     q: '¿Necesito instalar alguna aplicación?',
@@ -179,7 +179,7 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
           <div>
             <h2 id="checkout-title" className="text-xl font-bold text-slate-900">Empezá el desafío</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Dejanos tus datos y te llevamos al pago seguro.
+              Cargá los datos de la persona que va a hacer los ejercicios — puede ser para vos o para un ser querido.
             </p>
           </div>
           <button
@@ -195,22 +195,27 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
           <Input
             id="buyerName"
-            label="Tu nombre"
+            label="Nombre"
             placeholder="María García"
             autoComplete="name"
             autoFocus
             error={errors.buyerName?.message}
             {...register('buyerName')}
           />
-          <Input
-            id="phone"
-            label="Tu WhatsApp"
-            placeholder="11 2345 6789"
-            inputMode="tel"
-            autoComplete="tel"
-            error={errors.phone?.message}
-            {...register('phone')}
-          />
+          <div>
+            <Input
+              id="phone"
+              label="WhatsApp"
+              placeholder="Ej: 11 2233 4455"
+              inputMode="tel"
+              autoComplete="tel"
+              error={errors.phone?.message}
+              {...register('phone')}
+            />
+            <p className="mt-1.5 text-xs text-slate-500">
+              Código de área y número, sin el 0 ni el 15 (como el ejemplo). A este WhatsApp le va a llegar el desafío.
+            </p>
+          </div>
           <Input
             id="email"
             type="email"
@@ -222,7 +227,7 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
           />
           <p className="flex items-start gap-2 text-xs text-slate-500">
             <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-tiam-green" />
-            Te vamos a enviar el ejercicio de cada día por WhatsApp a este número.
+            Después de pagar, activás el desafío por WhatsApp en un solo toque.
           </p>
 
           {errors.root && (
@@ -299,7 +304,7 @@ export function Desafio30DiasPage() {
                 <span className="text-tiam-blue">quien más querés.</span>
               </h1>
               <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-xl">
-                Un ejercicio cognitivo por día, directo al WhatsApp. Simple, ameno y pensado para hacer en casa junto a tu ser querido.{' '}
+                Un ejercicio cognitivo por día, a través de WhatsApp. Simple, ameno y pensado para hacer en casa junto a tu ser querido.{' '}
                 <strong className="font-semibold text-slate-900">Sin turnos, sin apps, sin complicaciones.</strong>
               </p>
 
@@ -319,7 +324,7 @@ export function Desafio30DiasPage() {
               <div className="mt-8 flex flex-wrap items-center gap-2">
                 {[
                   { icon: CalendarCheck, text: 'Un ejercicio por día' },
-                  { icon: MessageCircle, text: 'Llega por WhatsApp' },
+                  { icon: MessageCircle, text: 'Por WhatsApp' },
                   { icon: ShieldCheck, text: 'Un solo pago' },
                 ].map(({ icon: Icon, text }) => (
                   <div key={text} className="inline-flex items-center gap-1.5 rounded-full border border-tiam-blue/20 bg-white/80 backdrop-blur px-3 py-1.5">

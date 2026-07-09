@@ -33,6 +33,7 @@ import { DemoTourPage } from '@/pages/demo/DemoTourPage'
 import { RecursosPage } from '@/pages/recursos/RecursosPage'
 import { AboutPage } from '@/pages/about/AboutPage'
 import { Desafio30DiasPage } from '@/pages/desafio-30-dias/Desafio30DiasPage'
+import { DesafioExitoPage } from '@/pages/desafio-30-dias/DesafioExitoPage'
 import { DesafioPlayPage } from '@/pages/desafio/DesafioPlayPage'
 
 const queryClient = new QueryClient({
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="/recursos" element={<RecursosPage />} />
             <Route path="/nosotros" element={<AboutPage />} />
             <Route path="/desafio-30-dias" element={<Desafio30DiasPage />} />
+            <Route path="/desafio-30-dias/exito" element={<DesafioExitoPage />} />
 
             {/* Public — patient at-home exercise (WhatsApp link) */}
             <Route path="/jugar/:token" element={<PatientPlayPage />} />
