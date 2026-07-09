@@ -442,35 +442,50 @@ export function Desafio30DiasPage() {
               Un solo pago, el desafío completo
             </h2>
 
-            <div className="mt-8 rounded-3xl border border-slate-100 border-t-4 border-t-tiam-blue bg-white p-8 shadow-sm text-left">
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Desafío 30 días</p>
-                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-slate-900">
-                    {formatPrice(PRICE_ARS)}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">Pago único · acceso a los 30 ejercicios</p>
+            <div className="mx-auto mt-10 max-w-lg overflow-hidden rounded-3xl bg-white shadow-xl shadow-tiam-blue/10 ring-1 ring-slate-100">
+              {/* Hero band — the price is the star */}
+              <div className="bg-gradient-to-br from-tiam-blue to-tiam-blue-dark px-8 py-10 text-white">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Desafío 30 días
+                </span>
+                <div className="mt-5 flex items-start justify-center">
+                  <span className="mt-2.5 text-3xl font-bold text-white/75">$</span>
+                  <span className="text-6xl font-extrabold leading-none tracking-tight sm:text-7xl">
+                    {PRICE_ARS.toLocaleString('es-AR')}
+                  </span>
                 </div>
-                <Button size="lg" className="w-full sm:w-auto min-h-[44px]" onClick={handleBuy}>
+                <p className="mt-3 text-white/80">Un solo pago · acceso a los 30 ejercicios</p>
+              </div>
+
+              {/* Body — benefits + CTA */}
+              <div className="px-8 py-8 text-left">
+                <ul className="grid gap-x-4 gap-y-3.5 sm:grid-cols-2">
+                  {[
+                    'Los 30 ejercicios, uno por día',
+                    'Todo por WhatsApp, sin apps',
+                    'Para hacer en casa, a tu ritmo',
+                    'Un pago, sin renovaciones',
+                  ].map((text) => (
+                    <li key={text} className="flex items-start gap-2.5">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-tiam-green/10">
+                        <Check className="h-3 w-3 text-tiam-green" strokeWidth={3} />
+                      </span>
+                      <span className="text-sm text-slate-600">{text}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button size="lg" className="mt-7 w-full min-h-[52px] text-base" onClick={handleBuy}>
                   <Send className="h-4 w-4" />
                   Empezar ahora
                 </Button>
+
+                <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Pago único y seguro con Mercado Pago
+                </p>
               </div>
-
-              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                {[
-                  '30 ejercicios, uno por día',
-                  'Entrega por WhatsApp',
-                  'Para hacer en casa, a tu ritmo',
-                  'Sin suscripción ni renovaciones',
-                ].map((text) => (
-                  <FeatureCheck key={text} text={text} />
-                ))}
-              </ul>
-
-              <p className="mt-6 text-xs text-slate-400 text-center">
-                El pago se procesa de forma segura con Mercado Pago.
-              </p>
             </div>
           </div>
         </section>
