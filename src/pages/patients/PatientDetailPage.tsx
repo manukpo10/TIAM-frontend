@@ -10,6 +10,7 @@ import { useSessionStore } from '@/store/session'
 import { AREA_COLORS } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 import { ClinicalProgressPanel } from './ClinicalProgressPanel'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -426,6 +427,9 @@ function HomeExerciseModal({ patient, onClose }: HomeExerciseModalProps) {
   useEffect(() => {
     closeBtnRef.current?.focus()
   }, [])
+
+  // This component only exists while the modal is open, so the lock is always on.
+  useBodyScrollLock(true)
 
   // Close on Escape
   useEffect(() => {

@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, ImageOff, ZoomIn, X } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ─── Guided product tour with real (annotated) dashboard screenshots. ─────────
 // Screenshots live in src/assets/demo/<slug>.(png|webp) and are resolved by slug.
@@ -108,19 +109,17 @@ export function DemoTourPage() {
     document.title = 'Recorrido guiado — TIAM Digital'
   }, [])
 
-  // Close the lightbox on Escape and lock body scroll while open.
+  // Close the lightbox on Escape.
   useEffect(() => {
     if (!zoom) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setZoom(null)
     }
     document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
+    return () => document.removeEventListener('keydown', onKey)
   }, [zoom])
+
+  useBodyScrollLock(zoom !== null)
 
   const step = STEPS[current]
   const isFirst = current === 0

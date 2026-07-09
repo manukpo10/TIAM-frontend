@@ -13,6 +13,7 @@ import {
 } from '@/lib/challengeContent'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ── Per-area color + icon (inline styles avoid Tailwind's dynamic-class safelist,
 //    same approach LandingPage uses for cognitive areas) ─────────────────────────
@@ -61,6 +62,10 @@ export function DesafioPlayPage() {
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [])
+
+  // An accidental drag/tap near the backdrop must not scroll the page behind
+  // the card — otherwise the layout shifts and the next tap lands nowhere.
+  useBodyScrollLock(selectedDay !== null)
 
   if (phase === 'loading') {
     return (

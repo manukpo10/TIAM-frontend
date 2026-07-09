@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
 import { OnboardingTour, START_TOUR_EVENT, OPEN_DRAWER_EVENT } from '@/features/onboarding/OnboardingTour'
 import logoImg from '@/assets/logo-sinfondo.png'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 const NAV_ITEMS = [
   { to: '/library', icon: BookOpen, label: 'Biblioteca', tour: 'nav-library' },
@@ -26,6 +27,8 @@ export function AppLayout() {
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname])
+
+  useBodyScrollLock(drawerOpen)
 
   // Let the onboarding tour open the drawer to highlight nav links on mobile.
   useEffect(() => {

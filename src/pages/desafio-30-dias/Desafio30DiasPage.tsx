@@ -14,6 +14,7 @@ import { PublicFooter } from '@/components/layout/PublicFooter'
 import { api } from '@/lib/api'
 import desafioHero from '@/assets/desafio-hero.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
@@ -136,6 +137,11 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutForm>({ resolver: zodResolver(checkoutSchema) })
+
+  // This component only exists while the modal is open, so the lock is
+  // always on — an accidental drag near the backdrop must not scroll the
+  // sales page behind it.
+  useBodyScrollLock(true)
 
   // Close on Escape — matches the modal pattern in PatientDetailPage.
   useEffect(() => {
