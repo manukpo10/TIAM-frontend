@@ -14,6 +14,7 @@ import { PublicFooter } from '@/components/layout/PublicFooter'
 import { api } from '@/lib/api'
 import desafioHero from '@/assets/desafio-hero.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
+import mercadoPagoLogo from '@/assets/mercadopago-logo.svg'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
@@ -244,8 +245,9 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
             <Send className="h-4 w-4" />
             Ir al pago · {formatPrice(PRICE_ARS)}
           </Button>
-          <p className="text-center text-xs text-slate-400">
-            Pago único y seguro con Mercado Pago.
+          <p className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
+            Pago único y seguro con
+            <img src={mercadoPagoLogo} alt="Mercado Pago" className="h-5 w-auto" />
           </p>
         </form>
       </div>
@@ -489,7 +491,8 @@ export function Desafio30DiasPage() {
 
                 <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400">
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Pago único y seguro con Mercado Pago
+                  Pago único y seguro con
+                  <img src={mercadoPagoLogo} alt="Mercado Pago" className="h-5 w-auto" />
                 </p>
               </div>
             </div>
