@@ -11,6 +11,7 @@ import { QueSera } from './QueSera'
 import { QueObjetoEs } from './QueObjetoEs'
 import { ListaDelMercado } from './ListaDelMercado'
 import { AnimalPorLetra } from './AnimalPorLetra'
+import { ElVuelto } from './ElVuelto'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -23,6 +24,7 @@ export const GAMES: Record<number, ComponentType> = {
   2: ListaDelMercado,
   3: AnimalPorLetra,
   4: CazadorDeLetras,
+  5: ElVuelto,
   7: CadaCosaEnSuGrupo,
   8: OrdenarLaFrase,
   10: CuatroPalabras,
