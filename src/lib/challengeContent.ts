@@ -81,8 +81,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 2 — dos pasos, primeras interferencias ─────────────────────────
   { day: 8, type: 'game', area: 'lenguaje', title: 'Ordená la frase',
     instructions: 'Un juego de lenguaje: tocá las palabras en el orden correcto para armar la frase. Subís de dificultad a medida que avanzás.' },
-  { day: 9, type: 'card', area: 'praxias', title: 'Copiá el dibujo',
-    instructions: 'Mirá la figura de la tarjeta y copiala en una hoja lo más parecida posible, prestando atención a las proporciones y los detalles.' },
+  { day: 9, type: 'game', area: 'praxias', title: 'El reloj',
+    instructions: 'Un juego de lectura de la hora: mirá el reloj y elegí qué hora muestra entre las opciones. Subís de dificultad a medida que avanzás.' },
   { day: 10, type: 'game', area: 'memoria', title: '¿Qué palabras eran?',
     instructions: 'Un juego de memoria: memorizá las palabras y después elegí cuáles recordás entre las distractoras. Subís de dificultad a medida que avanzás.' },
   // area stays 'atencion' (not 'memoria') so it doesn't repeat day 10 back-to-back —
