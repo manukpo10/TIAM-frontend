@@ -16,6 +16,7 @@ import { VerdaderoOFalso } from './VerdaderoOFalso'
 import { Memotest } from './Memotest'
 import { ContadorMasMenos } from './ContadorMasMenos'
 import { CaminoNumerico } from './CaminoNumerico'
+import { EmpecemosPorHoy } from './EmpecemosPorHoy'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -25,6 +26,7 @@ import { CaminoNumerico } from './CaminoNumerico'
  * to 'game' in challengeContent.ts.
  */
 export const GAMES: Record<number, ComponentType> = {
+  1: EmpecemosPorHoy,
   2: ListaDelMercado,
   3: AnimalPorLetra,
   4: CazadorDeLetras,

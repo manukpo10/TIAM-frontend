@@ -63,8 +63,8 @@ export const CHALLENGE_TOTAL_DAYS = 30
 
 const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 1 — arranque suave (un paso, generar confianza) ────────────────
-  { day: 1, type: 'card', area: 'orientacion', title: 'Empecemos por hoy',
-    instructions: 'Sin mirar el celular: ¿qué día de la semana es? ¿Qué fecha, mes y año? ¿En qué estación estamos? Decilo en voz alta o escribilo.' },
+  { day: 1, type: 'game', area: 'orientacion', title: 'Empecemos por hoy',
+    instructions: 'Un juego de orientación: respondé sobre el día de hoy — la fecha, la estación, el momento del día.' },
   { day: 2, type: 'game', area: 'memoria', title: 'La lista del mercado',
     instructions: 'Un juego de memoria: mirá la lista de productos y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 3, type: 'game', area: 'lenguaje', title: 'Un animal por letra',
