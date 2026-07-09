@@ -1,0 +1,300 @@
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+
+/**
+ * "Camino numérico" — adapted from the Trail Making Test Part A: numbered
+ * circles scattered at pre-authored, non-grid positions across an open
+ * canvas; tap them in ascending order. The first game in the app to use
+ * free/absolute positioning instead of a CSS grid — every other board game
+ * here (BuscarLosRojos, CazadorDeLetras, Memotest…) lays tiles out in neat
+ * rows and columns, so this is deliberately the odd one out, spatially.
+ *
+ * Positions are PRE-AUTHORED per level (a couple of hand-placed layout
+ * variants), not generated at runtime — collision-avoidance math for up to
+ * 16 circles in a ~300px box has no good runtime guarantee, while a fixed,
+ * once-verified layout costs nothing and matches how every other game here
+ * authors content (curated pools, not procedural generation). Replay
+ * variety comes from shuffling WHICH number lands on which fixed slot, not
+ * from moving the slots themselves.
+ *
+ * Deliberate adaptation away from the clinical instrument: no timer, ever
+ * (neither a countdown nor elapsed time) — this only measures correct
+ * sequencing, never speed. A wrong tap never advances and is never red;
+ * it's a muted grey wiggle plus a orienting hint ("buscás el N"), and an
+ * already-found circle is a silent no-op on re-tap.
+ */
+
+interface Slot {
+  x: number
+  y: number
+}
+interface Level {
+  n: number
+  name: string
+  count: number
+  layouts: Slot[][]
+  hint?: string
+}
+
+const LEVELS: Level[] = [
+  {
+    n: 1,
+    name: 'Nivel 1',
+    count: 8,
+    hint: 'Los números están repartidos por toda la pantalla, no en fila — recorré todo el espacio con la mirada.',
+    layouts: [
+      [
+        { x: 18, y: 15 }, { x: 52, y: 10 }, { x: 80, y: 22 }, { x: 28, y: 45 },
+        { x: 60, y: 38 }, { x: 15, y: 62 }, { x: 48, y: 72 }, { x: 78, y: 85 },
+      ],
+      [
+        { x: 15, y: 20 }, { x: 45, y: 12 }, { x: 75, y: 18 }, { x: 28, y: 45 },
+        { x: 60, y: 38 }, { x: 85, y: 55 }, { x: 20, y: 70 }, { x: 55, y: 80 },
+      ],
+    ],
+  },
+  {
+    n: 2,
+    name: 'Nivel 2',
+    count: 12,
+    layouts: [
+      [
+        { x: 15, y: 14 }, { x: 42, y: 10 }, { x: 68, y: 20 }, { x: 88, y: 16 },
+        { x: 10, y: 42 }, { x: 36, y: 48 }, { x: 62, y: 38 }, { x: 84, y: 45 },
+        { x: 18, y: 75 }, { x: 44, y: 68 }, { x: 70, y: 82 }, { x: 80, y: 72 },
+      ],
+      [
+        { x: 25, y: 8 }, { x: 55, y: 14 }, { x: 80, y: 9 }, { x: 12, y: 22 },
+        { x: 45, y: 28 }, { x: 70, y: 35 }, { x: 18, y: 45 }, { x: 85, y: 42 },
+        { x: 30, y: 58 }, { x: 60, y: 68 }, { x: 88, y: 75 }, { x: 15, y: 85 },
+      ],
+    ],
+  },
+  {
+    n: 3,
+    name: 'Nivel 3',
+    count: 16,
+    layouts: [
+      [
+        { x: 12, y: 12 }, { x: 38, y: 18 }, { x: 62, y: 10 }, { x: 88, y: 16 },
+        { x: 10, y: 40 }, { x: 35, y: 35 }, { x: 60, y: 42 }, { x: 85, y: 37 },
+        { x: 14, y: 65 }, { x: 40, y: 60 }, { x: 65, y: 68 }, { x: 88, y: 62 },
+        { x: 18, y: 86 }, { x: 44, y: 80 }, { x: 66, y: 88 }, { x: 84, y: 83 },
+      ],
+      [
+        { x: 20, y: 10 }, { x: 48, y: 14 }, { x: 74, y: 9 }, { x: 86, y: 20 },
+        { x: 14, y: 32 }, { x: 42, y: 28 }, { x: 68, y: 36 }, { x: 88, y: 30 },
+        { x: 10, y: 55 }, { x: 38, y: 50 }, { x: 64, y: 58 }, { x: 86, y: 52 },
+        { x: 20, y: 78 }, { x: 46, y: 84 }, { x: 70, y: 74 }, { x: 84, y: 84 },
+      ],
+    ],
+  },
+]
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+function pickOne<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+interface Node extends Slot {
+  value: number
+}
+
+function buildRound(level: Level): Node[] {
+  const layout = pickOne(level.layouts)
+  const numbers = shuffle(Array.from({ length: level.count }, (_, i) => i + 1))
+  return layout.map((slot, i) => ({ ...slot, value: numbers[i] }))
+}
+
+const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfecto!', '¡Qué atención!']
+
+export function CaminoNumerico() {
+  const [levelIdx, setLevelIdx] = useState(0)
+  const [roundKey, setRoundKey] = useState(0)
+  const level = LEVELS[levelIdx]
+
+  const board = useMemo(
+    () => buildRound(level),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [levelIdx, roundKey],
+  )
+
+  const [foundCount, setFoundCount] = useState(0)
+  const [wrongValue, setWrongValue] = useState<number | null>(null)
+  const [wrongHint, setWrongHint] = useState<string | null>(null)
+  const [praise, setPraise] = useState(PRAISE[0])
+
+  useEffect(() => {
+    setFoundCount(0)
+    setWrongValue(null)
+    setWrongHint(null)
+  }, [levelIdx, roundKey])
+
+  const done = foundCount >= level.count
+
+  useEffect(() => {
+    if (done) setPraise(pickOne(PRAISE))
+  }, [done])
+
+  const trail = useMemo(
+    () =>
+      board
+        .filter((node) => node.value <= foundCount)
+        .sort((a, b) => a.value - b.value),
+    [board, foundCount],
+  )
+
+  function handleTap(node: Node) {
+    if (done) return
+    if (node.value <= foundCount) return // already found, silent no-op
+
+    if (node.value === foundCount + 1) {
+      setFoundCount((c) => c + 1)
+      setWrongValue(null)
+      setWrongHint(null)
+      return
+    }
+
+    setWrongValue(node.value)
+    setWrongHint(`Ese es el ${node.value} — buscás el ${foundCount + 1}.`)
+    window.setTimeout(() => {
+      setWrongValue((v) => (v === node.value ? null : v))
+      setWrongHint(null)
+    }, 1500)
+  }
+
+  function nextLevel() {
+    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
+    setRoundKey((k) => k + 1)
+  }
+  function replay() {
+    setRoundKey((k) => k + 1)
+  }
+
+  return (
+    <div className="p-5 sm:p-7">
+      {/* Header */}
+      <div className="text-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
+          Atención · {level.name}
+        </span>
+        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+          Tocá los números en orden, empezando por el 1
+        </h2>
+        {!done && (
+          <>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Encontraste {foundCount} de {level.count}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(foundCount / level.count) * 100}%` }}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {!done && (
+        <>
+          {/* Target chip */}
+          <div className="mt-5 flex flex-col items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Buscá el número</span>
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white text-4xl font-black text-slate-800">
+              {foundCount + 1}
+            </div>
+          </div>
+
+          {level.hint && <p className="mt-3 text-center text-sm font-medium text-tiam-blue">{level.hint}</p>}
+        </>
+      )}
+
+      {/* Scatter canvas — stays visible (with its finished trail) once done, same as
+          BuscarLosRojos keeps its board mounted above the completion card. */}
+      <div className="relative mx-auto mt-5 aspect-square w-full max-w-[380px] rounded-3xl border-2 border-slate-100 bg-slate-50/60">
+        <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full">
+          <polyline
+            points={trail.map((n) => `${n.x},${n.y}`).join(' ')}
+            fill="none"
+            stroke="#4CA52E"
+            strokeWidth="1.2"
+            strokeOpacity="0.6"
+            strokeLinecap="round"
+          />
+        </svg>
+        {board.map((node) => {
+          const isFound = node.value <= foundCount
+          const isWrongFlash = wrongValue === node.value
+          return (
+            <button
+              key={node.value}
+              type="button"
+              disabled={isFound || done}
+              onClick={() => handleTap(node)}
+              aria-label={`Número ${node.value}`}
+              style={{ left: `${node.x}%`, top: `${node.y}%` }}
+              className={[
+                'absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center',
+                'rounded-full border-2 text-base font-bold transition',
+                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                isFound
+                  ? 'border-tiam-green bg-white text-slate-700 ring-2 ring-tiam-green/30'
+                  : isWrongFlash
+                    ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-400 bg-white text-slate-700'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-tiam-blue/40 hover:shadow-md active:scale-95',
+              ].join(' ')}
+            >
+              {node.value}
+              {isFound && (
+                <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {wrongHint && !done && <p className="mt-4 text-center text-sm font-medium text-slate-500">{wrongHint}</p>}
+
+      {/* Completion */}
+      {done && (
+        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+            <Sparkles className="h-6 w-6 text-tiam-green" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
+          <p className="mt-1 text-slate-600">
+            ¡Encontraste los {level.count} números en orden — completaste el {level.name.toLowerCase()}!
+          </p>
+          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={nextLevel}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+            >
+              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={replay}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Otro camino
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

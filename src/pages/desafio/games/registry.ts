@@ -15,6 +15,7 @@ import { ElVuelto } from './ElVuelto'
 import { VerdaderoOFalso } from './VerdaderoOFalso'
 import { Memotest } from './Memotest'
 import { ContadorMasMenos } from './ContadorMasMenos'
+import { CaminoNumerico } from './CaminoNumerico'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -29,6 +30,7 @@ export const GAMES: Record<number, ComponentType> = {
   4: CazadorDeLetras,
   5: ElVuelto,
   7: CadaCosaEnSuGrupo,
+  13: CaminoNumerico,
   8: OrdenarLaFrase,
   10: CuatroPalabras,
   11: QueHayEnLaMesa,

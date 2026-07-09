@@ -91,8 +91,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de memoria: observá los objetos de la mesa y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'game', area: 'ejecutivas', title: 'La charla desordenada',
     instructions: 'Un juego de razonamiento: ordená las frases de una conversación en el orden correcto. Subís de dificultad a medida que avanzás.' },
-  { day: 13, type: 'card', area: 'calculo', title: 'Contá para atrás',
-    instructions: 'Contá en voz alta desde 50 hacia atrás, restando de 3 en 3: 50, 47, 44… ¿Hasta dónde llegás sin equivocarte?' },
+  { day: 13, type: 'game', area: 'atencion', title: 'Camino numérico',
+    instructions: 'Un juego de atención: tocá los números en el orden correcto, del 1 en adelante, estén donde estén en la pantalla. Subís de dificultad a medida que avanzás.' },
   { day: 14, type: 'card', area: 'lenguaje', title: 'Palabras con PA',
     instructions: 'En dos minutos, escribí todas las palabras que empiecen con “pa”: pato, pared, pantalón… ¿Cuántas juntaste?' },
 
