@@ -99,8 +99,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 3 — combinar áreas / recuerdo demorado ─────────────────────────
   { day: 15, type: 'card', area: 'memoria', title: 'La canción de tu juventud',
     instructions: 'Elegí una canción que te gustaba de joven. Tratá de escribir la primera estrofa de memoria, sin buscarla, y después tarareala.' },
-  { day: 16, type: 'card', area: 'ejecutivas', title: 'Adivinanza',
-    instructions: 'Pensá con calma: “De lunes a viernes soy la última en llegar; el sábado, la primera. ¿Qué letra soy?”' },
+  { day: 16, type: 'game', area: 'ejecutivas', title: '¿Verdadero o falso?',
+    instructions: 'Un juego de razonamiento: leé la frase y decidí si es verdadera o falsa. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'card', area: 'atencion', title: 'Dos cosas a la vez',
     instructions: 'Contá de 2 en 2 hasta 20 y, en cada número, nombrá un color distinto. Por ejemplo: 2 rojo, 4 azul, 6 verde…' },
   { day: 18, type: 'game', area: 'praxias', title: '¿Qué será?',

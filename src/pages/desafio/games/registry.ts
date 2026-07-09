@@ -12,6 +12,7 @@ import { QueObjetoEs } from './QueObjetoEs'
 import { ListaDelMercado } from './ListaDelMercado'
 import { AnimalPorLetra } from './AnimalPorLetra'
 import { ElVuelto } from './ElVuelto'
+import { VerdaderoOFalso } from './VerdaderoOFalso'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -30,6 +31,7 @@ export const GAMES: Record<number, ComponentType> = {
   10: CuatroPalabras,
   11: QueHayEnLaMesa,
   12: LaCharlaDesordenada,
+  16: VerdaderoOFalso,
   18: QueSera,
   20: QueObjetoEs,
   21: PlanificaLaManana,
