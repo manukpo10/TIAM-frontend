@@ -7,6 +7,7 @@ import { LaCharlaDesordenada } from './LaCharlaDesordenada'
 import { PlanificaLaManana } from './PlanificaLaManana'
 import { CadaCosaEnSuGrupo } from './CadaCosaEnSuGrupo'
 import { CuatroPalabras } from './CuatroPalabras'
+import { QueSera } from './QueSera'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -22,6 +23,7 @@ export const GAMES: Record<number, ComponentType> = {
   10: CuatroPalabras,
   11: QueHayEnLaMesa,
   12: LaCharlaDesordenada,
+  18: QueSera,
   21: PlanificaLaManana,
   24: BuscarLosRojos,
 }
