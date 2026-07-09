@@ -19,6 +19,7 @@ import { CaminoNumerico } from './CaminoNumerico'
 import { EmpecemosPorHoy } from './EmpecemosPorHoy'
 import { QueSeEsconde } from './QueSeEsconde'
 import { QueSigue } from './QueSigue'
+import { QueCambio } from './QueCambio'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -40,6 +41,7 @@ export const GAMES: Record<number, ComponentType> = {
   11: QueHayEnLaMesa,
   12: LaCharlaDesordenada,
   16: VerdaderoOFalso,
+  17: QueCambio,
   18: QueSera,
   19: Memotest,
   20: QueObjetoEs,
