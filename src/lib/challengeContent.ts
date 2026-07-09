@@ -111,8 +111,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: leé la adivinanza y tocá el objeto correcto. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'ejecutivas', title: 'Planificá la mañana',
     instructions: 'Un juego de razonamiento: ordená las tareas de la mañana en el orden correcto. Subís de dificultad a medida que avanzás.' },
-  { day: 22, type: 'card', area: 'calculo', title: 'La receta doble',
-    instructions: 'Una torta para 4 personas lleva 2 huevos y 200 g de harina. ¿Cuánto necesitás para 8 personas? ¿Y para 6?' },
+  { day: 22, type: 'game', area: 'calculo', title: 'La receta doble',
+    instructions: 'Un juego de cálculo: mirá la situación y usá los botones +/- para llegar a la cantidad justa. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 4 — integradoras + cierre ──────────────────────────────────────
   { day: 23, type: 'card', area: 'memoria', title: 'Sabores de antes',

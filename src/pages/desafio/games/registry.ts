@@ -14,6 +14,7 @@ import { AnimalPorLetra } from './AnimalPorLetra'
 import { ElVuelto } from './ElVuelto'
 import { VerdaderoOFalso } from './VerdaderoOFalso'
 import { Memotest } from './Memotest'
+import { ContadorMasMenos } from './ContadorMasMenos'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -37,5 +38,6 @@ export const GAMES: Record<number, ComponentType> = {
   19: Memotest,
   20: QueObjetoEs,
   21: PlanificaLaManana,
+  22: ContadorMasMenos,
   24: BuscarLosRojos,
 }
