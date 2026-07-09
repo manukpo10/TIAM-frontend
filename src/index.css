@@ -101,3 +101,17 @@ html {
 #root {
   min-height: 100dvh;
 }
+
+/* ── Game micro-feedback (Buscá los rojos) ──
+   Soft, brief, respect prefers-reduced-motion (gated via motion-safe: in JSX). */
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}

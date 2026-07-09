@@ -115,8 +115,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 4 — integradoras + cierre ──────────────────────────────────────
   { day: 23, type: 'card', area: 'memoria', title: 'Sabores de antes',
     instructions: 'Recordá una comida que cocinaba alguien de tu familia. ¿Quién la hacía? ¿Qué llevaba? Escribí la receta como la recuerdes.' },
-  { day: 24, type: 'card', area: 'atencion', title: 'Buscá los rojos',
-    instructions: 'En el dibujo hay muchos objetos de distintos colores. Encontrá todos los que sean de color rojo y contalos.' },
+  { day: 24, type: 'game', area: 'atencion', title: 'Buscá los rojos',
+    instructions: 'Un juego de atención: tocá los objetos rojos entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'card', area: 'ejecutivas', title: 'El colectivo',
     instructions: 'El colectivo pasa cada 15 minutos. Si perdés el de las 10:00, ¿a qué hora pasan los tres siguientes?' },
   { day: 26, type: 'card', area: 'lenguaje', title: 'Contrarreloj',

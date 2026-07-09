@@ -12,6 +12,7 @@ import {
   type ChallengeArea,
 } from '@/lib/challengeContent'
 import logoImg from '@/assets/logo-sinfondo.png'
+import { GAMES } from './games/registry'
 
 // ── Per-area color + icon (inline styles avoid Tailwind's dynamic-class safelist,
 //    same approach LandingPage uses for cognitive areas) ─────────────────────────
@@ -87,6 +88,7 @@ export function DesafioPlayPage() {
   const selected = selectedDay
     ? CHALLENGE_DAYS.find((d) => d.day === selectedDay) ?? null
     : null
+  const Game = selected?.type === 'game' ? GAMES[selected.day] : undefined
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-tiam-blue/5 to-white">
@@ -177,52 +179,84 @@ export function DesafioPlayPage() {
           aria-labelledby="day-card-title"
         >
           <div
-            className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl"
+            className={[
+              'w-full overflow-hidden rounded-3xl bg-white shadow-xl',
+              Game ? 'max-w-2xl' : 'max-w-md',
+            ].join(' ')}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Illustration — the Flux image if present, else a colored icon placeholder */}
-            {selected.illustration ? (
-              <img
-                src={selected.illustration}
-                alt={selected.title}
-                className="h-44 w-full object-cover"
-              />
-            ) : (
-              <div
-                className="flex h-44 items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${AREA_META[selected.area].color}, ${AREA_META[selected.area].color}bb)` }}
-              >
-                {(() => {
-                  const Icon = AREA_META[selected.area].icon
-                  return <Icon className="h-16 w-16 text-white/90" strokeWidth={1.5} />
-                })()}
-              </div>
-            )}
-
-            <div className="p-6 sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide" style={{ color: AREA_META[selected.area].color }}>
-                    Día {selected.day} · {AREA_META[selected.area].label}
-                  </p>
-                  <h2 id="day-card-title" className="mt-1 text-2xl font-bold text-slate-900">
-                    {selected.title}
-                  </h2>
+            {Game ? (
+              <>
+                {/* Interactive game — header + the game itself */}
+                <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4 sm:px-7">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: AREA_META[selected.area].color }}>
+                      Día {selected.day} · {AREA_META[selected.area].label}
+                    </p>
+                    <h2 id="day-card-title" className="mt-0.5 text-xl font-bold text-slate-900 sm:text-2xl">
+                      {selected.title}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDay(null)}
+                    aria-label="Cerrar"
+                    className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedDay(null)}
-                  aria-label="Cerrar"
-                  className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+                <div className="max-h-[78vh] overflow-y-auto">
+                  <Game />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Illustration — the Flux image if present, else a colored icon placeholder */}
+                {selected.illustration ? (
+                  <img
+                    src={selected.illustration}
+                    alt={selected.title}
+                    className="h-44 w-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-44 items-center justify-center"
+                    style={{ background: `linear-gradient(135deg, ${AREA_META[selected.area].color}, ${AREA_META[selected.area].color}bb)` }}
+                  >
+                    {(() => {
+                      const Icon = AREA_META[selected.area].icon
+                      return <Icon className="h-16 w-16 text-white/90" strokeWidth={1.5} />
+                    })()}
+                  </div>
+                )}
 
-              <p className="mt-4 text-lg leading-relaxed text-slate-700">
-                {selected.instructions}
-              </p>
-            </div>
+                <div className="p-6 sm:p-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: AREA_META[selected.area].color }}>
+                        Día {selected.day} · {AREA_META[selected.area].label}
+                      </p>
+                      <h2 id="day-card-title" className="mt-1 text-2xl font-bold text-slate-900">
+                        {selected.title}
+                      </h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDay(null)}
+                      aria-label="Cerrar"
+                      className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <p className="mt-4 text-lg leading-relaxed text-slate-700">
+                    {selected.instructions}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
