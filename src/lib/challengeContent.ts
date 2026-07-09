@@ -83,8 +83,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: tocá las palabras en el orden correcto para armar la frase. Subís de dificultad a medida que avanzás.' },
   { day: 9, type: 'card', area: 'praxias', title: 'Copiá el dibujo',
     instructions: 'Mirá la figura de la tarjeta y copiala en una hoja lo más parecida posible, prestando atención a las proporciones y los detalles.' },
-  { day: 10, type: 'card', area: 'memoria', title: 'Cuatro palabras',
-    instructions: 'Aprendé de memoria estas cuatro palabras: río, martillo, azul, domingo. Seguí con tu día y, dentro de un rato, escribilas sin mirar.' },
+  { day: 10, type: 'game', area: 'memoria', title: '¿Qué palabras eran?',
+    instructions: 'Un juego de memoria: memorizá las palabras y después elegí cuáles recordás entre las distractoras. Subís de dificultad a medida que avanzás.' },
   // area stays 'atencion' (not 'memoria') so it doesn't repeat day 10 back-to-back —
   // the task itself is a recognition-memory exercise, just labeled by rotation slot.
   { day: 11, type: 'game', area: 'atencion', title: '¿Qué hay en la mesa?',
