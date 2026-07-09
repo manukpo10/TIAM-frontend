@@ -69,8 +69,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Leé y memorizá esta lista: pan, leche, manzanas, café, huevos. Tapala, contá hasta 20, y escribí todos los que recuerdes.' },
   { day: 3, type: 'card', area: 'lenguaje', title: 'Un animal por letra',
     instructions: 'Nombrá en voz alta un animal por cada letra del abecedario: A de araña, B de burro… Si te trabás, saltá la letra y seguí.' },
-  { day: 4, type: 'card', area: 'atencion', title: 'Cazador de letras',
-    instructions: 'Agarrá cualquier página de un diario o revista. Marcá con un círculo todas las letras “a”. Al final, contá cuántas encontraste.' },
+  { day: 4, type: 'game', area: 'atencion', title: 'Cazador de letras',
+    instructions: 'Un juego de atención: tocá todas las letras A entre las demás. Subís de dificultad a medida que avanzás.' },
   { day: 5, type: 'card', area: 'calculo', title: 'El vuelto',
     instructions: 'Pagás con un billete de $1.000 algo que cuesta $650. ¿Cuánto te dan de vuelto? Cuando te salga, probá con dos compras más.' },
   { day: 6, type: 'card', area: 'memoria', title: 'Tu primera casa',
@@ -79,8 +79,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Agrupá estas palabras según lo que tienen en común: manzana, perro, banana, gato, pera, caballo. Ponele un nombre a cada grupo.' },
 
   // ── Semana 2 — dos pasos, primeras interferencias ─────────────────────────
-  { day: 8, type: 'card', area: 'lenguaje', title: 'Ordená la frase',
-    instructions: 'Acomodá estas palabras para que tengan sentido: “se — el — roto — vaso — ha”. Escribí la frase correcta.' },
+  { day: 8, type: 'game', area: 'lenguaje', title: 'Ordená la frase',
+    instructions: 'Un juego de lenguaje: tocá las palabras en el orden correcto para armar la frase. Subís de dificultad a medida que avanzás.' },
   { day: 9, type: 'card', area: 'praxias', title: 'Copiá el dibujo',
     instructions: 'Mirá la figura de la tarjeta y copiala en una hoja lo más parecida posible, prestando atención a las proporciones y los detalles.' },
   { day: 10, type: 'card', area: 'memoria', title: 'Cuatro palabras',
