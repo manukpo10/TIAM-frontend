@@ -63,8 +63,8 @@ const LEVELS: Level[] = [
     isTarget: (t) => t.char === TARGET_A,
     build: () => [
       ...sampleWithRepeats([TARGET_A], 8),
-      ...sampleWithRepeats(CONFUSABLE_WITH_A, 8),
-      ...sampleWithRepeats(FAR, 8),
+      ...sampleWithRepeats(CONFUSABLE_WITH_A, 10),
+      ...sampleWithRepeats(FAR, 6),
     ],
   },
   {
@@ -73,10 +73,10 @@ const LEVELS: Level[] = [
     instruction: 'Tocá todas las A y todas las E',
     isTarget: (t) => t.char === TARGET_A || t.char === TARGET_E,
     build: () => [
-      ...sampleWithRepeats([TARGET_A], 5),
-      ...sampleWithRepeats([TARGET_E], 5),
-      ...sampleWithRepeats(CONFUSABLE_WITHOUT_E, 10),
-      ...sampleWithRepeats(FAR, 10),
+      ...sampleWithRepeats([TARGET_A], 7),
+      ...sampleWithRepeats([TARGET_E], 7),
+      ...sampleWithRepeats(CONFUSABLE_WITHOUT_E, 14),
+      ...sampleWithRepeats(FAR, 8),
     ],
   },
 ]

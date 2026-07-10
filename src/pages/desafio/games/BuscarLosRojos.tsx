@@ -84,8 +84,6 @@ const OBJECTS: GameObject[] = [
   { id: 'cangrejo', label: 'cangrejo', color: 'red', fruit: false },
 ]
 
-const byId = (id: string) => OBJECTS.find((o) => o.id === id)!
-
 const REDS = OBJECTS.filter((o) => o.color === 'red')
 const RED_FRUITS = REDS.filter((o) => o.fruit)
 const RED_NONFRUITS = REDS.filter((o) => !o.fruit)
@@ -138,20 +136,20 @@ const LEVELS: Level[] = [
     instruction: 'Tocá todos los ROJOS (¡ojo con los parecidos!)',
     isTarget: (o) => o.color === 'red',
     // 24 → exact rows at 3-col (mobile) AND 4-col (tablet); 1 empty cell at 5-col (desktop)
-    build: () => [...pick(REDS, 8), ...pick(ORANGE, 4), ...pick(PINK, 4), ...pick(FAR, 8)],
+    build: () => [...pick(REDS, 10), ...pick(ORANGE, 4), ...pick(PINK, 4), ...pick(FAR, 6)],
   },
   {
     n: 3,
     name: 'Nivel 3',
     instruction: 'Tocá solo las FRUTAS rojas',
     isTarget: (o) => o.color === 'red' && o.fruit,
-    // 30 → exact rows at 3-col (mobile) AND 5-col (desktop); 2 empty cells at 4-col (tablet)
+    // 36 → divisible by 3 (12 rows at 3-col mobile grid)
     build: () => [
       ...RED_FRUITS, // targets — every red fruit (6)
-      ...pick(RED_NONFRUITS, 8), // red but NOT fruit — the hard rejects
-      ...pick(NONRED_FRUITS_FAR, 7), // fruit but not red — also reject
-      byId('mandarina'), byId('pelota-basquet'), byId('flamenco'), byId('chicle'), // near-colour rejects
-      ...pick(FAR_NONFRUIT, 5), // easy far rejects
+      ...pick(RED_NONFRUITS, 10), // red but NOT fruit — the hard rejects (full pool)
+      ...pick(NONRED_FRUITS_FAR, 8), // fruit but not red — also reject (full pool)
+      ...pick(ORANGE, 4), ...pick(PINK, 4), // near-colour rejects
+      ...pick(FAR_NONFRUIT, 4), // easy far rejects
     ],
   },
 ]

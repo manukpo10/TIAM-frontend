@@ -74,8 +74,8 @@ interface Level {
 
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, size: 6, replace: 2, remove: 0, swap: 0, instruction: 'Tocá los objetos que cambiaron.' },
-  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, size: 9, replace: 2, remove: 1, swap: 0, instruction: 'Tocá los objetos que cambiaron: pueden ser distintos o haber desaparecido.' },
-  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 12, replace: 1, remove: 1, swap: 1, instruction: 'Tocá todo lo que cambió: objetos distintos, que desaparecieron, o que cambiaron de lugar. Cada lugar cuenta por separado.' },
+  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, size: 12, replace: 2, remove: 1, swap: 0, instruction: 'Tocá los objetos que cambiaron: pueden ser distintos o haber desaparecido.' },
+  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 18, replace: 1, remove: 1, swap: 2, instruction: 'Tocá todo lo que cambió: objetos distintos, que desaparecieron, o que cambiaron de lugar. Cada lugar cuenta por separado.' },
 ]
 
 // One glob across the three theme folders; lookups are namespaced by FOLDER
