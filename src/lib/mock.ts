@@ -794,73 +794,37 @@ function computeChallengeStreak(results: DayResult[]): StreakInfo {
 }
 
 /**
- * Small, non-exhaustive starter set (per the design doc): first day played,
- * a 3-day streak, a 7-day streak, halfway through the 25 playable days, the
- * full challenge, and a single 3-star day. Only earned badges are returned.
- * `earnedAt` is approximated as the most recent play in the store rather than
- * the exact historical moment each one first unlocked — nothing consumes this
- * field yet (the progress panel is a later phase), so precise tracking isn't
- * worth the extra bookkeeping until it has a reader.
+ * Mirrors the real backend's ChallengeDayResultService.computeBadges exactly:
+ * all 6 fixed codes always present (uppercase, matching ChallengeBadgeResponse),
+ * `earned` says which ones the buyer has — label/description are a frontend-only
+ * concern (BADGE_META in challengeProgress.ts), not sent here, same "backend
+ * derives, frontend labels" split already used for `area`. Streak badges key off
+ * `longest` (permanent achievements, don't un-earn after a later missed day).
  */
 function computeChallengeBadges(results: DayResult[], streak: StreakInfo): Badge[] {
-  if (results.length === 0) return []
-  const latestPlayedAt = results.reduce((latest, r) => (r.playedAt > latest ? r.playedAt : latest), results[0].playedAt)
-
-  const catalog: { id: BadgeId; label: string; description: string; earned: boolean }[] = [
-    {
-      id: 'first_day',
-      label: 'Primer paso',
-      description: 'Jugaste tu primer día del desafío.',
-      earned: results.length >= 1,
-    },
-    {
-      id: 'streak_3',
-      label: 'Racha de 3',
-      description: 'Completaste 3 días seguidos.',
-      earned: streak.longest >= 3,
-    },
-    {
-      id: 'streak_7',
-      label: 'Racha de 7',
-      description: 'Completaste 7 días seguidos.',
-      earned: streak.longest >= 7,
-    },
-    {
-      id: 'halfway',
-      label: 'Mitad de camino',
-      description: 'Llegaste a la mitad de los ejercicios del desafío.',
-      earned: results.length >= Math.ceil(PLAYABLE_CHALLENGE_DAYS / 2),
-    },
-    {
-      id: 'challenge_complete',
-      label: 'Desafío completo',
-      description: 'Jugaste los 25 ejercicios del desafío.',
-      earned: results.length >= PLAYABLE_CHALLENGE_DAYS,
-    },
-    {
-      id: 'three_star_day',
-      label: 'Día perfecto',
-      description: 'Conseguiste 3 estrellas en un día.',
-      earned: results.some((r) => r.stars === 3),
-    },
+  const anyThreeStars = results.some((r) => r.stars === 3)
+  const codes: { code: BadgeId; earned: boolean }[] = [
+    { code: 'FIRST_DAY', earned: results.length >= 1 },
+    { code: 'STREAK_3', earned: streak.longest >= 3 },
+    { code: 'STREAK_7', earned: streak.longest >= 7 },
+    { code: 'HALFWAY', earned: results.length >= Math.ceil(PLAYABLE_CHALLENGE_DAYS / 2) },
+    { code: 'CHALLENGE_COMPLETE', earned: results.length >= PLAYABLE_CHALLENGE_DAYS },
+    { code: 'PERFECT_DAY', earned: anyThreeStars },
   ]
-
-  return catalog
-    .filter((b) => b.earned)
-    .map(({ id, label, description }) => ({ id, label, description, earnedAt: latestPlayedAt }))
+  return codes
 }
 
+/** Mirrors the real backend's ChallengeAreaBreakdownResponse shape exactly
+ * ({area, played, averageStars} — no daysTotal from the API; the panel derives
+ * that client-side from CHALLENGE_DAYS, same as this mock does). */
 function computeChallengeAreaBreakdown(results: DayResult[]): AreaScore[] {
   const areas: ChallengeArea[] = ['memoria', 'atencion', 'lenguaje', 'praxias', 'calculo', 'orientacion', 'ejecutivas']
   return areas.map((area) => {
-    const daysTotal = CHALLENGE_DAYS.filter((d) => d.area === area && d.type === 'game').length
     const playedForArea = results.filter((r) => r.area === area)
-    return {
-      area,
-      starsEarned: playedForArea.reduce((sum, r) => sum + r.stars, 0),
-      daysPlayed: playedForArea.length,
-      daysTotal,
-    }
+    const averageStars = playedForArea.length
+      ? playedForArea.reduce((sum, r) => sum + r.stars, 0) / playedForArea.length
+      : 0
+    return { area, played: playedForArea.length, averageStars }
   })
 }
 

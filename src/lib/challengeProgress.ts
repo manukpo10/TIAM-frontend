@@ -44,28 +44,23 @@ export interface StreakInfo {
   longest: number
 }
 
-export type BadgeId =
-  | 'first_day'
-  | 'streak_3'
-  | 'streak_7'
-  | 'halfway'
-  | 'challenge_complete'
-  | 'three_star_day'
+/** Matches the backend's ChallengeBadgeResponse codes exactly (uppercase, "backend
+ * derives, frontend labels" split — see BADGE_META below for the copy/icon side). */
+export type BadgeId = 'FIRST_DAY' | 'STREAK_3' | 'STREAK_7' | 'HALFWAY' | 'CHALLENGE_COMPLETE' | 'PERFECT_DAY'
 
-/** A badge the buyer has actually earned (unearned badges are simply absent). */
+/** Raw shape from the API — ALL 6 badges are always present, `earned` says which
+ * ones the buyer actually has. No label/description/earnedAt: that's frontend-only
+ * (see BADGE_META), matching how `area` on DayResult is a bare slug too. */
 export interface Badge {
-  id: BadgeId
-  label: string
-  description: string
-  /** ISO timestamp of when the badge was earned. */
-  earnedAt: string
+  code: BadgeId
+  earned: boolean
 }
 
+/** Matches the backend's ChallengeAreaBreakdownResponse exactly. */
 export interface AreaScore {
   area: ChallengeArea
-  starsEarned: number
-  daysPlayed: number
-  daysTotal: number
+  played: number
+  averageStars: number
 }
 
 /** Response from GET /challenge/:token/progress. */
@@ -74,6 +69,18 @@ export interface ChallengeProgress {
   streak: StreakInfo
   badges: Badge[]
   areaBreakdown: AreaScore[]
+}
+
+/** Frontend-only copy for each badge code — icons are picked by the consuming
+ * component (same split as AREA_META in DesafioPlayPage.tsx, which keeps icon
+ * imports out of this shared lib file). */
+export const BADGE_META: Record<BadgeId, { label: string; description: string }> = {
+  FIRST_DAY: { label: 'Primer paso', description: 'Jugaste tu primer día del desafío.' },
+  STREAK_3: { label: 'Racha de 3', description: 'Completaste 3 días seguidos.' },
+  STREAK_7: { label: 'Racha de 7', description: 'Completaste 7 días seguidos.' },
+  HALFWAY: { label: 'Mitad de camino', description: 'Llegaste a la mitad de los ejercicios del desafío.' },
+  CHALLENGE_COMPLETE: { label: 'Desafío completo', description: 'Jugaste los 25 ejercicios del desafío.' },
+  PERFECT_DAY: { label: 'Día perfecto', description: 'Conseguiste 3 estrellas en un día.' },
 }
 
 /**

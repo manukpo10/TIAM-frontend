@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Brain, Eye, MessageCircle, Hand, Calculator, Compass, Lightbulb,
-  Lock, Check, X, type LucideIcon,
+  Lock, Star, X, type LucideIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import {
@@ -11,9 +11,10 @@ import {
   type ChallengeAccess,
   type ChallengeArea,
 } from '@/lib/challengeContent'
-import type { CompleteDayResponse, GameResult } from '@/lib/challengeProgress'
+import type { ChallengeProgress, CompleteDayResponse, GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
+import { ChallengeProgressPanel } from './ChallengeProgressPanel'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ── Per-area color + icon (inline styles avoid Tailwind's dynamic-class safelist,
@@ -34,6 +35,7 @@ export function DesafioPlayPage() {
   const { token } = useParams<{ token: string }>()
   const [phase, setPhase] = useState<Phase>('loading')
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
+  const [progress, setProgress] = useState<ChallengeProgress | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
 
   useEffect(() => {
@@ -47,6 +49,17 @@ export function DesafioPlayPage() {
         }
       } catch {
         if (!cancelled) setPhase('error')
+      }
+      // Progress is a pure enhancement (streak/badges/area stars) — its own
+      // request fails independently of the access check above, and a
+      // failure here must never block the day-grid from rendering.
+      try {
+        const data = await api.get<ChallengeProgress>(`/challenge/${token}/progress`)
+        if (!cancelled) setProgress(data)
+      } catch {
+        // Silently leave `progress` null — ChallengeProgressPanel renders
+        // nothing in that case, same graceful-degradation as a slow/failed
+        // game-result save.
       }
     }
     load()
@@ -68,13 +81,19 @@ export function DesafioPlayPage() {
   // the card — otherwise the layout shifts and the next tap lands nowhere.
   useBodyScrollLock(selectedDay !== null)
 
-  // Fire-and-forget: no UI consumes the response yet (that's the progress panel,
-  // a later phase), so a failed save just logs — it must never block or interrupt
-  // the completion screen the game itself already shows.
+  // Fire-and-forget the save itself — a failed save just logs, it must never
+  // block or interrupt the completion screen the game already shows. On
+  // success, re-fetch progress so the day-grid's stars and the panel below
+  // it reflect this result as soon as the player closes the modal, without
+  // needing a full page reload.
   function handleGameComplete(day: number, result: GameResult) {
-    api.post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result).catch((error) => {
-      console.error('No se pudo guardar el resultado del día', error)
-    })
+    api
+      .post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result)
+      .then(() => api.get<ChallengeProgress>(`/challenge/${token}/progress`))
+      .then(setProgress)
+      .catch((error) => {
+        console.error('No se pudo guardar el resultado del día', error)
+      })
   }
 
   if (phase === 'loading') {
@@ -122,13 +141,20 @@ export function DesafioPlayPage() {
           </p>
         </header>
 
+        <ChallengeProgressPanel progress={progress} />
+
         {/* 30-day grid */}
         <div className="mt-10 grid grid-cols-4 gap-3 sm:grid-cols-5 sm:gap-4">
           {CHALLENGE_DAYS.map((d) => {
             const meta = AREA_META[d.area]
             const locked = d.day > access.currentDay
             const isToday = d.day === access.currentDay
-            const done = d.day < access.currentDay
+            // Real result, not a calendar guess: a day only shows stars once
+            // it actually has a recorded playthrough. An unlocked-but-unplayed
+            // 'game' day (or a 'card' day, which never has a result at all)
+            // correctly shows nothing here instead of a checkmark that used
+            // to just mean "the calendar moved on," not "you played this."
+            const stars = progress?.days.find((r) => r.day === d.day)?.stars ?? 0
 
             return (
               <button
@@ -169,9 +195,11 @@ export function DesafioPlayPage() {
                     {d.day}
                   </span>
                 )}
-                {done && (
-                  <span className="absolute bottom-1 right-1">
-                    <Check className="h-3.5 w-3.5 text-tiam-green" strokeWidth={3} />
+                {stars > 0 && (
+                  <span className="absolute bottom-1 right-1 flex gap-px">
+                    {Array.from({ length: stars }, (_, i) => (
+                      <Star key={i} className="h-2.5 w-2.5 fill-tiam-orange text-tiam-orange" />
+                    ))}
                   </span>
                 )}
               </button>
