@@ -16,6 +16,12 @@ import desafioHero from '@/assets/desafio-hero.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import mercadoPagoLogo from '@/assets/mercadopago-logo.svg'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import shotElReloj from '@/assets/desafio-screenshots/el-reloj.webp'
+import shotLaBalanza from '@/assets/desafio-screenshots/la-balanza.webp'
+import shotMemotest from '@/assets/desafio-screenshots/memotest.webp'
+import shotCaminoNumerico from '@/assets/desafio-screenshots/camino-numerico.webp'
+import shotLosOpuestos from '@/assets/desafio-screenshots/los-opuestos.webp'
+import shotLaRecetaDoble from '@/assets/desafio-screenshots/la-receta-doble.webp'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
@@ -91,6 +97,17 @@ const AUDIENCE = [
   'Buscás una rutina simple para hacer en casa, sin depender de un turno',
   'Preferís algo que llegue por WhatsApp y no una app más para aprender',
   'Te gustaría acompañar los ejercicios y compartir un momento juntos',
+]
+
+// Real screenshots, one per cognitive area, so se vea la variedad real de juegos.
+// Area label/color mirror AREA_META in DesafioPlayPage.tsx (single source of truth).
+const GAME_SHOWCASE = [
+  { image: shotElReloj, day: 9, title: 'El reloj', area: 'Dibujo', color: '#7C3AED' },
+  { image: shotCaminoNumerico, day: 13, title: 'Camino numérico', area: 'Atención', color: '#E8531E' },
+  { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
+  { image: shotLosOpuestos, day: 14, title: 'Los opuestos', area: 'Lenguaje', color: '#4CA52E' },
+  { image: shotLaRecetaDoble, day: 22, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
+  { image: shotLaBalanza, day: 29, title: 'La balanza', area: 'Razonamiento', color: '#4F46E5' },
 ]
 
 const FAQS = [
@@ -401,6 +418,44 @@ export function Desafio30DiasPage() {
                   </div>
                   <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4.5. See the real games ──────────────────────────────────────── */}
+        <section aria-labelledby="games-heading" className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Así son los juegos" />
+              <h2 id="games-heading" className="text-3xl font-bold text-slate-900">
+                Mirá algunos ejemplos reales
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Cada día trabaja un área cognitiva distinta, con ilustraciones propias y letra grande.
+              </p>
+            </div>
+            <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
+              {GAME_SHOWCASE.map(({ image, day, title, area, color }) => (
+                <article
+                  key={day}
+                  className="w-64 shrink-0 snap-start overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm sm:w-auto"
+                >
+                  <img
+                    src={image}
+                    alt={`Captura del juego "${title}" del día ${day}`}
+                    className="w-full"
+                  />
+                  <div className="border-t border-slate-100 p-4">
+                    <span
+                      className="inline-block rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase"
+                      style={{ color, backgroundColor: `${color}1A` }}
+                    >
+                      Día {day} · {area}
+                    </span>
+                    <p className="mt-2 font-semibold text-slate-900">{title}</p>
+                  </div>
                 </article>
               ))}
             </div>
