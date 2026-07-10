@@ -93,8 +93,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de razonamiento: ordená las frases de una conversación en el orden correcto. Subís de dificultad a medida que avanzás.' },
   { day: 13, type: 'game', area: 'atencion', title: 'Camino numérico',
     instructions: 'Un juego de atención: tocá los números en el orden correcto, del 1 en adelante, estén donde estén en la pantalla. Subís de dificultad a medida que avanzás.' },
-  { day: 14, type: 'card', area: 'lenguaje', title: 'Palabras con PA',
-    instructions: 'En dos minutos, escribí todas las palabras que empiecen con “pa”: pato, pared, pantalón… ¿Cuántas juntaste?' },
+  { day: 14, type: 'game', area: 'lenguaje', title: 'Los opuestos',
+    instructions: 'Un juego de lenguaje: mirá la palabra y tocá cuál de las opciones es su opuesto. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 3 — combinar áreas / recuerdo demorado ─────────────────────────
   { day: 15, type: 'card', area: 'memoria', title: 'La canción de tu juventud',

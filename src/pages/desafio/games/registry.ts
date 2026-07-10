@@ -23,6 +23,7 @@ import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
 import { LaBalanza } from './LaBalanza'
+import { LosOpuestos } from './LosOpuestos'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -40,6 +41,7 @@ export const GAMES: Record<number, ComponentType> = {
   7: CadaCosaEnSuGrupo,
   9: ElReloj,
   13: CaminoNumerico,
+  14: LosOpuestos,
   8: OrdenarLaFrase,
   10: CuatroPalabras,
   11: QueHayEnLaMesa,
