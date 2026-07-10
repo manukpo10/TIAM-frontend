@@ -99,8 +99,8 @@ const LEVELS: Level[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    stages: [6, 11, 18, 28, 100],
-    decoyStrategy: (target) => pick(byCategory(target.category).filter((o) => o.id !== target.id), 3),
+    stages: [4, 8, 14, 100],
+    decoyStrategy: (target) => pick(byCategory(target.category).filter((o) => o.id !== target.id), 4),
   },
 ]
 

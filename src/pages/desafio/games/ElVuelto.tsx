@@ -94,7 +94,32 @@ const LEVELS: Level[] = [
         ],
         paidWith: 1000,
       },
-      { venue: 'Kiosco', items: [{ label: '2 alfajores', id: 'alfajor', price: 860 }], paidWith: 1000 },
+      {
+        venue: 'Kiosco',
+        items: [
+          { label: 'un alfajor', id: 'alfajor', price: 430 },
+          { label: 'otro alfajor', id: 'alfajor', price: 430 },
+        ],
+        paidWith: 1000,
+      },
+      {
+        venue: 'Kiosco',
+        items: [
+          { label: 'gaseosa', id: 'gaseosa', price: 280 },
+          { label: 'un alfajor', id: 'alfajor', price: 220 },
+          { label: 'chicles', id: 'chicles', price: 160 },
+        ],
+        paidWith: 1000, // change = 340, minimum 4 chips (200+100+20+20)
+      },
+      {
+        venue: 'Panadería',
+        items: [
+          { label: 'facturas', id: 'factura', price: 240 },
+          { label: 'pan', id: 'pan', price: 270 },
+          { label: 'un alfajor', id: 'alfajor', price: 300 },
+        ],
+        paidWith: 1000, // change = 190, minimum 4 chips (100+50+20+20)
+      },
     ],
   },
 ]

@@ -101,11 +101,29 @@ interface Trial {
   target: Animal
   options: Animal[]
 }
+// Real same-sound Spanish confusions (b/v, seseo c/s/z, yeísmo ll/y) — forced
+// into the decoy set when relevant so the tricky pairs actually collide,
+// instead of colliding only ~13% of the time under uniform random sampling.
+const CONFUSABLE_IDS: Record<string, string[]> = {
+  burro: ['vaca'], vaca: ['burro'],
+  cebra: ['serpiente', 'zorro'], serpiente: ['cebra', 'zorro'], zorro: ['cebra', 'serpiente'],
+  llama: ['yacare'], yacare: ['llama'],
+}
+
 function buildRound(level: Level): Trial[] {
-  return shuffle(level.animals).map((target) => ({
-    target,
-    options: shuffle([target, ...pick(level.decoyPool.filter((a) => a.id !== target.id), 3)]),
-  }))
+  return shuffle(level.animals).map((target) => {
+    // Fairness fix: also exclude same-letter animals (e.g. cangrejo/cebra both
+    // 'C') so the board never shows two legitimately-correct-letter options.
+    const pool = level.decoyPool.filter((a) => a.id !== target.id && a.letter !== target.letter)
+    const forced = pool.filter((a) => (CONFUSABLE_IDS[target.id] ?? []).includes(a.id))
+    const rest = pool.filter((a) => !forced.includes(a))
+    const decoyCount = level.n === 3 ? 5 : 3
+    const decoys = [...forced, ...pick(rest, Math.max(0, decoyCount - forced.length))].slice(0, decoyCount)
+    return {
+      target,
+      options: shuffle([target, ...decoys]),
+    }
+  })
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
@@ -159,6 +177,8 @@ export function AnimalPorLetra() {
     setRoundKey((k) => k + 1)
   }
 
+  const optionCols = level.n === 3 ? 'grid-cols-3' : 'grid-cols-2'
+
   return (
     <div className="p-5 sm:p-7">
       {/* Header */}
@@ -188,7 +208,7 @@ export function AnimalPorLetra() {
           </div>
 
           {/* Options */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className={`mt-6 grid gap-3 ${optionCols}`}>
             {current.options.map((opt) => {
               const isElim = eliminated.has(opt.id)
               const img = imgFor(opt.id)

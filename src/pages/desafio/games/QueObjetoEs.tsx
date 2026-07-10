@@ -130,7 +130,7 @@ const LEVELS: Level[] = [
     name: 'Nivel 3',
     riddles: [
       {
-        text: 'No es el teléfono ni la billetera: sin moverte del sillón, con este objeto cambiás lo que estás mirando o subís el volumen.',
+        text: 'No sirve para guardar tu plata ni para mandar mensajes: sin moverte del sillón, con este objeto cambiás lo que estás mirando o subís el volumen.',
         answer: 'control-remoto',
         decoys: ['celular', 'billetera', 'reloj-pulsera'],
       },
@@ -140,14 +140,24 @@ const LEVELS: Level[] = [
         decoys: ['lapiz', 'cuaderno', 'diario'],
       },
       {
-        text: 'No es un vaso ni una taza: es alto y cerrado, lo llenás con agua bien caliente a la mañana y la mantiene así por horas para cebar más tarde.',
+        text: 'Es alto y bien cerrado, no tiene bombilla ni asa para agarrar de costado: lo llenás con agua hirviendo a la mañana y sigue así de caliente horas después, lista para cebar.',
         answer: 'termo',
         decoys: ['mate', 'taza', 'vaso'],
       },
       {
-        text: 'No se riega como una planta ni se llena de agua como un florero: tiene un vidrio adelante y, detrás, la foto de alguien querido.',
+        text: 'No se riega ni se le cambia el agua cada tanto: tiene un vidrio adelante que protege lo de atrás, y detrás del vidrio hay una foto de alguien querido, no flores ni tierra.',
         answer: 'portarretrato',
         decoys: ['florero', 'maceta', 'vela'],
+      },
+      {
+        text: 'Es de vidrio transparente, no tiene asa para agarrar ni bombilla adentro, y no guarda el calor por horas como otros: lo llenás con agua o gaseosa y tomás directo, de un trago.',
+        answer: 'vaso',
+        decoys: ['taza', 'termo', 'mate'],
+      },
+      {
+        text: 'Tiene muchas páginas ya impresas de fábrica con una sola historia o tema, para leer de principio a fin: no escribís vos adentro ni se renueva cada mañana con noticias nuevas.',
+        answer: 'libro',
+        decoys: ['diario', 'cuaderno', 'lapicera'],
       },
     ],
   },
