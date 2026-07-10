@@ -127,8 +127,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de reconocimiento: varios dibujos se superponen en una sola imagen, tocá los que reconozcas entre las opciones. Subís de dificultad a medida que avanzás.' },
   { day: 28, type: 'card', area: 'memoria', title: 'Repaso de la semana',
     instructions: 'Sin mirar, escribí tres ejercicios que hayas hecho en estos días. ¿Cuál te gustó más? ¿Cuál te costó más?' },
-  { day: 29, type: 'card', area: 'ejecutivas', title: 'Todo junto',
-    instructions: 'Lo más rápido que puedas: nombrá 3 animales, resolvé 8 + 7, y decí en qué mes del año estás. ¡Sin pensarlo demasiado!' },
+  { day: 29, type: 'game', area: 'ejecutivas', title: 'La balanza',
+    instructions: 'Un juego de razonamiento: mirá las balanzas y descubrí qué objeto pesa más. Subís de dificultad a medida que avanzás.' },
   { day: 30, type: 'card', area: 'memoria', title: '¡Lo lograste!',
     instructions: 'Pensá cómo te sentías el día 1 y cómo te sentís hoy. Escribí una cosa que te haya gustado del desafío. ¡Felicitaciones por los 30 días! 🎉' },
 ]
