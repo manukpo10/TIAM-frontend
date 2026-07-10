@@ -74,6 +74,7 @@ const LEVELS: ConvLevel[] = [
           '¿Y queda lejos de ahí?',
           'No, para nada, a media cuadra más la va a ver.',
         ],
+        distractor: 'Buenas, ¿a qué hora cierra la farmacia de la esquina?',
       },
       {
         lines: [
@@ -104,6 +105,7 @@ const LEVELS: ConvLevel[] = [
           'Estaba pensando en hacerle una fiesta el sábado que viene.',
           'Me parece una idea hermosa, ¿puedo ayudar con la torta?',
           '¡Obvio! Vos hacé la de chocolate que a él le encanta.',
+          'Y yo me ocupo de las guirnaldas y los globos, así entre las dos dejamos todo lindo.',
         ],
         distractor: 'Buen día, ¿tiene pan fresco recién horneado?',
       },
@@ -116,6 +118,7 @@ const LEVELS: ConvLevel[] = [
           'A la mañana temprano está más tranquilo, antes de las diez.',
           'Perfecto, entonces paso mañana temprano. Muchas gracias, que tenga buen día.',
         ],
+        distractor: 'Para el tensiómetro no hace falta, pero para las vacunas sí hay que sacar turno.',
       },
       {
         lines: [
@@ -124,6 +127,7 @@ const LEVELS: ConvLevel[] = [
           'Dicen que arrancan a las doce, en el patio de atrás.',
           'Qué bueno, hace rato que no voy por ahí. ¿Hay que anotarse?',
           'Sí, mejor anotarse antes en la secretaría, así saben cuánta carne comprar.',
+          'Yo aviso en el grupo del barrio para que se anote el que quiera ir.',
         ],
         distractor: 'Con permiso, ¿este es el colectivo que va al centro?',
       },

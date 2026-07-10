@@ -12,38 +12,63 @@ import { useSequencingPuzzle } from './useSequencingPuzzle'
  * shows as a gentle reference, never a hard "you failed."
  */
 
-const LEVELS: { n: number; name: string; sentences: string[][] }[] = [
+interface SentenceEntry {
+  words: string[]
+  distractor?: string
+}
+interface SentenceLevel {
+  n: number
+  name: string
+  sentences: SentenceEntry[]
+}
+
+const LEVELS: SentenceLevel[] = [
   {
     n: 1,
     name: 'Nivel 1',
     sentences: [
-      ['El', 'mate', 'está', 'listo'],
-      ['Mi', 'nieta', 'llegó', 'temprano'],
-      ['Hoy', 'hace', 'mucho', 'frío'],
-      ['El', 'perro', 'perdió', 'la', 'pelota'],
-      ['Compré', 'pan', 'en', 'la', 'panadería'],
+      { words: ['El', 'mate', 'está', 'listo'] },
+      { words: ['Mi', 'nieta', 'llegó', 'temprano'] },
+      { words: ['Hoy', 'hace', 'mucho', 'frío'] },
+      { words: ['El', 'perro', 'perdió', 'la', 'pelota'] },
+      { words: ['Compré', 'pan', 'en', 'la', 'panadería'] },
     ],
   },
   {
     n: 2,
     name: 'Nivel 2',
     sentences: [
-      ['Los', 'chicos', 'juegan', 'en', 'la', 'plaza'],
-      ['El', 'colectivo', 'pasó', 'antes', 'de', 'tiempo'],
-      ['Guardé', 'las', 'fotos', 'viejas', 'en', 'una', 'caja'],
-      ['Mañana', 'vamos', 'a', 'visitar', 'a', 'la', 'abuela'],
-      ['El', 'sol', 'entra', 'fuerte', 'por', 'la', 'ventana'],
+      { words: ['Los', 'chicos', 'juegan', 'a', 'la', 'pelota', 'en', 'el', 'parque'] },
+      { words: ['El', 'colectivo', 'pasó', 'antes', 'de', 'tiempo', 'esta', 'mañana'] },
+      { words: ['Guardé', 'las', 'fotos', 'viejas', 'en', 'una', 'caja', 'de', 'cartón'] },
+      { words: ['Mañana', 'temprano', 'visitamos', 'a', 'la', 'abuela', 'en', 'su', 'casa'] },
+      { words: ['El', 'sol', 'entra', 'muy', 'fuerte', 'por', 'la', 'ventana', 'grande'] },
     ],
   },
   {
     n: 3,
     name: 'Nivel 3',
     sentences: [
-      ['Mi', 'hermano', 'trabaja', 'en', 'una', 'farmacia', 'del', 'centro'],
-      ['El', 'técnico', 'vino', 'a', 'arreglar', 'la', 'heladera', 'esta', 'mañana'],
-      ['La', 'radio', 'anunció', 'que', 'mañana', 'va', 'a', 'llover'],
-      ['Ayer', 'a', 'la', 'tarde', 'tomamos', 'mate', 'con', 'las', 'vecinas'],
-      ['Encontré', 'una', 'carta', 'vieja', 'en', 'el', 'fondo', 'del', 'placard'],
+      {
+        words: ['Mi', 'hermano', 'trabaja', 'en', 'una', 'farmacia', 'del', 'centro', 'desde', 'hace', 'diez', 'años'],
+        distractor: 'paraguas',
+      },
+      {
+        words: ['El', 'técnico', 'vino', 'a', 'arreglar', 'la', 'heladera', 'esta', 'mañana', 'bien', 'temprano'],
+        distractor: 'chocolate',
+      },
+      {
+        words: ['La', 'radio', 'anunció', 'esta', 'mañana', 'que', 'después', 'va', 'a', 'llover'],
+        distractor: 'semáforo',
+      },
+      {
+        words: ['Ayer', 'a', 'la', 'tarde', 'tomamos', 'mate', 'con', 'las', 'vecinas', 'de', 'al', 'lado'],
+        distractor: 'computadora',
+      },
+      {
+        words: ['Encontré', 'una', 'carta', 'vieja', 'en', 'el', 'fondo', 'del', 'placard', 'de', 'mi', 'cuarto'],
+        distractor: 'zapatillas',
+      },
     ],
   },
 ]
@@ -68,13 +93,29 @@ export function OrdenarLaFrase() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
-
-  const { bank, placed, place, unplace, isComplete, isCorrect } = useSequencingPuzzle(
-    sentence,
-    `${levelIdx}-${roundKey}`,
+  const pool = useMemo(
+    () => (sentence.distractor ? [...sentence.words, sentence.distractor] : sentence.words),
+    [sentence],
   )
+  const distractorId = sentence.distractor ? sentence.words.length : null
+
+  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}`)
   const [checked, setChecked] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
+
+  // "Done" isn't just "bank empty" here — if the sentence has a distractor
+  // word, the player is also done the moment only the distractor is left
+  // un-placed (that's the correct outcome). Deliberately NOT part of the
+  // shared hook: this rule only makes sense for sentences with a foreign word.
+  const readyToCheck =
+    bank.length === 0 || (distractorId !== null && bank.length === 1 && bank[0].id === distractorId)
+
+  const includedDistractor = distractorId !== null && placed.some((item) => item.id === distractorId)
+  const placedReal = placed.filter((item) => item.id !== distractorId)
+  const isCorrect =
+    !includedDistractor &&
+    placedReal.length === sentence.words.length &&
+    placedReal.every((item, i) => item.id === i)
 
   function check() {
     setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
@@ -98,7 +139,9 @@ export function OrdenarLaFrase() {
           Lenguaje · {level.name}
         </span>
         <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          Ordená las palabras para armar la frase
+          {sentence.distractor
+            ? 'Ordená la frase — ¡una de estas palabras no pertenece!'
+            : 'Ordená las palabras para armar la frase'}
         </h2>
         <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
       </div>
@@ -109,8 +152,9 @@ export function OrdenarLaFrase() {
           <span className="text-sm text-slate-400">Tocá las palabras de abajo para empezar</span>
         )}
         {placed.map((item, i) => {
-          const isRight = checked && item.id === i
-          const isWrong = checked && item.id !== i
+          const isDistractor = item.id === distractorId
+          const isRight = checked && !isDistractor && item.id === i
+          const isWrong = checked && (isDistractor || item.id !== i)
           return (
             <button
               key={item.id}
@@ -148,7 +192,7 @@ export function OrdenarLaFrase() {
       )}
 
       {/* Check button */}
-      {isComplete && !checked && (
+      {readyToCheck && !checked && (
         <div className="mt-6 text-center">
           <button
             type="button"
@@ -169,7 +213,11 @@ export function OrdenarLaFrase() {
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
           {!isCorrect && (
             <p className="mt-2 text-slate-600">
-              La frase correcta era: <span className="font-semibold text-slate-800">"{sentence.join(' ')}."</span>
+              La frase correcta era:{' '}
+              <span className="font-semibold text-slate-800">"{sentence.words.join(' ')}."</span>
+              {sentence.distractor && (
+                <> Y esta palabra no pertenecía a la frase: "{sentence.distractor}".</>
+              )}
             </p>
           )}
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">

@@ -74,6 +74,7 @@ const LEVELS: MorningLevel[] = [
           'Pasar por la panadería a llevar facturas; queda al lado de la carnicería.',
           'Devolverle el libro a tu vecina cuando ya estés de vuelta en tu casa.',
         ],
+        distractor: 'Acordate: el mes que viene vence el carnet de conducir.',
       },
       {
         tasks: [
@@ -95,23 +96,28 @@ const LEVELS: MorningLevel[] = [
           'Pasar por el banco a pagar una boleta, mientras esperás que estén los análisis.',
           'Retirar los resultados del análisis, recién a partir de las 11.',
           'Llevarle los resultados al médico, apenas los tengas en la mano.',
+          'Comprar en la farmacia las vitaminas que te recomendó el médico, ya que quedó cerca.',
           'Contarle a tu hija cómo te fue, ya de vuelta en tu casa.',
         ],
+        distractor: 'Acordate que el sábado es el cumpleaños de tu nieta.',
       },
       {
         tasks: [
           'Retirar los remedios de la presión en la farmacia; te los guardan solo hasta el mediodía.',
           'Cobrar la jubilación en el banco: hoy es tu día según el DNI, y cierra a la una.',
           'Pagarle el alquiler al encargado en efectivo, recién después de cobrar en el banco.',
+          'Guardar el comprobante del alquiler en la carpeta de gastos, apenas se lo pagues al encargado.',
           'Comprar fósforos y velas en el kiosco, en cualquier momento.',
           'Llamar a tu hijo para avisarle que ya hiciste todo, cuando termines.',
         ],
+        distractor: 'Recordá separar la ropa de verano para guardarla en el placard.',
       },
       {
         tasks: [
           'Retirar un paquete en el correo, que abre a las 9 y conviene ir apenas abre.',
           'Llevar al perro al veterinario a vacunarlo, con turno pedido justo para las 10.',
           'Pasar por la tintorería a buscar el saco; queda en la esquina del veterinario.',
+          'Pagar la cuota del club antes del mediodía, que después cierra la administración.',
           'Comprar el diario en el kiosco, en cualquier momento de la mañana.',
           'Contarle a tu comadre cómo te fue, ya de vuelta en tu casa.',
         ],

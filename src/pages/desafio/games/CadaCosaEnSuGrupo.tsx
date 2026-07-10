@@ -69,14 +69,14 @@ const LEVELS: GroupLevel[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    categories: ['Domésticos', 'De granja', 'Salvajes'],
-    hint: 'Ahora los tres grupos son animales, pero de tipos distintos. ¡Fijate bien!',
+    categories: ['Domésticos', 'De granja', 'Salvajes', 'Del mar'],
+    hint: 'Ahora hay cuatro grupos de animales distintos. ¡Fijate bien en cada uno!',
     items: [
       { word: 'gato', category: 'Domésticos' },
       { word: 'perro', category: 'Domésticos' },
       { word: 'hámster', category: 'Domésticos' },
       { word: 'canario', category: 'Domésticos' },
-      { word: 'pez dorado', category: 'Domésticos' },
+      { word: 'conejo', category: 'Domésticos' },
       { word: 'vaca', category: 'De granja' },
       { word: 'oveja', category: 'De granja' },
       { word: 'cerdo', category: 'De granja' },
@@ -86,6 +86,12 @@ const LEVELS: GroupLevel[] = [
       { word: 'elefante', category: 'Salvajes' },
       { word: 'jirafa', category: 'Salvajes' },
       { word: 'mono', category: 'Salvajes' },
+      { word: 'cebra', category: 'Salvajes' },
+      { word: 'delfín', category: 'Del mar' },
+      { word: 'ballena', category: 'Del mar' },
+      { word: 'tiburón', category: 'Del mar' },
+      { word: 'pulpo', category: 'Del mar' },
+      { word: 'foca', category: 'Del mar' },
     ],
   },
 ]
@@ -196,7 +202,7 @@ export function CadaCosaEnSuGrupo() {
           </div>
 
           {/* Category buttons */}
-          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {level.categories.map((cat) => (
               <button
                 key={cat}
