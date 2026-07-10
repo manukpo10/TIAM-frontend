@@ -11,6 +11,7 @@ import {
   type ChallengeAccess,
   type ChallengeArea,
 } from '@/lib/challengeContent'
+import type { CompleteDayResponse, GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
@@ -66,6 +67,15 @@ export function DesafioPlayPage() {
   // An accidental drag/tap near the backdrop must not scroll the page behind
   // the card — otherwise the layout shifts and the next tap lands nowhere.
   useBodyScrollLock(selectedDay !== null)
+
+  // Fire-and-forget: no UI consumes the response yet (that's the progress panel,
+  // a later phase), so a failed save just logs — it must never block or interrupt
+  // the completion screen the game itself already shows.
+  function handleGameComplete(day: number, result: GameResult) {
+    api.post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result).catch((error) => {
+      console.error('No se pudo guardar el resultado del día', error)
+    })
+  }
 
   if (phase === 'loading') {
     return (
@@ -212,7 +222,10 @@ export function DesafioPlayPage() {
                   </button>
                 </div>
                 <div className="max-h-[78vh] overflow-y-auto">
-                  <Game />
+                  <Game
+                    day={selected.day}
+                    onComplete={(result) => handleGameComplete(selected.day, result)}
+                  />
                 </div>
               </>
             ) : (

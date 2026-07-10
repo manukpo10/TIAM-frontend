@@ -1,5 +1,16 @@
 import type { Exercise, PagedResponse, User, Subscription, Patient, PatientSession, PatientPlaySession, HomeExerciseResult } from '@/types'
 import { COGNITIVE_AREAS } from '@/lib/utils'
+import { CHALLENGE_DAYS, CHALLENGE_TOTAL_DAYS, type ChallengeArea } from '@/lib/challengeContent'
+import {
+  computeStars,
+  type AreaScore,
+  type Badge,
+  type BadgeId,
+  type ChallengeProgress,
+  type DayResult,
+  type GameResult,
+  type StreakInfo,
+} from '@/lib/challengeProgress'
 
 /**
  * Temporary mock layer for previewing the UI without a backend.
@@ -233,6 +244,25 @@ let mockSessions: PatientSession[] = [
  * In production, subscription state is managed server-side (Mercado Pago recurring).
  */
 const activeHomeSubs = new Set<string>(['p1'])
+
+/**
+ * In-memory store of completed challenge-day results, keyed by challenge access
+ * token. Mirrors the future `challenge_day_results` table just enough to make
+ * POST complete → GET progress round-trip for real in dev — a static canned
+ * stub would hide the exact integration bugs this mock exists to catch.
+ */
+let mockChallengeDayResults: Record<string, DayResult[]> = {}
+
+/**
+ * Mocked "current day" for the Desafío access check — bumped to the full 30 so
+ * every day is unlocked for preview in dev (see the access handler below). Also
+ * bounds the progress handler's streak walk, so the two can't silently disagree
+ * about how many days are actually reachable.
+ */
+const MOCK_CHALLENGE_CURRENT_DAY = 30
+
+/** Days 1-30 minus the 5 static reflection cards — the denominator for badges. */
+const PLAYABLE_CHALLENGE_DAYS = CHALLENGE_DAYS.filter((d) => d.type === 'game').length
 
 function paginatePatients(items: Patient[], page: number, size: number): PagedResponse<Patient> {
   const start = page * size
@@ -672,7 +702,45 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
   if (method === 'GET' && challengeAccessMatch) {
     // Mock access state. Bump currentDay to 30 to preview all cards unlocked in dev;
     // in production the backend computes this from the purchase date.
-    return delay({ buyerFirstName: 'Manuel', currentDay: 30, totalDays: 30 } as T)
+    return delay({
+      buyerFirstName: 'Manuel',
+      currentDay: MOCK_CHALLENGE_CURRENT_DAY,
+      totalDays: CHALLENGE_TOTAL_DAYS,
+    } as T)
+  }
+
+  // ── Challenge (Desafío 30 días) — day completion ──────────────────────────
+  const challengeCompleteMatch = rawPath.match(/^\/challenge\/([\w-]+)\/days\/(\d+)\/complete$/)
+  if (method === 'POST' && challengeCompleteMatch) {
+    const token = challengeCompleteMatch[1]
+    const day = Number(challengeCompleteMatch[2])
+    const { mistakes, totalAttempts } = body as GameResult
+    const area: ChallengeArea = CHALLENGE_DAYS.find((d) => d.day === day)?.area ?? 'memoria'
+    const stars = computeStars(mistakes, totalAttempts)
+
+    const existingForToken = mockChallengeDayResults[token] ?? []
+    const previous = existingForToken.find((r) => r.day === day)
+    // Upsert-keep-best: a replay never lowers the star already earned for this day.
+    // A TIE still overwrites (fresh mistakes/totalAttempts/playedAt) — only a
+    // STRICTLY better previous score is kept — matching the real backend's tested
+    // behavior (completeDay_replayWithEqualStars_stillOverwritesMistakes).
+    const result: DayResult =
+      previous && previous.stars > stars
+        ? previous
+        : { day, area, mistakes, totalAttempts, stars, playedAt: new Date().toISOString() }
+
+    mockChallengeDayResults = {
+      ...mockChallengeDayResults,
+      [token]: [...existingForToken.filter((r) => r.day !== day), result],
+    }
+    return delay(result as T)
+  }
+
+  // ── Challenge (Desafío 30 días) — stars/streak/badges/area progress ───────
+  const challengeProgressMatch = rawPath.match(/^\/challenge\/([\w-]+)\/progress$/)
+  if (method === 'GET' && challengeProgressMatch) {
+    const token = challengeProgressMatch[1]
+    return delay(buildChallengeProgress(mockChallengeDayResults[token] ?? []) as T)
   }
 
   // ── Challenge (Desafío 30 días) one-time purchase ────────────────────────
@@ -683,6 +751,117 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
   }
 
   return null
+}
+
+// ── Challenge (Desafío 30 días) progress computation ────────────────────────
+// Pure functions over the in-memory `mockChallengeDayResults` store, kept
+// separate from the dispatcher above so GET /progress reads as one call.
+
+function buildChallengeProgress(results: DayResult[]): ChallengeProgress {
+  const streak = computeChallengeStreak(results)
+  return {
+    days: [...results].sort((a, b) => a.day - b.day),
+    streak,
+    badges: computeChallengeBadges(results, streak),
+    areaBreakdown: computeChallengeAreaBreakdown(results),
+  }
+}
+
+/**
+ * Walks the day chain in order (1→30, bounded by MOCK_CHALLENGE_CURRENT_DAY so
+ * not-yet-unlocked days are never mistaken for missed ones). 'card' days (6, 15,
+ * 23, 28, 30) have no completion event and always pass automatically — they must
+ * never break a streak. 'game' days pass only if a result was recorded. `current`
+ * is the run still active at the end of the walk (a gap resets it, so playing
+ * later days out of order — easy to do in dev, where every day is unlocked —
+ * correctly does NOT count towards it); `longest` is the best run seen anywhere.
+ */
+function computeChallengeStreak(results: DayResult[]): StreakInfo {
+  const playedDays = new Set(results.map((r) => r.day))
+  let running = 0
+  let longest = 0
+  for (const d of CHALLENGE_DAYS) {
+    if (d.day > MOCK_CHALLENGE_CURRENT_DAY) break
+    const passed = d.type === 'card' || playedDays.has(d.day)
+    if (passed) {
+      running += 1
+      longest = Math.max(longest, running)
+    } else {
+      running = 0
+    }
+  }
+  return { current: running, longest }
+}
+
+/**
+ * Small, non-exhaustive starter set (per the design doc): first day played,
+ * a 3-day streak, a 7-day streak, halfway through the 25 playable days, the
+ * full challenge, and a single 3-star day. Only earned badges are returned.
+ * `earnedAt` is approximated as the most recent play in the store rather than
+ * the exact historical moment each one first unlocked — nothing consumes this
+ * field yet (the progress panel is a later phase), so precise tracking isn't
+ * worth the extra bookkeeping until it has a reader.
+ */
+function computeChallengeBadges(results: DayResult[], streak: StreakInfo): Badge[] {
+  if (results.length === 0) return []
+  const latestPlayedAt = results.reduce((latest, r) => (r.playedAt > latest ? r.playedAt : latest), results[0].playedAt)
+
+  const catalog: { id: BadgeId; label: string; description: string; earned: boolean }[] = [
+    {
+      id: 'first_day',
+      label: 'Primer paso',
+      description: 'Jugaste tu primer día del desafío.',
+      earned: results.length >= 1,
+    },
+    {
+      id: 'streak_3',
+      label: 'Racha de 3',
+      description: 'Completaste 3 días seguidos.',
+      earned: streak.longest >= 3,
+    },
+    {
+      id: 'streak_7',
+      label: 'Racha de 7',
+      description: 'Completaste 7 días seguidos.',
+      earned: streak.longest >= 7,
+    },
+    {
+      id: 'halfway',
+      label: 'Mitad de camino',
+      description: 'Llegaste a la mitad de los ejercicios del desafío.',
+      earned: results.length >= Math.ceil(PLAYABLE_CHALLENGE_DAYS / 2),
+    },
+    {
+      id: 'challenge_complete',
+      label: 'Desafío completo',
+      description: 'Jugaste los 25 ejercicios del desafío.',
+      earned: results.length >= PLAYABLE_CHALLENGE_DAYS,
+    },
+    {
+      id: 'three_star_day',
+      label: 'Día perfecto',
+      description: 'Conseguiste 3 estrellas en un día.',
+      earned: results.some((r) => r.stars === 3),
+    },
+  ]
+
+  return catalog
+    .filter((b) => b.earned)
+    .map(({ id, label, description }) => ({ id, label, description, earnedAt: latestPlayedAt }))
+}
+
+function computeChallengeAreaBreakdown(results: DayResult[]): AreaScore[] {
+  const areas: ChallengeArea[] = ['memoria', 'atencion', 'lenguaje', 'praxias', 'calculo', 'orientacion', 'ejecutivas']
+  return areas.map((area) => {
+    const daysTotal = CHALLENGE_DAYS.filter((d) => d.area === area && d.type === 'game').length
+    const playedForArea = results.filter((r) => r.area === area)
+    return {
+      area,
+      starsEarned: playedForArea.reduce((sum, r) => sum + r.stars, 0),
+      daysPlayed: playedForArea.length,
+      daysTotal,
+    }
+  })
 }
 
 function filterAndPage(source: Exercise[], params: URLSearchParams): PagedResponse<Exercise> {

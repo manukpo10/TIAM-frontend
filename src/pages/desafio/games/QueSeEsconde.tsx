@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Eye, Minus, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Qué se esconde?" — a figure-ground discrimination mini-game grounded in
@@ -121,7 +122,7 @@ const PRAISE_OK = [
 
 type Phase = 'play' | 'results'
 
-export function QueSeEsconde() {
+export function QueSeEsconde({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -140,11 +141,11 @@ export function QueSeEsconde() {
   const [phase, setPhase] = useState<Phase>('play')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
-
-  useEffect(() => {
-    setPhase('play')
-    setSelected(new Set())
-  }, [levelIdx, roundKey])
+  // Accumulated across levels 1→2→3 (and across any "Otra imagen" replay within
+  // a level — every submission counts, same as ElVuelto's every-wrong-check
+  // model), only zeroed on a true day restart (see nextLevel's wrap branch).
+  const [accMistakes, setAccMistakes] = useState(0)
+  const [accAttempts, setAccAttempts] = useState(0)
 
   function toggle(id: string) {
     if (phase !== 'play') return
@@ -162,15 +163,54 @@ export function QueSeEsconde() {
     const ratio = trueIds.size ? correctFound / trueIds.size : 0
     setPraise(pickOne(ratio >= 0.6 ? PRAISE_GOOD : PRAISE_OK))
     setPhase('results')
+    const missed = trueIds.size - correctFound
+    const falsePositives = selected.size - correctFound
+    setAccMistakes((m) => m + missed + falsePositives)
+    setAccAttempts((a) => a + options.length)
   }
 
+  // Resets happen HERE, synchronously with the level/round change, not in a
+  // separate useEffect keyed on [levelIdx, roundKey]: an effect only catches
+  // up on the render AFTER levelIdx changes, so a sibling effect watching
+  // `phase` would still see the previous level's stale 'results' on the very
+  // render that just arrived at the new level — firing onComplete instantly
+  // against the NEW level's composition (already updated via useMemo) but the
+  // OLD level's still-unfleared `selected`, reporting an artificially awful
+  // score. Setting `phase`/`selected` in the same handler that sets
+  // `levelIdx`/`roundKey` means React batches them into one render, so they're
+  // never observably out of sync.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setPhase('play')
+    setSelected(new Set())
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulator — "Otra imagen" must NOT, even on level 1.
+    if (isWrap) {
+      setAccMistakes(0)
+      setAccAttempts(0)
+    }
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setPhase('play')
+    setSelected(new Set())
   }
+
+  // Reports the SUM across levels 1→2→3, not just level 3: submit() already
+  // folded this level's numbers into accMistakes/accAttempts above, so by the
+  // time level 3 resolves those two state values already hold every level's
+  // contribution. Fires once per roundKey, same guard style as ElVuelto, so a
+  // genuine full-day restart (wrap to level 1, new roundKey) can report again.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (phase === 'results' && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, levelIdx, roundKey, accMistakes, accAttempts])
 
   const optionCols = level.n === 1 ? 'grid-cols-2' : level.n === 2 ? 'grid-cols-3' : 'grid-cols-4'
 

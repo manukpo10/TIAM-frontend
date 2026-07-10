@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Lightbulb, RotateCcw, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Empecemos por hoy" — the only game in the app with no LEVELS[] ladder and
@@ -148,7 +149,7 @@ const REVEAL_LEADIN = [
   'Hoy es',
 ]
 
-export function EmpecemosPorHoy() {
+export function EmpecemosPorHoy({ day: _day, onComplete }: GameProps) {
   const [today] = useState(() => new Date())
   const [roundKey, setRoundKey] = useState(0)
   const questions = useMemo(
@@ -165,6 +166,20 @@ export function EmpecemosPorHoy() {
   const current = questions[index]
   const done = index >= questions.length
   const wasWrong = answeredId !== null && current ? !current.correctIds.includes(answeredId) : false
+
+  // No LEVELS[] ladder here — the day is done after one pass through all 4
+  // questions, so this reports once ever (unlike ElVuelto/QueSeEsconde, which
+  // fire once per roundKey so a genuine full-day restart can report again).
+  // "Repasar de nuevo" is a courtesy replay, not a second attempt at the day.
+  // Every question resolves on the first tap with a factual reveal, never a
+  // hard fail (see the file header) — so mistakes are always reported as 0.
+  const reportedRef = useRef(false)
+  useEffect(() => {
+    if (!done || reportedRef.current) return
+    reportedRef.current = true
+    onComplete({ mistakes: 0, totalAttempts: questions.length })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done])
 
   function handleAnswer(id: string) {
     if (answeredId !== null || !current) return

@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import type { GameProps } from '@/lib/challengeProgress'
 import { BuscarLosRojos } from './BuscarLosRojos'
 import { QueHayEnLaMesa } from './QueHayEnLaMesa'
 import { CazadorDeLetras } from './CazadorDeLetras'
@@ -31,8 +32,13 @@ import { LosOpuestos } from './LosOpuestos'
  *
  * To add a game: write the component, add one line here, and set the day's `type`
  * to 'game' in challengeContent.ts.
+ *
+ * Typed `ComponentType<GameProps>`, but games not yet retrofitted to accept
+ * `{ day, onComplete }` still satisfy it — TS structural typing allows a
+ * zero-arg component to stand in for a component that accepts (unused) props,
+ * so games can be migrated one at a time without breaking the rest.
  */
-export const GAMES: Record<number, ComponentType> = {
+export const GAMES: Record<number, ComponentType<GameProps>> = {
   1: EmpecemosPorHoy,
   2: ListaDelMercado,
   3: AnimalPorLetra,
