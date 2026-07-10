@@ -21,6 +21,7 @@ import { QueSeEsconde } from './QueSeEsconde'
 import { QueSigue } from './QueSigue'
 import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
+import { QueOficioEs } from './QueOficioEs'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -51,5 +52,6 @@ export const GAMES: Record<number, ComponentType> = {
   22: ContadorMasMenos,
   24: BuscarLosRojos,
   25: QueSigue,
+  26: QueOficioEs,
   27: QueSeEsconde,
 }
