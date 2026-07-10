@@ -68,11 +68,18 @@ interface Level {
 
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', pairs: 3, pool: L1_POOL, asymmetric: false },
-  { n: 2, name: 'Nivel 2', pairs: 6, pool: ANIMALS, asymmetric: false },
+  {
+    n: 2,
+    name: 'Nivel 2',
+    pairs: 6,
+    pool: ANIMALS,
+    asymmetric: true,
+    hint: 'Ahora las parejas son distintas: una carta tiene el dibujo y la otra tiene el nombre. ¡Fijate bien!',
+  },
   {
     n: 3,
     name: 'Nivel 3',
-    pairs: 9,
+    pairs: 12,
     pool: ANIMALS,
     asymmetric: true,
     hint: 'Ahora las parejas son distintas: una carta tiene el dibujo y la otra tiene el nombre. ¡Fijate bien!',

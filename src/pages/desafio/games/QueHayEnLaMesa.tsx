@@ -112,7 +112,7 @@ function buildL2(): Round {
 }
 
 function buildL3(): Round {
-  const studied = pick(MESA_OBJECTS, 12)
+  const studied = pick(MESA_OBJECTS, 15)
   const studiedIds = new Set(studied.map((o) => o.id))
   const usedLureIds = new Set<string>()
   const distractors: MesaObject[] = []
@@ -149,7 +149,7 @@ interface Level {
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, build: buildL1 },
   { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, build: buildL2 },
-  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, build: buildL3 },
+  { n: 3, name: 'Nivel 3', studySeconds: 18, minEarlySeconds: 8, build: buildL3 },
 ]
 
 const PRAISE_GOOD = ['¡Excelente memoria!', '¡Muy bien!', '¡Así se hace!', '¡Qué buena atención!']
