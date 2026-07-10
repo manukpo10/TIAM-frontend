@@ -20,7 +20,7 @@ import shotElReloj from '@/assets/desafio-screenshots/el-reloj.webp'
 import shotLaBalanza from '@/assets/desafio-screenshots/la-balanza.webp'
 import shotMemotest from '@/assets/desafio-screenshots/memotest.webp'
 import shotCaminoNumerico from '@/assets/desafio-screenshots/camino-numerico.webp'
-import shotLosOpuestos from '@/assets/desafio-screenshots/los-opuestos.webp'
+import shotQueOficioEs from '@/assets/desafio-screenshots/que-oficio-es.webp'
 import shotLaRecetaDoble from '@/assets/desafio-screenshots/la-receta-doble.webp'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
@@ -99,13 +99,14 @@ const AUDIENCE = [
   'Te gustaría acompañar los ejercicios y compartir un momento juntos',
 ]
 
-// Real screenshots, one per cognitive area, so se vea la variedad real de juegos.
-// Area label/color mirror AREA_META in DesafioPlayPage.tsx (single source of truth).
+// Recortes de solo la ilustración de cada juego (sin preguntas ni opciones a la vista,
+// para no espoilear la mecánica) — uno por área cognitiva. Area label/color mirror
+// AREA_META in DesafioPlayPage.tsx (single source of truth).
 const GAME_SHOWCASE = [
   { image: shotElReloj, day: 9, title: 'El reloj', area: 'Dibujo', color: '#7C3AED' },
   { image: shotCaminoNumerico, day: 13, title: 'Camino numérico', area: 'Atención', color: '#E8531E' },
   { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
-  { image: shotLosOpuestos, day: 14, title: 'Los opuestos', area: 'Lenguaje', color: '#4CA52E' },
+  { image: shotQueOficioEs, day: 26, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
   { image: shotLaRecetaDoble, day: 22, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
   { image: shotLaBalanza, day: 29, title: 'La balanza', area: 'Razonamiento', color: '#4F46E5' },
 ]
@@ -436,17 +437,19 @@ export function Desafio30DiasPage() {
                 Cada día trabaja un área cognitiva distinta, con ilustraciones propias y letra grande.
               </p>
             </div>
-            <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
               {GAME_SHOWCASE.map(({ image, day, title, area, color }) => (
                 <article
                   key={day}
-                  className="w-64 shrink-0 snap-start overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm sm:w-auto"
+                  className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm"
                 >
-                  <img
-                    src={image}
-                    alt={`Captura del juego "${title}" del día ${day}`}
-                    className="w-full"
-                  />
+                  <div className="flex h-28 items-center justify-center bg-slate-50 p-4 sm:h-36">
+                    <img
+                      src={image}
+                      alt={`Ilustración del juego "${title}"`}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
                   <div className="border-t border-slate-100 p-4">
                     <span
                       className="inline-block rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase"
