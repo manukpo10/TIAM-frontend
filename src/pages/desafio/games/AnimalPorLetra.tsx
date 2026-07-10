@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Un animal por letra" — a letter-to-animal matching game.
@@ -128,7 +129,12 @@ function buildRound(level: Level): Trial[] {
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
 
-export function AnimalPorLetra() {
+// Fixed total of trials across the whole day (10+8+6) — every trial is
+// resolved with exactly one correct tap no matter how many wrong taps happen
+// first, so this is a derivable constant rather than a piece of state.
+const TOTAL_TRIALS = LEVELS.reduce((sum, l) => sum + l.animals.length, 0)
+
+export function AnimalPorLetra({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -142,11 +148,9 @@ export function AnimalPorLetra() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [eliminated, setEliminated] = useState<Set<string>>(new Set())
   const [praise, setPraise] = useState(PRAISE[0])
-
-  useEffect(() => {
-    setCurrentIndex(0)
-    setEliminated(new Set())
-  }, [levelIdx, roundKey])
+  // Wrong-tap count, accumulated across levels 1→2→3 and only zeroed on a true
+  // day restart (see nextLevel's wrap branch below) — same policy as ElVuelto.
+  const [mistakes, setMistakes] = useState(0)
 
   const current = trials[currentIndex]
   const done = currentIndex >= trials.length
@@ -158,6 +162,7 @@ export function AnimalPorLetra() {
       setEliminated(new Set())
     } else {
       setEliminated((prev) => new Set(prev).add(id))
+      setMistakes((m) => m + 1)
     }
   }
 
@@ -165,16 +170,48 @@ export function AnimalPorLetra() {
     if (done) setPraise(pickOne(PRAISE))
   }, [done])
 
+  // Fires once per roundKey when the last trial of level 3 is resolved. A
+  // full day restart (the wrap to level 1) gets a new roundKey, so a genuine
+  // replay reports again; re-rendering while already done on level 3 does not
+  // fire twice. totalAttempts = accumulated wrong taps + total trials across
+  // all 3 levels (a fixed constant) — derived here rather than adding a
+  // second piece of state.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_TRIALS })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
+
+  // Resets happen HERE, synchronously with the level/round change, not in a
+  // separate useEffect keyed on [levelIdx, roundKey] — see ElVuelto.tsx for
+  // why: an effect only catches up on the render AFTER levelIdx changes, so
+  // `done` (derived from currentIndex vs. the NEW level's trials.length)
+  // could read stale-true on the very render that just arrived at the new
+  // level. This is a REAL risk here, not just theoretical: trial counts go
+  // 10→8→6 (decreasing), so leaving level 2 (currentIndex=8) and entering
+  // level 3 (trials.length=6) would evaluate done = 8 >= 6 = true on the
+  // transitional render, with levelIdx already at the last index.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     if (levelIdx < LEVELS.length - 1) {
       setLevelIdx((i) => i + 1)
     } else {
       setLevelIdx(0)
     }
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setEliminated(new Set())
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the mistake count — "Otra ronda" must NOT, even on level 1.
+    if (isWrap) setMistakes(0)
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setEliminated(new Set())
   }
 
   const optionCols = level.n === 3 ? 'grid-cols-3' : 'grid-cols-2'

@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import { useSequencingPuzzle } from './useSequencingPuzzle'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "La charla desordenada" — a conversation-sequencing / executive-function
@@ -145,7 +146,7 @@ function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-export function LaCharlaDesordenada() {
+export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -164,6 +165,11 @@ export function LaCharlaDesordenada() {
   const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}`)
   const [checked, setChecked] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
+  // Accumulated across levels 1→2→3 (and across any same-level replay —
+  // every submission counts), only zeroed on a true day restart (see
+  // nextLevel's wrap branch). Same model as QueSeEsconde.tsx.
+  const [accMistakes, setAccMistakes] = useState(0)
+  const [accAttempts, setAccAttempts] = useState(0)
 
   // "Done" isn't just "bank empty" here — if the round has a distractor, the
   // player is also done the moment only the distractor is left un-placed
@@ -182,16 +188,47 @@ export function LaCharlaDesordenada() {
   function check() {
     setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
     setChecked(true)
+    // Per-word (per-line) mistake count, derived from state the component
+    // already has: every placed real line sitting outside its correct slot
+    // is a mistake, plus one more if the distractor got placed at all (that
+    // alone can make a round wrong even when every real line is in order).
+    const lineMistakes = placedReal.filter((item, i) => item.id !== i).length
+    setAccMistakes((m) => m + lineMistakes + (includedDistractor ? 1 : 0))
+    setAccAttempts((a) => a + pool.length)
   }
+  // Resets happen HERE, synchronously with the level/round change (checked
+  // was already reset this way before this retrofit) — keeping it that way
+  // means the onComplete-reporting effect below never sees a stale `checked`
+  // paired with a fresh `levelIdx` on the same render.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setChecked(false)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulator — a same-round replay must NOT, even on level 1.
+    if (isWrap) {
+      setAccMistakes(0)
+      setAccAttempts(0)
+    }
   }
   function replay() {
     setChecked(false)
     setRoundKey((k) => k + 1)
   }
+
+  // Reports the SUM across levels 1→2→3, not just level 3: check() already
+  // folded this level's numbers into accMistakes/accAttempts above. Fires
+  // once per roundKey so a genuine full-day restart (wrap to level 1, new
+  // roundKey) can report again.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (checked && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked, levelIdx, roundKey, accMistakes, accAttempts])
 
   return (
     <div className="p-5 sm:p-7">

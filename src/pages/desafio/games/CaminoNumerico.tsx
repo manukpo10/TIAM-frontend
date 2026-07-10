@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Camino numérico" — adapted from the Trail Making Test Part A: numbered
@@ -119,7 +120,7 @@ function buildRound(level: Level): Node[] {
 
 const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfecto!', '¡Qué atención!']
 
-export function CaminoNumerico() {
+export function CaminoNumerico({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -134,12 +135,11 @@ export function CaminoNumerico() {
   const [wrongValue, setWrongValue] = useState<number | null>(null)
   const [wrongHint, setWrongHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
-
-  useEffect(() => {
-    setFoundCount(0)
-    setWrongValue(null)
-    setWrongHint(null)
-  }, [levelIdx, roundKey])
+  // Mistakes + correct finds, accumulated across levels 1→2→3 and only
+  // zeroed on a genuine day restart (wrap from level 3 back to level 1) —
+  // see nextLevel's isWrap branch below.
+  const [mistakes, setMistakes] = useState(0)
+  const [foundAcrossLevels, setFoundAcrossLevels] = useState(0)
 
   const done = foundCount >= level.count
 
@@ -168,19 +168,57 @@ export function CaminoNumerico() {
 
     setWrongValue(node.value)
     setWrongHint(`Ese es el ${node.value} — buscás el ${foundCount + 1}.`)
+    setMistakes((m) => m + 1)
     window.setTimeout(() => {
       setWrongValue((v) => (v === node.value ? null : v))
       setWrongHint(null)
     }, 1500)
   }
 
+  // Resets happen synchronously HERE, in the same handler that changes
+  // levelIdx/roundKey — not in a separate effect keyed on them (this game
+  // used to have exactly that: a reset useEffect keyed on [levelIdx,
+  // roundKey]). An effect only catches up one tick after levelIdx changes,
+  // so `done` would read the previous level's stale, still-true foundCount
+  // on the very render that just arrived at the new level, firing
+  // onComplete instantly with garbage before the player has touched
+  // anything.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
+    setFoundAcrossLevels((f) => f + foundCount)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setFoundCount(0)
+    setWrongValue(null)
+    setWrongHint(null)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulators — replaying a round must NOT, even on level 1.
+    if (isWrap) {
+      setMistakes(0)
+      setFoundAcrossLevels(0)
+    }
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setFoundCount(0)
+    setWrongValue(null)
+    setWrongHint(null)
   }
+
+  // Fires once per roundKey when level 3 is completed. A full day restart
+  // (the wrap to level 1) gets a new roundKey via nextLevel above, so a
+  // genuine replay of the whole day reports again; re-rendering while still
+  // done on level 3 does not fire twice. totalAttempts = accumulated
+  // mistakes + every number found across levels 1–3 (foundAcrossLevels
+  // covers 1–2, foundCount covers the current/last level).
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + foundAcrossLevels + foundCount })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
 
   return (
     <div className="p-5 sm:p-7">

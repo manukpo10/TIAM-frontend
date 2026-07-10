@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Eye, Minus, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "La lista del mercado" — an illustrated recognition-memory mini-game.
@@ -149,7 +150,7 @@ const PRAISE_OK = [
 
 type Phase = 'study' | 'test' | 'results'
 
-export function ListaDelMercado() {
+export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -166,13 +167,34 @@ export function ListaDelMercado() {
   const [canContinueEarly, setCanContinueEarly] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
+  // Accumulated across levels 1→2→3 (and across any same-level replay —
+  // every submission counts, same model as QueSeEsconde.tsx), only zeroed
+  // on a true day restart (see nextLevel's wrap branch).
+  const [accMistakes, setAccMistakes] = useState(0)
+  const [accAttempts, setAccAttempts] = useState(0)
 
+  // Arms the auto-advance + early-continue timers for whichever level/round
+  // is now current. `phase`/`selected`/`canContinueEarly` are deliberately
+  // NOT reset here — they're reset SYNCHRONOUSLY inside nextLevel()/replay()
+  // themselves (same handler that sets levelIdx/roundKey). An effect only
+  // catches up on the render AFTER levelIdx changes, so the onComplete-
+  // reporting effect below (which watches `phase`) would still see the
+  // previous level's stale 'results' on the very render that just arrived
+  // at the new level — firing onComplete instantly with garbage. Keeping
+  // only the timer side-effect here (with its cleanup clearing stale
+  // timers) avoids that.
+  // Held outside the effect so the early-continue button (below) can cancel
+  // it directly: without this, clicking "continuar" only sets phase to
+  // 'test' but leaves this timeout armed — it fires later regardless of
+  // whatever phase the player has since reached (possibly 'results', after
+  // already submitting), snapping `phase` back to 'test' with `selected`
+  // still populated and inviting a second `submit()` that double-counts
+  // that level's mistakes/attempts.
+  const autoTimerRef = useRef<number | undefined>(undefined)
   useEffect(() => {
-    setPhase('study')
-    setSelected(new Set())
-    setCanContinueEarly(false)
     const floorTimer = window.setTimeout(() => setCanContinueEarly(true), level.minEarlySeconds * 1000)
     const autoTimer = window.setTimeout(() => setPhase('test'), level.studySeconds * 1000)
+    autoTimerRef.current = autoTimer
     return () => {
       window.clearTimeout(floorTimer)
       window.clearTimeout(autoTimer)
@@ -198,15 +220,47 @@ export function ListaDelMercado() {
     const pool = ratio >= 0.6 ? PRAISE_GOOD : PRAISE_OK
     setPraise(pool[Math.floor(Math.random() * pool.length)])
     setPhase('results')
+    const missed = targetIds.size - correctFound
+    const falsePositives = selected.size - correctFound
+    setAccMistakes((m) => m + missed + falsePositives)
+    setAccAttempts((a) => a + testBoard.length)
   }
 
+  // Resets happen HERE, synchronously with the level/round change — see the
+  // comment on the timer effect above for why.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setPhase('study')
+    setSelected(new Set())
+    setCanContinueEarly(false)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulator — a same-round replay must NOT, even on level 1.
+    if (isWrap) {
+      setAccMistakes(0)
+      setAccAttempts(0)
+    }
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setPhase('study')
+    setSelected(new Set())
+    setCanContinueEarly(false)
   }
+
+  // Reports the SUM across levels 1→2→3, not just level 3: submit() already
+  // folded this level's numbers into accMistakes/accAttempts above. Fires
+  // once per roundKey so a genuine full-day restart (wrap to level 1, new
+  // roundKey) can report again.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (phase === 'results' && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, levelIdx, roundKey, accMistakes, accAttempts])
 
   return (
     <div className="p-5 sm:p-7">
@@ -320,7 +374,10 @@ export function ListaDelMercado() {
           <button
             type="button"
             disabled={!canContinueEarly}
-            onClick={() => setPhase('test')}
+            onClick={() => {
+              window.clearTimeout(autoTimerRef.current)
+              setPhase('test')
+            }}
             className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark disabled:cursor-not-allowed disabled:opacity-40"
           >
             Ya estoy list@, continuar

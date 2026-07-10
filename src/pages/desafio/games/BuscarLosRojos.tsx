@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Buscá los rojos" — a visual-search / selective-attention mini-game.
@@ -156,7 +157,7 @@ const LEVELS: Level[] = [
 
 const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfecto!', '¡Qué atención!']
 
-export function BuscarLosRojos() {
+export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -175,6 +176,11 @@ export function BuscarLosRojos() {
   const [found, setFound] = useState<Set<string>>(new Set())
   const [wrongId, setWrongId] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
+  // Mistakes + correct finds, accumulated across levels 1→2→3 and only
+  // zeroed on a genuine day restart (wrap from level 3 back to level 1) —
+  // see nextLevel's isWrap branch below.
+  const [mistakes, setMistakes] = useState(0)
+  const [foundAcrossLevels, setFoundAcrossLevels] = useState(0)
 
   const done = found.size === targetIds.size && targetIds.size > 0
 
@@ -196,6 +202,7 @@ export function BuscarLosRojos() {
         })
       } else {
         setWrongId(cellKey)
+        setMistakes((m) => m + 1)
         window.setTimeout(() => setWrongId((w) => (w === cellKey ? null : w)), 500)
       }
     },
@@ -209,18 +216,45 @@ export function BuscarLosRojos() {
     }
   }, [found, targetIds])
 
+  // isWrap resets happen synchronously HERE, in the same handler that
+  // changes levelIdx/roundKey — not in a separate effect keyed on them. An
+  // effect only catches up one tick after levelIdx changes, so `done`
+  // (derived straight from `found`/`targetIds`) would read the previous
+  // level's stale, still-true completion state on the very render that just
+  // arrived at the new level, firing onComplete instantly with garbage
+  // before the player has touched anything.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
+    setFoundAcrossLevels((f) => f + found.size)
     reset()
-    if (levelIdx < LEVELS.length - 1) {
-      setLevelIdx((i) => i + 1)
-    } else {
-      setLevelIdx(0)
+    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
+    setRoundKey((k) => k + 1)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulators — replaying a round must NOT, even on level 1.
+    if (isWrap) {
+      setMistakes(0)
+      setFoundAcrossLevels(0)
     }
   }
   function replay() {
     reset()
     setRoundKey((k) => k + 1)
   }
+
+  // Fires once per roundKey when level 3 is completed. A full day restart
+  // (the wrap to level 1) gets a new roundKey via nextLevel above, so a
+  // genuine replay of the whole day reports again; re-rendering while still
+  // done on level 3 does not fire twice. totalAttempts = accumulated
+  // mistakes + every object found across levels 1–3 (foundAcrossLevels
+  // covers 1–2, found.size covers the current/last level).
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + foundAcrossLevels + found.size })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
 
   return (
     <div className="p-5 sm:p-7">

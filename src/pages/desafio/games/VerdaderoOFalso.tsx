@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Check, Lightbulb, RotateCcw, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Verdadero o falso?" — a binary statement-judgment game, first of its
@@ -87,6 +88,10 @@ const LEVELS: Level[] = [
   },
 ]
 
+// Total question count across all 3 levels — every statement resolves on a
+// single tap (no retry, see file header), so this doubles as totalAttempts.
+const TOTAL_ROUNDS = LEVELS.reduce((sum, lvl) => sum + lvl.statements.length, 0)
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -107,7 +112,7 @@ const LEVEL_PRAISE_OK = [
   '¡Bien ahí! Seguí practicando.',
 ]
 
-export function VerdaderoOFalso() {
+export function VerdaderoOFalso({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -123,12 +128,9 @@ export function VerdaderoOFalso() {
   const [feedbackLine, setFeedbackLine] = useState('')
   const [correctCount, setCorrectCount] = useState(0)
   const [levelPraise, setLevelPraise] = useState(LEVEL_PRAISE_GOOD[0])
-
-  useEffect(() => {
-    setCurrentIndex(0)
-    setUserAnswer(null)
-    setCorrectCount(0)
-  }, [levelIdx, roundKey])
+  // Wrong-answer count, accumulated across levels 1→2→3 and only zeroed on a
+  // true day restart (see nextLevel's wrap branch below).
+  const [mistakes, setMistakes] = useState(0)
 
   const current = order[currentIndex]
   const done = currentIndex >= order.length
@@ -141,6 +143,7 @@ export function VerdaderoOFalso() {
       setCorrectCount((c) => c + 1)
       setFeedbackLine(pickOne(ITEM_PRAISE))
     } else {
+      setMistakes((m) => m + 1)
       setFeedbackLine(`${pickOne(WRONG_LEADIN)} En realidad, era ${current.answer ? 'verdadero' : 'falso'}.`)
     }
   }
@@ -155,13 +158,43 @@ export function VerdaderoOFalso() {
     }
   }
 
+  // Resets happen HERE, synchronously with the level/round change, not in a
+  // separate useEffect keyed on [levelIdx, roundKey] — see ElVuelto.tsx for
+  // why: an effect-based reset lags one render behind, letting `done` read
+  // stale-true right as levelIdx reaches the last level and firing
+  // onComplete with garbage data.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setUserAnswer(null)
+    setCorrectCount(0)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the mistake count — "Otra ronda" must NOT, even on level 1.
+    if (isWrap) setMistakes(0)
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setUserAnswer(null)
+    setCorrectCount(0)
+    // NOT setMistakes(0) — a same-level replay must not wipe accumulated mistakes.
   }
+
+  // Fires once per roundKey when level 3's last statement is answered. A full
+  // day restart (the wrap to level 1) gets a new roundKey, so a genuine
+  // replay reports again; re-rendering while already done on level 3 does
+  // not fire twice. No retry in this game (see file header), so
+  // totalAttempts is just the fixed question count, not mistakes + it.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: TOTAL_ROUNDS })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
 
   function btnClass(thisIsCorrect: boolean, color: 'green' | 'blue') {
     const base =

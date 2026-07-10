@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Eye, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Qué será?" — a progressive-reveal object-guessing game (visual
@@ -114,7 +115,7 @@ function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-export function QueSera() {
+export function QueSera({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -135,6 +136,18 @@ export function QueSera() {
   const [resolved, setResolved] = useState(false)
   const [correct, setCorrect] = useState(false)
   const [praise, setPraise] = useState('')
+  // Wrong-guess count, accumulated across levels 1→2→3 and only zeroed on a
+  // true day restart (see nextLevel's wrap branch below) — same policy as
+  // ElVuelto. The voluntary "Dame una pista" button does NOT count as a
+  // mistake: it's not a guess at all, just an early opt-in to the same
+  // reveal a wrong guess would have granted anyway.
+  const [mistakes, setMistakes] = useState(0)
+  // Levels resolved via a genuine correct guess (NOT a give-up after
+  // exhausting all stages). totalAttempts uses this instead of a flat
+  // "+LEVELS.length": a give-up level has zero successful taps (every tap
+  // in it was already counted in `mistakes`), so crediting it a free
+  // success would overcount totalAttempts by 1 for that level.
+  const [successCount, setSuccessCount] = useState(0)
 
   const img = imgFor(target.id)
   const revealPercent = resolved ? 100 : level.stages[stageIdx]
@@ -146,9 +159,11 @@ export function QueSera() {
       setPraise(pickOne(PRAISE_GOOD))
       setCorrect(true)
       setResolved(true)
+      setSuccessCount((s) => s + 1)
       return
     }
     setEliminated((prev) => new Set(prev).add(optionId))
+    setMistakes((m) => m + 1)
     if (stageIdx < level.stages.length - 1) {
       setStageIdx((i) => i + 1)
     } else {
@@ -160,13 +175,25 @@ export function QueSera() {
   function hint() {
     if (canHint) setStageIdx((i) => i + 1)
   }
+  // nextLevel/replay already reset stageIdx/eliminated/resolved/correct
+  // synchronously in the same handler that sets levelIdx/roundKey (not in a
+  // separate effect), so `resolved` is never observably stale on the render
+  // that arrives at a new level — this file already had the fix the Fase 1
+  // review had to apply retroactively to ElVuelto/QueSeEsconde.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setStageIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setCorrect(false)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulators — "Otra imagen" must NOT, even on level 1.
+    if (isWrap) {
+      setMistakes(0)
+      setSuccessCount(0)
+    }
   }
   function replay() {
     setStageIdx(0)
@@ -175,6 +202,20 @@ export function QueSera() {
     setCorrect(false)
     setRoundKey((k) => k + 1)
   }
+
+  // Fires once per roundKey when level 3 resolves — including a "gave up
+  // after exhausting stages" resolution (correct === false), which is still
+  // a resolution, never a hard fail (see file header). totalAttempts =
+  // mistakes + successCount, NOT mistakes + LEVELS.length: a give-up level
+  // contributes only its mistakes, no "free" successful attempt.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (resolved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + successCount })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, levelIdx, roundKey, successCount])
 
   return (
     <div className="p-5 sm:p-7">

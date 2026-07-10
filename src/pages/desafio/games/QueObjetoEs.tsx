@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Qué objeto es?" — a riddle-to-image comprehension game.
@@ -191,7 +192,7 @@ const HINTS = [
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!']
 
-export function QueObjetoEs() {
+export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -207,6 +208,10 @@ export function QueObjetoEs() {
   const [resolved, setResolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
+  // Wrong-tap count, accumulated across levels 1→2→3 and only zeroed on a
+  // true day restart (see nextLevel's wrap branch below) — same policy as
+  // ElVuelto.
+  const [mistakes, setMistakes] = useState(0)
 
   function guess(id: string) {
     if (resolved) return
@@ -218,14 +223,24 @@ export function QueObjetoEs() {
     }
     setEliminated((prev) => new Set(prev).add(id))
     setHint(pickOne(HINTS))
+    setMistakes((m) => m + 1)
   }
 
+  // nextLevel/replay already reset eliminated/resolved/hint synchronously in
+  // the same handler that sets levelIdx/roundKey (not in a separate effect),
+  // so `resolved` is never observably stale on the render that arrives at a
+  // new level — this file already had the fix the Fase 1 review had to
+  // apply retroactively to ElVuelto/QueSeEsconde.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the mistake count — "Otra adivinanza" must NOT, even on level 1.
+    if (isWrap) setMistakes(0)
   }
   function replay() {
     setEliminated(new Set())
@@ -233,6 +248,18 @@ export function QueObjetoEs() {
     setHint(null)
     setRoundKey((k) => k + 1)
   }
+
+  // Fires once per roundKey when level 3 resolves. totalAttempts = this
+  // attempt's mistakes + 3 successful resolutions (one per level) — same
+  // shape as ElVuelto, since this game is also exactly one puzzle per level.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (resolved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + LEVELS.length })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, levelIdx, roundKey])
 
   return (
     <div className="p-5 sm:p-7">

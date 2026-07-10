@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Qué oficio es?" — a profession-guessing game (semantic / lexical
@@ -115,7 +116,7 @@ const HINTS = [
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria de palabras!']
 
-export function QueOficioEs() {
+export function QueOficioEs({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -131,13 +132,12 @@ export function QueOficioEs() {
   const [solved, setSolved] = useState<string | null>(null)
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
-
-  useEffect(() => {
-    setCurrentIndex(0)
-    setEliminated(new Set())
-    setSolved(null)
-    setHint(null)
-  }, [levelIdx, roundKey])
+  // Accumulated across levels 1→2→3, only zeroed on a true day restart (see
+  // nextLevel's wrap branch below) — adapted to a per-round (not per-level)
+  // natural attempt count, same reasoning as CadaCosaEnSuGrupo: a level here
+  // is 5-6 oficio rounds, not one puzzle.
+  const [mistakes, setMistakes] = useState(0)
+  const [correctCount, setCorrectCount] = useState(0)
 
   const round = order[currentIndex]
   const done = currentIndex >= order.length
@@ -146,6 +146,19 @@ export function QueOficioEs() {
     if (done) setLevelPraise(pickOne(PRAISE))
   }, [done])
 
+  // Fires once per roundKey when level 3's last round resolves. Guarded the
+  // same way as ElVuelto/QueSeEsconde (Fase 1): a ref keyed on roundKey, not
+  // a boolean, so a genuine full-day restart (new roundKey on wrap) reports
+  // again while re-renders on an already-done level 3 do not double-fire.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + correctCount })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey, mistakes, correctCount])
+
   const options = useMemo(() => (round ? shuffle([round.id, ...round.decoys]) : []), [round])
 
   function guess(id: string) {
@@ -153,6 +166,7 @@ export function QueOficioEs() {
     if (id === round.id) {
       setSolved(id)
       setHint(null)
+      setCorrectCount((c) => c + 1)
       window.setTimeout(() => {
         setCurrentIndex((i) => i + 1)
         setEliminated(new Set())
@@ -161,15 +175,41 @@ export function QueOficioEs() {
     } else {
       setEliminated((prev) => new Set(prev).add(id))
       setHint(pickOne(HINTS))
+      setMistakes((m) => m + 1)
     }
   }
 
+  // Resets happen HERE, synchronously with the level/round change — NOT in a
+  // separate useEffect keyed on [levelIdx, roundKey] like this file used to
+  // have. That effect only caught up on the render AFTER levelIdx changed,
+  // so `done` (currentIndex vs. the NEW level's order.length, already
+  // updated via useMemo) could read a stale currentIndex left over from the
+  // previous level on the very render that just arrived — the same
+  // stale-flag hazard the Fase 1 review found and fixed in ElVuelto/
+  // QueSeEsconde. Setting currentIndex/eliminated/solved/hint in the same
+  // handler that sets levelIdx/roundKey means React batches them into one
+  // render, so they're never observably out of sync.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setEliminated(new Set())
+    setSolved(null)
+    setHint(null)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulators — "Otra ronda" must NOT, even on level 1.
+    if (isWrap) {
+      setMistakes(0)
+      setCorrectCount(0)
+    }
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setEliminated(new Set())
+    setSolved(null)
+    setHint(null)
   }
 
   return (

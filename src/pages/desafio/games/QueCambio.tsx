@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Eye, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Qué cambió?" — a change-detection / visual-working-memory game.
@@ -175,7 +176,7 @@ const PRAISE_OK = [
 
 type Phase = 'study' | 'change'
 
-export function QueCambio() {
+export function QueCambio({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -196,17 +197,21 @@ export function QueCambio() {
   const [helpAvailable, setHelpAvailable] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
+  // Mistakes + correct finds, accumulated across levels 1→2→3 and only
+  // zeroed on a genuine day restart (wrap from level 3 back to level 1) —
+  // see nextLevel's isWrap branch below.
+  const [mistakes, setMistakes] = useState(0)
+  const [foundAcrossLevels, setFoundAcrossLevels] = useState(0)
 
-  // Fresh study phase per level/round.
+  // Only the study-phase timers live here now — the completion-gating state
+  // (phase, found, revealed, etc.) resets SYNCHRONOUSLY inside nextLevel()/
+  // replay() instead, not in this effect. An effect only catches up one tick
+  // after levelIdx/roundKey change, so `done` would still read the previous
+  // level's stale `revealed`/`found` (e.g. revealed=true carried over from a
+  // "no encuentro más" on the prior level) on the very render that just
+  // arrived at the new level, firing onComplete instantly with garbage
+  // before the player has touched anything.
   useEffect(() => {
-    setPhase('study')
-    setCanContinueEarly(false)
-    setFound(new Set())
-    setWrongIdx(null)
-    setWrongHint(false)
-    setHelpUsed(false)
-    setHelpAvailable(false)
-    setRevealed(false)
     const floorTimer = window.setTimeout(() => setCanContinueEarly(true), level.minEarlySeconds * 1000)
     const autoTimer = window.setTimeout(() => setPhase('change'), level.studySeconds * 1000)
     return () => {
@@ -233,6 +238,7 @@ export function QueCambio() {
       } else {
         setWrongIdx(i)
         setWrongHint(true)
+        setMistakes((m) => m + 1)
         window.setTimeout(() => {
           setWrongIdx((w) => (w === i ? null : w))
           setWrongHint(false)
@@ -246,17 +252,65 @@ export function QueCambio() {
     if (done) setPraise(pickOne(helpUsed ? PRAISE_OK : PRAISE_GOOD))
   }, [done, helpUsed])
 
+  // Giving up still costs you: every target you hadn't found yet when you
+  // tapped "no encuentro más" counts as a mistake, so bailing immediately
+  // can't look better than actually playing the round out.
   function revealRest() {
     setHelpUsed(true)
     setRevealed(true)
+    setMistakes((m) => m + (k - found.size))
   }
+  // isWrap resets happen synchronously HERE, in the same handler that
+  // changes levelIdx/roundKey — see the effect above for why a separate
+  // effect can't safely own this.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
+    setFoundAcrossLevels((f) => f + k)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((kk) => kk + 1)
+    setPhase('study')
+    setCanContinueEarly(false)
+    setFound(new Set())
+    setWrongIdx(null)
+    setWrongHint(false)
+    setHelpUsed(false)
+    setHelpAvailable(false)
+    setRevealed(false)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the accumulators — replaying a round must NOT, even on level 1.
+    if (isWrap) {
+      setMistakes(0)
+      setFoundAcrossLevels(0)
+    }
   }
   function replay() {
     setRoundKey((kk) => kk + 1)
+    setPhase('study')
+    setCanContinueEarly(false)
+    setFound(new Set())
+    setWrongIdx(null)
+    setWrongHint(false)
+    setHelpUsed(false)
+    setHelpAvailable(false)
+    setRevealed(false)
   }
+
+  // Fires once per roundKey when level 3 is completed. A full day restart
+  // (the wrap to level 1) gets a new roundKey via nextLevel above, so a
+  // genuine replay of the whole day reports again; re-rendering while still
+  // done on level 3 does not fire twice. totalAttempts = accumulated
+  // mistakes + every change that needed finding across levels 1–3
+  // (foundAcrossLevels covers 1–2, k covers the current/last level — using
+  // the level's required count rather than found.size so a revealed/given-up
+  // round still counts its full requirement, not just what was tapped).
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + foundAcrossLevels + k })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
 
   const cells = phase === 'study' ? round.studied : round.current
 

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Memotest" — classic memory-pairs / concentration game, the only game in
@@ -131,7 +132,12 @@ const MISMATCH_LINES = [
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente memoria!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
 
-export function Memotest() {
+// Fixed total of successful matches across the whole day (3+6+12) — every pair
+// is matched exactly once no matter how many mismatches happen along the way,
+// so this is a derivable constant rather than a piece of state to track.
+const TOTAL_PAIRS = LEVELS.reduce((sum, l) => sum + l.pairs, 0)
+
+export function Memotest({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -148,20 +154,30 @@ export function Memotest() {
   const [mismatchLine, setMismatchLine] = useState<string | null>(null)
   const [turns, setTurns] = useState(0)
   const [praise, setPraise] = useState(PRAISE[0])
-
-  useEffect(() => {
-    setMatchedIds(new Set())
-    setPending([])
-    setLocked(false)
-    setMismatchLine(null)
-    setTurns(0)
-  }, [levelIdx, roundKey])
+  // Mismatch count, accumulated across levels 1→2→3 and only zeroed on a true
+  // day restart (see nextLevel's wrap branch below) — same policy as ElVuelto.
+  const [mistakes, setMistakes] = useState(0)
 
   const done = matchedIds.size >= level.pairs
 
   useEffect(() => {
     if (done) setPraise(pickOne(PRAISE))
   }, [done])
+
+  // Fires once per roundKey when level 3's board is fully matched. A full day
+  // restart (the wrap to level 1) gets a new roundKey, so a genuine replay
+  // reports again; re-rendering while already done on level 3 does not fire
+  // twice. totalAttempts = accumulated mismatches + total successful matches
+  // across all 3 levels (a fixed constant — every pair is matched exactly
+  // once) — derived here rather than adding a second piece of state.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_PAIRS })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
 
   function handleTap(index: number) {
     if (locked || done) return
@@ -187,6 +203,7 @@ export function Memotest() {
       }, 500)
     } else {
       setMismatchLine(pickOne(MISMATCH_LINES))
+      setMistakes((m) => m + 1)
       window.setTimeout(() => {
         setPending([])
         setLocked(false)
@@ -195,12 +212,31 @@ export function Memotest() {
     }
   }
 
+  // Resets happen HERE, synchronously with the level/round change, not in a
+  // separate useEffect keyed on [levelIdx, roundKey] — see ElVuelto.tsx for
+  // why: an effect only catches up on the render AFTER levelIdx changes, so
+  // `done` (derived from matchedIds vs. the NEW level's pairs) could read
+  // stale-true on the very render that just arrived at the new level.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setMatchedIds(new Set())
+    setPending([])
+    setLocked(false)
+    setMismatchLine(null)
+    setTurns(0)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the mistake count — "Otra vuelta" must NOT, even on level 1.
+    if (isWrap) setMistakes(0)
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setMatchedIds(new Set())
+    setPending([])
+    setLocked(false)
+    setMismatchLine(null)
+    setTurns(0)
   }
 
   return (

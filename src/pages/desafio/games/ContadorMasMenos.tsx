@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Minus, Plus, RotateCcw, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "La receta doble" — a proportional-scaling estimation game, second in the
@@ -93,7 +94,7 @@ const PRAISE_GOOD = [
   '¡Así se hace!',
 ]
 
-export function ContadorMasMenos() {
+export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -108,12 +109,11 @@ export function ContadorMasMenos() {
   const [hint, setHint] = useState<string | null>(null)
   const [resolved, setResolved] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
-
-  useEffect(() => {
-    setCounter(0)
-    setHint(null)
-    setResolved(false)
-  }, [levelIdx, roundKey])
+  // Failed-check count, accumulated across levels 1→2→3 and only zeroed on a
+  // true day restart (see nextLevel's wrap branch below) — same policy as
+  // ElVuelto. There's no natural per-tap wrong/right here (the +/- stepper is
+  // always valid) — only a "Listo" check that doesn't match the target counts.
+  const [mistakes, setMistakes] = useState(0)
 
   function increment() {
     if (resolved) return
@@ -132,18 +132,50 @@ export function ContadorMasMenos() {
       setHint(null)
     } else if (counter > scenario.target) {
       setHint('Te pasaste un poco. Probá bajar con el −.')
+      setMistakes((m) => m + 1)
     } else {
       setHint('Todavía te falta. Sumá un poco más con el +.')
+      setMistakes((m) => m + 1)
     }
   }
 
+  // Resets happen HERE, synchronously with the level/round change, not in a
+  // separate useEffect keyed on [levelIdx, roundKey] — see ElVuelto.tsx for
+  // why: an effect only catches up on the render AFTER levelIdx changes, so a
+  // sibling effect watching `resolved` would still see the previous level's
+  // stale `true` on the very render that just arrived at the new level.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setCounter(0)
+    setHint(null)
+    setResolved(false)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the mistake count — "Otra receta" must NOT, even on level 1.
+    if (isWrap) setMistakes(0)
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setCounter(0)
+    setHint(null)
+    setResolved(false)
   }
+
+  // Fires once per roundKey when level 3 resolves. A full day restart (the
+  // wrap to level 1) gets a new roundKey, so a genuine replay reports again;
+  // re-rendering while already resolved on level 3 does not fire twice.
+  // totalAttempts = this attempt's mistakes + 3 successful checks (one per
+  // level) — there's no separate "attempts" counter, so it's derived here
+  // rather than adding a second piece of state.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (resolved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + LEVELS.length })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolved, levelIdx, roundKey])
 
   const img = imgFor(scenario.icon)
 

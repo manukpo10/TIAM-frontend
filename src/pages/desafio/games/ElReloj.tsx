@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "El reloj" — an analog clock-reading game, inspired by the classic
@@ -80,6 +81,10 @@ const LEVELS: Level[] = [
     ],
   },
 ]
+
+// Total clock-reading count across all 3 levels — every round resolves after
+// its correct tap, so totalAttempts = mistakes + this.
+const TOTAL_ROUNDS = LEVELS.reduce((sum, lvl) => sum + lvl.rounds.length, 0)
 
 // ── Spanish (Rioplatense) time phrasing ──────────────────────────────────────
 const HOUR_WORDS = ['', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce']
@@ -169,7 +174,7 @@ const WRONG_HINTS = [
 ]
 const LEVEL_PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buena lectura del reloj!']
 
-export function ElReloj() {
+export function ElReloj({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -186,13 +191,9 @@ export function ElReloj() {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(ROUND_PRAISE[0])
   const [levelPraise, setLevelPraise] = useState(LEVEL_PRAISE[0])
-
-  useEffect(() => {
-    setCurrentIndex(0)
-    setEliminated(new Set())
-    setResolved(false)
-    setHint(null)
-  }, [levelIdx, roundKey])
+  // Wrong-tap count, accumulated across levels 1→2→3 and only zeroed on a
+  // true day restart (see nextLevel's wrap branch below).
+  const [mistakes, setMistakes] = useState(0)
 
   const round = order[currentIndex]
   const done = currentIndex >= order.length
@@ -210,6 +211,7 @@ export function ElReloj() {
       setResolved(true)
       setHint(null)
     } else {
+      setMistakes((m) => m + 1)
       setEliminated((prev) => new Set(prev).add(id))
       setHint(pickOne(WRONG_HINTS))
     }
@@ -220,13 +222,44 @@ export function ElReloj() {
     setResolved(false)
     setHint(null)
   }
+  // Resets happen HERE, synchronously with the level/round change, not in a
+  // separate useEffect keyed on [levelIdx, roundKey] — see ElVuelto.tsx for
+  // why: an effect-based reset lags one render behind, letting `done` read
+  // stale-true right as levelIdx reaches the last level and firing
+  // onComplete with garbage data.
   function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setEliminated(new Set())
+    setResolved(false)
+    setHint(null)
+    // Only a genuine day restart (wrapping from level 3 back to level 1)
+    // zeroes the mistake count — "Otra ronda" must NOT, even on level 1.
+    if (isWrap) setMistakes(0)
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setCurrentIndex(0)
+    setEliminated(new Set())
+    setResolved(false)
+    setHint(null)
+    // NOT setMistakes(0) — a same-level replay must not wipe accumulated mistakes.
   }
+
+  // Fires once per roundKey when level 3's last clock round resolves. A full
+  // day restart (the wrap to level 1) gets a new roundKey, so a genuine
+  // replay reports again; re-rendering while already done on level 3 does
+  // not fire twice.
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey])
 
   return (
     <div className="p-5 sm:p-7">
