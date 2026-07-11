@@ -11,11 +11,12 @@ import {
   type ChallengeAccess,
   type ChallengeArea,
 } from '@/lib/challengeContent'
-import type { ChallengeProgress, CompleteDayResponse, GameResult } from '@/lib/challengeProgress'
+import type { BadgeId, ChallengeProgress, CompleteDayResponse, GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
 import { DayResultOverlay } from './DayResultOverlay'
+import { BadgeUnlockOverlay } from './BadgeUnlockOverlay'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // Shown only while the star system is still new to this buyer (the first
@@ -45,6 +46,10 @@ export function DesafioPlayPage() {
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [dayResult, setDayResult] = useState<{ day: number; stars: 1 | 2 | 3; message: string | null } | null>(null)
+  // Newly-earned badges, shown one at a time (rare, but more than one can
+  // unlock off a single completion — e.g. first day played landing on 3
+  // stars earns FIRST_DAY and PERFECT_DAY together).
+  const [badgeQueue, setBadgeQueue] = useState<BadgeId[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -104,6 +109,7 @@ export function DesafioPlayPage() {
   function handleGameComplete(day: number, result: GameResult) {
     const previousResult = progress?.days.find((d) => d.day === day)
     const daysPlayedSoFar = progress?.days.length ?? 0
+    const previouslyEarned = new Set(progress?.badges.filter((b) => b.earned).map((b) => b.code) ?? [])
 
     api
       .post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result)
@@ -118,7 +124,14 @@ export function DesafioPlayPage() {
         setDayResult({ day, stars: saved.stars, message })
         return api.get<ChallengeProgress>(`/challenge/${token}/progress`)
       })
-      .then(setProgress)
+      .then((freshProgress) => {
+        setProgress(freshProgress)
+        // Badge unlocks show AFTER the star result (see the render order
+        // below) — queued here, not shown immediately, since dayResult is
+        // still on screen at this point.
+        const newlyEarned = freshProgress.badges.filter((b) => b.earned && !previouslyEarned.has(b.code))
+        if (newlyEarned.length > 0) setBadgeQueue(newlyEarned.map((b) => b.code))
+      })
       .catch((error) => {
         console.error('No se pudo guardar el resultado del día', error)
       })
@@ -127,6 +140,7 @@ export function DesafioPlayPage() {
   function closeDayModal() {
     setSelectedDay(null)
     setDayResult(null)
+    setBadgeQueue([])
   }
 
   if (phase === 'loading') {
@@ -293,6 +307,12 @@ export function DesafioPlayPage() {
                     stars={dayResult.stars}
                     message={dayResult.message}
                     onDismiss={() => setDayResult(null)}
+                  />
+                )}
+                {!dayResult && badgeQueue.length > 0 && (
+                  <BadgeUnlockOverlay
+                    code={badgeQueue[0]}
+                    onDismiss={() => setBadgeQueue((q) => q.slice(1))}
                   />
                 )}
               </>

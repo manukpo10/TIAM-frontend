@@ -83,6 +83,20 @@ export const BADGE_META: Record<BadgeId, { label: string; description: string }>
   PERFECT_DAY: { label: 'Día perfecto', description: 'Conseguiste 3 estrellas en un día.' },
 }
 
+// Matched by badge code (lowercase filename) — same import.meta.glob pattern as
+// challengeContent.ts's day illustrations, relative to THIS file (src/lib/).
+const BADGE_ILLUSTRATIONS = import.meta.glob('../assets/desafio/badges/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+
+/** Illustration for the badge-unlock celebration — undefined only if the asset
+ * pipeline hasn't generated one for this code yet (callers render without it). */
+export function badgeIllustration(code: BadgeId): string | undefined {
+  const match = Object.entries(BADGE_ILLUSTRATIONS).find(([path]) => path.endsWith(`/${code.toLowerCase()}.webp`))
+  return match?.[1]
+}
+
 /**
  * Stars from a game result — accuracy-based, never an absolute mistake count, so
  * a 4-question game (Empecemos por hoy) and a ~36-attempt game (Verdadero o falso)
