@@ -16,6 +16,13 @@ import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import { useToast } from '@/components/ui/Toast'
+
+// Shown only while the star system is still new to this buyer (the first
+// few days played ever) or when a replay genuinely improves a day's already-
+// recorded stars — never on every single completion, which would just turn
+// into noise once someone already knows how it works.
+const STAR_EXPLAINER_DAY_COUNT = 3
 
 // ── Per-area color + icon (inline styles avoid Tailwind's dynamic-class safelist,
 //    same approach LandingPage uses for cognitive areas) ─────────────────────────
@@ -33,6 +40,7 @@ type Phase = 'loading' | 'error' | 'ready'
 
 export function DesafioPlayPage() {
   const { token } = useParams<{ token: string }>()
+  const { toast } = useToast()
   const [phase, setPhase] = useState<Phase>('loading')
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
@@ -86,10 +94,32 @@ export function DesafioPlayPage() {
   // success, re-fetch progress so the day-grid's stars and the panel below
   // it reflect this result as soon as the player closes the modal, without
   // needing a full page reload.
+  //
+  // The star toast is intentionally NOT shown on every completion — only
+  // while the buyer is still new to the star system (their first few days
+  // played ever), or when a replay genuinely improves a day's already-
+  // recorded stars. Both `previousResult`/`daysPlayedSoFar` are read from
+  // `progress` BEFORE this POST, so they reflect state as of the last
+  // completed day, not this one.
   function handleGameComplete(day: number, result: GameResult) {
+    const previousResult = progress?.days.find((d) => d.day === day)
+    const daysPlayedSoFar = progress?.days.length ?? 0
+
     api
       .post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result)
-      .then(() => api.get<ChallengeProgress>(`/challenge/${token}/progress`))
+      .then((saved) => {
+        const isEarlyDay = daysPlayedSoFar < STAR_EXPLAINER_DAY_COUNT
+        const improved = previousResult != null && saved.stars > previousResult.stars
+        if (isEarlyDay || improved) {
+          const stars = '⭐'.repeat(saved.stars)
+          toast.success(
+            improved
+              ? `${stars} ¡Mejoraste tu resultado de este día!`
+              : `${stars} Las estrellas miden qué tan preciso fuiste, no la velocidad.`,
+          )
+        }
+        return api.get<ChallengeProgress>(`/challenge/${token}/progress`)
+      })
       .then(setProgress)
       .catch((error) => {
         console.error('No se pudo guardar el resultado del día', error)
