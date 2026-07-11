@@ -15,8 +15,8 @@ import type { ChallengeProgress, CompleteDayResponse, GameResult } from '@/lib/c
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
+import { DayResultOverlay } from './DayResultOverlay'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
-import { useToast } from '@/components/ui/Toast'
 
 // Shown only while the star system is still new to this buyer (the first
 // few days played ever) or when a replay genuinely improves a day's already-
@@ -40,11 +40,11 @@ type Phase = 'loading' | 'error' | 'ready'
 
 export function DesafioPlayPage() {
   const { token } = useParams<{ token: string }>()
-  const { toast } = useToast()
   const [phase, setPhase] = useState<Phase>('loading')
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [dayResult, setDayResult] = useState<{ day: number; stars: 1 | 2 | 3; message: string | null } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -79,7 +79,7 @@ export function DesafioPlayPage() {
   // Close the day card on Escape (matches the modal pattern used elsewhere)
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setSelectedDay(null)
+      if (e.key === 'Escape') closeDayModal()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -95,12 +95,12 @@ export function DesafioPlayPage() {
   // it reflect this result as soon as the player closes the modal, without
   // needing a full page reload.
   //
-  // The star toast is intentionally NOT shown on every completion — only
-  // while the buyer is still new to the star system (their first few days
-  // played ever), or when a replay genuinely improves a day's already-
-  // recorded stars. Both `previousResult`/`daysPlayedSoFar` are read from
-  // `progress` BEFORE this POST, so they reflect state as of the last
-  // completed day, not this one.
+  // The result overlay's tip line is intentionally not always the same —
+  // only while the buyer is still new to the star system (their first few
+  // days played ever), or when a replay genuinely improves a day's already-
+  // recorded stars, does it say anything beyond the star count itself. Both
+  // `previousResult`/`daysPlayedSoFar` are read from `progress` BEFORE this
+  // POST, so they reflect state as of the last completed day, not this one.
   function handleGameComplete(day: number, result: GameResult) {
     const previousResult = progress?.days.find((d) => d.day === day)
     const daysPlayedSoFar = progress?.days.length ?? 0
@@ -110,20 +110,23 @@ export function DesafioPlayPage() {
       .then((saved) => {
         const isEarlyDay = daysPlayedSoFar < STAR_EXPLAINER_DAY_COUNT
         const improved = previousResult != null && saved.stars > previousResult.stars
-        if (isEarlyDay || improved) {
-          const stars = '⭐'.repeat(saved.stars)
-          toast.success(
-            improved
-              ? `${stars} ¡Mejoraste tu resultado de este día!`
-              : `${stars} Las estrellas miden qué tan preciso fuiste, no la velocidad.`,
-          )
-        }
+        const message = improved
+          ? '¡Mejoraste tu resultado de este día!'
+          : isEarlyDay
+            ? 'Las estrellas miden qué tan preciso fuiste, no la velocidad.'
+            : null
+        setDayResult({ day, stars: saved.stars, message })
         return api.get<ChallengeProgress>(`/challenge/${token}/progress`)
       })
       .then(setProgress)
       .catch((error) => {
         console.error('No se pudo guardar el resultado del día', error)
       })
+  }
+
+  function closeDayModal() {
+    setSelectedDay(null)
+    setDayResult(null)
   }
 
   if (phase === 'loading') {
@@ -246,14 +249,14 @@ export function DesafioPlayPage() {
       {selected && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-6"
-          onClick={() => setSelectedDay(null)}
+          onClick={closeDayModal}
           role="dialog"
           aria-modal="true"
           aria-labelledby="day-card-title"
         >
           <div
             className={[
-              'w-full overflow-hidden rounded-3xl bg-white shadow-xl',
+              'relative w-full overflow-hidden rounded-3xl bg-white shadow-xl',
               Game ? 'max-w-2xl' : 'max-w-md',
             ].join(' ')}
             onClick={(e) => e.stopPropagation()}
@@ -272,7 +275,7 @@ export function DesafioPlayPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setSelectedDay(null)}
+                    onClick={closeDayModal}
                     aria-label="Cerrar"
                     className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
                   >
@@ -285,6 +288,13 @@ export function DesafioPlayPage() {
                     onComplete={(result) => handleGameComplete(selected.day, result)}
                   />
                 </div>
+                {dayResult && dayResult.day === selected.day && (
+                  <DayResultOverlay
+                    stars={dayResult.stars}
+                    message={dayResult.message}
+                    onDismiss={() => setDayResult(null)}
+                  />
+                )}
               </>
             ) : (
               <>
@@ -319,7 +329,7 @@ export function DesafioPlayPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setSelectedDay(null)}
+                      onClick={closeDayModal}
                       aria-label="Cerrar"
                       className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
                     >
