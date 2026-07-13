@@ -4,7 +4,8 @@ import { CHALLENGE_DAYS, type ChallengeArea } from '@/lib/challengeContent'
 
 /**
  * Summary card for the "Desafío 30 días" day-grid page: streak, earned
- * badges, and a per-area star average. Deliberately never compares one
+ * badges, and a per-area completion bar (played / total game-days for that
+ * area, as a percentage). Deliberately never compares one
  * person's numbers to anyone else's — every number here is about this one
  * buyer's own play, nothing more (see the session's standing "no ranking
  * between patients" decision).
@@ -44,19 +45,6 @@ const AREA_COLOR: Record<ChallengeArea, string> = {
   calculo: '#0891B2',
   orientacion: '#D97706',
   ejecutivas: '#4F46E5',
-}
-
-function StarRow({ filled }: { filled: number }) {
-  return (
-    <div className="flex items-center gap-0.5" aria-label={`${filled} de 3 estrellas`}>
-      {[1, 2, 3].map((n) => (
-        <Star
-          key={n}
-          className={n <= filled ? 'h-4 w-4 fill-tiam-orange text-tiam-orange' : 'h-4 w-4 text-slate-200'}
-        />
-      ))}
-    </div>
-  )
 }
 
 export function ChallengeProgressPanel({ progress }: { progress: ChallengeProgress | null }) {
@@ -119,19 +107,29 @@ export function ChallengeProgressPanel({ progress }: { progress: ChallengeProgre
           }
         >
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Por área</p>
-          <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
-            {playedAreas.map(({ area, played, averageStars }) => (
-              <div key={area} className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-sm text-slate-600">
-                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: AREA_COLOR[area] }} />
-                  {AREA_LABEL[area]}
-                  <span className="text-slate-400">
-                    · {played} de {gameDaysForArea(area)} días
-                  </span>
-                </span>
-                <StarRow filled={Math.round(averageStars)} />
-              </div>
-            ))}
+          <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
+            {playedAreas.map(({ area, played }) => {
+              const total = gameDaysForArea(area)
+              const pct = total > 0 ? Math.round((played / total) * 100) : 0
+              return (
+                <div key={area}>
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="flex items-center gap-2 text-slate-600">
+                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: AREA_COLOR[area] }} />
+                      {AREA_LABEL[area]}
+                      <span className="text-slate-400">· {played} de {total} días</span>
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-slate-500">{pct}%</span>
+                  </div>
+                  <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full transition-[width] duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: AREA_COLOR[area] }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
