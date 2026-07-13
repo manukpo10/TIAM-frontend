@@ -11,7 +11,7 @@ import {
   type ChallengeAccess,
   type ChallengeArea,
 } from '@/lib/challengeContent'
-import type { BadgeId, ChallengeProgress, CompleteDayResponse, GameResult } from '@/lib/challengeProgress'
+import { computeStars, type BadgeId, type ChallengeProgress, type CompleteDayResponse, type GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES } from './games/registry'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
@@ -94,41 +94,41 @@ export function DesafioPlayPage() {
   // the card — otherwise the layout shifts and the next tap lands nowhere.
   useBodyScrollLock(selectedDay !== null)
 
-  // Fire-and-forget the save itself — a failed save just logs, it must never
-  // block or interrupt the completion screen the game already shows. On
-  // success, re-fetch progress so the day-grid's stars and the panel below
-  // it reflect this result as soon as the player closes the modal, without
-  // needing a full page reload.
+  // The reward screen (stars) shows IMMEDIATELY on completion, computed
+  // client-side — it must NEVER depend on the save POST succeeding. computeStars
+  // mirrors the backend's exact formula, so the count shown here is the same one
+  // that gets persisted; a failed/slow save (rejected token, offline, day not
+  // yet unlocked on the real backend) must never swallow the player's reward.
   //
-  // The result overlay's tip line is intentionally not always the same —
-  // only while the buyer is still new to the star system (their first few
-  // days played ever), or when a replay genuinely improves a day's already-
-  // recorded stars, does it say anything beyond the star count itself. Both
-  // `previousResult`/`daysPlayedSoFar` are read from `progress` BEFORE this
-  // POST, so they reflect state as of the last completed day, not this one.
+  // The tip line under the stars is not always the same — only while the buyer
+  // is still new to the star system (their first few days played ever), or when
+  // a replay genuinely improves a day's already-recorded stars, does it say
+  // anything beyond the star count itself. `previousResult`/`daysPlayedSoFar`
+  // are read from `progress` (state as of the last completed day, not this one).
   function handleGameComplete(day: number, result: GameResult) {
     const previousResult = progress?.days.find((d) => d.day === day)
     const daysPlayedSoFar = progress?.days.length ?? 0
     const previouslyEarned = new Set(progress?.badges.filter((b) => b.earned).map((b) => b.code) ?? [])
 
+    const stars = computeStars(result.mistakes, result.totalAttempts)
+    const isEarlyDay = daysPlayedSoFar < STAR_EXPLAINER_DAY_COUNT
+    const improved = previousResult != null && stars > previousResult.stars
+    const message = improved
+      ? '¡Mejoraste tu resultado de este día!'
+      : isEarlyDay
+        ? 'Las estrellas miden qué tan preciso fuiste, no la velocidad.'
+        : null
+    setDayResult({ day, stars, message })
+
+    // Persist in the background. On success, re-fetch progress so the day-grid's
+    // stars and the panel reflect this result, and queue any newly-earned badge
+    // (shown after the star screen is dismissed). A failed save just logs — the
+    // reward screen already showed.
     api
       .post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result)
-      .then((saved) => {
-        const isEarlyDay = daysPlayedSoFar < STAR_EXPLAINER_DAY_COUNT
-        const improved = previousResult != null && saved.stars > previousResult.stars
-        const message = improved
-          ? '¡Mejoraste tu resultado de este día!'
-          : isEarlyDay
-            ? 'Las estrellas miden qué tan preciso fuiste, no la velocidad.'
-            : null
-        setDayResult({ day, stars: saved.stars, message })
-        return api.get<ChallengeProgress>(`/challenge/${token}/progress`)
-      })
+      .then(() => api.get<ChallengeProgress>(`/challenge/${token}/progress`))
       .then((freshProgress) => {
         setProgress(freshProgress)
-        // Badge unlocks show AFTER the star result (see the render order
-        // below) — queued here, not shown immediately, since dayResult is
-        // still on screen at this point.
         const newlyEarned = freshProgress.badges.filter((b) => b.earned && !previouslyEarned.has(b.code))
         if (newlyEarned.length > 0) setBadgeQueue(newlyEarned.map((b) => b.code))
       })
