@@ -25,6 +25,7 @@ import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
 import { LaBalanza } from './LaBalanza'
 import { LosOpuestos } from './LosOpuestos'
+import { LaCancionDeTuJuventud } from './LaCancionDeTuJuventud'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -64,4 +65,5 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   26: QueOficioEs,
   27: QueSeEsconde,
   29: LaBalanza,
+  15: LaCancionDeTuJuventud,
 }

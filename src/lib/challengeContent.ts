@@ -97,8 +97,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: mirá la palabra y tocá cuál de las opciones es su opuesto. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 3 — combinar áreas / recuerdo demorado ─────────────────────────
-  { day: 15, type: 'card', area: 'memoria', title: 'La canción de tu juventud',
-    instructions: 'Elegí una canción que te gustaba de joven. Tratá de escribir la primera estrofa de memoria, sin buscarla, y después tarareala.' },
+  { day: 15, type: 'game', area: 'memoria', title: 'La canción de tu juventud',
+    instructions: 'Un juego de memoria auditiva: escuchá un fragmento y tocá a qué género musical se parece más. Subís de dificultad a medida que avanzás.' },
   { day: 16, type: 'game', area: 'ejecutivas', title: '¿Verdadero o falso?',
     instructions: 'Un juego de razonamiento: leé la frase y decidí si es verdadera o falsa. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'game', area: 'atencion', title: '¿Qué cambió?',
