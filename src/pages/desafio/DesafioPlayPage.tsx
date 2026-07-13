@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
-  Brain, Eye, MessageCircle, Hand, Calculator, Compass, Lightbulb,
+  Brain, Eye, MessageCircle, Hand, Calculator, Compass, Lightbulb, Puzzle,
   Lock, Star, X, type LucideIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -31,7 +31,8 @@ const AREA_META: Record<ChallengeArea, { label: string; color: string; icon: Luc
   memoria: { label: 'Memoria', color: '#1B6FC4', icon: Brain },
   atencion: { label: 'Atención', color: '#E8531E', icon: Eye },
   lenguaje: { label: 'Lenguaje', color: '#4CA52E', icon: MessageCircle },
-  praxias: { label: 'Dibujo', color: '#7C3AED', icon: Hand },
+  praxias: { label: 'Visuoespacial', color: '#7C3AED', icon: Hand },
+  agnosias: { label: 'Reconocimiento', color: '#DB2777', icon: Puzzle },
   calculo: { label: 'Cálculo', color: '#0891B2', icon: Calculator },
   orientacion: { label: 'Orientación', color: '#D97706', icon: Compass },
   ejecutivas: { label: 'Razonamiento', color: '#4F46E5', icon: Lightbulb },

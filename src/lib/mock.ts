@@ -818,7 +818,7 @@ function computeChallengeBadges(results: DayResult[], streak: StreakInfo): Badge
  * ({area, played, averageStars} — no daysTotal from the API; the panel derives
  * that client-side from CHALLENGE_DAYS, same as this mock does). */
 function computeChallengeAreaBreakdown(results: DayResult[]): AreaScore[] {
-  const areas: ChallengeArea[] = ['memoria', 'atencion', 'lenguaje', 'praxias', 'calculo', 'orientacion', 'ejecutivas']
+  const areas: ChallengeArea[] = ['memoria', 'atencion', 'lenguaje', 'praxias', 'agnosias', 'calculo', 'orientacion', 'ejecutivas']
   return areas.map((area) => {
     const playedForArea = results.filter((r) => r.area === area)
     const averageStars = playedForArea.length

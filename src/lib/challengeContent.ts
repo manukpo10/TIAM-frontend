@@ -38,6 +38,7 @@ export type ChallengeArea =
   | 'atencion'
   | 'lenguaje'
   | 'praxias'
+  | 'agnosias'
   | 'calculo'
   | 'orientacion'
   | 'ejecutivas'
@@ -103,7 +104,7 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de razonamiento: leé la frase y decidí si es verdadera o falsa. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'game', area: 'atencion', title: '¿Qué cambió?',
     instructions: 'Un juego de atención: observá la escena y después tocá los objetos que cambiaron. Subís de dificultad a medida que avanzás.' },
-  { day: 18, type: 'game', area: 'praxias', title: '¿Qué será?',
+  { day: 18, type: 'game', area: 'agnosias', title: '¿Qué será?',
     instructions: 'Un juego de reconocimiento: la imagen se revela de a poco, elegí qué objeto es. Pedí pistas si te hace falta.' },
   { day: 19, type: 'game', area: 'memoria', title: 'Memotest',
     instructions: 'Un juego de memoria clásico: tocá las cartas de a dos y encontrá las parejas iguales. Subís de dificultad a medida que avanzás.' },
@@ -123,7 +124,7 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de razonamiento: mirá la secuencia de imágenes y tocá la que sigue en el patrón. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'lenguaje', title: '¿Qué oficio es?',
     instructions: 'Un juego de lenguaje: mirá las herramientas de un oficio y tocá cuál es. Subís de dificultad a medida que avanzás.' },
-  { day: 27, type: 'game', area: 'praxias', title: '¿Qué se esconde?',
+  { day: 27, type: 'game', area: 'agnosias', title: '¿Qué se esconde?',
     instructions: 'Un juego de reconocimiento: varios dibujos se superponen en una sola imagen, tocá los que reconozcas entre las opciones. Subís de dificultad a medida que avanzás.' },
   { day: 28, type: 'card', area: 'memoria', title: 'Repaso de la semana',
     instructions: 'Sin mirar, escribí tres ejercicios que hayas hecho en estos días. ¿Cuál te gustó más? ¿Cuál te costó más?' },
