@@ -8,8 +8,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * clock (new Date(), frozen once at mount) is the ground truth, so questions
  * about TODAY have live, checkable answers with zero content to ever update.
  *
- * The content — today's real weekday/month/season/time-of-day — has exactly
- * one correct answer per calendar day and no natural difficulty tiers, so a
+ * The content — today's real weekday/date/month/year/season/time-of-day — has
+ * exactly one correct answer per calendar day and no natural difficulty tiers, so a
  * "Nivel 2" or a score would be manufactured, not honest. This is day 1, a
  * buyer's very first exercise; a wrong answer here is uniquely sensitive
  * (temporal disorientation is a real clinical signal), so it resolves on the
@@ -48,7 +48,7 @@ interface Option {
   label: string
   image?: string
 }
-type QuestionKind = 'weekday' | 'month' | 'season' | 'moment'
+type QuestionKind = 'weekday' | 'date' | 'month' | 'year' | 'season' | 'moment'
 interface Question {
   kind: QuestionKind
   prompt: string
@@ -98,6 +98,8 @@ function buildQuestions(today: Date): Question[] {
   const weekdayIdx = (today.getDay() + 6) % 7 // getDay() is 0=Sun; rotate to Monday-first
   const monthIdx = today.getMonth()
   const dayOfMonth = today.getDate()
+  const daysInMonth = new Date(today.getFullYear(), monthIdx + 1, 0).getDate()
+  const yearNow = today.getFullYear()
 
   // Month: correct + 3 nearby decoys, sorted by signed offset around the current month.
   const offsets = shuffle([-3, -2, -1, 1, 2, 3]).slice(0, 3)
@@ -106,6 +108,19 @@ function buildQuestions(today: Date): Question[] {
     const idx = (monthIdx + off + 12) % 12
     return { id: MONTHS[idx], label: MONTHS[idx] }
   })
+
+  // Date: correct + 3 nearby decoys, clamped to valid days of THIS month (never
+  // spills into a neighbouring month, which a bare number couldn't label anyway).
+  const dateOffsets = shuffle([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5])
+    .filter((off) => dayOfMonth + off >= 1 && dayOfMonth + off <= daysInMonth)
+    .slice(0, 3)
+  const dateNumbers = [0, ...dateOffsets].map((off) => dayOfMonth + off).sort((a, b) => a - b)
+  const dateOptions: Option[] = dateNumbers.map((n) => ({ id: String(n), label: String(n) }))
+
+  // Year: same signed-offset technique as month — no boundary issues to worry about.
+  const yearOffsets = shuffle([-3, -2, -1, 1, 2, 3]).slice(0, 3)
+  const yearNumbers = [0, ...yearOffsets].map((off) => yearNow + off).sort((a, b) => a - b)
+  const yearOptions: Option[] = yearNumbers.map((y) => ({ id: String(y), label: String(y) }))
 
   const season = validSeasons(monthIdx + 1, dayOfMonth)
   const moment = momentOfDay(today.getHours())
@@ -119,10 +134,24 @@ function buildQuestions(today: Date): Question[] {
       cols: 2,
     },
     {
+      kind: 'date',
+      prompt: '¿Qué día del mes es hoy?',
+      options: dateOptions,
+      correctIds: [String(dayOfMonth)],
+      cols: 2,
+    },
+    {
       kind: 'month',
       prompt: '¿En qué mes estamos?',
       options: monthOptions,
       correctIds: [MONTHS[monthIdx]],
+      cols: 2,
+    },
+    {
+      kind: 'year',
+      prompt: '¿En qué año estamos?',
+      options: yearOptions,
+      correctIds: [String(yearNow)],
       cols: 2,
     },
     {
@@ -167,7 +196,7 @@ export function EmpecemosPorHoy({ day: _day, onComplete }: GameProps) {
   const done = index >= questions.length
   const wasWrong = answeredId !== null && current ? !current.correctIds.includes(answeredId) : false
 
-  // No LEVELS[] ladder here — the day is done after one pass through all 4
+  // No LEVELS[] ladder here — the day is done after one pass through all
   // questions, so this reports once ever (unlike ElVuelto/QueSeEsconde, which
   // fire once per roundKey so a genuine full-day restart can report again).
   // "Repasar de nuevo" is a courtesy replay, not a second attempt at the day.
@@ -188,7 +217,10 @@ export function EmpecemosPorHoy({ day: _day, onComplete }: GameProps) {
       setPraise(pickOne(CORRECT_PRAISE))
     } else {
       const answerLabel = current.options.find((o) => o.id === current.correctIds[0])?.label ?? ''
-      setReveal(`${pickOne(REVEAL_LEADIN)} ${answerLabel.toLowerCase()}.`)
+      // A bare day-of-month number reads oddly without its article ("hoy es 13" vs
+      // "hoy es el 13") — every other kind's label is a name, which doesn't need one.
+      const revealLabel = current.kind === 'date' ? `el ${answerLabel}` : answerLabel.toLowerCase()
+      setReveal(`${pickOne(REVEAL_LEADIN)} ${revealLabel}.`)
     }
   }
 

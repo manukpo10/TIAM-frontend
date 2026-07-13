@@ -17,6 +17,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Same never-hard-fail philosophy as ElVuelto: a wrong "Listo" tap gives a
  * warm directional nudge and stays adjustable indefinitely, never red.
+ *
+ * VARIAS rondas por nivel (mismo patrón de ElVuelto/LaCancionDeTuJuventud):
+ * cada nivel resuelve `ROUNDS_PER_LEVEL[levelIdx]` recetas distintas, elegidas
+ * al azar del pool de escenarios de ese nivel (sin repetir dentro del nivel).
+ * Los pools existentes (5/5/7) ya alcanzan para 3/4/5 rondas sin necesitar
+ * contenido nuevo. 12 recetas en total (3+4+5).
  */
 
 interface Scenario {
@@ -70,6 +76,14 @@ const LEVELS: Level[] = [
   },
 ]
 
+// Rounds resolved per level before the level is complete — same shape as
+// ElVuelto. Levels 1/2 have 5 scenarios and level 3 has 7, so 3/4/5 rounds
+// fit comfortably within each pool without authoring new content.
+const ROUNDS_PER_LEVEL = [3, 4, 5]
+// Every round resolves with a single correct "Listo" tap (no "me rindo"),
+// so totalAttempts = mistakes + this.
+const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
+
 const IMAGES = import.meta.glob(
   [
     '../../../assets/desafio/games/lista-mercado/*.webp',
@@ -83,6 +97,14 @@ function imgFor(id: string): string | undefined {
   return match?.[1]
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -98,12 +120,19 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
+  const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
 
-  const scenario = useMemo(
-    () => pickOne(level.scenarios),
+  // Subset of `roundsForLevel` recetas picked at random from the level's
+  // scenario pool, recalculated once per level/roundKey — not per round.
+  const scenarios = useMemo(
+    () => shuffle(level.scenarios).slice(0, roundsForLevel),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
+
+  const [roundIdx, setRoundIdx] = useState(0)
+  const scenario = scenarios[roundIdx]
+  const done = roundIdx >= roundsForLevel
 
   const [counter, setCounter] = useState(0)
   const [hint, setHint] = useState<string | null>(null)
@@ -126,10 +155,19 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
   function check() {
+    if (!scenario) return
     if (counter === scenario.target) {
       setPraise(pickOne(PRAISE_GOOD))
       setResolved(true)
       setHint(null)
+      // Brief feedback (with the scenario's explanation), then move to the
+      // next round within the level. Once roundIdx reaches roundsForLevel,
+      // `done` flips true and the level-complete screen takes over below.
+      window.setTimeout(() => {
+        setRoundIdx((i) => i + 1)
+        setCounter(0)
+        setResolved(false)
+      }, 900)
     } else if (counter > scenario.target) {
       setHint('Te pasaste un poco. Probá bajar con el −.')
       setMistakes((m) => m + 1)
@@ -142,12 +180,13 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change, not in a
   // separate useEffect keyed on [levelIdx, roundKey] — see ElVuelto.tsx for
   // why: an effect only catches up on the render AFTER levelIdx changes, so a
-  // sibling effect watching `resolved` would still see the previous level's
-  // stale `true` on the very render that just arrived at the new level.
+  // sibling effect watching `done` would still see the previous level's stale
+  // `true` on the very render that just arrived at the new level.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setRoundIdx(0)
     setCounter(0)
     setHint(null)
     setResolved(false)
@@ -157,27 +196,28 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setRoundIdx(0)
     setCounter(0)
     setHint(null)
     setResolved(false)
   }
 
-  // Fires once per roundKey when level 3 resolves. A full day restart (the
-  // wrap to level 1) gets a new roundKey, so a genuine replay reports again;
-  // re-rendering while already resolved on level 3 does not fire twice.
-  // totalAttempts = this attempt's mistakes + 3 successful checks (one per
-  // level) — there's no separate "attempts" counter, so it's derived here
+  // Fires once per roundKey when level 3's last receta resolves. A full day
+  // restart (the wrap to level 1) gets a new roundKey, so a genuine replay
+  // reports again; re-rendering while already done on level 3 does not fire
+  // twice. totalAttempts = this attempt's mistakes + TOTAL_ROUNDS successful
+  // checks — there's no separate "attempts" counter, so it's derived here
   // rather than adding a second piece of state.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
-    if (resolved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes, totalAttempts: mistakes + LEVELS.length })
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolved, levelIdx, roundKey])
+  }, [done, levelIdx, roundKey])
 
-  const img = imgFor(scenario.icon)
+  const img = scenario ? imgFor(scenario.icon) : undefined
 
   return (
     <div className="p-5 sm:p-7">
@@ -186,66 +226,90 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
           Cálculo · {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Encontrá la cantidad justa</h2>
-      </div>
-
-      {/* Scenario */}
-      <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-        {img && (
-          <div className="flex items-center justify-center">
-            <img src={img} alt="" className="h-12 w-12 object-contain" draggable={false} />
-          </div>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Encontrá la cantidad justa</h2>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {roundsForLevel}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-cyan-600 transition-[width] duration-300"
+                style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
+              />
+            </div>
+          </>
         )}
-        <p className="mt-2 text-center text-base text-slate-700">{scenario.prompt}</p>
       </div>
 
-      {/* Stepper */}
-      <div className="mt-6 flex items-center justify-center gap-6">
-        <button
-          type="button"
-          disabled={resolved || counter === 0}
-          onClick={decrement}
-          aria-label="Restar uno"
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-tiam-blue text-white shadow transition hover:brightness-110 active:scale-95 disabled:opacity-30 sm:h-20 sm:w-20"
-        >
-          <Minus className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={3} />
-        </button>
-        <span className="min-w-[4ch] text-center text-6xl font-extrabold leading-none tracking-tight text-tiam-blue sm:text-7xl">
-          {counter}
-        </span>
-        <button
-          type="button"
-          disabled={resolved}
-          onClick={increment}
-          aria-label="Sumar uno"
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-tiam-blue text-white shadow transition hover:brightness-110 active:scale-95 disabled:opacity-30 sm:h-20 sm:w-20"
-        >
-          <Plus className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={3} />
-        </button>
-      </div>
+      {!done && scenario && (
+        <>
+          {/* Scenario */}
+          <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+            {img && (
+              <div className="flex items-center justify-center">
+                <img src={img} alt="" className="h-12 w-12 object-contain" draggable={false} />
+              </div>
+            )}
+            <p className="mt-2 text-center text-base text-slate-700">{scenario.prompt}</p>
+          </div>
 
-      {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {/* Stepper */}
+          <div className="mt-6 flex items-center justify-center gap-6">
+            <button
+              type="button"
+              disabled={resolved || counter === 0}
+              onClick={decrement}
+              aria-label="Restar uno"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-tiam-blue text-white shadow transition hover:brightness-110 active:scale-95 disabled:opacity-30 sm:h-20 sm:w-20"
+            >
+              <Minus className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={3} />
+            </button>
+            <span className="min-w-[4ch] text-center text-6xl font-extrabold leading-none tracking-tight text-tiam-blue sm:text-7xl">
+              {counter}
+            </span>
+            <button
+              type="button"
+              disabled={resolved}
+              onClick={increment}
+              aria-label="Sumar uno"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-tiam-blue text-white shadow transition hover:brightness-110 active:scale-95 disabled:opacity-30 sm:h-20 sm:w-20"
+            >
+              <Plus className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={3} />
+            </button>
+          </div>
 
-      {!resolved && (
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={check}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-          >
-            Listo
-          </button>
-        </div>
+          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {resolved && (
+            <p className="mt-4 text-center text-sm font-semibold text-tiam-green">
+              {praise} {scenario.explanation}
+            </p>
+          )}
+
+          {!resolved && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={check}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Listo
+              </button>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Completion */}
-      {resolved && (
+      {/* Level complete */}
+      {done && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
-          <p className="mt-1 text-slate-600">{scenario.explanation}</p>
+          <p className="mt-1 text-slate-600">
+            Calculaste bien las {roundsForLevel} recetas — completaste el nivel {levelIdx + 1}.
+          </p>
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"

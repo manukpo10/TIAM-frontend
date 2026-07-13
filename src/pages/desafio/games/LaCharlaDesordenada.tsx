@@ -15,6 +15,17 @@ import type { GameProps } from '@/lib/challengeProgress'
  * longer than single words and read better as stacked rows than inline
  * chips, and the distractor levels need "done"/"correct" rules the shared
  * hook deliberately doesn't know about — that logic lives here instead.
+ *
+ * MULTIPLE rounds per level (same pattern as "Los opuestos" / "La canción
+ * de tu juventud"): each level draws `rounds` distinct conversations from
+ * its own pool (shuffle + slice), never repeating within a level. Unlike
+ * those two games — which resolve each round with a single tap and
+ * auto-advance after a timeout — here the result only reveals once you tap
+ * "Revisar," and a wrong answer needs to be READ (the whole conversation,
+ * spelled out in order). So advancing to the next round sits behind an
+ * explicit "Siguiente charla" button instead of a timeout: auto-advancing
+ * on a clock here would rush that reading, which conflicts with this app's
+ * "no timer" rule.
  */
 
 interface Conversation {
@@ -24,6 +35,7 @@ interface Conversation {
 interface ConvLevel {
   n: number
   name: string
+  rounds: number
   conversations: Conversation[]
 }
 
@@ -31,6 +43,7 @@ const LEVELS: ConvLevel[] = [
   {
     n: 1,
     name: 'Nivel 1',
+    rounds: 3,
     conversations: [
       {
         lines: [
@@ -58,6 +71,7 @@ const LEVELS: ConvLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
+    rounds: 4,
     conversations: [
       {
         lines: [
@@ -98,6 +112,7 @@ const LEVELS: ConvLevel[] = [
   {
     n: 3,
     name: 'Nivel 3',
+    rounds: 5,
     conversations: [
       {
         lines: [
@@ -132,6 +147,28 @@ const LEVELS: ConvLevel[] = [
         ],
         distractor: 'Con permiso, ¿este es el colectivo que va al centro?',
       },
+      {
+        lines: [
+          'Hola hijo, ¿cómo andás? Te llamaba por el fin de semana que viene.',
+          'Hola mamá, todo bien acá. Contame, ¿qué se te ocurrió?',
+          'Estaba pensando si los chicos se pueden quedar a dormir en casa el sábado.',
+          'Me parece una idea bárbara, seguro se ponen recontentos con la noticia.',
+          'Yo les preparo la pieza de arriba y hago la comida que más les gusta.',
+          'Perfecto, entonces el sábado a la tarde te los llevo con las mochilas.',
+        ],
+        distractor: 'Disculpe, ¿a qué hora abre la veterinaria los sábados?',
+      },
+      {
+        lines: [
+          'Consultorio del doctor Ibáñez, buenos días, ¿en qué la puedo ayudar?',
+          'Buenos días, quería sacar un turno para el control de todos los años.',
+          'Sí, señora, tengo lugar el jueves que viene a las diez de la mañana.',
+          'Uy, qué bueno, a esa hora me queda cómodo porque ya volvió mi hija del trabajo.',
+          'Perfecto, entonces la anoto para el jueves a las diez, ¿a nombre de quién?',
+          'A nombre de Rosa Fernández, muchísimas gracias por la atención.',
+        ],
+        distractor: 'Buenas tardes, ¿tiene turno disponible para cortar el pasto del fondo?',
+      },
     ],
   },
 ]
@@ -142,6 +179,14 @@ const PRAISE_OK = [
   '¡Casi! Con la práctica te sale cada vez mejor.',
 ]
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -151,18 +196,22 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const conversation = useMemo(
-    () => pickOne(level.conversations),
+  // `rounds` distinct conversations for this level, chosen once per
+  // level/roundKey — never repeats within a single level.
+  const roundConversations = useMemo(
+    () => shuffle(level.conversations).slice(0, level.rounds),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
+  const [roundIdx, setRoundIdx] = useState(0)
+  const conversation = roundConversations[roundIdx]
   const pool = useMemo(
     () => (conversation.distractor ? [...conversation.lines, conversation.distractor] : conversation.lines),
     [conversation],
   )
   const distractorId = conversation.distractor ? conversation.lines.length : null
 
-  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}`)
+  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}-${roundIdx}`)
   const [checked, setChecked] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
@@ -185,6 +234,13 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
     placedReal.length === conversation.lines.length &&
     placedReal.every((item, i) => item.id === i)
 
+  // True once the LAST round of the level has been checked — gates the
+  // level-complete screen (nextLevel/replay) instead of the plain "next
+  // round" button. Derived from `checked` + `roundIdx`, both real state
+  // reset synchronously below — never from a value reset inside a
+  // useEffect (see nextLevel()'s comment for why that matters).
+  const done = checked && roundIdx >= level.rounds - 1
+
   function check() {
     setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
     setChecked(true)
@@ -196,13 +252,21 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
     setAccMistakes((m) => m + lineMistakes + (includedDistractor ? 1 : 0))
     setAccAttempts((a) => a + pool.length)
   }
+  // Advance to the next round within the level. Only reachable while
+  // `!done` — the button that calls this doesn't render once the level is
+  // complete.
+  function nextRound() {
+    setChecked(false)
+    setRoundIdx((i) => i + 1)
+  }
   // Resets happen HERE, synchronously with the level/round change (checked
   // was already reset this way before this retrofit) — keeping it that way
   // means the onComplete-reporting effect below never sees a stale `checked`
-  // paired with a fresh `levelIdx` on the same render.
+  // (or `roundIdx`) paired with a fresh `levelIdx` on the same render.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setChecked(false)
+    setRoundIdx(0)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
     // Only a genuine day restart (wrapping from level 3 back to level 1)
@@ -214,6 +278,7 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
   }
   function replay() {
     setChecked(false)
+    setRoundIdx(0)
     setRoundKey((k) => k + 1)
   }
 
@@ -223,12 +288,12 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
   // roundKey) can report again.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
-    if (checked && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
       onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked, levelIdx, roundKey, accMistakes, accAttempts])
+  }, [done, levelIdx, roundKey, accMistakes, accAttempts])
 
   return (
     <div className="p-5 sm:p-7">
@@ -240,73 +305,90 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
         >
           Razonamiento · {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          {conversation.distractor
-            ? 'Ordená la charla — ¡una de estas frases no pertenece!'
-            : 'Ordená estas frases para armar la charla'}
-        </h2>
-        <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
-      </div>
-
-      {/* Sequence being built */}
-      <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-        {placed.length === 0 && (
-          <p className="text-center text-sm text-slate-400">Tocá las frases de abajo para empezar</p>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+              {conversation.distractor
+                ? 'Ordená la charla — ¡una de estas frases no pertenece!'
+                : 'Ordená estas frases para armar la charla'}
+            </h2>
+            <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {level.rounds}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
+              />
+            </div>
+          </>
         )}
-        <div className="flex flex-col gap-2">
-          {placed.map((item, i) => {
-            const isDistractor = item.id === distractorId
-            const isRight = checked && !isDistractor && item.id === i
-            const isWrong = checked && (isDistractor || item.id !== i)
-            return (
-              <button
-                key={item.id}
-                type="button"
-                disabled={checked}
-                onClick={() => unplace(item)}
-                className={[
-                  'flex items-start gap-2 rounded-xl border-2 px-4 py-2.5 text-left text-base transition',
-                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                  isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
-                  isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
-                  !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
-                ].join(' ')}
-              >
-                <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
-                <span>{item.value}</span>
-              </button>
-            )
-          })}
-        </div>
       </div>
 
-      {/* Bank */}
-      {!checked && (
-        <div className="mt-4 flex flex-col gap-2">
-          {bank.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => place(item)}
-              className="rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-            >
-              {item.value}
-            </button>
-          ))}
-        </div>
-      )}
+      {!done && (
+        <>
+          {/* Sequence being built */}
+          <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+            {placed.length === 0 && (
+              <p className="text-center text-sm text-slate-400">Tocá las frases de abajo para empezar</p>
+            )}
+            <div className="flex flex-col gap-2">
+              {placed.map((item, i) => {
+                const isDistractor = item.id === distractorId
+                const isRight = checked && !isDistractor && item.id === i
+                const isWrong = checked && (isDistractor || item.id !== i)
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={checked}
+                    onClick={() => unplace(item)}
+                    className={[
+                      'flex items-start gap-2 rounded-xl border-2 px-4 py-2.5 text-left text-base transition',
+                      'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                      isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
+                      isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
+                      !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
+                    ].join(' ')}
+                  >
+                    <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
+                    <span>{item.value}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-      {/* Check button */}
-      {readyToCheck && !checked && (
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={check}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-          >
-            Revisar
-          </button>
-        </div>
+          {/* Bank */}
+          {!checked && (
+            <div className="mt-4 flex flex-col gap-2">
+              {bank.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => place(item)}
+                  className="rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                >
+                  {item.value}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Check button */}
+          {readyToCheck && !checked && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={check}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Revisar
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Result */}
@@ -330,22 +412,35 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
             </div>
           )}
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra charla
-            </button>
+            {done ? (
+              <>
+                <button
+                  type="button"
+                  onClick={nextLevel}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                >
+                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={replay}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Otra charla
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={nextRound}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente charla
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       )}

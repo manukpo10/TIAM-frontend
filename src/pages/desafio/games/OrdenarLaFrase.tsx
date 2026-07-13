@@ -11,6 +11,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * partial order isn't meaningful until complete, so feedback only reveals
  * on "Revisar," and even then it's warm either way — the correct sentence
  * shows as a gentle reference, never a hard "you failed."
+ *
+ * MULTIPLE rounds per level (same pattern as "Los opuestos" / "La canción
+ * de tu juventud"): each level draws `rounds` distinct sentences from its
+ * own pool (shuffle + slice), never repeating within a level. Unlike those
+ * two games — which resolve each round with a single tap and auto-advance
+ * after a timeout — here the result only reveals once you tap "Revisar,"
+ * and a wrong answer needs to be READ (the correct sentence, spelled out).
+ * So advancing to the next round sits behind an explicit "Siguiente frase"
+ * button instead of a timeout: auto-advancing on a clock here would rush
+ * that reading, which conflicts with this app's "no timer" rule.
  */
 
 interface SentenceEntry {
@@ -20,6 +30,7 @@ interface SentenceEntry {
 interface SentenceLevel {
   n: number
   name: string
+  rounds: number
   sentences: SentenceEntry[]
 }
 
@@ -27,6 +38,7 @@ const LEVELS: SentenceLevel[] = [
   {
     n: 1,
     name: 'Nivel 1',
+    rounds: 3,
     sentences: [
       { words: ['El', 'mate', 'está', 'listo'] },
       { words: ['Mi', 'nieta', 'llegó', 'temprano'] },
@@ -38,6 +50,7 @@ const LEVELS: SentenceLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
+    rounds: 4,
     sentences: [
       { words: ['Los', 'chicos', 'juegan', 'a', 'la', 'pelota', 'en', 'el', 'parque'] },
       { words: ['El', 'colectivo', 'pasó', 'antes', 'de', 'tiempo', 'esta', 'mañana'] },
@@ -49,6 +62,7 @@ const LEVELS: SentenceLevel[] = [
   {
     n: 3,
     name: 'Nivel 3',
+    rounds: 5,
     sentences: [
       {
         words: ['Mi', 'hermano', 'trabaja', 'en', 'una', 'farmacia', 'del', 'centro', 'desde', 'hace', 'diez', 'años'],
@@ -80,6 +94,14 @@ const PRAISE_OK = [
   '¡Casi! Con la práctica te sale cada vez mejor.',
 ]
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -89,18 +111,22 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const sentence = useMemo(
-    () => pickOne(level.sentences),
+  // `rounds` distinct sentences for this level, chosen once per
+  // level/roundKey — never repeats within a single level.
+  const roundSentences = useMemo(
+    () => shuffle(level.sentences).slice(0, level.rounds),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
+  const [roundIdx, setRoundIdx] = useState(0)
+  const sentence = roundSentences[roundIdx]
   const pool = useMemo(
     () => (sentence.distractor ? [...sentence.words, sentence.distractor] : sentence.words),
     [sentence],
   )
   const distractorId = sentence.distractor ? sentence.words.length : null
 
-  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}`)
+  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}-${roundIdx}`)
   const [checked, setChecked] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
@@ -123,6 +149,13 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
     placedReal.length === sentence.words.length &&
     placedReal.every((item, i) => item.id === i)
 
+  // True once the LAST round of the level has been checked — gates the
+  // level-complete screen (nextLevel/replay) instead of the plain "next
+  // round" button. Derived from `checked` + `roundIdx`, both real state
+  // reset synchronously below — never from a value reset inside a
+  // useEffect (see nextLevel()'s comment for why that matters).
+  const done = checked && roundIdx >= level.rounds - 1
+
   function check() {
     setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
     setChecked(true)
@@ -134,13 +167,21 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
     setAccMistakes((m) => m + wordMistakes + (includedDistractor ? 1 : 0))
     setAccAttempts((a) => a + pool.length)
   }
+  // Advance to the next round within the level. Only reachable while
+  // `!done` — the button that calls this doesn't render once the level is
+  // complete.
+  function nextRound() {
+    setChecked(false)
+    setRoundIdx((i) => i + 1)
+  }
   // Resets happen HERE, synchronously with the level/round change (checked
   // was already reset this way before this retrofit) — keeping it that way
   // means the onComplete-reporting effect below never sees a stale `checked`
-  // paired with a fresh `levelIdx` on the same render.
+  // (or `roundIdx`) paired with a fresh `levelIdx` on the same render.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setChecked(false)
+    setRoundIdx(0)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
     // Only a genuine day restart (wrapping from level 3 back to level 1)
@@ -152,6 +193,7 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
   }
   function replay() {
     setChecked(false)
+    setRoundIdx(0)
     setRoundKey((k) => k + 1)
   }
 
@@ -161,12 +203,12 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
   // roundKey) can report again.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
-    if (checked && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
       onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked, levelIdx, roundKey, accMistakes, accAttempts])
+  }, [done, levelIdx, roundKey, accMistakes, accAttempts])
 
   return (
     <div className="p-5 sm:p-7">
@@ -175,70 +217,87 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           Lenguaje · {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          {sentence.distractor
-            ? 'Ordená la frase — ¡una de estas palabras no pertenece!'
-            : 'Ordená las palabras para armar la frase'}
-        </h2>
-        <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
-      </div>
-
-      {/* Sentence being built */}
-      <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-        {placed.length === 0 && (
-          <span className="text-sm text-slate-400">Tocá las palabras de abajo para empezar</span>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+              {sentence.distractor
+                ? 'Ordená la frase — ¡una de estas palabras no pertenece!'
+                : 'Ordená las palabras para armar la frase'}
+            </h2>
+            <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {level.rounds}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
+              />
+            </div>
+          </>
         )}
-        {placed.map((item, i) => {
-          const isDistractor = item.id === distractorId
-          const isRight = checked && !isDistractor && item.id === i
-          const isWrong = checked && (isDistractor || item.id !== i)
-          return (
-            <button
-              key={item.id}
-              type="button"
-              disabled={checked}
-              onClick={() => unplace(item)}
-              className={[
-                'min-h-[44px] rounded-xl border-2 px-4 py-2 text-base font-semibold transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
-                isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
-                !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
-              ].join(' ')}
-            >
-              {item.value}
-            </button>
-          )
-        })}
       </div>
 
-      {/* Word bank */}
-      {!checked && (
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-          {bank.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => place(item)}
-              className="min-h-[44px] rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-base font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-            >
-              {item.value}
-            </button>
-          ))}
-        </div>
-      )}
+      {!done && (
+        <>
+          {/* Sentence being built */}
+          <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+            {placed.length === 0 && (
+              <span className="text-sm text-slate-400">Tocá las palabras de abajo para empezar</span>
+            )}
+            {placed.map((item, i) => {
+              const isDistractor = item.id === distractorId
+              const isRight = checked && !isDistractor && item.id === i
+              const isWrong = checked && (isDistractor || item.id !== i)
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={checked}
+                  onClick={() => unplace(item)}
+                  className={[
+                    'min-h-[44px] rounded-xl border-2 px-4 py-2 text-base font-semibold transition',
+                    'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                    isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
+                    isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
+                    !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
+                  ].join(' ')}
+                >
+                  {item.value}
+                </button>
+              )
+            })}
+          </div>
 
-      {/* Check button */}
-      {readyToCheck && !checked && (
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={check}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-          >
-            Revisar
-          </button>
-        </div>
+          {/* Word bank */}
+          {!checked && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {bank.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => place(item)}
+                  className="min-h-[44px] rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-base font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                >
+                  {item.value}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Check button */}
+          {readyToCheck && !checked && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={check}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Revisar
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Result */}
@@ -258,22 +317,35 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
             </p>
           )}
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra frase
-            </button>
+            {done ? (
+              <>
+                <button
+                  type="button"
+                  onClick={nextLevel}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                >
+                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={replay}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Otra frase
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={nextRound}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente frase
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       )}

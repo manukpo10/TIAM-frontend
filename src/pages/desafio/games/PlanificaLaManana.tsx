@@ -16,6 +16,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * as a separate component rather than a shared abstraction, matching this
  * codebase's convention of small focused game components over one
  * generic engine.
+ *
+ * MULTIPLE rounds per level (same pattern as "Los opuestos" / "La canción
+ * de tu juventud"): each level draws `rounds` distinct task-sets from its
+ * own pool (shuffle + slice), never repeating within a level. Unlike those
+ * two games — which resolve each round with a single tap and auto-advance
+ * after a timeout — here the result only reveals once you tap "Revisar,"
+ * and a wrong answer needs to be READ (the whole ideal order, spelled
+ * out). So advancing to the next round sits behind an explicit "Siguiente
+ * mañana" button instead of a timeout: auto-advancing on a clock here
+ * would rush that reading, which conflicts with this app's "no timer" rule.
  */
 
 interface MorningSet {
@@ -25,6 +35,7 @@ interface MorningSet {
 interface MorningLevel {
   n: number
   name: string
+  rounds: number
   sets: MorningSet[]
 }
 
@@ -32,6 +43,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 1,
     name: 'Nivel 1',
+    rounds: 3,
     sets: [
       {
         tasks: [
@@ -59,6 +71,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
+    rounds: 4,
     sets: [
       {
         tasks: [
@@ -85,11 +98,20 @@ const LEVELS: MorningLevel[] = [
           'Contarle a tu marido cómo te fue, cuando llegues a tu casa.',
         ],
       },
+      {
+        tasks: [
+          'Pagar la boleta de la luz en el banco antes de las once, que después se llena de gente.',
+          'De paso, pasar por la ferretería a comprar una lamparita; queda enfrente del banco.',
+          'Comprar fruta fresca en la verdulería, en cualquier momento de la mañana.',
+          'Llamar a tu comadre para invitarla a tomar unos mates, ya de vuelta en tu casa.',
+        ],
+      },
     ],
   },
   {
     n: 3,
     name: 'Nivel 3',
+    rounds: 5,
     sets: [
       {
         tasks: [
@@ -134,6 +156,17 @@ const LEVELS: MorningLevel[] = [
           'Contarle a tu hijo cómo te fue en PAMI, ya de vuelta en tu casa.',
         ],
       },
+      {
+        tasks: [
+          'Sacar turno en la obra social para el oculista, apenas abren a las 8.',
+          'Mientras esperás que te atiendan, pagar la cuota del gas en la caja de al lado.',
+          'Cuando te llamen, entregar la orden médica en la ventanilla.',
+          'Pasar por la óptica a preguntar por los anteojos nuevos; queda a la vuelta de la obra social.',
+          'Comprar caramelos de menta en el kiosco, en cualquier momento de la mañana.',
+          'Contarle a tu nuera cómo te fue, ya de vuelta en tu casa.',
+        ],
+        distractor: 'Acordate: el viernes vence la garantía de la heladera.',
+      },
     ],
   },
 ]
@@ -144,6 +177,14 @@ const PRAISE_OK = [
   '¡Casi! Con la práctica te sale cada vez mejor.',
 ]
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -153,18 +194,22 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const plan = useMemo(
-    () => pickOne(level.sets),
+  // `rounds` distinct task-sets for this level, chosen once per
+  // level/roundKey — never repeats within a single level.
+  const roundSets = useMemo(
+    () => shuffle(level.sets).slice(0, level.rounds),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
+  const [roundIdx, setRoundIdx] = useState(0)
+  const plan = roundSets[roundIdx]
   const pool = useMemo(
     () => (plan.distractor ? [...plan.tasks, plan.distractor] : plan.tasks),
     [plan],
   )
   const distractorId = plan.distractor ? plan.tasks.length : null
 
-  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}`)
+  const { bank, placed, place, unplace } = useSequencingPuzzle(pool, `${levelIdx}-${roundKey}-${roundIdx}`)
   const [checked, setChecked] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
@@ -183,6 +228,13 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
     placedReal.length === plan.tasks.length &&
     placedReal.every((item, i) => item.id === i)
 
+  // True once the LAST round of the level has been checked — gates the
+  // level-complete screen (nextLevel/replay) instead of the plain "next
+  // round" button. Derived from `checked` + `roundIdx`, both real state
+  // reset synchronously below — never from a value reset inside a
+  // useEffect (see nextLevel()'s comment for why that matters).
+  const done = checked && roundIdx >= level.rounds - 1
+
   function check() {
     setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
     setChecked(true)
@@ -194,13 +246,21 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
     setAccMistakes((m) => m + taskMistakes + (includedDistractor ? 1 : 0))
     setAccAttempts((a) => a + pool.length)
   }
+  // Advance to the next round within the level. Only reachable while
+  // `!done` — the button that calls this doesn't render once the level is
+  // complete.
+  function nextRound() {
+    setChecked(false)
+    setRoundIdx((i) => i + 1)
+  }
   // Resets happen HERE, synchronously with the level/round change (checked
   // was already reset this way before this retrofit) — keeping it that way
   // means the onComplete-reporting effect below never sees a stale `checked`
-  // paired with a fresh `levelIdx` on the same render.
+  // (or `roundIdx`) paired with a fresh `levelIdx` on the same render.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setChecked(false)
+    setRoundIdx(0)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
     // Only a genuine day restart (wrapping from level 3 back to level 1)
@@ -212,6 +272,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   }
   function replay() {
     setChecked(false)
+    setRoundIdx(0)
     setRoundKey((k) => k + 1)
   }
 
@@ -221,12 +282,12 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   // roundKey) can report again.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
-    if (checked && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
       onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked, levelIdx, roundKey, accMistakes, accAttempts])
+  }, [done, levelIdx, roundKey, accMistakes, accAttempts])
 
   return (
     <div className="p-5 sm:p-7">
@@ -238,73 +299,90 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
         >
           Razonamiento · {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          {plan.distractor
-            ? 'Ordená la mañana — ¡una de estas tareas no es para hoy!'
-            : 'Ordená estas tareas de la mañana'}
-        </h2>
-        <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
-      </div>
-
-      {/* Sequence being built */}
-      <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-        {placed.length === 0 && (
-          <p className="text-center text-sm text-slate-400">Tocá las tareas de abajo para empezar</p>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+              {plan.distractor
+                ? 'Ordená la mañana — ¡una de estas tareas no es para hoy!'
+                : 'Ordená estas tareas de la mañana'}
+            </h2>
+            <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {level.rounds}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
+              />
+            </div>
+          </>
         )}
-        <div className="flex flex-col gap-2">
-          {placed.map((item, i) => {
-            const isDistractor = item.id === distractorId
-            const isRight = checked && !isDistractor && item.id === i
-            const isWrong = checked && (isDistractor || item.id !== i)
-            return (
-              <button
-                key={item.id}
-                type="button"
-                disabled={checked}
-                onClick={() => unplace(item)}
-                className={[
-                  'flex items-start gap-2 rounded-xl border-2 px-4 py-2.5 text-left text-base transition',
-                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                  isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
-                  isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
-                  !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
-                ].join(' ')}
-              >
-                <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
-                <span>{item.value}</span>
-              </button>
-            )
-          })}
-        </div>
       </div>
 
-      {/* Bank */}
-      {!checked && (
-        <div className="mt-4 flex flex-col gap-2">
-          {bank.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => place(item)}
-              className="rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-            >
-              {item.value}
-            </button>
-          ))}
-        </div>
-      )}
+      {!done && (
+        <>
+          {/* Sequence being built */}
+          <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+            {placed.length === 0 && (
+              <p className="text-center text-sm text-slate-400">Tocá las tareas de abajo para empezar</p>
+            )}
+            <div className="flex flex-col gap-2">
+              {placed.map((item, i) => {
+                const isDistractor = item.id === distractorId
+                const isRight = checked && !isDistractor && item.id === i
+                const isWrong = checked && (isDistractor || item.id !== i)
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={checked}
+                    onClick={() => unplace(item)}
+                    className={[
+                      'flex items-start gap-2 rounded-xl border-2 px-4 py-2.5 text-left text-base transition',
+                      'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                      isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
+                      isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
+                      !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
+                    ].join(' ')}
+                  >
+                    <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
+                    <span>{item.value}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-      {/* Check button */}
-      {readyToCheck && !checked && (
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={check}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-          >
-            Revisar
-          </button>
-        </div>
+          {/* Bank */}
+          {!checked && (
+            <div className="mt-4 flex flex-col gap-2">
+              {bank.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => place(item)}
+                  className="rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                >
+                  {item.value}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Check button */}
+          {readyToCheck && !checked && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={check}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Revisar
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Result */}
@@ -328,22 +406,35 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
             </div>
           )}
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra mañana
-            </button>
+            {done ? (
+              <>
+                <button
+                  type="button"
+                  onClick={nextLevel}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                >
+                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={replay}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Otra mañana
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={nextRound}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente mañana
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       )}

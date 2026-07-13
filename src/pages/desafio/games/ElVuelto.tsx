@@ -18,6 +18,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  * not an arbitrary puzzle — so this never scores or fails a round: a wrong
  * sum gets a directional nudge ("te pasaste" / "todavía te falta") and
  * stays adjustable, no red anywhere, no hard fail, ever.
+ *
+ * VARIAS rondas por nivel (mismo patrón de LaCancionDeTuJuventud/LosOpuestos):
+ * cada nivel resuelve `ROUNDS_PER_LEVEL[levelIdx]` compras distintas, elegidas
+ * al azar del pool de escenarios de ese nivel (sin repetir dentro del nivel).
+ * 12 vueltos en total (3+4+5).
  */
 
 interface Item {
@@ -125,6 +130,15 @@ const LEVELS: Level[] = [
   },
 ]
 
+// Rounds resolved per level before the level is complete — difficulty ramps
+// via round COUNT (there are no "options" to scale here, unlike LosOpuestos).
+// Comfortably within each level's existing scenario pool (5/5/7), so every
+// round is a genuinely random, non-repeating subset — no new content needed.
+const ROUNDS_PER_LEVEL = [3, 4, 5]
+// Every round resolves with a single correct "Listo" tap (no "me rindo"),
+// so totalAttempts = mistakes + this.
+const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
+
 const DENOMINATIONS: { value: number; color: string }[] = [
   { value: 1000, color: '#6B4C9A' },
   { value: 500, color: '#5C6BC0' },
@@ -144,6 +158,14 @@ function imgFor(id: string): string | undefined {
   return match?.[1]
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -159,14 +181,22 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
+  const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
 
-  const scenario = useMemo(
-    () => pickOne(level.scenarios),
+  // Subset of `roundsForLevel` compras picked at random from the level's
+  // scenario pool, recalculated once per level/roundKey — not per round.
+  const scenarios = useMemo(
+    () => shuffle(level.scenarios).slice(0, roundsForLevel),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
-  const totalPrice = scenario.items.reduce((s, i) => s + i.price, 0)
-  const change = scenario.paidWith - totalPrice
+
+  const [roundIdx, setRoundIdx] = useState(0)
+  const scenario = scenarios[roundIdx]
+  const done = roundIdx >= roundsForLevel
+
+  const totalPrice = scenario ? scenario.items.reduce((s, i) => s + i.price, 0) : 0
+  const change = scenario ? scenario.paidWith - totalPrice : 0
 
   const [placed, setPlaced] = useState<PlacedBill[]>([])
   const [nextKey, setNextKey] = useState(0)
@@ -191,10 +221,19 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
   function check() {
+    if (!scenario) return
     if (sum === change) {
       setPraise(pickOne(PRAISE_GOOD))
       setResolved(true)
       setHint(null)
+      // Brief feedback, then move to the next round within the level. Once
+      // roundIdx reaches roundsForLevel, `done` flips true and the
+      // level-complete screen takes over below.
+      window.setTimeout(() => {
+        setRoundIdx((i) => i + 1)
+        setPlaced([])
+        setResolved(false)
+      }, 900)
     } else if (sum > change) {
       setHint('Te pasaste un poco — sacá alguna ficha.')
       setMistakes((m) => m + 1)
@@ -207,15 +246,16 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change, not in a
   // separate useEffect keyed on [levelIdx, roundKey]: an effect only catches
   // up on the render AFTER levelIdx changes, so a sibling effect watching
-  // `resolved` would still see the previous level's stale `true` on the very
+  // `done` would still see the previous level's stale `true` on the very
   // render that just arrived at the new level — firing onComplete instantly,
-  // before the player has done anything. Setting `resolved` in the same
+  // before the player has done anything. Setting `roundIdx` in the same
   // handler that sets `levelIdx`/`roundKey` means React batches them into one
   // render, so they're never observably out of sync.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setRoundIdx(0)
     setPlaced([])
     setHint(null)
     setResolved(false)
@@ -225,27 +265,26 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setRoundIdx(0)
     setPlaced([])
     setHint(null)
     setResolved(false)
   }
 
-  // Fires once per roundKey when level 3 resolves. A full day restart (the
-  // wrap to level 1) gets a new roundKey, so a genuine replay reports again;
-  // re-rendering while already resolved on level 3 does not fire twice.
-  // totalAttempts = this attempt's mistakes + 3 successful checks (one per
-  // level) — there's no separate "attempts" counter, so it's derived here
+  // Fires once per roundKey when level 3's last compra resolves. A full day
+  // restart (the wrap to level 1) gets a new roundKey, so a genuine replay
+  // reports again; re-rendering while already done on level 3 does not fire
+  // twice. totalAttempts = this attempt's mistakes + TOTAL_ROUNDS successful
+  // checks — there's no separate "attempts" counter, so it's derived here
   // rather than adding a second piece of state.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
-    if (resolved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes, totalAttempts: mistakes + LEVELS.length })
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolved, levelIdx, roundKey])
-
-  const itemsLabel = scenario.items.map((i) => i.label).join(' + ')
+  }, [done, levelIdx, roundKey])
 
   return (
     <div className="p-5 sm:p-7">
@@ -254,95 +293,120 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
           Cálculo · {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Armá el vuelto justo</h2>
-      </div>
-
-      {/* Scenario */}
-      <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-        <div className="flex items-center justify-center gap-3">
-          {scenario.items.map((item, i) => {
-            const img = imgFor(item.id)
-            return (
-              <div key={`${item.id}-${i}`} className="flex h-12 w-12 items-center justify-center">
-                {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
-              </div>
-            )
-          })}
-        </div>
-        <p className="mt-2 text-center text-base text-slate-700">
-          <span className="font-semibold">{scenario.venue}:</span> {itemsLabel} — {totalPrice.toLocaleString('es-AR')}
-        </p>
-        <p className="mt-1 text-center text-lg font-bold text-slate-900">
-          Pagás con ${scenario.paidWith.toLocaleString('es-AR')}. ¿Cuánto te dan de vuelto?
-        </p>
-      </div>
-
-      {/* Tray of placed bills */}
-      <div className="mt-5 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-white p-3">
-        {placed.length === 0 ? (
-          <p className="text-center text-sm text-slate-400">Tocá los billetes de abajo</p>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-2">
-            {placed.map((b) => (
-              <button
-                key={b.key}
-                type="button"
-                disabled={resolved}
-                onClick={() => removeBill(b.key)}
-                aria-label={`quitar $${b.value}`}
-                className="min-h-[44px] rounded-xl px-4 py-2 text-base font-bold text-white shadow transition hover:brightness-110 active:scale-95"
-                style={{ backgroundColor: colorFor(b.value) }}
-              >
-                ${b.value}
-              </button>
-            ))}
-          </div>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Armá el vuelto justo</h2>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {roundsForLevel}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-cyan-600 transition-[width] duration-300"
+                style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
+              />
+            </div>
+          </>
         )}
       </div>
-      <p className="mt-2 text-center text-sm font-semibold text-slate-500">
-        Llevás ${sum.toLocaleString('es-AR')}
-      </p>
 
-      {/* Denomination palette */}
-      {!resolved && (
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {DENOMINATIONS.map((d) => (
-            <button
-              key={d.value}
-              type="button"
-              onClick={() => addBill(d.value)}
-              aria-label={`agregar $${d.value}`}
-              className="min-h-[48px] rounded-xl px-4 py-2.5 text-base font-bold text-white shadow transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0"
-              style={{ backgroundColor: d.color }}
-            >
-              ${d.value}
-            </button>
-          ))}
-        </div>
+      {!done && scenario && (
+        <>
+          {/* Scenario */}
+          <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+            <div className="flex items-center justify-center gap-3">
+              {scenario.items.map((item, i) => {
+                const img = imgFor(item.id)
+                return (
+                  <div key={`${item.id}-${i}`} className="flex h-12 w-12 items-center justify-center">
+                    {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
+                  </div>
+                )
+              })}
+            </div>
+            <p className="mt-2 text-center text-base text-slate-700">
+              <span className="font-semibold">{scenario.venue}:</span>{' '}
+              {scenario.items.map((i) => i.label).join(' + ')} — {totalPrice.toLocaleString('es-AR')}
+            </p>
+            <p className="mt-1 text-center text-lg font-bold text-slate-900">
+              Pagás con ${scenario.paidWith.toLocaleString('es-AR')}. ¿Cuánto te dan de vuelto?
+            </p>
+          </div>
+
+          {/* Tray of placed bills */}
+          <div className="mt-5 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-white p-3">
+            {placed.length === 0 ? (
+              <p className="text-center text-sm text-slate-400">Tocá los billetes de abajo</p>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-2">
+                {placed.map((b) => (
+                  <button
+                    key={b.key}
+                    type="button"
+                    disabled={resolved}
+                    onClick={() => removeBill(b.key)}
+                    aria-label={`quitar $${b.value}`}
+                    className="min-h-[44px] rounded-xl px-4 py-2 text-base font-bold text-white shadow transition hover:brightness-110 active:scale-95"
+                    style={{ backgroundColor: colorFor(b.value) }}
+                  >
+                    ${b.value}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="mt-2 text-center text-sm font-semibold text-slate-500">
+            Llevás ${sum.toLocaleString('es-AR')}
+          </p>
+
+          {/* Denomination palette */}
+          {!resolved && (
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {DENOMINATIONS.map((d) => (
+                <button
+                  key={d.value}
+                  type="button"
+                  onClick={() => addBill(d.value)}
+                  aria-label={`agregar $${d.value}`}
+                  className="min-h-[48px] rounded-xl px-4 py-2.5 text-base font-bold text-white shadow transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0"
+                  style={{ backgroundColor: d.color }}
+                >
+                  ${d.value}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {hint && !resolved && <p className="mt-3 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {resolved && (
+            <p className="mt-3 text-center text-sm font-semibold text-tiam-green">
+              {praise} Era ${change.toLocaleString('es-AR')}.
+            </p>
+          )}
+
+          {!resolved && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={check}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Listo
+              </button>
+            </div>
+          )}
+        </>
       )}
 
-      {hint && !resolved && <p className="mt-3 text-center text-sm font-medium text-slate-500">{hint}</p>}
-
-      {!resolved && (
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={check}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-          >
-            Listo
-          </button>
-        </div>
-      )}
-
-      {/* Completion */}
-      {resolved && (
+      {/* Level complete */}
+      {done && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
-          <p className="mt-1 text-slate-600">El vuelto era ${change.toLocaleString('es-AR')}.</p>
+          <p className="mt-1 text-slate-600">
+            Armaste bien el vuelto en las {roundsForLevel} compras — completaste el nivel {levelIdx + 1}.
+          </p>
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"

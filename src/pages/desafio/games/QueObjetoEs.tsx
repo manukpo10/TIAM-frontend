@@ -13,6 +13,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * than resolving on the first miss like QueSera does — there's no hidden
  * information to progressively reveal here, so retrying only helps if it
  * sends attention back to the text.
+ *
+ * VARIAS rondas por nivel (mismo patrón que LosOpuestos/LaCancionDeTuJuventud):
+ * cada nivel elige `rounds` adivinanzas distintas al azar de su pool (sin
+ * repetir dentro del nivel) — cada tap correcto resuelve la ronda, nunca hay
+ * "me rindo" acá, así que totalAttempts es mistakes + un total fijo de
+ * rondas (igual que LosOpuestos). El pool de cada nivel ya alcanzaba para
+ * 3/4/5 sin necesidad de contenido nuevo. 12 adivinanzas en total.
  */
 
 const LABELS: Record<string, string> = {
@@ -60,6 +67,7 @@ interface Riddle {
 interface Level {
   n: number
   name: string
+  rounds: number
   riddles: Riddle[]
 }
 
@@ -67,6 +75,7 @@ const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
+    rounds: 3,
     riddles: [
       {
         text: 'Tiene dos ruedas, pedales y un manubrio; sirve para pasear.',
@@ -98,6 +107,7 @@ const LEVELS: Level[] = [
   {
     n: 2,
     name: 'Nivel 2',
+    rounds: 4,
     riddles: [
       {
         text: 'Es de calabaza, tiene una bombilla de metal adentro, y se toma bien caliente y amargo.',
@@ -129,6 +139,7 @@ const LEVELS: Level[] = [
   {
     n: 3,
     name: 'Nivel 3',
+    rounds: 5,
     riddles: [
       {
         text: 'No sirve para guardar tu plata ni para mandar mensajes: sin moverte del sillón, con este objeto cambiás lo que estás mirando o subís el volumen.',
@@ -164,6 +175,11 @@ const LEVELS: Level[] = [
   },
 ]
 
+// Cada ronda se resuelve con un único acierto (no hay "me rindo" acá — un tap
+// incorrecto solo elimina esa opción y da una pista para releer el texto),
+// así que totalAttempts = mistakes + esta suma.
+const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
+
 const IMAGES = import.meta.glob('../../../assets/desafio/games/que-objeto-es/*.webp', {
   eager: true,
   import: 'default',
@@ -197,28 +213,46 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const riddle = useMemo(
-    () => pickOne(level.riddles),
+  // `rounds` adivinanzas distintas del pool del nivel, al azar, recalculadas
+  // una sola vez por nivel/roundKey (sin repetir dentro del nivel).
+  const order = useMemo(
+    () => shuffle(level.riddles).slice(0, level.rounds),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
-  const options = useMemo(() => shuffle([riddle.answer, ...riddle.decoys]), [riddle])
+  const [roundIdx, setRoundIdx] = useState(0)
+  const riddle = order[roundIdx]
+  const done = roundIdx >= level.rounds
+
+  const options = useMemo(() => (riddle ? shuffle([riddle.answer, ...riddle.decoys]) : []), [riddle])
 
   const [eliminated, setEliminated] = useState<Set<string>>(new Set())
   const [resolved, setResolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
-  const [praise, setPraise] = useState(PRAISE[0])
+  const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Wrong-tap count, accumulated across levels 1→2→3 and only zeroed on a
   // true day restart (see nextLevel's wrap branch below) — same policy as
   // ElVuelto.
   const [mistakes, setMistakes] = useState(0)
 
+  useEffect(() => {
+    if (done) setLevelPraise(pickOne(PRAISE))
+  }, [done])
+
   function guess(id: string) {
-    if (resolved) return
+    if (!riddle || resolved || eliminated.has(id)) return
     if (id === riddle.answer) {
-      setPraise(pickOne(PRAISE))
       setResolved(true)
       setHint(null)
+      // Avanzá a la próxima ronda del nivel tras un breve feedback. Cuando
+      // roundIdx llega a level.rounds, `done` pasa a true y se muestra la
+      // pantalla de fin de nivel en vez de una adivinanza nueva.
+      window.setTimeout(() => {
+        setRoundIdx((i) => i + 1)
+        setEliminated(new Set())
+        setResolved(false)
+        setHint(null)
+      }, 900)
       return
     }
     setEliminated((prev) => new Set(prev).add(id))
@@ -226,40 +260,43 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
     setMistakes((m) => m + 1)
   }
 
-  // nextLevel/replay already reset eliminated/resolved/hint synchronously in
-  // the same handler that sets levelIdx/roundKey (not in a separate effect),
-  // so `resolved` is never observably stale on the render that arrives at a
-  // new level — this file already had the fix the Fase 1 review had to
-  // apply retroactively to ElVuelto/QueSeEsconde.
+  // Reset sincrónico dentro de nextLevel()/replay() — nunca en un efecto
+  // separado sobre [levelIdx, roundKey]: un efecto llega un render tarde,
+  // así que `done`/`resolved` podrían leer stale-true justo cuando levelIdx
+  // cambia y disparar onComplete con datos viejos/basura — el mismo bug ya
+  // resuelto en ElVuelto/QueSeEsconde.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
+    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
+    setRoundKey((k) => k + 1)
+    setRoundIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
     // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the mistake count — "Otra adivinanza" must NOT, even on level 1.
+    // zeroes the mistake count — "Otra ronda" must NOT, even on level 1.
     if (isWrap) setMistakes(0)
   }
   function replay() {
+    setRoundKey((k) => k + 1)
+    setRoundIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
-    setRoundKey((k) => k + 1)
   }
 
-  // Fires once per roundKey when level 3 resolves. totalAttempts = this
-  // attempt's mistakes + 3 successful resolutions (one per level) — same
-  // shape as ElVuelto, since this game is also exactly one puzzle per level.
+  // Fires once per roundKey when level 3's last riddle resolves.
+  // totalAttempts = mistakes + TOTAL_ROUNDS: every round here resolves via a
+  // genuine correct tap (no give-up path), so a flat per-round credit is
+  // always accurate — same shape as LaCancionDeTuJuventud/LosOpuestos.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
-    if (resolved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes, totalAttempts: mistakes + LEVELS.length })
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolved, levelIdx, roundKey])
+  }, [done, levelIdx, roundKey])
 
   return (
     <div className="p-5 sm:p-7">
@@ -268,53 +305,72 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           Lenguaje · {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué objeto es?</h2>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué objeto es?</h2>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {level.rounds}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Riddle text — stays visible throughout, re-reading is just glancing up */}
-      <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4 text-center">
-        <p className="text-lg font-medium leading-relaxed text-slate-700">{riddle.text}</p>
-      </div>
+      {!done && riddle && (
+        <>
+          {/* Riddle text — stays visible throughout, re-reading is just glancing up */}
+          <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4 text-center">
+            <p className="text-lg font-medium leading-relaxed text-slate-700">{riddle.text}</p>
+          </div>
 
-      {/* Options */}
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        {options.map((id) => {
-          const isEliminated = eliminated.has(id)
-          const isAnswer = resolved && id === riddle.answer
-          const img = imgFor(id)
-          return (
-            <button
-              key={id}
-              type="button"
-              disabled={resolved || isEliminated}
-              onClick={() => guess(id)}
-              aria-label={LABELS[id] ?? id}
-              className={[
-                'relative flex aspect-square items-center justify-center rounded-2xl border-2 bg-white p-4 transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
-                isAnswer ? 'border-tiam-green ring-2 ring-tiam-green/30' : '',
-                isEliminated ? 'border-slate-200 opacity-40 grayscale' : '',
-                !isAnswer && !isEliminated
-                  ? 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0'
-                  : '',
-              ].join(' ')}
-            >
-              {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
-            </button>
-          )
-        })}
-      </div>
+          {/* Options */}
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            {options.map((id) => {
+              const isEliminated = eliminated.has(id)
+              const isAnswer = resolved && id === riddle.answer
+              const img = imgFor(id)
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  disabled={resolved || isEliminated}
+                  onClick={() => guess(id)}
+                  aria-label={LABELS[id] ?? id}
+                  className={[
+                    'relative flex aspect-square items-center justify-center rounded-2xl border-2 bg-white p-4 transition',
+                    'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
+                    isAnswer ? 'border-tiam-green ring-2 ring-tiam-green/30' : '',
+                    isEliminated ? 'border-slate-200 opacity-40 grayscale' : '',
+                    !isAnswer && !isEliminated
+                      ? 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0'
+                      : '',
+                  ].join(' ')}
+                >
+                  {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
+                </button>
+              )
+            })}
+          </div>
 
-      {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+        </>
+      )}
 
-      {/* Completion */}
-      {resolved && (
+      {/* Level complete */}
+      {done && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
-          <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
-          <p className="mt-1 text-slate-600">Era {LABELS[riddle.answer]}.</p>
+          <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
+          <p className="mt-1 text-slate-600">
+            Resolviste las {level.rounds} adivinanzas — completaste el nivel {levelIdx + 1}.
+          </p>
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
@@ -330,7 +386,7 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
             >
               <RotateCcw className="h-4 w-4" />
-              Otra adivinanza
+              Otra ronda
             </button>
           </div>
         </div>
