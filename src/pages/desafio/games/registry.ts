@@ -25,7 +25,11 @@ import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
 import { LaBalanza } from './LaBalanza'
 import { LosOpuestos } from './LosOpuestos'
+import { OrdenaTuSemana } from './OrdenaTuSemana'
+import { TuResumen } from './TuResumen'
 import { LaCancionDeTuJuventud } from './LaCancionDeTuJuventud'
+import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
+import { QueSonidoEs } from './QueSonidoEs'
 
 /**
  * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
@@ -65,5 +69,9 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   26: QueOficioEs,
   27: QueSeEsconde,
   29: LaBalanza,
+  28: OrdenaTuSemana,
+  30: TuResumen,
   15: LaCancionDeTuJuventud,
+  6: EncontraLaFiguraIgual,
+  23: QueSonidoEs,
 }

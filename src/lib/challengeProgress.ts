@@ -13,10 +13,14 @@ export interface GameResult {
   totalAttempts: number
 }
 
-/** Props every retrofitted challenge game receives from DesafioPlayPage. */
+/** Props every retrofitted challenge game receives from DesafioPlayPage.
+ * `progress` is optional and only consumed by the handful of games that use the
+ * player's own real challenge history as content (días 28/30) — every other game
+ * ignores it, which structural typing allows without any change on their end. */
 export type GameProps = {
   day: number
   onComplete: (result: GameResult) => void
+  progress?: ChallengeProgress | null
 }
 
 /** Request body for POST /challenge/:token/days/:day/complete. */
@@ -79,7 +83,7 @@ export const BADGE_META: Record<BadgeId, { label: string; description: string }>
   STREAK_3: { label: 'Racha de 3', description: 'Completaste 3 días seguidos.' },
   STREAK_7: { label: 'Racha de 7', description: 'Completaste 7 días seguidos.' },
   HALFWAY: { label: 'Mitad de camino', description: 'Llegaste a la mitad de los ejercicios del desafío.' },
-  CHALLENGE_COMPLETE: { label: 'Desafío completo', description: 'Jugaste los 25 ejercicios del desafío.' },
+  CHALLENGE_COMPLETE: { label: 'Desafío completo', description: 'Jugaste los 30 ejercicios del desafío.' },
   PERFECT_DAY: { label: 'Día perfecto', description: 'Conseguiste 3 estrellas en un día.' },
 }
 

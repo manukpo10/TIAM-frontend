@@ -301,6 +301,7 @@ export function DesafioPlayPage() {
                   <Game
                     day={selected.day}
                     onComplete={(result) => handleGameComplete(selected.day, result)}
+                    progress={progress}
                   />
                 </div>
                 {dayResult && dayResult.day === selected.day && (

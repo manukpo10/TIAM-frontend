@@ -1,19 +1,23 @@
 /**
  * Content for the 30-day cognitive challenge ("Desafío 30 días").
  *
- * This lives in the frontend on purpose: today each day is a static "card"
- * (title + instructions + illustration), but the `type` field leaves the door
- * open for future days to be interactive mini-games (`type: 'game'`), which are
- * React components rather than data. The backend only gates access (which day
- * the buyer is on); the content itself is here.
+ * This lives in the frontend on purpose: the `type` field distinguishes a
+ * static "card" (title + instructions + illustration) from an interactive
+ * mini-game (`type: 'game'`, a React component rather than data) — all 30
+ * days are games as of this writing, but the split is kept so a future day
+ * can still ship as a plain card if that's ever the right call. The backend
+ * only gates access (which day the buyer is on); the content itself is here.
  *
  * The 30 exercises below are grounded in cognitive-stimulation reference
  * material (manuals/workbooks for older adults) and best-practice research:
  *   - Areas rotated so the same area never repeats two days in a row.
  *   - Difficulty ramps by week: 1 = warm-up (one step), 2 = two steps,
  *     3 = combine areas / delayed recall, 4 = integrative + closing.
- *   - Reminiscence cards (autobiographical memory) intercalated as emotional
- *     anchors (days 6, 15, 23).
+ *   - Days 6, 23, 28, and 30 keep their original reminiscence/reflection
+ *     framing (childhood home, family recipes, a weekly review, the closing
+ *     day) even as interactive games — días 28 and 30 go further and use the
+ *     PLAYER'S OWN real challenge history as content (see `progress` on
+ *     `GameProps` in `challengeProgress.ts`), not authored scenarios.
  *   - Consignas: one idea, plain language, motivating (never exam-like).
  * Edit freely — this is authored content. Illustrations (Flux) via `illustration`.
  */
@@ -74,8 +78,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de atención: tocá todas las letras A entre las demás. Subís de dificultad a medida que avanzás.' },
   { day: 5, type: 'game', area: 'calculo', title: 'El vuelto',
     instructions: 'Un juego de cálculo: armá el vuelto justo con monedas y billetes. Subís de dificultad a medida que avanzás.' },
-  { day: 6, type: 'card', area: 'memoria', title: 'Tu primera casa',
-    instructions: 'Recordá la casa de tu infancia. ¿Cuántas habitaciones tenía? ¿De qué color era la puerta? ¿Qué se veía desde la ventana? Contáselo a alguien.' },
+  { day: 6, type: 'game', area: 'praxias', title: 'Encontrá la figura igual',
+    instructions: 'Un juego de percepción visuoespacial: encontrá la figura que es igual a la original, pero girada. Subís de dificultad a medida que avanzás.' },
   { day: 7, type: 'game', area: 'ejecutivas', title: 'Cada cosa en su grupo',
     instructions: 'Un juego de razonamiento: tocá el grupo correcto para cada palabra. Subís de dificultad a medida que avanzás.' },
 
@@ -116,8 +120,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de cálculo: mirá la situación y usá los botones +/- para llegar a la cantidad justa. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 4 — integradoras + cierre ──────────────────────────────────────
-  { day: 23, type: 'card', area: 'memoria', title: 'Sabores de antes',
-    instructions: 'Recordá una comida que cocinaba alguien de tu familia. ¿Quién la hacía? ¿Qué llevaba? Escribí la receta como la recuerdes.' },
+  { day: 23, type: 'game', area: 'agnosias', title: '¿Qué sonido es?',
+    instructions: 'Un juego de reconocimiento auditivo: escuchá el sonido de la cocina de antes y tocá qué es. Subís de dificultad a medida que avanzás.' },
   { day: 24, type: 'game', area: 'atencion', title: 'Buscá los rojos',
     instructions: 'Un juego de atención: tocá los objetos rojos entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'ejecutivas', title: '¿Qué sigue?',
@@ -126,12 +130,12 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: mirá las herramientas de un oficio y tocá cuál es. Subís de dificultad a medida que avanzás.' },
   { day: 27, type: 'game', area: 'agnosias', title: '¿Qué se esconde?',
     instructions: 'Un juego de reconocimiento: varios dibujos se superponen en una sola imagen, tocá los que reconozcas entre las opciones. Subís de dificultad a medida que avanzás.' },
-  { day: 28, type: 'card', area: 'memoria', title: 'Repaso de la semana',
-    instructions: 'Sin mirar, escribí tres ejercicios que hayas hecho en estos días. ¿Cuál te gustó más? ¿Cuál te costó más?' },
+  { day: 28, type: 'game', area: 'orientacion', title: 'Ordená tu semana',
+    instructions: 'Un juego de orientación: ordená en el orden correcto los días que ya jugaste esta semana. Usa tu propio recorrido en el desafío.' },
   { day: 29, type: 'game', area: 'ejecutivas', title: 'La balanza',
     instructions: 'Un juego de razonamiento: mirá las balanzas y descubrí qué objeto pesa más. Subís de dificultad a medida que avanzás.' },
-  { day: 30, type: 'card', area: 'memoria', title: '¡Lo lograste!',
-    instructions: 'Pensá cómo te sentías el día 1 y cómo te sentís hoy. Escribí una cosa que te haya gustado del desafío. ¡Felicitaciones por los 30 días! 🎉' },
+  { day: 30, type: 'game', area: 'calculo', title: 'Tu resumen',
+    instructions: 'Un juego de cálculo para cerrar el desafío: sumá tus propios números — cuántos días jugaste, cuántas estrellas conseguiste y tu racha más larga. ¡Felicitaciones por los 30 días! 🎉' },
 ]
 
 /** Content joined with its per-day illustration (matched by day number). */
