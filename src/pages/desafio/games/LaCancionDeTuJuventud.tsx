@@ -4,11 +4,15 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "La canción de tu juventud" — first audio-based game in the challenge.
- * Escuchás un fragmento instrumental corto (100% generado, ninguna canción
- * real con derechos) y tocás a qué género se parece más. Reemplaza el pedido
- * original de escribir una estrofa de memoria — acá el estímulo evocador es
- * el género/época en sí, no una canción puntual que dejaría afuera a
- * cualquiera cuya música no sea esa.
+ * Escuchás un fragmento instrumental corto y tocás a qué género se parece
+ * más. Reemplaza el pedido original de escribir una estrofa de memoria — acá
+ * el estímulo evocador es el género/época en sí, no una canción puntual que
+ * dejaría afuera a cualquiera cuya música no sea esa.
+ *
+ * Los 5 clips son fragmentos de ~15s de pistas instrumentales de Pixabay
+ * (Pixabay Content License: uso comercial permitido, sin atribución
+ * obligatoria; embeberlos como estímulo de juego no es "reventa standalone").
+ * Recortados con PyAV a 96kbps para peso liviano en mobile.
  *
  * Un solo round por nivel (no niveles con muchas rondas como El reloj):
  * 3 de los 5 géneros del pool, en orden al azar, uno por nivel. La dificultad
