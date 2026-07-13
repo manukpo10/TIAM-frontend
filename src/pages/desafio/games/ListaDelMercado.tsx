@@ -105,8 +105,12 @@ function buildL2(): Round {
   return { studied, distractors }
 }
 
-function buildL3(): Round {
-  const studied = pick(MERCADO_ITEMS, 15)
+// Shared by L3/L4: same-category "lure" distractors (e.g. studied "leche" ->
+// decoy "yogur", both lácteos) — the hardest distractor type, since a lure
+// can't be rejected just by noticing it's off-domain. Only the studied COUNT
+// differs between the two levels; the lure logic itself is identical.
+function buildWithLures(count: number): Round {
+  const studied = pick(MERCADO_ITEMS, count)
   const studiedIds = new Set(studied.map((o) => o.id))
   const usedLureIds = new Set<string>()
   const distractors: MercadoItem[] = []
@@ -127,6 +131,8 @@ function buildL3(): Round {
   }
   return { studied, distractors }
 }
+const buildL3 = () => buildWithLures(12)
+const buildL4 = () => buildWithLures(15)
 
 interface Level {
   n: number
@@ -136,10 +142,15 @@ interface Level {
   build: () => Round
 }
 
+// 4 levels instead of 3: the old L2->L3 jump (9->15 studied items, LESS study
+// time than L2 despite more to memorize) was too steep. Spreading it into two
+// smaller steps (9->12->15) and giving MORE study time as the list grows
+// (never less) makes the ramp gentler without dropping the eventual ceiling.
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, build: buildL1 },
-  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, build: buildL2 },
-  { n: 3, name: 'Nivel 3', studySeconds: 18, minEarlySeconds: 8, build: buildL3 },
+  { n: 2, name: 'Nivel 2', studySeconds: 24, minEarlySeconds: 8, build: buildL2 },
+  { n: 3, name: 'Nivel 3', studySeconds: 28, minEarlySeconds: 10, build: buildL3 },
+  { n: 4, name: 'Nivel 4', studySeconds: 32, minEarlySeconds: 10, build: buildL4 },
 ]
 
 const PRAISE_GOOD = ['¡Excelente memoria!', '¡Muy bien!', '¡Así se hace!', '¡Qué buena atención!']

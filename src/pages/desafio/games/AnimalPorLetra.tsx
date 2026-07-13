@@ -30,6 +30,10 @@ interface Animal {
   id: string
   label: string
   letter: string
+  /** First syllable, shown instead of the bare letter for some L2/L3 trials
+   * (see Level.allowsSyllable) — only defined where it's phonetically clean
+   * (no collision with another animal's opening sound in the same pool). */
+  syllable?: string
 }
 
 const L1_ANIMALS: Animal[] = [
@@ -45,22 +49,22 @@ const L1_ANIMALS: Animal[] = [
   { id: 'tortuga', label: 'tortuga', letter: 'T' },
 ]
 const L2_ANIMALS: Animal[] = [
-  { id: 'vaca', label: 'vaca', letter: 'V' },
-  { id: 'cangrejo', label: 'cangrejo', letter: 'C' },
-  { id: 'jirafa', label: 'jirafa', letter: 'J' },
-  { id: 'leon', label: 'león', letter: 'L' },
-  { id: 'nutria', label: 'nutria', letter: 'N' },
-  { id: 'flamenco', label: 'flamenco', letter: 'F' },
-  { id: 'serpiente', label: 'serpiente', letter: 'S' },
-  { id: 'zorro', label: 'zorro', letter: 'Z' },
+  { id: 'vaca', label: 'vaca', letter: 'V', syllable: 'VA' },
+  { id: 'cangrejo', label: 'cangrejo', letter: 'C', syllable: 'CAN' },
+  { id: 'jirafa', label: 'jirafa', letter: 'J', syllable: 'JI' },
+  { id: 'leon', label: 'león', letter: 'L', syllable: 'LE' },
+  { id: 'nutria', label: 'nutria', letter: 'N', syllable: 'NU' },
+  { id: 'flamenco', label: 'flamenco', letter: 'F', syllable: 'FLA' },
+  { id: 'serpiente', label: 'serpiente', letter: 'S', syllable: 'SER' },
+  { id: 'zorro', label: 'zorro', letter: 'Z', syllable: 'ZO' },
 ]
 const L3_ANIMALS: Animal[] = [
-  { id: 'chancho', label: 'chancho', letter: 'CH' },
-  { id: 'llama', label: 'llama', letter: 'LL' },
-  { id: 'hipopotamo', label: 'hipopótamo', letter: 'H' },
-  { id: 'cebra', label: 'cebra', letter: 'C' },
-  { id: 'yacare', label: 'yacaré', letter: 'Y' },
-  { id: 'nandu', label: 'ñandú', letter: 'Ñ' },
+  { id: 'chancho', label: 'chancho', letter: 'CH', syllable: 'CHAN' },
+  { id: 'llama', label: 'llama', letter: 'LL', syllable: 'LLA' },
+  { id: 'hipopotamo', label: 'hipopótamo', letter: 'H', syllable: 'HI' },
+  { id: 'cebra', label: 'cebra', letter: 'C', syllable: 'CE' },
+  { id: 'yacare', label: 'yacaré', letter: 'Y', syllable: 'YA' },
+  { id: 'nandu', label: 'ñandú', letter: 'Ñ', syllable: 'ÑAN' },
 ]
 
 const IMAGES = import.meta.glob('../../../assets/desafio/games/animal-por-letra/*.webp', {
@@ -90,17 +94,24 @@ interface Level {
   name: string
   animals: Animal[]
   decoyPool: Animal[]
+  // L1 stays pure single-letter (warm-up); L2/L3 mix in syllable trials for
+  // animals that have one, so the harder levels occasionally ask for actual
+  // phonological recall instead of a bare-letter visual match.
+  allowsSyllable: boolean
 }
 
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', animals: L1_ANIMALS, decoyPool: L1_ANIMALS },
-  { n: 2, name: 'Nivel 2', animals: L2_ANIMALS, decoyPool: [...L1_ANIMALS, ...L2_ANIMALS] },
-  { n: 3, name: 'Nivel 3', animals: L3_ANIMALS, decoyPool: [...L1_ANIMALS, ...L2_ANIMALS, ...L3_ANIMALS] },
+  { n: 1, name: 'Nivel 1', animals: L1_ANIMALS, decoyPool: L1_ANIMALS, allowsSyllable: false },
+  { n: 2, name: 'Nivel 2', animals: L2_ANIMALS, decoyPool: [...L1_ANIMALS, ...L2_ANIMALS], allowsSyllable: true },
+  { n: 3, name: 'Nivel 3', animals: L3_ANIMALS, decoyPool: [...L1_ANIMALS, ...L2_ANIMALS, ...L3_ANIMALS], allowsSyllable: true },
 ]
 
 interface Trial {
   target: Animal
   options: Animal[]
+  /** Precomputed once per trial (never at render time) so the clue shown
+   * stays stable across re-renders of the same trial. */
+  clue: string
 }
 // Real same-sound Spanish confusions (b/v, seseo c/s/z, yeísmo ll/y) — forced
 // into the decoy set when relevant so the tricky pairs actually collide,
@@ -120,9 +131,14 @@ function buildRound(level: Level): Trial[] {
     const rest = pool.filter((a) => !forced.includes(a))
     const decoyCount = level.n === 3 ? 5 : 3
     const decoys = [...forced, ...pick(rest, Math.max(0, decoyCount - forced.length))].slice(0, decoyCount)
+    // ~50% of L2/L3 trials show the syllable instead of the bare letter, only
+    // when this animal actually has one defined — decided once here, not at
+    // render time, so it can't flip on a re-render of the same trial.
+    const useSyllable = level.allowsSyllable && !!target.syllable && Math.random() < 0.5
     return {
       target,
       options: shuffle([target, ...decoys]),
+      clue: useSyllable ? target.syllable! : target.letter,
     }
   })
 }
@@ -237,10 +253,10 @@ export function AnimalPorLetra({ day: _day, onComplete }: GameProps) {
 
       {!done && current && (
         <>
-          {/* Target letter */}
+          {/* Target letter or syllable */}
           <div className="mt-6 text-center">
-            <span className="inline-flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white text-4xl font-black text-slate-800">
-              {current.target.letter}
+            <span className="inline-flex h-20 min-w-[5rem] items-center justify-center rounded-2xl border-2 border-slate-200 bg-white px-3 text-3xl font-black text-slate-800">
+              {current.clue}
             </span>
           </div>
 
