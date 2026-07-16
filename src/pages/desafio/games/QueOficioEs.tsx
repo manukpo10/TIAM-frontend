@@ -147,7 +147,7 @@ export function QueOficioEs({ day: _day, onComplete }: GameProps) {
   }, [done])
 
   // Fires once per roundKey when level 3's last round resolves. Guarded the
-  // same way as ElVuelto/QueSeEsconde (Fase 1): a ref keyed on roundKey, not
+  // same way as ElVuelto/CuantosHay (Fase 1): a ref keyed on roundKey, not
   // a boolean, so a genuine full-day restart (new roundKey on wrap) reports
   // again while re-renders on an already-done level 3 do not double-fire.
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -186,7 +186,7 @@ export function QueOficioEs({ day: _day, onComplete }: GameProps) {
   // updated via useMemo) could read a stale currentIndex left over from the
   // previous level on the very render that just arrived — the same
   // stale-flag hazard the Fase 1 review found and fixed in ElVuelto/
-  // QueSeEsconde. Setting currentIndex/eliminated/solved/hint in the same
+  // CuantosHay. Setting currentIndex/eliminated/solved/hint in the same
   // handler that sets levelIdx/roundKey means React batches them into one
   // render, so they're never observably out of sync.
   function nextLevel() {

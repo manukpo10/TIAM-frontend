@@ -5,7 +5,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 /**
  * "¿Qué sonido es?" — second audio-based game in the challenge (after "La
  * canción de tu juventud", día 15) and third agnosias (auditory recognition,
- * not visual this time — see QueSera/QueSeEsconde) game overall. Reemplaza
+ * not visual this time — see QueSera/CuantosHay) game overall. Reemplaza
  * la tarjeta de reflexión original "Sabores de antes" (recuerdos de recetas
  * familiares) por un ejercicio real de escuchar-e-identificar.
  *

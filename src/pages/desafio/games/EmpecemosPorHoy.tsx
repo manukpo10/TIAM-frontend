@@ -197,7 +197,7 @@ export function EmpecemosPorHoy({ day: _day, onComplete }: GameProps) {
   const wasWrong = answeredId !== null && current ? !current.correctIds.includes(answeredId) : false
 
   // No LEVELS[] ladder here — the day is done after one pass through all
-  // questions, so this reports once ever (unlike ElVuelto/QueSeEsconde, which
+  // questions, so this reports once ever (unlike ElVuelto/CuantosHay, which
   // fire once per roundKey so a genuine full-day restart can report again).
   // "Repasar de nuevo" is a courtesy replay, not a second attempt at the day.
   // Every question resolves on the first tap with a factual reveal, never a

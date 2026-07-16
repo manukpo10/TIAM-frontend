@@ -179,7 +179,7 @@ export function QueHayEnLaMesa({ day: _day, onComplete }: GameProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
-  // every submission counts, same model as QueSeEsconde.tsx), only zeroed
+  // every submission counts, same model as CuantosHay.tsx), only zeroed
   // on a true day restart (see nextLevel's wrap branch).
   const [accMistakes, setAccMistakes] = useState(0)
   const [accAttempts, setAccAttempts] = useState(0)

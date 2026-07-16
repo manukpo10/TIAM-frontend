@@ -216,7 +216,7 @@ export function LaCharlaDesordenada({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
   // every submission counts), only zeroed on a true day restart (see
-  // nextLevel's wrap branch). Same model as QueSeEsconde.tsx.
+  // nextLevel's wrap branch). Same model as CuantosHay.tsx.
   const [accMistakes, setAccMistakes] = useState(0)
   const [accAttempts, setAccAttempts] = useState(0)
 

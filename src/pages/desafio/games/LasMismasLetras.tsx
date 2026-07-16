@@ -146,7 +146,7 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE[0])
   // Mistake count, accumulated across levels 1→2→3 and only zeroed on a true
   // day restart (see nextLevel's wrap branch below) — same policy as
-  // Memotest/QueSeEsconde.
+  // Memotest/CuantosHay.
   const [mistakes, setMistakes] = useState(0)
 
   const done = matchedPairIds.size >= level.pairs.length
@@ -220,7 +220,7 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
   }
 
   // Resets happen HERE, synchronously with the level/round change, not in a
-  // separate useEffect keyed on [levelIdx, roundKey] — see QueSeEsconde.tsx
+  // separate useEffect keyed on [levelIdx, roundKey] — see CuantosHay.tsx
   // for why: an effect only catches up on the render AFTER levelIdx changes,
   // so `done` (derived from matchedPairIds vs. the NEW level's pairs) could
   // read stale-true on the very render that just arrived at the new level.

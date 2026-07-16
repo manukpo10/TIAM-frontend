@@ -264,7 +264,7 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
   // separado sobre [levelIdx, roundKey]: un efecto llega un render tarde,
   // así que `done`/`resolved` podrían leer stale-true justo cuando levelIdx
   // cambia y disparar onComplete con datos viejos/basura — el mismo bug ya
-  // resuelto en ElVuelto/QueSeEsconde.
+  // resuelto en ElVuelto/CuantosHay.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))

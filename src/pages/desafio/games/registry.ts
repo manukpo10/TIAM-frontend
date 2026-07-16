@@ -17,7 +17,7 @@ import { Memotest } from './Memotest'
 import { ContadorMasMenos } from './ContadorMasMenos'
 import { CaminoNumerico } from './CaminoNumerico'
 import { EmpecemosPorHoy } from './EmpecemosPorHoy'
-import { QueSeEsconde } from './QueSeEsconde'
+import { CuantosHay } from './CuantosHay'
 import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
@@ -67,7 +67,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   24: BuscarLosRojos,
   25: LasMismasLetras,
   26: QueOficioEs,
-  27: QueSeEsconde,
+  27: CuantosHay,
   29: LaBalanza,
   28: OrdenaTuSemana,
   30: TuResumen,
