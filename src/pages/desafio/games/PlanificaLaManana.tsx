@@ -43,7 +43,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 1,
     name: 'Nivel 1',
-    rounds: 3,
+    rounds: 2,
     sets: [
       {
         tasks: [
@@ -71,7 +71,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
-    rounds: 4,
+    rounds: 3,
     sets: [
       {
         tasks: [
@@ -111,7 +111,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    rounds: 5,
+    rounds: 3,
     sets: [
       {
         tasks: [

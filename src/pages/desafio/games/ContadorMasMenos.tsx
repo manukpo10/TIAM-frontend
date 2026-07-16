@@ -22,7 +22,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * cada nivel resuelve `ROUNDS_PER_LEVEL[levelIdx]` recetas distintas, elegidas
  * al azar del pool de escenarios de ese nivel (sin repetir dentro del nivel).
  * Los pools existentes (5/5/7) ya alcanzan para 3/4/5 rondas sin necesitar
- * contenido nuevo. 12 recetas en total (3+4+5).
+ * contenido nuevo. 8 recetas en total (2+3+3).
  */
 
 interface Scenario {
@@ -77,9 +77,13 @@ const LEVELS: Level[] = [
 ]
 
 // Rounds resolved per level before the level is complete — same shape as
-// ElVuelto. Levels 1/2 have 5 scenarios and level 3 has 7, so 3/4/5 rounds
+// ElVuelto. Levels 1/2 have 5 scenarios and level 3 has 7, so these rounds
 // fit comfortably within each pool without authoring new content.
-const ROUNDS_PER_LEVEL = [3, 4, 5]
+//
+// Tuned to 8 total alongside ElVuelto — see that file's note: the reviewing
+// professional played the 12-round version and found it too tiring for the
+// 10-15 min/day this product promises.
+const ROUNDS_PER_LEVEL = [2, 3, 3]
 // Every round resolves with a single correct "Listo" tap (no "me rindo"),
 // so totalAttempts = mistakes + this.
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
