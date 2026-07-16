@@ -29,11 +29,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * always waits for an explicit tap, same choice OrdenarLaFrase makes and for
  * the same reason: there's a source→answer recap to read, and a clock here
  * would rush that read for this app's older-adult audience). A wrong
- * "Revisar" tap gets a muted-slate nudge and every placed tile returns to
- * the pool right away — the player just keeps retrying the same word until
- * correct, no "me rindo" path. Because of that, totalAttempts = mistakes +
- * TOTAL_ROUNDS is exactly right when reporting (same formula/reasoning as
- * ElVuelto.tsx's comment on this).
+ * "Revisar" tap gets a muted-slate nudge and leaves every tile exactly
+ * where the player put it — they keep retrying the same word until it's
+ * right, with no "me rindo" path and no losing seven correct letters over
+ * one wrong one. Because every round ends in a correct spelling,
+ * totalAttempts = mistakes + TOTAL_ROUNDS is exactly right when reporting
+ * (same formula/reasoning as ElVuelto.tsx's comment on this).
  *
  * Correctness is checked against the actual SPELLED STRING
  * (`placed.map(i => i.value).join('')`), not the hook's own positional
@@ -153,7 +154,7 @@ const PRAISE_GOOD = ['¡Muy bien armada!', '¡Excelente, esa es la palabra!', '�
 const NUDGE_MESSAGES = [
   'Todavía no. Mirá la pista de nuevo y probá otro orden.',
   'Casi. Fijate bien en las letras y volvé a intentar.',
-  'Esa palabra no es. Las letras vuelven a la bolsa — probá de nuevo.',
+  'Esa palabra no es. Tocá una letra para sacarla y acomodala de nuevo.',
 ]
 
 export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
@@ -219,12 +220,12 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
     } else {
       setHint(pickOne(NUDGE_MESSAGES))
       setMistakes((m) => m + 1)
-      // The tiles deliberately STAY where they were put. Sweeping all of them
+      // The tiles deliberately STAY where they were put. Sweeping them all
       // back would mean one wrong letter in CRONISTA costs you the other
-      // seven, which is punishing for no teaching value — the player can see
-      // their own attempt, spot the letter that's off, and tap just that one
-      // back. Same "stays adjustable" contract as ElVuelto's bill tray: a
-      // wrong check nudges, it never undoes your work.
+      // seven, which punishes without teaching anything — the player can see
+      // their own attempt, spot the letter that looks off, and tap just that
+      // one back. Same "a wrong check nudges, it never undoes your work"
+      // contract as ElVuelto's bill tray.
     }
   }
 
