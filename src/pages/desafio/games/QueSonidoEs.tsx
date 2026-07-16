@@ -251,15 +251,14 @@ export function QueSonidoEs({ day: _day, onComplete }: GameProps) {
   const playDisabled = solved || (level.singlePlay && hasPlayedRound)
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
-          Agnosias · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué sonido es?</h2>
             <p className="mt-2 text-sm font-medium text-tiam-blue">
               Escuchá el sonido y tocá qué es lo que suena.
             </p>

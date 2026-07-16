@@ -199,14 +199,14 @@ export function QueSigue({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide"
           style={{ backgroundColor: 'rgba(79, 70, 229, 0.1)', color: '#4F46E5' }}
         >
-          Razonamiento · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>

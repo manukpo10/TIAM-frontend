@@ -260,32 +260,34 @@ export function QueSeEsconde({ day: _day, onComplete }: GameProps) {
   const optionCols = level.n === 1 ? 'grid-cols-2' : level.n === 2 ? 'grid-cols-3' : 'grid-cols-4'
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
-          Agnosias · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué se esconde?</h2>
             {phase === 'play' ? (
-              <p className="mt-2 text-base text-slate-500">
-                Mirá el dibujo. Tocá todos los objetos que reconozcas escondidos ahí.
-              </p>
+              <p className="mt-2 text-base text-slate-500">Tocá todos los objetos escondidos en el dibujo.</p>
             ) : (
               <p className="mt-2 text-base font-semibold text-slate-500">
                 Encontraste {correctFound} de {trueIds.size} — {praise}
               </p>
             )}
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {roundIdx} de {level.rounds}
-            </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-tiam-orange transition-[width] duration-300"
-                style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
-              />
+            {/* Count and bar on one row. This screen is the densest in the folder —
+                a plate you have to study, up to eight options and a submit button —
+                so nothing here gets to say the same thing twice. */}
+            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+              <p className="shrink-0 text-base font-semibold text-slate-500">
+                Llevás {roundIdx} de {level.rounds}
+              </p>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-tiam-orange transition-[width] duration-300"
+                  style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
+                />
+              </div>
             </div>
           </>
         )}
@@ -294,7 +296,7 @@ export function QueSeEsconde({ day: _day, onComplete }: GameProps) {
       {!done && composition && (
         <>
           {/* Fused canvas */}
-          <div className="relative isolate mx-auto mt-6 aspect-square w-56 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:w-64">
+          <div className="relative isolate mx-auto mt-3 aspect-square w-40 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-6 sm:w-64">
             {composition.items.map((it) => {
               const img = imgFor(it.objectId)
               return (
@@ -318,7 +320,7 @@ export function QueSeEsconde({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Options */}
-          <div className={`mt-6 grid gap-3 ${optionCols}`}>
+          <div className={`mt-4 grid gap-2.5 sm:mt-6 sm:gap-3 ${optionCols}`}>
             {options.map((id) => {
               const img = imgFor(id)
               const isSelected = selected.has(id)
@@ -352,7 +354,15 @@ export function QueSeEsconde({ day: _day, onComplete }: GameProps) {
                   onClick={() => toggle(id)}
                   aria-label={LABELS[id] ?? id}
                   className={[
-                    'relative flex aspect-square items-center justify-center rounded-2xl border-2 p-2 transition',
+                    // Capped height rather than aspect-square: at level 1 the
+                    // 2-column grid made each tile ~150px tall, so four little
+                    // icons ate 311px and pushed the last row off-screen on a
+                    // phone. When this screen has to give up height, it gives it
+                    // up HERE and not on the plate above: the plate is the thing
+                    // you have to perceptually pull apart, while these are just
+                    // the same flat icons offered back to you to name. 64px reads
+                    // fine for that and stays well past the 44px tap minimum.
+                    'relative flex h-16 items-center justify-center rounded-2xl border-2 p-1.5 transition sm:h-28 sm:p-2',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                     stateClass,
                   ].join(' ')}
@@ -389,7 +399,7 @@ export function QueSeEsconde({ day: _day, onComplete }: GameProps) {
 
           {/* Actions */}
           {phase === 'play' ? (
-            <div className="mt-6 text-center">
+            <div className="mt-4 text-center sm:mt-6">
               <button
                 type="button"
                 onClick={submit}

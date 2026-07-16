@@ -263,28 +263,36 @@ export function DesafioPlayPage() {
       {/* Day card modal */}
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-3 py-3"
           onClick={closeDayModal}
           role="dialog"
           aria-modal="true"
           aria-labelledby="day-card-title"
         >
+          {/* Height is capped to the viewport and the body below flexes into
+              whatever the header leaves over, instead of a fixed max-h guess.
+              Every pixel matters here: someone who doesn't realise the options
+              continue below the fold simply can't play the game — a scrollbar
+              is not a cue this audience can be assumed to read. */}
           <div
             className={[
-              'relative w-full overflow-hidden rounded-3xl bg-white shadow-xl',
+              'relative flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-3xl bg-white shadow-xl',
               Game ? 'max-w-2xl' : 'max-w-md',
             ].join(' ')}
             onClick={(e) => e.stopPropagation()}
           >
             {Game ? (
               <>
-                {/* Interactive game — header + the game itself */}
-                <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4 sm:px-7">
+                {/* Interactive game — header + the game itself. This header is
+                    the ONLY place the day, area and title are stated; the games
+                    themselves show just their level, so the same title isn't
+                    printed twice and eaten out of the space the options need. */}
+                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-5 py-3 sm:px-7">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wide" style={{ color: AREA_META[selected.area].color }}>
                       Día {selected.day} · {AREA_META[selected.area].label}
                     </p>
-                    <h2 id="day-card-title" className="mt-0.5 text-xl font-bold text-slate-900 sm:text-2xl">
+                    <h2 id="day-card-title" className="mt-0.5 text-lg font-bold text-slate-900 sm:text-xl">
                       {selected.title}
                     </h2>
                   </div>
@@ -297,7 +305,7 @@ export function DesafioPlayPage() {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="max-h-[78vh] overflow-y-auto">
+                <div className="min-h-0 flex-1 overflow-y-auto">
                   <Game
                     day={selected.day}
                     onComplete={(result) => handleGameComplete(selected.day, result)}

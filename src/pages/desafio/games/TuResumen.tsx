@@ -136,11 +136,11 @@ export function TuResumen({ day: _day, onComplete, progress }: GameProps) {
   }, [resolved, isFinale, mistakes])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
-          Cálculo · {step.name}
+          {step.name}
         </span>
         {!resolved && (
           <>

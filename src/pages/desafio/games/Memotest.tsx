@@ -240,11 +240,11 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
   }
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
-          Memoria · {level.name}
+          {level.name}
         </span>
         <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
           {level.asymmetric ? 'Encontrá cada dibujo con su palabra' : 'Encontrá las parejas'}

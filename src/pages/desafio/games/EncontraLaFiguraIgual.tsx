@@ -123,21 +123,23 @@ interface Level {
 const LEVELS: Level[] = [
   {
     n: 1,
+    // No `hint`: at level 1 there's nothing to add that the heading doesn't
+    // already say, and a line that only restates the heading costs the same
+    // vertical space as one that teaches something. Levels 2 and 3 earn theirs.
     name: 'Nivel 1',
     rounds: 3,
-    hint: 'Tocá la figura que es igual a la de arriba, aunque esté girada.',
   },
   {
     n: 2,
     name: 'Nivel 2',
     rounds: 4,
-    hint: 'Ahora algunas opciones son la misma figura girada a otro ángulo — fijate bien hacia dónde apunta cada parte.',
+    hint: 'Ahora hay opciones con la misma figura girada a otro ángulo.',
   },
   {
     n: 3,
     name: 'Nivel 3',
     rounds: 5,
-    hint: 'Ojo: una opción es la figura reflejada, como en un espejo — esa no vale, tiene que estar solo girada.',
+    hint: 'Ojo: una opción está reflejada, como en un espejo. Esa no vale.',
   },
 ]
 
@@ -300,19 +302,19 @@ export function EncontraLaFiguraIgual({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide"
           style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)', color: '#7C3AED' }}
         >
-          Visuoespacial · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-              Tocá la figura igual, aunque esté girada
+              Tocá la figura igual a la de arriba, aunque esté girada
             </h2>
             {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -330,13 +332,20 @@ export function EncontraLaFiguraIgual({ day: _day, onComplete }: GameProps) {
 
       {!done && round && (
         <>
-          {/* Target shape */}
-          <div className="relative mx-auto mt-6 aspect-square w-56 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white p-6 sm:w-64">
+          {/* Target shape, sized to MATCH an option tile rather than to fill the
+              width. Two reasons: a phone has to fit both rows of options without
+              scrolling, and comparing a large reference against small candidates
+              adds a mental rescaling step on top of the rotation this game is
+              actually testing. Padding is p-1, not p-4, because SHAPE_POINTS
+              already keeps every point inside radius ~38 of a radius-50 viewBox —
+              the artwork carries its own ~24% margin, so box padding just shrinks
+              the shape twice. */}
+          <div className="relative mx-auto mt-3 aspect-square w-24 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white p-1 sm:mt-6 sm:w-32 sm:p-2">
             <Shape id={round.targetShapeId} rotation={round.targetRotation} mirrored={false} />
           </div>
 
           {/* Options */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6">
             {round.options.map((option, idx) => {
               const isEliminated = eliminated.has(option.key)
               const isCorrectShown = resolved && option.correct
@@ -348,7 +357,14 @@ export function EncontraLaFiguraIgual({ day: _day, onComplete }: GameProps) {
                   onClick={() => guess(option)}
                   aria-label={`Opción ${idx + 1}`}
                   className={[
-                    'relative flex aspect-square items-center justify-center rounded-2xl border-2 bg-white p-4 transition',
+                    // Capped height, not aspect-square: in a 2-column grid on a
+                    // phone that made every tile ~155px tall, so the second row
+                    // of options fell below the fold. <Shape>'s viewBox letterboxes
+                    // to the shorter side, so the shape stays square and centered
+                    // regardless — it just draws at the height instead of the width.
+                    // p-1 for the same reason as the target box above: the viewBox
+                    // already carries the shape's margin.
+                    'relative flex h-24 items-center justify-center rounded-2xl border-2 bg-white p-1 transition sm:h-32 sm:p-2',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                     isCorrectShown ? 'border-tiam-green bg-tiam-green/5 ring-2 ring-tiam-green/30' : '',
                     isEliminated ? 'border-slate-200 opacity-40 grayscale' : '',

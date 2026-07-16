@@ -214,18 +214,17 @@ export function VerdaderoOFalso({ day: _day, onComplete }: GameProps) {
   }
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide"
           style={{ backgroundColor: 'rgba(79, 70, 229, 0.1)', color: '#4F46E5' }}
         >
-          Razonamiento · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Verdadero o falso?</h2>
             {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {currentIndex} de {order.length}

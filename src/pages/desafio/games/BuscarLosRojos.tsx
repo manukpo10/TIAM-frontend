@@ -123,6 +123,25 @@ interface Level {
   build: () => GameObject[]
 }
 
+// Board density per level, mobile-first. The object count climbs 15 → 24 → 36,
+// so the COLUMNS climb with it and the tiles shrink; at a fixed 3 columns level
+// 3 was twelve rows deep and ran ~1090px on a phone with ~570px to give. That
+// matters more here than in most games: this is a visual search, so a target
+// you never see is a target you can't tap, and the counter then sits at "2 de 6"
+// with nothing on screen explaining why. Every tile stays at or above the 44px
+// minimum tap target. Full class strings, never interpolated — Tailwind only
+// emits classes it can read literally in the source.
+const BOARD_CLASS: Record<number, string> = {
+  1: 'grid-cols-4 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5',
+  2: 'grid-cols-5 gap-2 sm:grid-cols-5 sm:gap-4 lg:grid-cols-6',
+  3: 'grid-cols-6 gap-1.5 sm:grid-cols-6 sm:gap-3 lg:grid-cols-8',
+}
+const TILE_CLASS: Record<number, string> = {
+  1: 'h-20 p-2 sm:h-24 sm:p-2',
+  2: 'h-16 p-1.5 sm:h-24 sm:p-2',
+  3: 'h-16 p-1 sm:h-20 sm:p-1.5',
+}
+
 const LEVELS: Level[] = [
   {
     n: 1,
@@ -257,26 +276,30 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
-          Atención · {level.name}
+          {level.name}
         </span>
         <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">{level.instruction}</h2>
-        <p className="mt-2 text-base font-semibold text-slate-500">
-          Encontraste {found.size} de {targetIds.size}
-        </p>
-        <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-            style={{ width: `${targetIds.size ? (found.size / targetIds.size) * 100 : 0}%` }}
-          />
+        {/* Count and bar share a row — every pixel spent restating progress is a
+            pixel the board doesn't get, and the board is the game. */}
+        <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+          <p className="shrink-0 text-base font-semibold text-slate-500">
+            Encontraste {found.size} de {targetIds.size}
+          </p>
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+              style={{ width: `${targetIds.size ? (found.size / targetIds.size) * 100 : 0}%` }}
+            />
+          </div>
         </div>
       </div>
 
       {/* Board */}
-      <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5">
+      <div className={`mt-5 grid ${BOARD_CLASS[level.n]}`}>
         {board.map((o, i) => {
           const cellKey = `${o.id}-${i}`
           const isFound = found.has(cellKey)
@@ -290,12 +313,17 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
               aria-label={o.label}
               aria-pressed={isFound}
               className={[
-                'relative flex aspect-square items-center justify-center rounded-2xl border-2 bg-white p-2 transition',
-                'min-h-[64px] focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
+                'relative flex items-center justify-center rounded-2xl border-2 bg-white transition',
+                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
+                TILE_CLASS[level.n],
                 isFound
                   ? 'border-tiam-green ring-2 ring-tiam-green/30'
                   : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
-                isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-red-300' : '',
+                // The wiggle alone marks a wrong tap. This used to paint the border
+                // red too, which nothing else in this folder does — a wrong tap here
+                // ends nothing and is never held against you, so it has no business
+                // looking like an alarm.
+                isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-300' : '',
               ].join(' ')}
             >
               {img ? (

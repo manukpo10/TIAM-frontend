@@ -195,24 +195,28 @@ export function LosOpuestos({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
-          Lenguaje · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Cuál es el opuesto?</h2>
             {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {currentIndex} de {order.length}
-            </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-                style={{ width: `${(currentIndex / order.length) * 100}%` }}
-              />
+            {/* Count and bar on one row: they say the same thing, and the four
+                answer tiles below need the height more than the repetition does. */}
+            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+              <p className="shrink-0 text-base font-semibold text-slate-500">
+                Llevás {currentIndex} de {order.length}
+              </p>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                  style={{ width: `${(currentIndex / order.length) * 100}%` }}
+                />
+              </div>
             </div>
           </>
         )}
@@ -221,14 +225,14 @@ export function LosOpuestos({ day: _day, onComplete }: GameProps) {
       {!done && round && (
         <>
           {/* Prompt word */}
-          <div className="mt-6 text-center">
-            <span className="inline-block rounded-2xl border-2 border-slate-200 bg-white px-8 py-5 text-3xl font-extrabold tracking-wide text-slate-800 sm:text-4xl">
+          <div className="mt-4 text-center sm:mt-6">
+            <span className="inline-block rounded-2xl border-2 border-slate-200 bg-white px-8 py-3 text-3xl font-extrabold tracking-wide text-slate-800 sm:py-5 sm:text-4xl">
               {round.prompt}
             </span>
           </div>
 
           {/* Options */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6">
             {options.map((id) => {
               const isEliminated = eliminated.has(id)
               const isSolved = solved && id === round.answer
@@ -243,7 +247,7 @@ export function LosOpuestos({ day: _day, onComplete }: GameProps) {
                   className={[
                     'transition focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                     level.illustrated
-                      ? 'flex min-h-[128px] flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4'
+                      ? 'flex min-h-[104px] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 p-3 sm:min-h-[128px] sm:gap-2 sm:p-4'
                       : 'min-h-[64px] rounded-2xl border-2 px-4 py-3 text-lg font-bold sm:text-xl',
                     isSolved
                       ? 'border-tiam-green bg-tiam-green/5 text-slate-900 ring-2 ring-tiam-green/30'

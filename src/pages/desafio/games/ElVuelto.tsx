@@ -292,76 +292,88 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
-          Cálculo · {level.name}
+          {level.name}
         </span>
+        {/* No "Armá el vuelto justo" heading: the modal's own header already
+            names the day and the game, and the scenario below asks the question
+            with the actual numbers in it. Three lines saying "vuelto" cost more
+            than the bills they pushed off the bottom of the screen. */}
         {!done && (
-          <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Armá el vuelto justo</h2>
-            <p className="mt-2 text-base font-semibold text-slate-500">
+          <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+            <p className="shrink-0 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {roundsForLevel}
             </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-cyan-600 transition-[width] duration-300"
                 style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
               />
             </div>
-          </>
+          </div>
         )}
       </div>
 
       {!done && scenario && (
         <>
-          {/* Scenario */}
-          <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-            <div className="flex items-center justify-center gap-3">
+          {/* Scenario — icons beside the text, not stacked above it. Stacked, this
+              card alone was 176px of a ~570px phone screen, and what it pushed
+              below the fold was the bill palette: the part you actually tap. */}
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
+            <div className="flex max-w-[88px] shrink-0 flex-wrap justify-center gap-1">
               {scenario.items.map((item, i) => {
                 const img = imgFor(item.id)
                 return (
-                  <div key={`${item.id}-${i}`} className="flex h-12 w-12 items-center justify-center">
+                  <div key={`${item.id}-${i}`} className="flex h-10 w-10 items-center justify-center">
                     {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
                   </div>
                 )
               })}
             </div>
-            <p className="mt-2 text-center text-base text-slate-700">
-              <span className="font-semibold">{scenario.venue}:</span>{' '}
-              {scenario.items.map((i) => i.label).join(' + ')} — {totalPrice.toLocaleString('es-AR')}
-            </p>
-            <p className="mt-1 text-center text-lg font-bold text-slate-900">
-              Pagás con ${scenario.paidWith.toLocaleString('es-AR')}. ¿Cuánto te dan de vuelto?
-            </p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-slate-700">
+                <span className="font-semibold">{scenario.venue}:</span>{' '}
+                {scenario.items.map((i) => i.label).join(' + ')} — ${totalPrice.toLocaleString('es-AR')}
+              </p>
+              <p className="mt-0.5 text-base font-bold text-slate-900">
+                Pagás con ${scenario.paidWith.toLocaleString('es-AR')}. ¿Cuánto te dan de vuelto?
+              </p>
+            </div>
           </div>
 
-          {/* Tray of placed bills */}
-          <div className="mt-5 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-white p-3">
-            {placed.length === 0 ? (
-              <p className="text-center text-sm text-slate-400">Tocá los billetes de abajo</p>
-            ) : (
-              <div className="flex flex-wrap justify-center gap-2">
-                {placed.map((b) => (
-                  <button
-                    key={b.key}
-                    type="button"
-                    disabled={resolved}
-                    onClick={() => removeBill(b.key)}
-                    aria-label={`quitar $${b.value}`}
-                    className="min-h-[44px] rounded-xl px-4 py-2 text-base font-bold text-white shadow transition hover:brightness-110 active:scale-95"
-                    style={{ backgroundColor: colorFor(b.value) }}
-                  >
-                    ${b.value}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Tray of placed bills. The running total sits INSIDE the tray, on the
+              right, instead of on its own line underneath — it's a property of
+              what's in the tray, so it reads better here and costs nothing. */}
+          <div className="mt-4 flex min-h-[64px] items-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-3">
+            <div className="min-w-0 flex-1">
+              {placed.length === 0 ? (
+                <p className="text-sm text-slate-400">Tocá los billetes de abajo</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {placed.map((b) => (
+                    <button
+                      key={b.key}
+                      type="button"
+                      disabled={resolved}
+                      onClick={() => removeBill(b.key)}
+                      aria-label={`quitar $${b.value}`}
+                      className="min-h-[44px] rounded-xl px-4 py-2 text-base font-bold text-white shadow transition hover:brightness-110 active:scale-95"
+                      style={{ backgroundColor: colorFor(b.value) }}
+                    >
+                      ${b.value}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className="shrink-0 text-right text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Llevás
+              <span className="block text-base font-bold text-slate-900">${sum.toLocaleString('es-AR')}</span>
+            </p>
           </div>
-          <p className="mt-2 text-center text-sm font-semibold text-slate-500">
-            Llevás ${sum.toLocaleString('es-AR')}
-          </p>
 
           {/* Denomination palette */}
           {!resolved && (

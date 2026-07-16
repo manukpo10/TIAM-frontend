@@ -186,14 +186,14 @@ export function OrdenaTuSemana({ day: _day, onComplete, progress }: GameProps) {
   }
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide"
           style={{ backgroundColor: 'rgba(217, 119, 6, 0.1)', color: '#D97706' }}
         >
-          Orientación · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>

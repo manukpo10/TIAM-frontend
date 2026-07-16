@@ -262,24 +262,28 @@ export function ElReloj({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
-          Praxias · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué hora muestra el reloj?</h2>
             {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {currentIndex} de {order.length}
-            </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-                style={{ width: `${(currentIndex / order.length) * 100}%` }}
-              />
+            {/* Count and bar on one row — see the clock's own size note below for
+                why this screen fights for every pixel. */}
+            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+              <p className="shrink-0 text-base font-semibold text-slate-500">
+                Llevás {currentIndex} de {order.length}
+              </p>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                  style={{ width: `${(currentIndex / order.length) * 100}%` }}
+                />
+              </div>
             </div>
           </>
         )}
@@ -287,13 +291,16 @@ export function ElReloj({ day: _day, onComplete }: GameProps) {
 
       {!done && round && (
         <>
-          {/* Clock */}
-          <div className="relative mx-auto mt-6 aspect-square w-56 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:w-64">
+          {/* Clock. Sized so the four answers below it are on screen at the same
+              time as the hands: a phone showing the browser bar has ~570px to
+              work with, and a clock you have to scroll away from to read the
+              options is a memory test, not a clock-reading one. */}
+          <div className="relative mx-auto mt-4 aspect-square w-44 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-6 sm:w-64">
             <ClockFace hour={round.time.hour} minute={round.time.minute} showNumbers={level.showNumbers} />
           </div>
 
           {/* Options */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6">
             {options.map((opt) => {
               const isEliminated = eliminated.has(opt.id)
               const isCorrectShown = resolved && opt.id === correctId

@@ -299,15 +299,14 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
-          Lenguaje · {level.name}
+          {level.name}
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué objeto es?</h2>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>
@@ -329,7 +328,7 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Options */}
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6">
             {options.map((id) => {
               const isEliminated = eliminated.has(id)
               const isAnswer = resolved && id === riddle.answer
@@ -342,7 +341,11 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
                   onClick={() => guess(id)}
                   aria-label={LABELS[id] ?? id}
                   className={[
-                    'relative flex aspect-square items-center justify-center rounded-2xl border-2 bg-white p-4 transition',
+                    // Capped height instead of aspect-square: two columns on a
+                    // phone made each tile ~150px tall, so the bottom row of
+                    // options sat below the fold with nothing to hint it existed.
+                    // object-contain keeps every illustration whole regardless.
+                    'relative flex h-28 items-center justify-center rounded-2xl border-2 bg-white p-2 transition sm:h-36 sm:p-4',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                     isAnswer ? 'border-tiam-green ring-2 ring-tiam-green/30' : '',
                     isEliminated ? 'border-slate-200 opacity-40 grayscale' : '',

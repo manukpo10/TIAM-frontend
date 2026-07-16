@@ -248,7 +248,7 @@ export function EmpecemosPorHoy({ day: _day, onComplete }: GameProps) {
   }, [today])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span

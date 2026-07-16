@@ -42,7 +42,7 @@ const LEVELS: Level[] = [
     n: 1,
     name: 'Nivel 1',
     count: 8,
-    hint: 'Los números están repartidos por toda la pantalla, no en fila — recorré todo el espacio con la mirada.',
+    hint: 'No están en fila: mirá toda la pantalla.',
     layouts: [
       [
         { x: 18, y: 15 }, { x: 52, y: 10 }, { x: 80, y: 22 }, { x: 28, y: 45 },
@@ -221,37 +221,39 @@ export function CaminoNumerico({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey])
 
   return (
-    <div className="p-5 sm:p-7">
+    <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
-          Atención · {level.name}
+          {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          Tocá los números en orden, empezando por el 1
-        </h2>
-        {!done && (
-          <>
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Encontraste {foundCount} de {level.count}
-            </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-                style={{ width: `${(foundCount / level.count) * 100}%` }}
-              />
-            </div>
-          </>
-        )}
+        {/* "empezando por el 1" is deliberately absent: the target chip below
+            always names the number you actually need, and by the time you're on
+            9 the heading would be telling you to start over. */}
+        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tocá los números en orden</h2>
       </div>
 
       {!done && (
         <>
-          {/* Target chip */}
-          <div className="mt-5 flex flex-col items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Buscá el número</span>
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white text-4xl font-black text-slate-800">
+          {/* Target number, the count and the bar share ONE row. Stacked, these
+              three said the same thing three times over and cost 176px — on a
+              phone whose browser bar is showing, that was the difference between
+              seeing the whole board and not knowing it continued below. */}
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white text-3xl font-black text-slate-800">
               {foundCount + 1}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Buscá el número</p>
+              <p className="text-base font-semibold text-slate-500">
+                Encontraste {foundCount} de {level.count}
+              </p>
+              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                  style={{ width: `${(foundCount / level.count) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
 
