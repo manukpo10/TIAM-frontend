@@ -7,11 +7,23 @@ import type { GameProps } from '@/lib/challengeProgress'
  * closure), grounded in the Gollin Incomplete Figures Test: a familiar
  * object shown fragmented, revealing more only if not recognized.
  *
- * The "reveal" is done at RENDER time with a CSS clip-path circle grown
- * from the image's center — the same finished illustration used by the
- * other games, no separate partial-art needed per object. A wrong guess
- * and the voluntary "Dame una pista" button both advance the same single
- * reveal stage pointer, so there's one mental model for "more picture."
+ * The reveal FRAGMENTS THE CONTOUR — it does not uncover a region. A dot-grid
+ * CSS mask lets the line show through only inside a lattice of small circles,
+ * and each stage grows that radius until the drawing is whole. So the object is
+ * present in full from stage one, with most of its outline missing; you
+ * recognise it by closing the gaps mentally. That IS visual closure, and it's
+ * the function this test measures.
+ *
+ * This used to be a clip-path circle grown from the image's centre, which is a
+ * different task entirely: a growing peephole shows you a COMPLETE PART of the
+ * object, so you're identifying a fragment, not completing a whole. It also
+ * only ever worked because the old art was filled — you cannot meaningfully
+ * fragment a solid shape, you just get blobs. The art is now unfilled pen-and-
+ * ink contour (shared with día 27 via assets/desafio/games/contornos), so
+ * fragmenting the LINE is finally possible.
+ *
+ * A wrong guess and the voluntary "Dame una pista" button both advance the same
+ * single reveal stage pointer, so there's one mental model for "more picture."
  *
  * No red anywhere in this one specifically: recognition failure is close
  * to the actual clinical deficit this game exercises (agnosia), so a
@@ -49,16 +61,32 @@ const OBJECTS: RevealObject[] = [
   { id: 'reloj-pulsera', label: 'reloj de pulsera', category: 'objetos' },
   { id: 'mate', label: 'mate', category: 'objetos' },
   { id: 'guitarra', label: 'guitarra', category: 'objetos' },
+  { id: 'pava', label: 'pava', category: 'objetos' },
+  { id: 'termo', label: 'termo', category: 'objetos' },
+  { id: 'taza', label: 'taza', category: 'objetos' },
+  { id: 'cacerola', label: 'cacerola', category: 'objetos' },
+  { id: 'cuchara', label: 'cuchara', category: 'objetos' },
+  { id: 'tenedor', label: 'tenedor', category: 'objetos' },
+  { id: 'peine', label: 'peine', category: 'objetos' },
+  { id: 'botella', label: 'botella', category: 'objetos' },
+  { id: 'martillo', label: 'martillo', category: 'objetos' },
+  { id: 'silla', label: 'silla', category: 'objetos' },
+  { id: 'sombrero', label: 'sombrero', category: 'objetos' },
+  { id: 'zapato', label: 'zapato', category: 'objetos' },
+  { id: 'camion-bomberos', label: 'camión de bomberos', category: 'objetos' },
   { id: 'sol', label: 'sol', category: 'formas' },
   { id: 'corazon', label: 'corazón', category: 'formas' },
   { id: 'banana', label: 'banana', category: 'formas' },
   { id: 'zanahoria', label: 'zanahoria', category: 'formas' },
   { id: 'casa', label: 'casa', category: 'formas' },
+  { id: 'manzana-roja', label: 'manzana', category: 'formas' },
 ]
 
 const byCategory = (cat: RevealObject['category']) => OBJECTS.filter((o) => o.category === cat)
 
-const IMAGES = import.meta.glob('../../../assets/desafio/games/que-sera/*.webp', {
+// Carpeta compartida con día 27: los mismos contornos sin relleno sirven a los
+// dos juegos, y un objeto dibujado una vez no se dibuja de nuevo por juego.
+const IMAGES = import.meta.glob('../../../assets/desafio/games/contornos/*.webp', {
   eager: true,
   import: 'default',
 }) as Record<string, string>
@@ -81,28 +109,28 @@ interface Level {
   n: number
   name: string
   rounds: number
-  stages: number[] // clip-path circle radius %, ascending — last entry is full reveal
+  stages: number[] // radio del punto de la máscara en %, ascendente — 100 = figura entera
   decoyStrategy: (target: RevealObject) => RevealObject[]
 }
 
-// Reveal % is a clip-path circle() radius, which does NOT scale linearly
-// with "how much of the image is visible" (its percentage basis is the
-// box's diagonal-derived reference, not width) — calibrated empirically
-// against the actual art (sol, guitarra) rather than computed from theory:
-// ~20% already shows most of a compact object, ~6% is a bare sliver.
+// Cada etapa es el RADIO del punto en la grilla de la máscara, como % del paso
+// de la grilla: con 16% se ven motas sueltas de la línea, con 55% guiones que ya
+// dibujan el contorno, y 100 es la figura completa. Calibrado mirando el arte
+// real en pantalla, no calculado: por debajo de ~12% no queda tinta suficiente
+// para que haya algo que cerrar, y ahí deja de ser difícil y pasa a ser azar.
 const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
     rounds: 3,
-    stages: [18, 32, 100],
+    stages: [34, 52, 100],
     decoyStrategy: (target) => pick(OBJECTS.filter((o) => o.category !== target.category), 3),
   },
   {
     n: 2,
     name: 'Nivel 2',
     rounds: 4,
-    stages: [11, 20, 32, 100],
+    stages: [24, 34, 52, 100],
     decoyStrategy: (target) => [
       ...pick(OBJECTS.filter((o) => o.category !== target.category), 1),
       ...pick(byCategory(target.category).filter((o) => o.id !== target.id), 2),
@@ -112,10 +140,28 @@ const LEVELS: Level[] = [
     n: 3,
     name: 'Nivel 3',
     rounds: 5,
-    stages: [4, 8, 14, 100],
+    stages: [14, 22, 34, 100],
     decoyStrategy: (target) => pick(byCategory(target.category).filter((o) => o.id !== target.id), 4),
   },
 ]
+
+// Paso de la grilla de puntos. Fijo en px y no relativo a la imagen a propósito:
+// lo que hace difícil un Gollin es el tamaño del HUECO comparado con el grosor
+// del trazo, y el trazo tampoco escala con la caja.
+const MASK_STEP_PX = 9
+
+function maskFor(percent: number): React.CSSProperties {
+  if (percent >= 100) return {}
+  const mask = `radial-gradient(circle at center, #000 ${percent}%, transparent ${percent + 1}%)`
+  return {
+    WebkitMaskImage: mask,
+    maskImage: mask,
+    WebkitMaskSize: `${MASK_STEP_PX}px ${MASK_STEP_PX}px`,
+    maskSize: `${MASK_STEP_PX}px ${MASK_STEP_PX}px`,
+    WebkitMaskRepeat: 'repeat',
+    maskRepeat: 'repeat',
+  }
+}
 
 const PRAISE_GOOD = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfecto!']
 const PRAISE_OK = [
@@ -269,14 +315,19 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
         {!done && (
           <>
             <p className="mt-2 text-base text-slate-500">Mirá la imagen y elegí qué objeto es.</p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {roundIdx} de {level.rounds}
-            </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-tiam-orange transition-[width] duration-300"
-                style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
-              />
+            {/* Cuenta y barra en una fila: el nivel 3 tiene 5 opciones (una fila
+                más de botones) y cada píxel de más se lo come a la figura, que acá
+                es todo el juego. */}
+            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+              <p className="shrink-0 text-base font-semibold text-slate-500">
+                Llevás {roundIdx} de {level.rounds}
+              </p>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-tiam-orange transition-[width] duration-300"
+                  style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
+                />
+              </div>
             </div>
           </>
         )}
@@ -284,20 +335,27 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
 
       {!done && target && (
         <>
-          {/* Revealed image */}
-          <div className="relative mx-auto mt-6 aspect-square w-48 overflow-hidden rounded-3xl bg-slate-50 sm:w-56">
+          {/* Figura fragmentada. Fondo blanco, no slate-50: la máscara recorta la
+              tinta contra el fondo, y un gris de fondo le baja el contraste justo
+              a las motas de línea que hay que llegar a ver. */}
+          <div className="relative mx-auto mt-3 aspect-square w-44 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-6 sm:w-56">
             {img && (
               <img
                 src={img}
                 alt=""
-                className="h-full w-full object-contain p-6 transition-[clip-path] duration-500 ease-out"
-                style={{ clipPath: `circle(${revealPercent}% at 50% 50%)` }}
+                draggable={false}
+                className="h-full w-full object-contain p-4"
+                style={maskFor(revealPercent)}
               />
             )}
           </div>
 
-          {!resolved ? (
-            <div className="mt-3 text-center">
+          {/* Slot de altura reservada: el botón de pista y el texto de resultado
+              se turnan acá. Sin el min-h, el elogio (más largo que el botón)
+              empuja las opciones hacia abajo justo cuando la persona está
+              leyendo — y en nivel 3, fuera de pantalla. */}
+          <div className="mt-2 flex min-h-[44px] items-center justify-center text-center">
+            {!resolved ? (
               <button
                 type="button"
                 disabled={!canHint}
@@ -307,15 +365,13 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
                 <Eye className="h-4 w-4" />
                 Dame una pista
               </button>
-            </div>
-          ) : (
-            <p className={`mt-3 text-center text-sm font-medium ${correct ? 'text-tiam-green' : 'text-tiam-blue'}`}>
-              {praise}
-            </p>
-          )}
+            ) : (
+              <p className={`text-sm font-medium ${correct ? 'text-tiam-green' : 'text-tiam-blue'}`}>{praise}</p>
+            )}
+          </div>
 
           {/* Options */}
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:gap-3">
             {options.map((opt) => {
               const isEliminated = eliminated.has(opt.id)
               const isTheAnswer = resolved && opt.id === target.id
@@ -326,7 +382,9 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
                   disabled={resolved || isEliminated}
                   onClick={() => guess(opt.id)}
                   className={[
-                    'min-h-[56px] rounded-2xl border-2 px-4 py-3 text-base font-bold capitalize transition',
+                    // 48px, no 56: el nivel 3 suma una tercera fila de opciones y
+                    // sigue por encima del mínimo de 44px para tocar cómodo.
+                    'min-h-[48px] rounded-2xl border-2 px-3 py-2 text-base font-bold capitalize transition',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                     isTheAnswer ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
                     isEliminated ? 'border-slate-200 bg-slate-50 text-slate-300 line-through' : '',
