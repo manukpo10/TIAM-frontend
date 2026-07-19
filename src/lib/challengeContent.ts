@@ -134,8 +134,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: vas a ver dos imágenes que son la misma palabra, cada una por un sentido distinto. Descubrí la palabra y armala con las letras. Subís de dificultad a medida que avanzás.' },
   { day: 29, type: 'game', area: 'agnosias', title: '¿Qué será?',
     instructions: 'Un juego de reconocimiento: la imagen aparece incompleta, con el dibujo cortado, y se va completando de a poco. Elegí qué objeto es. Pedí pistas si te hace falta.' },
-  { day: 30, type: 'game', area: 'calculo', title: 'Tu resumen',
-    instructions: 'Un juego de cálculo para cerrar el desafío: sumá tus propios números — cuántos días jugaste, cuántas estrellas conseguiste y tu racha más larga. ¡Felicitaciones por los 30 días! 🎉' },
+  { day: 30, type: 'game', area: 'memoria', title: 'Palabras en clave',
+    instructions: 'El último día es de papel y lápiz: una palabra le pone un número a cada letra, y con esos números descubrís palabras escondidas. Después buscás muchas más por tu cuenta. ¡Un cierre a la altura de los 30 días! 🎉' },
 ]
 
 /** Content joined with its per-day illustration (matched by day number). */

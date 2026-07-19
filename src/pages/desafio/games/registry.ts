@@ -24,7 +24,7 @@ import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
 import { LosOpuestos } from './LosOpuestos'
 import { DosPistas } from './DosPistas'
-import { TuResumen } from './TuResumen'
+import { PalabrasEnClave } from './PalabrasEnClave'
 import { LaCancionDeTuJuventud } from './LaCancionDeTuJuventud'
 import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
 import { QueSonidoEs } from './QueSonidoEs'
@@ -70,7 +70,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   27: CuantosHay,
   29: QueSera,
   28: DosPistas,
-  30: TuResumen,
+  30: PalabrasEnClave,
   15: LaCancionDeTuJuventud,
   6: EncontraLaFiguraIgual,
   23: QueSonidoEs,
