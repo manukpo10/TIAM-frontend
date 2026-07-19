@@ -7,20 +7,29 @@ import type { GameProps } from '@/lib/challengeProgress'
  * closure), grounded in the Gollin Incomplete Figures Test: a familiar
  * object shown fragmented, revealing more only if not recognized.
  *
- * The reveal FRAGMENTS THE CONTOUR — it does not uncover a region. A dot-grid
- * CSS mask lets the line show through only inside a lattice of small circles,
- * and each stage grows that radius until the drawing is whole. So the object is
- * present in full from stage one, with most of its outline missing; you
- * recognise it by closing the gaps mentally. That IS visual closure, and it's
- * the function this test measures.
+ * The reveal FRAGMENTS THE CONTOUR into pieces of line, adding more pieces per
+ * stage — exactly like the plates in the original Gollin sets (SET I → V: a few
+ * broken strokes, then more, then the whole drawing). It's drawn on a <canvas>:
+ * a COHERENT noise field (smooth blobs, generated fresh per round) assigns every
+ * zone a "reveal order" in [0,1], and at reveal p the line shows only where the
+ * noise ≤ p. Because the noise is spatially smooth, whole CONTIGUOUS SEGMENTS
+ * appear and whole regions stay absent — not a uniform stipple — and because p
+ * only grows, each stage nests the previous one. See drawFragment() below.
  *
- * This used to be a clip-path circle grown from the image's centre, which is a
- * different task entirely: a growing peephole shows you a COMPLETE PART of the
- * object, so you're identifying a fragment, not completing a whole. It also
- * only ever worked because the old art was filled — you cannot meaningfully
- * fragment a solid shape, you just get blobs. The art is now unfilled pen-and-
- * ink contour (shared with día 27 via assets/desafio/games/contornos), so
- * fragmenting the LINE is finally possible.
+ * Two earlier versions were both wrong and are worth remembering as anti-patterns:
+ *   - a clip-path circle grown from the centre: a peephole shows you a COMPLETE
+ *     PART, so you identify a fragment, not complete a whole — a different task;
+ *   - a fine dot-grid CSS mask: it stipples the ENTIRE line uniformly, so every
+ *     part is equally dotted. A real Gollin has whole segments present and whole
+ *     segments gone, and the difficulty is HOW MANY segments show.
+ * Both only ever half-worked; the coherent-noise fragmentation is the real thing.
+ * It needs unfilled contour art (shared with día 27 via assets/…/contornos) —
+ * you cannot meaningfully fragment a solid shape.
+ *
+ * The pool is curated to DISTINCTIVE silhouettes (animals, tools, clear shapes).
+ * Generic utensils — a lone spoon, fork, bottle, plain cup — are unrecognisable
+ * once fragmented, which makes the task frustrating rather than hard, so they're
+ * deliberately absent even though they exist in the shared contour set.
  *
  * A wrong guess and the voluntary "Dame una pista" button both advance the same
  * single reveal stage pointer, so there's one mental model for "more picture."
@@ -35,8 +44,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * completo (sin repetir dentro del nivel; pueden repetirse entre niveles,
  * igual que los géneros de LaCancionDeTuJuventud), conservando la curva de
  * dificultad existente por nivel (stages de revelado, estrategia de
- * decoys). 12 adivinanzas en total (3 + 4 + 5) — el pool de 20 objetos ya
- * alcanza de sobra, no hizo falta contenido nuevo.
+ * decoys). 12 adivinanzas en total (3 + 4 + 5) — el pool curado de siluetas
+ * distintivas alcanza de sobra.
  */
 
 interface RevealObject {
@@ -62,13 +71,6 @@ const OBJECTS: RevealObject[] = [
   { id: 'mate', label: 'mate', category: 'objetos' },
   { id: 'guitarra', label: 'guitarra', category: 'objetos' },
   { id: 'pava', label: 'pava', category: 'objetos' },
-  { id: 'termo', label: 'termo', category: 'objetos' },
-  { id: 'taza', label: 'taza', category: 'objetos' },
-  { id: 'cacerola', label: 'cacerola', category: 'objetos' },
-  { id: 'cuchara', label: 'cuchara', category: 'objetos' },
-  { id: 'tenedor', label: 'tenedor', category: 'objetos' },
-  { id: 'peine', label: 'peine', category: 'objetos' },
-  { id: 'botella', label: 'botella', category: 'objetos' },
   { id: 'martillo', label: 'martillo', category: 'objetos' },
   { id: 'silla', label: 'silla', category: 'objetos' },
   { id: 'sombrero', label: 'sombrero', category: 'objetos' },
@@ -109,28 +111,29 @@ interface Level {
   n: number
   name: string
   rounds: number
-  stages: number[] // radio del punto de la máscara en %, ascendente — 100 = figura entera
+  stages: number[] // % de la LÍNEA visible, ascendente — 100 = figura entera
   decoyStrategy: (target: RevealObject) => RevealObject[]
 }
 
-// Cada etapa es el RADIO del punto en la grilla de la máscara, como % del paso
-// de la grilla: con 16% se ven motas sueltas de la línea, con 55% guiones que ya
-// dibujan el contorno, y 100 es la figura completa. Calibrado mirando el arte
-// real en pantalla, no calculado: por debajo de ~12% no queda tinta suficiente
-// para que haya algo que cerrar, y ahí deja de ser difícil y pasa a ser azar.
+// Cada etapa es el % de la LÍNEA que se muestra (por ranking, ver drawFragment),
+// así que estos números son literales y comparables entre objetos. Nivel 1
+// empieza a medio dibujar y con una pista queda casi entero; nivel 3 empieza
+// muy fragmentado (1/5 de la línea). El último valor es siempre 100 (revelado
+// completo al rendirse). Por debajo de ~18% deja de haber suficiente para cerrar
+// y pasa a ser azar.
 const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
     rounds: 3,
-    stages: [34, 52, 100],
+    stages: [50, 72, 100],
     decoyStrategy: (target) => pick(OBJECTS.filter((o) => o.category !== target.category), 3),
   },
   {
     n: 2,
     name: 'Nivel 2',
     rounds: 4,
-    stages: [24, 34, 52, 100],
+    stages: [35, 50, 72, 100],
     decoyStrategy: (target) => [
       ...pick(OBJECTS.filter((o) => o.category !== target.category), 1),
       ...pick(byCategory(target.category).filter((o) => o.id !== target.id), 2),
@@ -140,27 +143,85 @@ const LEVELS: Level[] = [
     n: 3,
     name: 'Nivel 3',
     rounds: 5,
-    stages: [14, 22, 34, 100],
+    stages: [20, 32, 50, 100],
     decoyStrategy: (target) => pick(byCategory(target.category).filter((o) => o.id !== target.id), 4),
   },
 ]
 
-// Paso de la grilla de puntos. Fijo en px y no relativo a la imagen a propósito:
-// lo que hace difícil un Gollin es el tamaño del HUECO comparado con el grosor
-// del trazo, y el trazo tampoco escala con la caja.
-const MASK_STEP_PX = 9
+// --- Fragmentado tipo Gollin sobre canvas ---
+const CANVAS_SIZE = 320
+// Grilla del ruido: 6×6 da blobs de ~1/6 de la figura, o sea fragmentos del
+// tamaño de un trazo (como los SET de la referencia). Más fino = punteado
+// uniforme (el error anterior); más grueso = pedazos demasiado grandes.
+const NOISE_GRID = 6
 
-function maskFor(percent: number): React.CSSProperties {
-  if (percent >= 100) return {}
-  const mask = `radial-gradient(circle at center, #000 ${percent}%, transparent ${percent + 1}%)`
-  return {
-    WebkitMaskImage: mask,
-    maskImage: mask,
-    WebkitMaskSize: `${MASK_STEP_PX}px ${MASK_STEP_PX}px`,
-    maskSize: `${MASK_STEP_PX}px ${MASK_STEP_PX}px`,
-    WebkitMaskRepeat: 'repeat',
-    maskRepeat: 'repeat',
+// Campo de ruido COHERENTE: 6×6 valores al azar, interpolados bilinealmente a
+// CANVAS_SIZE². Suave, así que umbralarlo deja segmentos contiguos, no puntos.
+function makeNoiseField(): Float32Array {
+  const g = NOISE_GRID
+  const grid = new Float32Array(g * g)
+  for (let i = 0; i < grid.length; i++) grid[i] = Math.random()
+  const S = CANVAS_SIZE
+  const field = new Float32Array(S * S)
+  for (let y = 0; y < S; y++) {
+    const fy = (y / S) * (g - 1)
+    const y0 = Math.floor(fy)
+    const y1 = Math.min(y0 + 1, g - 1)
+    const ty = fy - y0
+    for (let x = 0; x < S; x++) {
+      const fx = (x / S) * (g - 1)
+      const x0 = Math.floor(fx)
+      const x1 = Math.min(x0 + 1, g - 1)
+      const tx = fx - x0
+      const a = grid[y0 * g + x0]
+      const b = grid[y0 * g + x1]
+      const c = grid[y1 * g + x0]
+      const d = grid[y1 * g + x1]
+      const top = a + (b - a) * tx
+      const bot = c + (d - c) * tx
+      field[y * S + x] = top + (bot - top) * ty
+    }
   }
+  return field
+}
+
+// Dibuja el contorno y deja visible sólo el p% de la LÍNEA con menor ruido
+// (revealPercent = % de línea a mostrar). El umbral se toma por RANKING sobre
+// los píxeles de tinta, no global: así aparece exactamente ese % de la figura
+// sin importar dónde caiga sobre el ruido — un umbral global tenía mucha
+// varianza (un objeto compacto y centrado a veces se revelaba casi entero). El
+// ruido sigue siendo suave, así que el p% más bajo forma segmentos contiguos.
+function drawFragment(
+  canvas: HTMLCanvasElement,
+  image: HTMLImageElement,
+  noise: Float32Array,
+  revealPercent: number,
+) {
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  const S = CANVAS_SIZE
+  ctx.clearRect(0, 0, S, S)
+  // encajar la imagen en el cuadrado, centrada, preservando proporción
+  const scale = Math.min(S / image.width, S / image.height)
+  const w = image.width * scale
+  const h = image.height * scale
+  ctx.drawImage(image, (S - w) / 2, (S - h) / 2, w, h)
+  if (revealPercent >= 100) return
+  const p = revealPercent / 100
+  const imgData = ctx.getImageData(0, 0, S, S)
+  const dd = imgData.data
+  // ruido de cada píxel de tinta, para cortar por percentil p
+  const lineNoise: number[] = []
+  for (let i = 0; i < noise.length; i++) {
+    if (dd[i * 4 + 3] > 40) lineNoise.push(noise[i])
+  }
+  if (lineNoise.length === 0) return
+  lineNoise.sort((a, b) => a - b)
+  const cutoff = lineNoise[Math.min(lineNoise.length - 1, Math.floor(p * lineNoise.length))]
+  for (let i = 0; i < noise.length; i++) {
+    if (dd[i * 4 + 3] > 40 && noise[i] > cutoff) dd[i * 4 + 3] = 0
+  }
+  ctx.putImageData(imgData, 0, 0)
 }
 
 const PRAISE_GOOD = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfecto!']
@@ -218,6 +279,47 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
   const img = target ? imgFor(target.id) : undefined
   const revealPercent = resolved ? 100 : level.stages[stageIdx]
   const canHint = !resolved && stageIdx < level.stages.length - 1
+
+  // --- Canvas del Gollin ---
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imgElRef = useRef<HTMLImageElement | null>(null)
+  const imgUrlRef = useRef<string | null>(null)
+  const noiseRef = useRef<Float32Array | null>(null)
+  // El campo de ruido se regenera UNA vez por ronda (nueva imagen a adivinar):
+  // así las pistas de una misma ronda agregan fragmentos sobre los anteriores
+  // (nested), y cada ronda nueva tiene un fragmentado distinto.
+  const noiseKey = `${roundKey}:${roundIdx}`
+  useEffect(() => {
+    noiseRef.current = makeNoiseField()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noiseKey])
+
+  // Redibuja al cambiar la imagen, el nivel de revelado, o el ruido de la ronda.
+  // Carga la imagen una sola vez por URL (se cachea en imgElRef).
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !img || !noiseRef.current) return
+    let cancelled = false
+    const paint = () => {
+      if (cancelled || !canvasRef.current || !imgElRef.current || !noiseRef.current) return
+      drawFragment(canvasRef.current, imgElRef.current, noiseRef.current, revealPercent)
+    }
+    if (imgUrlRef.current === img && imgElRef.current?.complete) {
+      paint()
+    } else {
+      const image = new Image()
+      image.onload = () => {
+        if (cancelled) return
+        imgElRef.current = image
+        imgUrlRef.current = img
+        paint()
+      }
+      image.src = img
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [img, revealPercent, noiseKey])
 
   useEffect(() => {
     if (done) setLevelPraise(pickOne(PRAISE_GOOD))
@@ -335,19 +437,17 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
 
       {!done && target && (
         <>
-          {/* Figura fragmentada. Fondo blanco, no slate-50: la máscara recorta la
-              tinta contra el fondo, y un gris de fondo le baja el contraste justo
-              a las motas de línea que hay que llegar a ver. */}
-          <div className="relative mx-auto mt-3 aspect-square w-44 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-6 sm:w-56">
-            {img && (
-              <img
-                src={img}
-                alt=""
-                draggable={false}
-                className="h-full w-full object-contain p-4"
-                style={maskFor(revealPercent)}
-              />
-            )}
+          {/* Figura fragmentada, dibujada en canvas (ver drawFragment). Fondo
+              blanco: los fragmentos de línea negra necesitan el máximo contraste
+              para que se los pueda llegar a ver. */}
+          <div className="relative mx-auto mt-3 aspect-square w-44 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white p-3 sm:mt-6 sm:w-56 sm:p-4">
+            <canvas
+              ref={canvasRef}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
+              className="h-full w-full"
+              aria-hidden="true"
+            />
           </div>
 
           {/* Slot de altura reservada: el botón de pista y el texto de resultado
