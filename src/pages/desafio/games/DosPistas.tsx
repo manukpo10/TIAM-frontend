@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
-import { useSequencingPuzzle, type SequencingItem } from './useSequencingPuzzle'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -12,14 +11,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * once — a "make them think" exercise, which is exactly what the professional
  * asked us to lean into.
  *
- * Mechanic reuses `useSequencingPuzzle` at the LETTER grain, same as día 3
- * (QuePalabraSeEsconde): the bank is the answer's own letters, shuffled; tap to
- * place, tap a placed tile to send it back. The only structural difference from
- * día 3 is the clue — TWO images instead of one word + one image — and there's
- * no "source word", the letters just come scrambled.
+ * Letter-tile mechanic like día 3 (tap to place into slots, tap a placed tile to
+ * send it back), but with its own local bank instead of `useSequencingPuzzle`,
+ * because the pile carries DECOY letters (más letras de las justas) so juntar
+ * las que sobran no alcanza — the difficulty the professional asked for. The
+ * word-building row shows one slot per answer letter so the length stays visible
+ * even though the pile has extras. Structural differences from día 3: TWO image
+ * clues instead of one word + one image, no "source word", and the decoys.
  *
- * Correctness compares the SPELLED STRING to the answer, never the hook's
- * positional `isCorrect`: several answers repeat letters (ESTRELLA has two E and
+ * Correctness compares the SPELLED STRING to the answer, never a
+ * positional check: several answers repeat letters (ESTRELLA has two E and
  * two L, SIERRA two R), so two tiles can share a value but not an id and the
  * player can't tell them apart — grading by position would mark a correctly
  * spelled word wrong. All answers are accent-free (letter tiles can't carry an
@@ -80,6 +81,27 @@ const LEVELS: RebusLevel[] = [
 const ROUNDS_PER_LEVEL = [2, 3, 3]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
+// Letras de más en el montón, por nivel — para que no alcance con juntar las
+// justas. Sube con la dificultad. No se usa el hook useSequencingPuzzle (que
+// sólo baraja las letras exactas): acá el banco lleva señuelos.
+const DECOYS_PER_LEVEL = [2, 3, 4]
+// Pool de letras comunes en español para los señuelos. Pueden repetir una letra
+// que ya está en la palabra — como se compara el STRING armado, da igual qué
+// ficha física use la persona.
+const DECOY_POOL = 'aeiosrntldcumpb'.split('')
+
+interface Tile {
+  id: number
+  value: string
+}
+// Letras de la palabra + `decoys` señuelos, todo barajado. Ids únicos por ficha
+// para poder distinguir dos fichas del mismo valor.
+function buildTiles(answer: string, decoys: number): Tile[] {
+  const values = answer.split('')
+  for (let i = 0; i < decoys; i++) values.push(pickOne(DECOY_POOL))
+  return shuffle(values).map((value, id) => ({ id, value }))
+}
+
 const IMAGES = import.meta.glob('../../../assets/desafio/games/dos-pistas/*.webp', {
   eager: true,
   import: 'default',
@@ -120,10 +142,22 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
   )
   const [roundIdx, setRoundIdx] = useState(0)
   const entry = roundEntries[roundIdx]
-  const answerLetters = useMemo(() => entry.answer.split(''), [entry])
 
-  const { bank, placed, place, unplace } = useSequencingPuzzle(answerLetters, `${levelIdx}-${roundKey}-${roundIdx}`)
-  const readyToCheck = bank.length === 0
+  // Fichas de la ronda (palabra + señuelos), estables dentro de la ronda; se
+  // rearman al cambiar de nivel/ronda. `placedIds` guarda qué fichas están
+  // puestas, en orden; se resetea sincrónicamente en los handlers (nunca en un
+  // efecto, misma disciplina que el resto del reset — ver nextLevel).
+  const tiles = useMemo(
+    () => buildTiles(entry.answer, DECOYS_PER_LEVEL[levelIdx]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [levelIdx, roundKey, roundIdx],
+  )
+  const [placedIds, setPlacedIds] = useState<number[]>([])
+  const placed = placedIds.map((id) => tiles.find((t) => t.id === id)).filter((t): t is Tile => !!t)
+  const bank = tiles.filter((t) => !placedIds.includes(t.id))
+  // Listo para revisar cuando hay tantas letras puestas como tiene la palabra
+  // (los señuelos que sobran quedan en el montón).
+  const readyToCheck = placed.length === entry.answer.length
 
   const [resolved, setResolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
@@ -139,13 +173,15 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
   const imgA = imgFor(entry.imgA)
   const imgB = imgFor(entry.imgB)
 
-  function handlePlace(item: SequencingItem<string>) {
+  function handlePlace(item: Tile) {
+    if (resolved || placed.length >= entry.answer.length) return
     setHint(null)
-    place(item)
+    setPlacedIds((ids) => [...ids, item.id])
   }
-  function handleUnplace(item: SequencingItem<string>) {
+  function handleUnplace(item: Tile) {
+    if (resolved) return
     setHint(null)
-    unplace(item)
+    setPlacedIds((ids) => ids.filter((i) => i !== item.id))
   }
 
   function check() {
@@ -167,6 +203,7 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
     setResolved(false)
     setHint(null)
     setShowIdea(false)
+    setPlacedIds([])
     setRoundIdx((i) => i + 1)
   }
   // Reset sincrónico dentro del handler que cambia levelIdx/roundKey — nunca en
@@ -177,6 +214,7 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
     setResolved(false)
     setHint(null)
     setShowIdea(false)
+    setPlacedIds([])
     setRoundIdx(0)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
@@ -186,6 +224,7 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
     setResolved(false)
     setHint(null)
     setShowIdea(false)
+    setPlacedIds([])
     setRoundIdx(0)
     setRoundKey((k) => k + 1)
   }
@@ -242,29 +281,41 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {/* Palabra que se va armando */}
+          {/* Palabra que se va armando. Un casillero por letra de la respuesta,
+              para que el largo esté a la vista — clave ahora que en el montón hay
+              letras de más y no se puede contar por ahí. Los llenos son botones
+              (tocar = sacar); los vacíos, un recuadro punteado. */}
           <div className="mt-4 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-            {placed.length === 0 && (
-              <span className="text-sm text-slate-400">Tocá las letras de abajo para empezar</span>
-            )}
-            {placed.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                disabled={resolved}
-                onClick={() => handleUnplace(item)}
-                aria-label={`Quitar letra ${item.value}`}
-                className={[
-                  'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border-2 px-2 text-xl font-extrabold uppercase transition',
-                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                  resolved
-                    ? 'border-tiam-green bg-tiam-green/10 text-slate-900'
-                    : 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10',
-                ].join(' ')}
-              >
-                {item.value}
-              </button>
-            ))}
+            {Array.from({ length: entry.answer.length }).map((_, i) => {
+              const item = placed[i]
+              if (!item) {
+                return (
+                  <span
+                    key={`slot-${i}`}
+                    aria-hidden="true"
+                    className="h-[44px] w-[36px] rounded-xl border-2 border-dashed border-slate-300 bg-white"
+                  />
+                )
+              }
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={resolved}
+                  onClick={() => handleUnplace(item)}
+                  aria-label={`Quitar letra ${item.value}`}
+                  className={[
+                    'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border-2 px-2 text-xl font-extrabold uppercase transition',
+                    'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                    resolved
+                      ? 'border-tiam-green bg-tiam-green/10 text-slate-900'
+                      : 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10',
+                  ].join(' ')}
+                >
+                  {item.value}
+                </button>
+              )
+            })}
           </div>
 
           {/* Montón de letras */}
