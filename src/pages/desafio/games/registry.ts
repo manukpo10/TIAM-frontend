@@ -9,6 +9,7 @@ import { PlanificaLaManana } from './PlanificaLaManana'
 import { CadaCosaEnSuGrupo } from './CadaCosaEnSuGrupo'
 import { CuatroPalabras } from './CuatroPalabras'
 import { QueSera } from './QueSera'
+import { PalabrasYColores } from './PalabrasYColores'
 import { QueObjetoEs } from './QueObjetoEs'
 import { ListaDelMercado } from './ListaDelMercado'
 import { ElVuelto } from './ElVuelto'
@@ -21,7 +22,6 @@ import { CuantosHay } from './CuantosHay'
 import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
-import { LaBalanza } from './LaBalanza'
 import { LosOpuestos } from './LosOpuestos'
 import { OrdenaTuSemana } from './OrdenaTuSemana'
 import { TuResumen } from './TuResumen'
@@ -59,7 +59,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   12: LaCharlaDesordenada,
   16: VerdaderoOFalso,
   17: QueCambio,
-  18: QueSera,
+  18: PalabrasYColores,
   19: Memotest,
   20: QueObjetoEs,
   21: PlanificaLaManana,
@@ -68,7 +68,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   25: LasMismasLetras,
   26: QueOficioEs,
   27: CuantosHay,
-  29: LaBalanza,
+  29: QueSera,
   28: OrdenaTuSemana,
   30: TuResumen,
   15: LaCancionDeTuJuventud,
