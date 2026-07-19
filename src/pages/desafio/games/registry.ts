@@ -26,7 +26,7 @@ import { LosOpuestos } from './LosOpuestos'
 import { DosPistas } from './DosPistas'
 import { PalabrasEnClave } from './PalabrasEnClave'
 import { LaCancionDeTuJuventud } from './LaCancionDeTuJuventud'
-import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
+import { LetrasEnMovimiento } from './LetrasEnMovimiento'
 import { QueSonidoEs } from './QueSonidoEs'
 import { QuePalabraSeEsconde } from './QuePalabraSeEsconde'
 import { LasMismasLetras } from './LasMismasLetras'
@@ -72,6 +72,6 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   28: DosPistas,
   30: PalabrasEnClave,
   15: LaCancionDeTuJuventud,
-  6: EncontraLaFiguraIgual,
+  6: LetrasEnMovimiento,
   23: QueSonidoEs,
 }

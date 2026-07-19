@@ -78,8 +78,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de atención: tocá todas las letras A entre las demás. Subís de dificultad a medida que avanzás.' },
   { day: 5, type: 'game', area: 'calculo', title: 'El vuelto',
     instructions: 'Un juego de cálculo: armá el vuelto justo con monedas y billetes. Subís de dificultad a medida que avanzás.' },
-  { day: 6, type: 'game', area: 'praxias', title: 'Encontrá la figura igual',
-    instructions: 'Un juego de percepción visuoespacial: encontrá la figura que es igual a la original, pero girada. Subís de dificultad a medida que avanzás.' },
+  { day: 6, type: 'game', area: 'praxias', title: 'Letras en movimiento',
+    instructions: 'Hoy es día de papel y lápiz, y se juega de pie: cada letra tiene un gesto. Deletreá las palabras en voz alta haciendo el gesto de cada letra, y después anotá las que recuerdes.' },
   { day: 7, type: 'game', area: 'ejecutivas', title: 'Cada cosa en su grupo',
     instructions: 'Un juego de razonamiento: tocá el grupo correcto para cada palabra. Subís de dificultad a medida que avanzás.' },
 
