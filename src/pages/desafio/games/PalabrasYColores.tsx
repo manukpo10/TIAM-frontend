@@ -3,28 +3,30 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Palabras y colores" — día 18. The Stroop task: nine colour WORDS, each
- * printed in an INK colour that names a different colour (the word "amarillo"
- * written in red). You first read the words aloud, then go back and name the
- * ink colours — and the mismatch makes the second pass genuinely effortful.
- * That interference is the point: the professional asked us to focus above all
- * on making the person THINK, and Stroop is the cleanest "simple to state, hard
- * to do" exercise there is.
+ * "Palabras y colores" — día 18. The Stroop task: colour WORDS each printed in
+ * an INK colour that names a different colour (the word "amarillo" written in
+ * red). You first read the words aloud, then go back and name the ink colours —
+ * and the mismatch makes the second pass genuinely effortful. That interference
+ * is the point: the professional asked us to focus above all on making the
+ * person THINK, and Stroop is the cleanest "simple to state, hard to do"
+ * exercise there is.
+ *
+ * Three levels, one card each, escalating the way Stroop naturally does — more
+ * words and more distinct ink colours per card (6 words / 3 colours → 9 / 4 →
+ * 12 / 5). More response options and more items is harder to hold and to name.
  *
  * This is deliberately NOT an interactive tap-game. There is nothing to score
  * on the phone: the person responds out loud, at their own pace, looking at the
  * card. So the day opens with an explicit "hoy es día de papel y lápiz" screen
- * that sets the expectation — today you play OUT LOUD, off the phone's controls
- * — and closes with a single "Ya lo hice" that reports a trivial completion so
- * the day still counts toward the streak and the progress panel. `computeStars`
+ * and closes, after the third card, with a single "Ya lo hice" that reports a
+ * trivial completion so the day still counts toward the streak. `computeStars`
  * treats totalAttempts === 0 as full accuracy, so participation earns the day
  * without any division-by-zero or fake scoring.
  *
- * Colours are a fixed set of five that all read clearly as BOLD text on white
- * for low-vision readers — red, blue, green, orange, violet. Yellow is
- * deliberately excluded as an ink: it's illegible on white, which for this
- * audience would break the exercise. Every (word, ink) pair is mismatched by
- * construction — see CARD below.
+ * Colours are five that all read clearly as BOLD text on white for low-vision
+ * readers — red, blue, green, orange, violet. Yellow is deliberately excluded
+ * as an ink: it's illegible on white, which for this audience would break the
+ * exercise. Every (word, ink) pair is mismatched by construction.
  */
 
 interface Swatch {
@@ -42,20 +44,65 @@ const COLORS: Swatch[] = [
   { id: 'violeta', label: 'VIOLETA', hex: '#7C3AED' },
 ]
 
-// Nine (word, ink) pairs. Hand-picked so that: every word's ink names a
-// DIFFERENT colour (never "rojo" in red), the five inks are spread evenly, and
-// no two adjacent cells share an ink — kept fixed rather than random so the
-// grid was eyeballed once and can't hand someone a same-colour pair.
-const CARD: { word: string; ink: string }[] = [
-  { word: 'rojo', ink: 'azul' },
-  { word: 'verde', ink: 'naranja' },
-  { word: 'azul', ink: 'violeta' },
-  { word: 'naranja', ink: 'verde' },
-  { word: 'violeta', ink: 'rojo' },
-  { word: 'verde', ink: 'azul' },
-  { word: 'rojo', ink: 'naranja' },
-  { word: 'azul', ink: 'verde' },
-  { word: 'naranja', ink: 'rojo' },
+interface Level {
+  n: number
+  name: string
+  cells: { word: string; ink: string }[]
+}
+
+// Three cards, each all-incongruent (no cell is ever a word printed in its own
+// colour), hand-fixed rather than random so the grid was eyeballed once and
+// can't hand someone a same-colour freebie. The ramp is word count and colour
+// count: 6/3 → 9/4 → 12/5.
+const LEVELS: Level[] = [
+  {
+    n: 1,
+    name: 'Nivel 1',
+    // 6 palabras, 3 colores (rojo, azul, verde)
+    cells: [
+      { word: 'rojo', ink: 'azul' },
+      { word: 'verde', ink: 'rojo' },
+      { word: 'azul', ink: 'verde' },
+      { word: 'verde', ink: 'azul' },
+      { word: 'rojo', ink: 'verde' },
+      { word: 'azul', ink: 'rojo' },
+    ],
+  },
+  {
+    n: 2,
+    name: 'Nivel 2',
+    // 9 palabras, 4 colores (+ naranja)
+    cells: [
+      { word: 'rojo', ink: 'verde' },
+      { word: 'azul', ink: 'naranja' },
+      { word: 'naranja', ink: 'azul' },
+      { word: 'verde', ink: 'rojo' },
+      { word: 'azul', ink: 'verde' },
+      { word: 'rojo', ink: 'naranja' },
+      { word: 'naranja', ink: 'rojo' },
+      { word: 'verde', ink: 'azul' },
+      { word: 'azul', ink: 'rojo' },
+    ],
+  },
+  {
+    n: 3,
+    name: 'Nivel 3',
+    // 12 palabras, 5 colores (+ violeta)
+    cells: [
+      { word: 'rojo', ink: 'azul' },
+      { word: 'verde', ink: 'naranja' },
+      { word: 'azul', ink: 'violeta' },
+      { word: 'naranja', ink: 'verde' },
+      { word: 'violeta', ink: 'rojo' },
+      { word: 'verde', ink: 'azul' },
+      { word: 'rojo', ink: 'naranja' },
+      { word: 'azul', ink: 'verde' },
+      { word: 'naranja', ink: 'rojo' },
+      { word: 'violeta', ink: 'azul' },
+      { word: 'rojo', ink: 'verde' },
+      { word: 'violeta', ink: 'naranja' },
+    ],
+  },
 ]
 
 const hexOf = (id: string) => COLORS.find((c) => c.id === id)?.hex ?? '#1e293b'
@@ -65,11 +112,14 @@ type Phase = 'intro' | 'card' | 'done'
 
 export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
   const [phase, setPhase] = useState<Phase>('intro')
+  const [levelIdx, setLevelIdx] = useState(0)
+  const level = LEVELS[levelIdx]
+  const isLast = levelIdx === LEVELS.length - 1
 
-  // Reports exactly once, when the person taps "Ya lo hice". There's no score
-  // to compute — this is an off-phone spoken exercise — so it reports a trivial
-  // completion; computeStars treats totalAttempts === 0 as full accuracy, so
-  // the day counts (3 estrellas por participar) without dividing by zero.
+  // Reports exactly once, when the person finishes the third card. There's no
+  // score to compute — this is an off-phone spoken exercise — so it reports a
+  // trivial completion; computeStars treats totalAttempts === 0 as full accuracy,
+  // so the day counts (3 estrellas por participar) without dividing by zero.
   const reportedRef = useRef(false)
   useEffect(() => {
     if (phase === 'done' && !reportedRef.current) {
@@ -77,6 +127,11 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
       onComplete({ mistakes: 0, totalAttempts: 0 })
     }
   }, [phase, onComplete])
+
+  function nextCard() {
+    if (isLast) setPhase('done')
+    else setLevelIdx((i) => i + 1)
+  }
 
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
@@ -89,11 +144,11 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
             Hoy no se toca la pantalla: se juega en voz alta.
           </h2>
           <p className="mx-auto mt-3 max-w-sm text-base text-slate-600">
-            En la tarjeta vas a ver nueve palabras. Cada una es el nombre de un color, pero está escrita con un color
-            distinto. Es un ejercicio simple que hace pensar de verdad.
+            Vas a ver tarjetas con palabras. Cada palabra es el nombre de un color, pero está escrita con un color
+            distinto. Son tres tarjetas, cada una un poco más difícil.
           </p>
           <div className="mx-auto mt-4 max-w-sm rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-left">
-            <p className="text-sm font-bold uppercase tracking-wide text-slate-400">Cómo se juega</p>
+            <p className="text-sm font-bold uppercase tracking-wide text-slate-400">En cada tarjeta</p>
             <ol className="mt-2 space-y-2 text-base text-slate-700">
               <li>
                 <span className="font-bold text-tiam-blue">1.</span> Primero leé en voz alta las{' '}
@@ -111,7 +166,7 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
               onClick={() => setPhase('card')}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
             >
-              Ver la tarjeta
+              Ver la primera tarjeta
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -120,14 +175,17 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
 
       {phase === 'card' && (
         <div className="text-center">
-          {/* Recordatorio corto arriba, para quien pasó rápido la intro. */}
-          <p className="text-sm font-semibold text-slate-500">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
+            {level.name} · Tarjeta {levelIdx + 1} de {LEVELS.length}
+          </span>
+          {/* Recordatorio corto, para quien pasó rápido la intro. */}
+          <p className="mt-2 text-sm font-semibold text-slate-500">
             Primero las <span className="font-bold text-slate-700">palabras</span>. Después, de nuevo, los{' '}
             <span className="font-bold text-slate-700">colores</span>.
           </p>
 
-          <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-5 rounded-3xl border-2 border-slate-100 bg-white px-2 py-6 sm:gap-y-7 sm:py-8">
-            {CARD.map((cell, i) => (
+          <div className="mt-3 grid grid-cols-3 gap-x-3 gap-y-4 rounded-3xl border-2 border-slate-100 bg-white px-2 py-5 sm:gap-y-6 sm:py-6">
+            {level.cells.map((cell, i) => (
               <span
                 key={i}
                 className="select-none text-lg font-extrabold leading-none tracking-tight sm:text-2xl"
@@ -138,13 +196,14 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
             ))}
           </div>
 
-          <div className="mt-6">
+          <div className="mt-5">
             <button
               type="button"
-              onClick={() => setPhase('done')}
+              onClick={nextCard}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
             >
-              Ya lo hice
+              {isLast ? 'Ya lo hice' : 'Siguiente tarjeta'}
+              {!isLast && <ArrowRight className="h-4 w-4" />}
             </button>
           </div>
         </div>
