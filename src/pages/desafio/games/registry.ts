@@ -23,7 +23,7 @@ import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
 import { QueOficioEs } from './QueOficioEs'
 import { LosOpuestos } from './LosOpuestos'
-import { OrdenaTuSemana } from './OrdenaTuSemana'
+import { DosPistas } from './DosPistas'
 import { TuResumen } from './TuResumen'
 import { LaCancionDeTuJuventud } from './LaCancionDeTuJuventud'
 import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
@@ -69,7 +69,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   26: QueOficioEs,
   27: CuantosHay,
   29: QueSera,
-  28: OrdenaTuSemana,
+  28: DosPistas,
   30: TuResumen,
   15: LaCancionDeTuJuventud,
   6: EncontraLaFiguraIgual,
