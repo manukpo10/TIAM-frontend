@@ -94,8 +94,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // the task itself is a recognition-memory exercise, just labeled by rotation slot.
   { day: 11, type: 'game', area: 'atencion', title: '¿Qué hay en la mesa?',
     instructions: 'Un juego de memoria: observá los objetos de la mesa y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
-  { day: 12, type: 'game', area: 'ejecutivas', title: 'La charla desordenada',
-    instructions: 'Un juego de razonamiento: ordená las frases de una conversación en el orden correcto. Subís de dificultad a medida que avanzás.' },
+  { day: 12, type: 'game', area: 'ejecutivas', title: 'Oraciones a medida',
+    instructions: 'Hoy es día de papel y lápiz: cada renglón es una serie de números, y cada número dice cuántas letras tiene cada palabra. Armá una oración con sentido para cada uno y después anotá las que recuerdes.' },
   { day: 13, type: 'game', area: 'atencion', title: 'Camino numérico',
     instructions: 'Un juego de atención: tocá los números en el orden correcto, del 1 en adelante, estén donde estén en la pantalla. Subís de dificultad a medida que avanzás.' },
   { day: 14, type: 'game', area: 'lenguaje', title: 'Los opuestos',

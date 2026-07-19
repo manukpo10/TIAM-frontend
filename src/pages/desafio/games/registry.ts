@@ -4,7 +4,7 @@ import { BuscarLosRojos } from './BuscarLosRojos'
 import { QueHayEnLaMesa } from './QueHayEnLaMesa'
 import { CazadorDeLetras } from './CazadorDeLetras'
 import { OrdenarLaFrase } from './OrdenarLaFrase'
-import { LaCharlaDesordenada } from './LaCharlaDesordenada'
+import { OracionesAMedida } from './OracionesAMedida'
 import { PlanificaLaManana } from './PlanificaLaManana'
 import { CadaCosaEnSuGrupo } from './CadaCosaEnSuGrupo'
 import { CuatroPalabras } from './CuatroPalabras'
@@ -56,7 +56,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   8: OrdenarLaFrase,
   10: CuatroPalabras,
   11: QueHayEnLaMesa,
-  12: LaCharlaDesordenada,
+  12: OracionesAMedida,
   16: VerdaderoOFalso,
   17: QueCambio,
   18: PalabrasYColores,
