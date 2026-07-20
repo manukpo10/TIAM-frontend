@@ -65,7 +65,7 @@ const FAR_DOMAIN: MesaObject[] = [
   { id: 'camion-bomberos', label: 'camión de bomberos', category: 'lejano' },
   { id: 'flamenco', label: 'flamenco', category: 'lejano' },
   { id: 'pelota', label: 'pelota', category: 'lejano' },
-  { id: 'sol', label: 'sol', category: 'lejano' },
+  { id: 'bicicleta', label: 'bicicleta', category: 'lejano' },
   { id: 'paraguas', label: 'paraguas', category: 'lejano' },
 ]
 
