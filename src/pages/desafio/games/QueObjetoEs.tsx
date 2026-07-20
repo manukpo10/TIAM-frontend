@@ -48,8 +48,6 @@ const LABELS: Record<string, string> = {
   termo: 'termo',
   taza: 'taza',
   vaso: 'vaso',
-  sol: 'sol',
-  corazon: 'corazón',
   banana: 'banana',
   tortuga: 'tortuga',
   pato: 'pato',
@@ -80,17 +78,17 @@ const LEVELS: Level[] = [
       {
         text: 'Tiene dos ruedas, pedales y un manubrio; sirve para pasear.',
         answer: 'bicicleta',
-        decoys: ['taza', 'sol', 'corazon'],
+        decoys: ['taza', 'banana', 'tortuga'],
       },
       {
         text: 'Tiene dos cristales redondos y dos patitas que se apoyan en las orejas; sirven para ver mejor.',
         answer: 'anteojos',
-        decoys: ['banana', 'tortuga', 'corazon'],
+        decoys: ['banana', 'tortuga', 'pato'],
       },
       {
         text: 'Tiene dos filos que se cruzan en el medio y dos agujeros para los dedos; sirve para cortar.',
         answer: 'tijera',
-        decoys: ['sol', 'pato', 'zanahoria'],
+        decoys: ['rana', 'pato', 'zanahoria'],
       },
       {
         text: 'Tiene varillas debajo de la tela y un mango curvo; lo abrís arriba tuyo cuando llueve.',
