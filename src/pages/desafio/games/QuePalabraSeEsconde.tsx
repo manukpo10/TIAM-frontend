@@ -118,19 +118,14 @@ const ROUNDS_PER_LEVEL = [2, 3, 3]
 // so totalAttempts = mistakes + this.
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
-// L1 illustrations live across a few sibling game folders, not a folder of
-// their own — same multi-folder import.meta.glob pattern as
-// ContadorMasMenos.tsx. All copies of a given id are byte-identical
-// (verified via checksum), so which folder each id comes from is arbitrary;
-// picked mainly to keep the glob list short and avoid id collisions.
-const IMAGES = import.meta.glob(
-  [
-    '../../../assets/desafio/games/animal-por-letra/*.webp',
-    '../../../assets/desafio/games/que-sera/*.webp',
-    '../../../assets/desafio/games/buscar-rojos/*.webp',
-  ],
-  { eager: true, import: 'default' },
-) as Record<string, string>
+// L1 clue photos live in this game's OWN folder — photorealistic, isolated on
+// white, matched by id. Kept separate (not shared with buscar-rojos etc.) so
+// the photoreal set here can't affect games that deliberately stay illustrated
+// (día 24's colour-search needs saturated illustration colour, not a photo).
+const IMAGES = import.meta.glob('../../../assets/desafio/games/que-palabra-se-esconde/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
 function imgFor(id: string): string | undefined {
   const match = Object.entries(IMAGES).find(([path]) => path.endsWith(`/${id}.webp`))
   return match?.[1]
