@@ -71,7 +71,7 @@ const LEVELS: RebusLevel[] = [
     name: 'Nivel 3',
     entries: [
       { answer: 'sombra', imgA: 'sombra-a', imgB: 'sombra-b', hint: 'la que hace el cuerpo y la de los ojos' },
-      { answer: 'planta', imgA: 'planta-a', imgB: 'planta-b', hint: 'la de maceta y la del pie' },
+      { answer: 'campana', imgA: 'campana-a', imgB: 'campana-b', hint: 'la que suena y la de la cocina' },
       { answer: 'estrella', imgA: 'estrella-a', imgB: 'estrella-b', hint: 'la del cielo y la de mar' },
       { answer: 'sierra', imgA: 'sierra-a', imgB: 'sierra-b', hint: 'la herramienta y la de montañas' },
     ],
