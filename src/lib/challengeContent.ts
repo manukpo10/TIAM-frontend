@@ -105,8 +105,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 3 — combinar áreas / recuerdo demorado ─────────────────────────
   { day: 15, type: 'game', area: 'memoria', title: 'La canción de tu juventud',
     instructions: 'Un juego de memoria auditiva: escuchá un fragmento y tocá a qué género musical se parece más. Subís de dificultad a medida que avanzás.' },
-  { day: 16, type: 'game', area: 'ejecutivas', title: '¿Verdadero o falso?',
-    instructions: 'Un juego de razonamiento: leé la frase y decidí si es verdadera o falsa. Subís de dificultad a medida que avanzás.' },
+  { day: 16, type: 'game', area: 'calculo', title: '¿Alcanza la plata?',
+    instructions: 'Un juego de cálculo: mirá los precios y el presupuesto, y estimá si te alcanza la plata para comprar todo. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'game', area: 'atencion', title: '¿Qué cambió?',
     instructions: 'Un juego de atención: observá la escena y después tocá los objetos que cambiaron. Subís de dificultad a medida que avanzás.' },
   { day: 18, type: 'game', area: 'atencion', title: 'Palabras y colores',

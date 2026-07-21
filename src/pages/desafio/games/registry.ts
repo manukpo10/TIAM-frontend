@@ -13,7 +13,7 @@ import { PalabrasYColores } from './PalabrasYColores'
 import { QueObjetoEs } from './QueObjetoEs'
 import { ListaDelMercado } from './ListaDelMercado'
 import { ElVuelto } from './ElVuelto'
-import { VerdaderoOFalso } from './VerdaderoOFalso'
+import { AlcanzaLaPlata } from './AlcanzaLaPlata'
 import { Memotest } from './Memotest'
 import { ContadorMasMenos } from './ContadorMasMenos'
 import { EmpecemosPorHoy } from './EmpecemosPorHoy'
@@ -57,7 +57,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   10: DeduciLaPalabra,
   11: CualNoVa,
   12: OracionesAMedida,
-  16: VerdaderoOFalso,
+  16: AlcanzaLaPlata,
   17: QueCambio,
   18: PalabrasYColores,
   19: Memotest,
