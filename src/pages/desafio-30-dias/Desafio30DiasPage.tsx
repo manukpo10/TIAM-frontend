@@ -103,7 +103,7 @@ const AUDIENCE = [
 // para no espoilear la mecánica) — uno por área cognitiva. Area label/color mirror
 // AREA_META in DesafioPlayPage.tsx (single source of truth).
 const GAME_SHOWCASE = [
-  { image: shotElReloj, day: 9, title: 'El reloj', area: 'Dibujo', color: '#7C3AED' },
+  { image: shotElReloj, day: 9, title: 'El reloj', area: 'Visuoespacial', color: '#7C3AED' },
   { image: shotCualNoVa, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
   { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
   { image: shotQueOficioEs, day: 26, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
