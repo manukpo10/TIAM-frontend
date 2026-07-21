@@ -17,7 +17,7 @@ import { VerdaderoOFalso } from './VerdaderoOFalso'
 import { Memotest } from './Memotest'
 import { ContadorMasMenos } from './ContadorMasMenos'
 import { CaminoNumerico } from './CaminoNumerico'
-import { EmpecemosPorHoy } from './EmpecemosPorHoy'
+import { ArmaLasPalabras } from './ArmaLasPalabras'
 import { CuantosHay } from './CuantosHay'
 import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
@@ -44,7 +44,7 @@ import { LasMismasLetras } from './LasMismasLetras'
  * so games can be migrated one at a time without breaking the rest.
  */
 export const GAMES: Record<number, ComponentType<GameProps>> = {
-  1: EmpecemosPorHoy,
+  1: ArmaLasPalabras,
   2: ListaDelMercado,
   3: QuePalabraSeEsconde,
   4: ClaveDeSimbolos,
