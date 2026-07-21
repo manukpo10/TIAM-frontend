@@ -49,16 +49,6 @@ const THEMES: Theme[] = [
       'detergente', 'lavandina', 'papel-higienico', 'esponja', 'jabon', 'cafe', 'azucar', 'yerba', 'fideos', 'aceite',
     ],
   },
-  {
-    key: 'animales',
-    folder: 'animal-por-letra',
-    studyTitle: 'Observá los animales',
-    items: [
-      'abeja', 'burro', 'delfin', 'elefante', 'gato', 'mono', 'oso', 'pato', 'rana', 'tortuga',
-      'vaca', 'cangrejo', 'jirafa', 'leon', 'nutria', 'flamenco', 'serpiente', 'zorro',
-      'chancho', 'llama', 'hipopotamo', 'cebra', 'yacare', 'nandu',
-    ],
-  },
 ]
 
 interface Level {
@@ -79,14 +69,15 @@ const LEVELS: Level[] = [
   { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 18, replace: 1, remove: 1, swap: 2, instruction: 'Tocá todo lo que cambió: objetos distintos, que desaparecieron, o que cambiaron de lugar. Cada lugar cuenta por separado.' },
 ]
 
-// One glob across the three theme folders; lookups are namespaced by FOLDER
-// (not just id) because filenames collide across folders with different art
-// (e.g. pan exists in both mesa and mercado; rana/flamenco exist in all three).
+// One glob across the theme folders; lookups are namespaced by FOLDER (not
+// just id) because filenames collide across folders with different art
+// (e.g. pan and flamenco exist in both mesa and mercado). A third theme
+// (animal-por-letra) was dropped because it never got the photoreal
+// treatment the other two did — this game only ships realistic photos.
 const IMAGES = import.meta.glob(
   [
     '../../../assets/desafio/games/que-hay-en-la-mesa/*.webp',
     '../../../assets/desafio/games/lista-mercado/*.webp',
-    '../../../assets/desafio/games/animal-por-letra/*.webp',
   ],
   { eager: true, import: 'default' },
 ) as Record<string, string>
