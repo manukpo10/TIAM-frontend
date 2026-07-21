@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 import type { GameProps } from '@/lib/challengeProgress'
 import { BuscarLosRojos } from './BuscarLosRojos'
 import { QueHayEnLaMesa } from './QueHayEnLaMesa'
-import { CazadorDeLetras } from './CazadorDeLetras'
+import { ClaveDeSimbolos } from './ClaveDeSimbolos'
 import { OrdenarLaFrase } from './OrdenarLaFrase'
 import { OracionesAMedida } from './OracionesAMedida'
 import { PlanificaLaManana } from './PlanificaLaManana'
@@ -47,7 +47,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   1: EmpecemosPorHoy,
   2: ListaDelMercado,
   3: QuePalabraSeEsconde,
-  4: CazadorDeLetras,
+  4: ClaveDeSimbolos,
   5: ElVuelto,
   7: CadaCosaEnSuGrupo,
   9: ElReloj,
