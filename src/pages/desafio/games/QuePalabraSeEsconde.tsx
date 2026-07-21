@@ -18,11 +18,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * items, and the hook doesn't care whether an "item" is a word or a letter.
  *
  * The clue is both the disambiguator (a few of these letter sets could spell
- * more than one real word — the clue picks which one) and the difficulty
- * ramp: L1's clue is an ILLUSTRATION of the answer (easiest — the picture
- * gives the word away; the actual challenge is spelling it while resisting
- * the pull of the source word's own familiar letter order). L2/L3's clue is
- * a short TEXT definition instead, with L3 using longer words (6-8 letters).
+ * more than one real word — the clue picks which one) and part of the ramp:
+ * every level now shows a PHOTO of the answer (all three levels use concrete,
+ * picturable words). Difficulty climbs by word LENGTH — 4-5 letters at L1/L2
+ * up to 6-8 at L3 (CORTINAS, BOTELLA) — since unscrambling a long word stays
+ * hard even when the picture names it. (Earlier L2/L3 used text definitions
+ * with abstract answers — nadar, nula, destino, animar… — which can't be
+ * photographed; switched to concrete words so every level is illustrated.)
  *
  * NEVER a hard fail, and no timer anywhere (including no auto-advance
  * timeout on a correct answer — unlike ElVuelto/ContadorMasMenos, this game
@@ -57,8 +59,9 @@ import type { GameProps } from '@/lib/challengeProgress'
 interface AnagramEntry {
   source: string
   answer: string
-  /** Illustration id (L1) or a short descriptive text (L2/L3) — which one
-   * applies is decided per-level by `clueType`, not per-entry. */
+  /** Image id, matched against the que-palabra-se-esconde folder. All three
+   * levels are clueType 'image' now; the 'text' branch is kept in case a
+   * definition-based level ever returns. */
   clue: string
 }
 interface AnagramLevel {
@@ -85,26 +88,26 @@ const LEVELS: AnagramLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
-    clueType: 'text',
+    clueType: 'image',
     entries: [
-      { source: 'CALVO', answer: 'CLAVO', clue: 'Una herramienta que se clava con el martillo' },
-      { source: 'ANDAR', answer: 'NADAR', clue: 'Algo que hacés en el agua' },
-      { source: 'ATAR', answer: 'RATA', clue: 'Un animal' },
-      { source: 'AMOR', answer: 'RAMO', clue: 'Un montón de flores juntas' },
-      { source: 'SOPA', answer: 'PASO', clue: 'Cuando caminás, das uno' },
-      { source: 'LUNA', answer: 'NULA', clue: 'Que no vale, que quedó sin efecto' },
+      { source: 'CALVO', answer: 'CLAVO', clue: 'clavo' },
+      { source: 'AMOR', answer: 'RAMO', clue: 'ramo' },
+      { source: 'ATAR', answer: 'RATA', clue: 'rata' },
+      { source: 'SOPA', answer: 'SAPO', clue: 'sapo' },
+      { source: 'APTO', answer: 'PATO', clue: 'pato' },
+      { source: 'VALE', answer: 'VELA', clue: 'vela' },
     ],
   },
   {
     n: 3,
     name: 'Nivel 3',
-    clueType: 'text',
+    clueType: 'image',
     entries: [
-      { source: 'SENTIDO', answer: 'DESTINO', clue: 'A dónde llegás cuando viajás' },
-      { source: 'MARINA', answer: 'ANIMAR', clue: 'Darle ánimo a alguien' },
-      { source: 'CARBON', answer: 'BRONCA', clue: 'Enojo, fastidio' },
-      { source: 'CANTOR', answer: 'CONTRA', clue: 'Lo opuesto a estar a favor' },
-      { source: 'CORTINAS', answer: 'CRONISTA', clue: 'El que cuenta las noticias' },
+      { source: 'BRONCA', answer: 'CARBON', clue: 'carbon' },
+      { source: 'CRONISTA', answer: 'CORTINAS', clue: 'cortinas' },
+      { source: 'PALETO', answer: 'PELOTA', clue: 'pelota' },
+      { source: 'PESADA', answer: 'ESPADA', clue: 'espada' },
+      { source: 'BELLOTA', answer: 'BOTELLA', clue: 'botella' },
     ],
   },
 ]
