@@ -319,21 +319,35 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
 
       {!done && scenario && (
         <>
-          {/* Scenario — icons beside the text, not stacked above it. Stacked, this
-              card alone was 176px of a ~570px phone screen, and what it pushed
-              below the fold was the bill palette: the part you actually tap. */}
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
-            <div className="flex max-w-[88px] shrink-0 flex-wrap justify-center gap-1">
+          {/* Scenario — photos big enough to actually READ as photos (a 40px photo
+              was a postage stamp for this audience), without pushing the bill
+              palette below the fold: 1 item sits beside the text at 96px (those
+              rounds have vertical slack); 2 items sit beside it at 64px (free —
+              the text column is taller anyway); 3 items switch to a single row
+              ABOVE the text at 56px, which measures the same as the old wrapped
+              block. Each photo sits on a white tile so it pops off the slate card. */}
+          <div
+            className={[
+              'mt-4 flex gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3',
+              scenario.items.length === 3 ? 'flex-col items-center' : 'items-center',
+            ].join(' ')}
+          >
+            <div className="flex shrink-0 flex-wrap items-center justify-center gap-1.5">
               {scenario.items.map((item, i) => {
                 const img = imgFor(item.id)
+                const size =
+                  scenario.items.length === 1 ? 'h-24 w-24' : scenario.items.length === 2 ? 'h-16 w-16' : 'h-14 w-14'
                 return (
-                  <div key={`${item.id}-${i}`} className="flex h-10 w-10 items-center justify-center">
+                  <div
+                    key={`${item.id}-${i}`}
+                    className={`flex ${size} items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white p-1`}
+                  >
                     {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
                   </div>
                 )
               })}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className={scenario.items.length === 3 ? 'min-w-0 text-center' : 'min-w-0 flex-1'}>
               <p className="text-sm text-slate-700">
                 <span className="font-semibold">{scenario.venue}:</span>{' '}
                 {scenario.items.map((i) => i.label).join(' + ')} — ${totalPrice.toLocaleString('es-AR')}
@@ -401,7 +415,9 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
           )}
 
           {!resolved && (
-            <div className="mt-6 text-center">
+            // mt-4, not mt-6: those 8px are what lets the 3-item card's photo
+            // row fit without pushing this button under the fold.
+            <div className="mt-4 text-center">
               <button
                 type="button"
                 onClick={check}
