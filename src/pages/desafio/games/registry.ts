@@ -10,7 +10,7 @@ import { CadaCosaEnSuGrupo } from './CadaCosaEnSuGrupo'
 import { DeduciLaPalabra } from './DeduciLaPalabra'
 import { QueSera } from './QueSera'
 import { PalabrasYColores } from './PalabrasYColores'
-import { QueObjetoEs } from './QueObjetoEs'
+import { DondeEsta } from './DondeEsta'
 import { ListaDelMercado } from './ListaDelMercado'
 import { ElVuelto } from './ElVuelto'
 import { LaPiramide } from './LaPiramide'
@@ -61,7 +61,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   17: QueCambio,
   18: PalabrasYColores,
   19: Memotest,
-  20: QueObjetoEs,
+  20: DondeEsta,
   21: PlanificaLaManana,
   22: ContadorMasMenos,
   24: BuscarLosRojos,
