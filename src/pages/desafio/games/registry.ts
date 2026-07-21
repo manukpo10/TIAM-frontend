@@ -7,7 +7,7 @@ import { OrdenarLaFrase } from './OrdenarLaFrase'
 import { OracionesAMedida } from './OracionesAMedida'
 import { PlanificaLaManana } from './PlanificaLaManana'
 import { CadaCosaEnSuGrupo } from './CadaCosaEnSuGrupo'
-import { CuatroPalabras } from './CuatroPalabras'
+import { DeduciLaPalabra } from './DeduciLaPalabra'
 import { QueSera } from './QueSera'
 import { PalabrasYColores } from './PalabrasYColores'
 import { QueObjetoEs } from './QueObjetoEs'
@@ -54,7 +54,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   13: CaminoNumerico,
   14: LosOpuestos,
   8: OrdenarLaFrase,
-  10: CuatroPalabras,
+  10: DeduciLaPalabra,
   11: QueHayEnLaMesa,
   12: OracionesAMedida,
   16: VerdaderoOFalso,
