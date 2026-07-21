@@ -68,8 +68,8 @@ export const CHALLENGE_TOTAL_DAYS = 30
 
 const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 1 — arranque suave (un paso, generar confianza) ────────────────
-  { day: 1, type: 'game', area: 'orientacion', title: 'Armá las palabras',
-    instructions: 'Primero ubicate en el día de hoy, y después uní las fichas de letras para descubrir las palabras escondidas. Subís de dificultad a medida que avanzás.' },
+  { day: 1, type: 'game', area: 'lenguaje', title: 'Armá las palabras',
+    instructions: 'Un juego de lenguaje: uní las fichas de letras para descubrir las palabras escondidas. Subís de dificultad a medida que avanzás.' },
   { day: 2, type: 'game', area: 'memoria', title: 'La lista del mercado',
     instructions: 'Un juego de memoria: mirá la lista de productos y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 3, type: 'game', area: 'lenguaje', title: '¿Qué palabra se esconde?',
@@ -97,8 +97,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de atención y razonamiento: mirá las fotos y tocá la que NO va con las demás. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'game', area: 'ejecutivas', title: 'Oraciones a medida',
     instructions: 'Hoy es día de papel y lápiz: cada renglón es una serie de números, y cada número dice cuántas letras tiene cada palabra. Armá una oración con sentido para cada uno y después anotá las que recuerdes.' },
-  { day: 13, type: 'game', area: 'atencion', title: 'Camino numérico',
-    instructions: 'Un juego de atención: tocá los números en el orden correcto, del 1 en adelante, estén donde estén en la pantalla. Subís de dificultad a medida que avanzás.' },
+  { day: 13, type: 'game', area: 'orientacion', title: 'Empecemos por hoy',
+    instructions: 'Un ejercicio de orientación: respondé sobre el día de hoy — qué día de la semana es, la fecha, el mes, el año, la estación y el momento del día. Ubicarse en el presente también es ejercitar la cabeza.' },
   { day: 14, type: 'game', area: 'lenguaje', title: 'Los opuestos',
     instructions: 'Un juego de lenguaje: mirá la palabra y tocá cuál de las opciones es su opuesto. Subís de dificultad a medida que avanzás.' },
 

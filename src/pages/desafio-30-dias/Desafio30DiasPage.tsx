@@ -19,7 +19,7 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import shotElReloj from '@/assets/desafio-screenshots/el-reloj.webp'
 import shotLaBalanza from '@/assets/desafio-screenshots/la-balanza.webp'
 import shotMemotest from '@/assets/desafio-screenshots/memotest.webp'
-import shotCaminoNumerico from '@/assets/desafio-screenshots/camino-numerico.webp'
+import shotCualNoVa from '@/assets/desafio-screenshots/cual-no-va.webp'
 import shotQueOficioEs from '@/assets/desafio-screenshots/que-oficio-es.webp'
 import shotLaRecetaDoble from '@/assets/desafio-screenshots/la-receta-doble.webp'
 
@@ -104,7 +104,7 @@ const AUDIENCE = [
 // AREA_META in DesafioPlayPage.tsx (single source of truth).
 const GAME_SHOWCASE = [
   { image: shotElReloj, day: 9, title: 'El reloj', area: 'Dibujo', color: '#7C3AED' },
-  { image: shotCaminoNumerico, day: 13, title: 'Camino numérico', area: 'Atención', color: '#E8531E' },
+  { image: shotCualNoVa, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
   { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
   { image: shotQueOficioEs, day: 26, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
   { image: shotLaRecetaDoble, day: 22, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },

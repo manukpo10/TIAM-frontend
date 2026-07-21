@@ -16,7 +16,7 @@ import { ElVuelto } from './ElVuelto'
 import { VerdaderoOFalso } from './VerdaderoOFalso'
 import { Memotest } from './Memotest'
 import { ContadorMasMenos } from './ContadorMasMenos'
-import { CaminoNumerico } from './CaminoNumerico'
+import { EmpecemosPorHoy } from './EmpecemosPorHoy'
 import { ArmaLasPalabras } from './ArmaLasPalabras'
 import { CuantosHay } from './CuantosHay'
 import { QueCambio } from './QueCambio'
@@ -51,7 +51,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   5: ElVuelto,
   7: CadaCosaEnSuGrupo,
   9: ElReloj,
-  13: CaminoNumerico,
+  13: EmpecemosPorHoy,
   14: LosOpuestos,
   8: OrdenarLaFrase,
   10: DeduciLaPalabra,
