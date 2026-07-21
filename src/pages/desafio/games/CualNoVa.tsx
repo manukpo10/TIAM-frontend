@@ -7,17 +7,24 @@ import type { GameProps } from '@/lib/challengeProgress'
  * (concept-formation / abstraction): a set of object photos where all but one
  * belong to a shared category — tap the intruder. It replaces the recognition-
  * memory game that día 11 previously ran, which was mechanically identical to
- * día 2 (same study→recall engine, different item set) — a genuine duplicate
- * the reviewing user caught. Odd-one-out is a distinct cognitive task (find the
- * common thread and the exception, not memorize) and it re-uses the photoreal
- * object library built for the other days.
+ * día 2 (same study→recall engine, different item set) — a genuine duplicate.
  *
- * Difficulty ramps by how NEAR the intruder's category is: L1 a far domain (a
- * hammer among fruit), L2 an adjacent one (a vegetable among fruit; a food
- * among vessels), L3 a shared abstract property (the one animal that doesn't
- * fly; the one thing that isn't round). On a correct tap the shared category is
- * named ("Las demás son frutas") so the reasoning is reinforced, not just
- * scored.
+ * The puzzle content is CATEGORY-FIRST: clean everyday categories (fruit,
+ * animals, clothes, furniture, tools, things-you-drink-from, round things,
+ * things-that-fly, things-that-give-light, things-to-write-with) with one
+ * unambiguous intruder each. The photos are a purpose-built set for this game
+ * (same photoreal white-background style as the rest of the challenge), not a
+ * patchwork borrowed from other days — an earlier version reverse-engineered
+ * the categories from whatever images happened to exist, which read as forced.
+ *
+ * Difficulty ramps on two axes at once:
+ *   - how NEAR the intruder is: L1 a far domain (a hammer among fruit), L2 an
+ *     adjacent category (a carrot among fruit; a food among drinking vessels),
+ *     L3 a shared abstract property (the one thing that isn't round; the one
+ *     that doesn't fly).
+ *   - how MANY items to scan: L1 shows 4 options, L2/L3 show 5.
+ * On a correct tap the shared category is named ("Las demás son frutas") so the
+ * reasoning is reinforced, not just scored.
  *
  * House style: a wrong tap eliminates that photo (muted grey, never red) and
  * nudges; no timer. Double-tap safe (the eliminated set is an idempotent Set
@@ -42,33 +49,36 @@ const LEVELS: Level[] = [
     n: 1,
     name: 'Nivel 1',
     rounds: 2,
+    // Far intruder — a different domain entirely. 4 options (3 + intruder).
     pool: [
-      { members: ['manzana', 'banana', 'pera'], intruder: 'martillo', categoria: 'frutas' },
-      { members: ['pato', 'tortuga', 'rana'], intruder: 'taza', categoria: 'animales' },
-      { members: ['martillo', 'serrucho', 'tijera'], intruder: 'banana', categoria: 'herramientas' },
-      { members: ['lapiz', 'cuaderno', 'libro'], intruder: 'gato', categoria: 'cosas de escritorio' },
+      { members: ['manzana', 'naranja', 'uvas'], intruder: 'martillo', categoria: 'frutas' },
+      { members: ['perro', 'gato', 'caballo'], intruder: 'pelota', categoria: 'animales' },
+      { members: ['camisa', 'pantalon', 'zapato'], intruder: 'banana', categoria: 'ropa' },
+      { members: ['silla', 'mesa', 'sillon'], intruder: 'paraguas', categoria: 'muebles' },
     ],
   },
   {
     n: 2,
     name: 'Nivel 2',
     rounds: 3,
+    // Adjacent intruder — same broad world, wrong sub-category. 5 options.
     pool: [
-      { members: ['manzana', 'banana', 'pera', 'uvas'], intruder: 'zanahoria', categoria: 'frutas' },
-      { members: ['taza', 'vaso', 'olla', 'mate'], intruder: 'pan', categoria: 'recipientes' },
-      { members: ['detergente', 'lavandina', 'esponja', 'jabon'], intruder: 'yogur', categoria: 'cosas de limpieza' },
-      { members: ['martillo', 'serrucho', 'destornillador', 'llave-inglesa'], intruder: 'aguja-hilo', categoria: 'herramientas de taller' },
+      { members: ['manzana', 'pera', 'naranja', 'uvas'], intruder: 'zanahoria', categoria: 'frutas' },
+      { members: ['martillo', 'destornillador', 'pinza', 'llave-inglesa'], intruder: 'cuchara', categoria: 'herramientas' },
+      { members: ['vaso', 'taza', 'mate', 'botella'], intruder: 'plato', categoria: 'cosas para tomar' },
+      { members: ['zanahoria', 'tomate', 'papa', 'cebolla'], intruder: 'manzana', categoria: 'verduras' },
     ],
   },
   {
     n: 3,
     name: 'Nivel 3',
     rounds: 3,
+    // Abstract-property intruder — the members share a property, not a label. 5 options.
     pool: [
-      { members: ['mariposa', 'pato', 'flamenco'], intruder: 'tortuga', categoria: 'animales que vuelan' },
-      { members: ['taza', 'vaso', 'mate', 'termo'], intruder: 'florero', categoria: 'cosas para tomar' },
-      { members: ['manzana', 'pelota', 'tomate'], intruder: 'libro', categoria: 'cosas redondas' },
-      { members: ['martillo', 'destornillador', 'llave-inglesa'], intruder: 'regadera', categoria: 'herramientas de taller' },
+      { members: ['pelota', 'naranja', 'reloj', 'moneda'], intruder: 'libro', categoria: 'cosas redondas' },
+      { members: ['paloma', 'mariposa', 'avion', 'globo'], intruder: 'auto', categoria: 'cosas que vuelan' },
+      { members: ['lampara', 'vela', 'linterna', 'farol'], intruder: 'radio', categoria: 'cosas que dan luz' },
+      { members: ['lapiz', 'lapicera', 'tiza', 'marcador'], intruder: 'tijera', categoria: 'cosas para escribir' },
     ],
   },
 ]
@@ -194,8 +204,8 @@ export function CualNoVa({ day: _day, onComplete }: GameProps) {
 
       {!done && puzzle && (
         <>
-          {/* Opciones (fotos) */}
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          {/* Opciones (fotos). flex-wrap centra la fila impar (5 opciones = 2+2+1). */}
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
             {options.map((id) => {
               const isEliminated = eliminated.has(id)
               const isIntruder = solved && id === puzzle.intruder
@@ -207,7 +217,7 @@ export function CualNoVa({ day: _day, onComplete }: GameProps) {
                   disabled={solved || isEliminated}
                   onClick={() => guess(id)}
                   className={[
-                    'relative flex h-28 items-center justify-center rounded-2xl border-2 bg-white p-2 transition sm:h-32',
+                    'relative flex h-24 w-[46%] items-center justify-center rounded-2xl border-2 bg-white p-2 transition sm:h-28',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                     isIntruder ? 'border-tiam-green ring-2 ring-tiam-green/30' : '',
                     isEliminated ? 'border-slate-200 opacity-40 grayscale' : '',
