@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import type { GameProps } from '@/lib/challengeProgress'
 import { BuscarLosRojos } from './BuscarLosRojos'
-import { QueHayEnLaMesa } from './QueHayEnLaMesa'
+import { CualNoVa } from './CualNoVa'
 import { ClaveDeSimbolos } from './ClaveDeSimbolos'
 import { OrdenarLaFrase } from './OrdenarLaFrase'
 import { OracionesAMedida } from './OracionesAMedida'
@@ -55,7 +55,7 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   14: LosOpuestos,
   8: OrdenarLaFrase,
   10: DeduciLaPalabra,
-  11: QueHayEnLaMesa,
+  11: CualNoVa,
   12: OracionesAMedida,
   16: VerdaderoOFalso,
   17: QueCambio,

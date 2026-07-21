@@ -90,10 +90,11 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lectura de la hora: mirá el reloj y elegí qué hora muestra entre las opciones. Subís de dificultad a medida que avanzás.' },
   { day: 10, type: 'game', area: 'ejecutivas', title: 'Deducí la palabra',
     instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué palabra de la lista las cumple todas. Una sola es la correcta. Subís de dificultad a medida que avanzás.' },
-  // area stays 'atencion' (not 'memoria') so it doesn't repeat day 10 back-to-back —
-  // the task itself is a recognition-memory exercise, just labeled by rotation slot.
-  { day: 11, type: 'game', area: 'atencion', title: '¿Qué hay en la mesa?',
-    instructions: 'Un juego de memoria: observá los objetos de la mesa y después elegí cuáles recordás entre los distractores. Subís de dificultad a medida que avanzás.' },
+  // Odd-one-out: attentional scanning + categorical reasoning. Kept 'atencion'
+  // (the slot's existing area) to avoid a backend change and because the scan-
+  // and-compare demand is genuinely attentional.
+  { day: 11, type: 'game', area: 'atencion', title: '¿Cuál no va?',
+    instructions: 'Un juego de atención y razonamiento: mirá las fotos y tocá la que NO va con las demás. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'game', area: 'ejecutivas', title: 'Oraciones a medida',
     instructions: 'Hoy es día de papel y lápiz: cada renglón es una serie de números, y cada número dice cuántas letras tiene cada palabra. Armá una oración con sentido para cada uno y después anotá las que recuerdes.' },
   { day: 13, type: 'game', area: 'atencion', title: 'Camino numérico',
