@@ -816,11 +816,21 @@ function computeChallengeBadges(results: DayResult[], streak: StreakInfo): Badge
 
 /** Mirrors the real backend's ChallengeAreaBreakdownResponse shape exactly
  * ({area, played, averageStars} — no daysTotal from the API; the panel derives
- * that client-side from CHALLENGE_DAYS, same as this mock does). */
+ * that client-side from CHALLENGE_DAYS, same as this mock does).
+ *
+ * Re-derives each result's area from the CURRENT CHALLENGE_DAYS catalog (by
+ * day number) rather than trusting the `area` stored on the result — that
+ * value was captured at complete-time and goes stale the moment a day's área
+ * is reassigned afterward (this app has done that repeatedly while iterating
+ * on content). Trusting it let a played-count exceed an área's current total
+ * on the progress panel — a real bug caught in a screenshot, not hypothetical.
+ * Mirrors the identical fix in the real backend's computeAreaBreakdown. */
 function computeChallengeAreaBreakdown(results: DayResult[]): AreaScore[] {
   const areas: ChallengeArea[] = ['memoria', 'atencion', 'lenguaje', 'praxias', 'agnosias', 'calculo', 'orientacion', 'ejecutivas']
+  const currentAreaFor = (day: number): ChallengeArea =>
+    CHALLENGE_DAYS.find((d) => d.day === day)?.area ?? 'memoria'
   return areas.map((area) => {
-    const playedForArea = results.filter((r) => r.area === area)
+    const playedForArea = results.filter((r) => currentAreaFor(r.day) === area)
     const averageStars = playedForArea.length
       ? playedForArea.reduce((sum, r) => sum + r.stars, 0) / playedForArea.length
       : 0
