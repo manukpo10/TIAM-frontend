@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -47,63 +47,52 @@ const COLORS: Swatch[] = [
 interface Level {
   n: number
   name: string
-  cells: { word: string; ink: string }[]
+  cellCount: number
+  colorCount: number
 }
 
-// Three cards, each all-incongruent (no cell is ever a word printed in its own
-// colour), hand-fixed rather than random so the grid was eyeballed once and
-// can't hand someone a same-colour freebie. The ramp is word count and colour
-// count: 6/3 → 9/4 → 12/5.
+// The ramp is word count and colour count: 6/3 → 9/4 → 12/5. Cards are
+// GENERATED per open (see buildCells) instead of hand-fixed: incongruence is
+// guaranteed by construction (the ink is drawn from the palette MINUS the
+// word's own colour, so a same-colour freebie is impossible — the original
+// reason for hand-fixing), and a fresh card every open means replaying the
+// day never shows the same grid twice.
 const LEVELS: Level[] = [
-  {
-    n: 1,
-    name: 'Nivel 1',
-    // 6 palabras, 3 colores (rojo, azul, verde)
-    cells: [
-      { word: 'rojo', ink: 'azul' },
-      { word: 'verde', ink: 'rojo' },
-      { word: 'azul', ink: 'verde' },
-      { word: 'verde', ink: 'azul' },
-      { word: 'rojo', ink: 'verde' },
-      { word: 'azul', ink: 'rojo' },
-    ],
-  },
-  {
-    n: 2,
-    name: 'Nivel 2',
-    // 9 palabras, 4 colores (+ naranja)
-    cells: [
-      { word: 'rojo', ink: 'verde' },
-      { word: 'azul', ink: 'naranja' },
-      { word: 'naranja', ink: 'azul' },
-      { word: 'verde', ink: 'rojo' },
-      { word: 'azul', ink: 'verde' },
-      { word: 'rojo', ink: 'naranja' },
-      { word: 'naranja', ink: 'rojo' },
-      { word: 'verde', ink: 'azul' },
-      { word: 'azul', ink: 'rojo' },
-    ],
-  },
-  {
-    n: 3,
-    name: 'Nivel 3',
-    // 12 palabras, 5 colores (+ violeta)
-    cells: [
-      { word: 'rojo', ink: 'azul' },
-      { word: 'verde', ink: 'naranja' },
-      { word: 'azul', ink: 'violeta' },
-      { word: 'naranja', ink: 'verde' },
-      { word: 'violeta', ink: 'rojo' },
-      { word: 'verde', ink: 'azul' },
-      { word: 'rojo', ink: 'naranja' },
-      { word: 'azul', ink: 'verde' },
-      { word: 'naranja', ink: 'rojo' },
-      { word: 'violeta', ink: 'azul' },
-      { word: 'rojo', ink: 'verde' },
-      { word: 'violeta', ink: 'naranja' },
-    ],
-  },
+  { n: 1, name: 'Nivel 1', cellCount: 6, colorCount: 3 }, // rojo, azul, verde
+  { n: 2, name: 'Nivel 2', cellCount: 9, colorCount: 4 }, // + naranja
+  { n: 3, name: 'Nivel 3', cellCount: 12, colorCount: 5 }, // + violeta
 ]
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+/**
+ * Builds one all-incongruent Stroop card. Words are dealt from shuffled cycles
+ * of the palette (so every colour word appears evenly, same property the
+ * hand-fixed cards had); each ink is drawn from the palette excluding the
+ * word's own colour (incongruence by construction) and the previous cell's
+ * ink (no same-ink runs, which would let the reader coast). With ≥3 colours,
+ * excluding at most 2 always leaves an option — this can't deadlock.
+ */
+function buildCells(cellCount: number, colorCount: number): { word: string; ink: string }[] {
+  const palette = COLORS.slice(0, colorCount).map((c) => c.id)
+  const words: string[] = []
+  while (words.length < cellCount) words.push(...shuffle(palette))
+  words.length = cellCount
+  const cells: { word: string; ink: string }[] = []
+  for (let i = 0; i < cellCount; i++) {
+    const word = words[i]
+    const options = palette.filter((p) => p !== word && p !== cells[i - 1]?.ink)
+    cells.push({ word, ink: options[Math.floor(Math.random() * options.length)] })
+  }
+  return cells
+}
 
 const hexOf = (id: string) => COLORS.find((c) => c.id === id)?.hex ?? '#1e293b'
 const labelOf = (id: string) => COLORS.find((c) => c.id === id)?.label ?? id.toUpperCase()
@@ -115,6 +104,13 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const level = LEVELS[levelIdx]
   const isLast = levelIdx === LEVELS.length - 1
+
+  // Fresh card per level per open — reopening the day generates new grids.
+  const cells = useMemo(
+    () => buildCells(level.cellCount, level.colorCount),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [levelIdx],
+  )
 
   // Reports exactly once, when the person finishes the third card. There's no
   // score to compute — this is an off-phone spoken exercise — so it reports a
@@ -185,7 +181,7 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
           </p>
 
           <div className="mt-3 grid grid-cols-3 gap-x-3 gap-y-4 rounded-3xl border-2 border-slate-100 bg-white px-2 py-5 sm:gap-y-6 sm:py-6">
-            {level.cells.map((cell, i) => (
+            {cells.map((cell, i) => (
               <span
                 key={i}
                 className="select-none text-lg font-extrabold leading-none tracking-tight sm:text-2xl"

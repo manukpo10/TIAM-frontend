@@ -38,45 +38,75 @@ interface Level {
   n: number
   name: string
   chunksPerWord: number
-  words: WordEntry[]
+  /** Pool of word-sets — ONE set is drawn at random per visit to the level
+   * (keyed on roundKey), so replaying the day serves different words. Every
+   * set in a level has the SAME word count, so the fixed-sum scoring below
+   * stays exact no matter which set is drawn. */
+  sets: WordEntry[][]
 }
 
 // Sets verified offline (chunks concatenate exactly; no duplicate tiles per
-// level; cross-combinations checked by hand to not form real words).
+// set; cross-combinations checked by hand to not form real words — dropped
+// candidates like MANTEL/MANOTA, SALERO/PELERO, TESORO/TESINA, CABEZA/CABINA
+// where a stray tile pair spelled something real).
 const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
     chunksPerWord: 2,
-    words: [
-      { word: 'CAMINO', chunks: ['CAM', 'INO'] },
-      { word: 'PALOMA', chunks: ['PAL', 'OMA'] },
-      { word: 'FUTURO', chunks: ['FUT', 'URO'] },
+    sets: [
+      [
+        { word: 'CAMINO', chunks: ['CAM', 'INO'] },
+        { word: 'PALOMA', chunks: ['PAL', 'OMA'] },
+        { word: 'FUTURO', chunks: ['FUT', 'URO'] },
+      ],
+      [
+        { word: 'PELOTA', chunks: ['PEL', 'OTA'] },
+        { word: 'CARTON', chunks: ['CAR', 'TON'] },
+        { word: 'CAMISA', chunks: ['CAM', 'ISA'] },
+      ],
     ],
   },
   {
     n: 2,
     name: 'Nivel 2',
     chunksPerWord: 3,
-    words: [
-      { word: 'PRIMAVERA', chunks: ['PRI', 'MAV', 'ERA'] },
-      { word: 'CHOCOLATE', chunks: ['CHO', 'COL', 'ATE'] },
-      { word: 'PANADERIA', chunks: ['PAN', 'ADE', 'RIA'] },
+    sets: [
+      [
+        { word: 'PRIMAVERA', chunks: ['PRI', 'MAV', 'ERA'] },
+        { word: 'CHOCOLATE', chunks: ['CHO', 'COL', 'ATE'] },
+        { word: 'PANADERIA', chunks: ['PAN', 'ADE', 'RIA'] },
+      ],
+      [
+        { word: 'CARNICERO', chunks: ['CAR', 'NIC', 'ERO'] },
+        { word: 'ALMANAQUE', chunks: ['ALM', 'ANA', 'QUE'] },
+        { word: 'COLECTIVO', chunks: ['COL', 'ECT', 'IVO'] },
+      ],
     ],
   },
   {
     n: 3,
     name: 'Nivel 3',
     chunksPerWord: 3,
-    words: [
-      { word: 'MERMELADA', chunks: ['MER', 'MEL', 'ADA'] },
-      { word: 'TELEVISOR', chunks: ['TEL', 'EVI', 'SOR'] },
-      { word: 'MEDIALUNA', chunks: ['MED', 'IAL', 'UNA'] },
-      { word: 'BICICLETA', chunks: ['BIC', 'ICL', 'ETA'] },
+    sets: [
+      [
+        { word: 'MERMELADA', chunks: ['MER', 'MEL', 'ADA'] },
+        { word: 'TELEVISOR', chunks: ['TEL', 'EVI', 'SOR'] },
+        { word: 'MEDIALUNA', chunks: ['MED', 'IAL', 'UNA'] },
+        { word: 'BICICLETA', chunks: ['BIC', 'ICL', 'ETA'] },
+      ],
+      [
+        { word: 'CARAMELOS', chunks: ['CAR', 'AME', 'LOS'] },
+        { word: 'MARIPOSAS', chunks: ['MAR', 'IPO', 'SAS'] },
+        { word: 'VERDULERO', chunks: ['VER', 'DUL', 'ERO'] },
+        { word: 'TELEGRAMA', chunks: ['TEL', 'EGR', 'AMA'] },
+      ],
     ],
   },
 ]
-const TOTAL_WORDS = LEVELS.reduce((s, l) => s + l.words.length, 0)
+// Every set within a level has the same word count, so this sum is
+// draw-independent (3 + 3 + 4).
+const TOTAL_WORDS = LEVELS.reduce((s, l) => s + l.sets[0].length, 0)
 const FECHA_QUESTIONS = 2 // día de la semana + mes
 
 const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
@@ -137,11 +167,20 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
     return shuffle([MONTH_NAMES[m], prev, next, far])
   })
 
-  // All tiles of the current level, stable ids.
-  const tiles: Tile[] = useMemo(
-    () => level.words.flatMap((w) => w.chunks).map((text, id) => ({ id, text })),
+  // One word-set drawn at random per visit to the level — a replay (new
+  // roundKey) or a fresh open serves different words, same as every other
+  // game's pool-and-shuffle pattern.
+  const words = useMemo(
+    () => pickOne(level.sets),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
+  )
+
+  // All tiles of the drawn set, stable ids.
+  const tiles: Tile[] = useMemo(
+    () => words.flatMap((w) => w.chunks).map((text, id) => ({ id, text })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [words],
   )
   const tileOrder = useMemo(
     () => shuffle(tiles.map((t) => t.id)),
@@ -162,17 +201,17 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   const consumedIds = useMemo(() => {
     const ids = new Set<number>()
     for (const w of found) {
-      const entry = level.words.find((e) => e.word === w)
+      const entry = words.find((e) => e.word === w)
       entry?.chunks.forEach((c) => {
         const t = tiles.find((tl) => tl.text === c && !ids.has(tl.id))
         if (t) ids.add(t.id)
       })
     }
     return ids
-  }, [found, level.words, tiles])
+  }, [found, words, tiles])
   const bank = tileOrder.filter((id) => !placed.includes(id) && !consumedIds.has(id))
 
-  const done = found.length === level.words.length
+  const done = found.length === words.length
   useEffect(() => {
     if (done) setLevelPraise(pickOne(PRAISE))
   }, [done])
@@ -212,7 +251,7 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   function check() {
     if (placed.length !== level.chunksPerWord) return
     const attempt = placed.map((id) => tiles.find((t) => t.id === id)?.text ?? '').join('')
-    const target = level.words.find((w) => w.word === attempt)
+    const target = words.find((w) => w.word === attempt)
     if (target && !found.includes(target.word)) {
       setFound((prev) => (prev.includes(target.word) ? prev : [...prev, target.word]))
       setPlaced([])
@@ -302,10 +341,10 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
             {!done && (
               <>
                 <p className="mt-2 text-sm font-medium text-tiam-blue">
-                  Uní {level.chunksPerWord} fichas para formar una palabra. Hay {level.words.length} escondidas.
+                  Uní {level.chunksPerWord} fichas para formar una palabra. Hay {words.length} escondidas.
                 </p>
                 <p className="mt-2 text-base font-semibold text-slate-500">
-                  Llevás {found.length} de {level.words.length}
+                  Llevás {found.length} de {words.length}
                 </p>
               </>
             )}
@@ -392,7 +431,7 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
               </div>
               <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
               <p className="mt-1 text-slate-600">
-                Encontraste las {level.words.length} palabras: {level.words.map((w) => w.word).join(', ')}.
+                Encontraste las {words.length} palabras: {words.map((w) => w.word).join(', ')}.
               </p>
               <div className="mt-5 flex justify-center">
                 <button
