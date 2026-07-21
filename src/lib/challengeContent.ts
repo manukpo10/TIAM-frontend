@@ -88,8 +88,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: tocá las palabras en el orden correcto para armar la frase. Subís de dificultad a medida que avanzás.' },
   { day: 9, type: 'game', area: 'praxias', title: 'El reloj',
     instructions: 'Un juego de lectura de la hora: mirá el reloj y elegí qué hora muestra entre las opciones. Subís de dificultad a medida que avanzás.' },
-  { day: 10, type: 'game', area: 'ejecutivas', title: 'Deducí la palabra',
-    instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué palabra de la lista las cumple todas. Una sola es la correcta. Subís de dificultad a medida que avanzás.' },
+  { day: 10, type: 'game', area: 'memoria', title: 'La canción de tu juventud',
+    instructions: 'Un juego de memoria auditiva: escuchá un fragmento y tocá a qué género musical se parece más. Subís de dificultad a medida que avanzás.' },
   // Odd-one-out: attentional scanning + categorical reasoning. Kept 'atencion'
   // (the slot's existing area) to avoid a backend change and because the scan-
   // and-compare demand is genuinely attentional.
@@ -103,12 +103,12 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: mirá la palabra y tocá cuál de las opciones es su opuesto. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 3 — combinar áreas / recuerdo demorado ─────────────────────────
-  { day: 15, type: 'game', area: 'memoria', title: 'La canción de tu juventud',
-    instructions: 'Un juego de memoria auditiva: escuchá un fragmento y tocá a qué género musical se parece más. Subís de dificultad a medida que avanzás.' },
+  { day: 15, type: 'game', area: 'ejecutivas', title: 'Deducí la palabra',
+    instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué palabra de la lista las cumple todas. Una sola es la correcta. Subís de dificultad a medida que avanzás.' },
   { day: 16, type: 'game', area: 'calculo', title: 'La pirámide',
     instructions: 'Un juego de cálculo: cada número de la pirámide es la suma de los dos que tiene abajo. Completá los casilleros vacíos. Subís de dificultad a medida que avanzás.' },
-  { day: 17, type: 'game', area: 'atencion', title: '¿Qué cambió?',
-    instructions: 'Un juego de atención: observá la escena y después tocá los objetos que cambiaron. Subís de dificultad a medida que avanzás.' },
+  { day: 17, type: 'game', area: 'agnosias', title: '¿Cuántos hay?',
+    instructions: 'Un juego de reconocimiento: muchos dibujos se superponen y se repiten en una sola imagen. Contá cuántos hay de cada uno. Son tres láminas, una por nivel, y las tres son bien difíciles.' },
   { day: 18, type: 'game', area: 'atencion', title: 'Palabras y colores',
     instructions: 'Hoy es día de papel y lápiz: se juega en voz alta, no se toca la pantalla. Vas a ver palabras de colores escritas con otro color. Primero leé las palabras; después decí los colores.' },
   { day: 19, type: 'game', area: 'memoria', title: 'Memotest',
@@ -117,8 +117,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego visoespacial: mirá dónde está la figura respecto de la caja y tocá cómo se llama esa posición. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'ejecutivas', title: 'Planificá la mañana',
     instructions: 'Un juego de razonamiento: ordená las tareas de la mañana en el orden correcto. Subís de dificultad a medida que avanzás.' },
-  { day: 22, type: 'game', area: 'calculo', title: 'La receta doble',
-    instructions: 'Un juego de cálculo: mirá la situación y usá los botones +/- para llegar a la cantidad justa. Subís de dificultad a medida que avanzás.' },
+  { day: 22, type: 'game', area: 'lenguaje', title: '¿Qué oficio es?',
+    instructions: 'Un juego de lenguaje: mirá las herramientas de un oficio y tocá cuál es. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 4 — integradoras + cierre ──────────────────────────────────────
   { day: 23, type: 'game', area: 'agnosias', title: '¿Qué sonido es?',
@@ -127,10 +127,10 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de atención: tocá los objetos rojos entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'ejecutivas', title: 'Las mismas letras',
     instructions: 'Un juego de razonamiento: emparejá las palabras que se escriben con las mismas letras, cambiadas de orden. Subís de dificultad a medida que avanzás.' },
-  { day: 26, type: 'game', area: 'lenguaje', title: '¿Qué oficio es?',
-    instructions: 'Un juego de lenguaje: mirá las herramientas de un oficio y tocá cuál es. Subís de dificultad a medida que avanzás.' },
-  { day: 27, type: 'game', area: 'agnosias', title: '¿Cuántos hay?',
-    instructions: 'Un juego de reconocimiento: muchos dibujos se superponen y se repiten en una sola imagen. Contá cuántos hay de cada uno. Son tres láminas, una por nivel, y las tres son bien difíciles.' },
+  { day: 26, type: 'game', area: 'calculo', title: 'La receta doble',
+    instructions: 'Un juego de cálculo: mirá la situación y usá los botones +/- para llegar a la cantidad justa. Subís de dificultad a medida que avanzás.' },
+  { day: 27, type: 'game', area: 'atencion', title: '¿Qué cambió?',
+    instructions: 'Un juego de atención: observá la escena y después tocá los objetos que cambiaron. Subís de dificultad a medida que avanzás.' },
   { day: 28, type: 'game', area: 'lenguaje', title: 'Dos pistas, una palabra',
     instructions: 'Un juego de lenguaje: vas a ver dos imágenes que son la misma palabra, cada una por un sentido distinto. Descubrí la palabra y armala con las letras. Subís de dificultad a medida que avanzás.' },
   { day: 29, type: 'game', area: 'agnosias', title: '¿Qué será?',

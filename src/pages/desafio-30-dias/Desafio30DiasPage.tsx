@@ -106,8 +106,8 @@ const GAME_SHOWCASE = [
   { image: shotElReloj, day: 9, title: 'El reloj', area: 'Visuoespacial', color: '#7C3AED' },
   { image: shotCualNoVa, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
   { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
-  { image: shotQueOficioEs, day: 26, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
-  { image: shotLaRecetaDoble, day: 22, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
+  { image: shotQueOficioEs, day: 22, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
+  { image: shotLaRecetaDoble, day: 26, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
   { image: shotLaBalanza, day: 29, title: 'La balanza', area: 'Razonamiento', color: '#4F46E5' },
 ]
 
