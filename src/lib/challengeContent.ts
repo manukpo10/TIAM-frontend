@@ -121,8 +121,8 @@ const DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: mirá las herramientas de un oficio y tocá cuál es. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 4 — integradoras + cierre ──────────────────────────────────────
-  { day: 23, type: 'game', area: 'agnosias', title: '¿Qué sonido es?',
-    instructions: 'Un juego de reconocimiento auditivo: escuchá el sonido de la cocina de antes y tocá qué es. Subís de dificultad a medida que avanzás.' },
+  { day: 23, type: 'game', area: 'agnosias', title: 'Una letra de cada uno',
+    instructions: 'Un juego de reconocimiento: mirá cada dibujo, date cuenta qué objeto es y sacale una letra según la regla que tiene abajo. Todas juntas, en orden, arman una palabra escondida. Subís de dificultad a medida que avanzás.' },
   { day: 24, type: 'game', area: 'atencion', title: 'Buscá los rojos',
     instructions: 'Un juego de atención: tocá los objetos rojos entre los distractores. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'ejecutivas', title: 'Las mismas letras',

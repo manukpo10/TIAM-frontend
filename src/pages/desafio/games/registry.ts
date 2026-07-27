@@ -27,7 +27,7 @@ import { DosPistas } from './DosPistas'
 import { PalabrasEnClave } from './PalabrasEnClave'
 import { LaCancionDeTuJuventud } from './LaCancionDeTuJuventud'
 import { LetrasEnMovimiento } from './LetrasEnMovimiento'
-import { QueSonidoEs } from './QueSonidoEs'
+import { UnaLetraDeCadaUno } from './UnaLetraDeCadaUno'
 import { QuePalabraSeEsconde } from './QuePalabraSeEsconde'
 import { LasMismasLetras } from './LasMismasLetras'
 
@@ -73,5 +73,5 @@ export const GAMES: Record<number, ComponentType<GameProps>> = {
   30: PalabrasEnClave,
   15: DeduciLaPalabra,
   6: LetrasEnMovimiento,
-  23: QueSonidoEs,
+  23: UnaLetraDeCadaUno,
 }
