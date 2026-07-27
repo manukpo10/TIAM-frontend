@@ -39,7 +39,17 @@ import type { GameProps } from '@/lib/challengeProgress'
  * render), unlike every photo-based game in this app.
  *
  * Same "eliminate wrong, keep trying" pattern as CadaCosaEnSuGrupo/
- * QueObjetoEs (3 options, never red, no timer). Pool-and-shuffle content.
+ * QueObjetoEs (never red, no timer). Pool-and-shuffle content.
+ *
+ * Harder than the app's usual tuning on purpose (explicit request): 4 options
+ * per round instead of 3 (same "más opciones = más difícil" lever
+ * LaCancionDeTuJuventud already uses), and ROUNDS_PER_LEVEL is [3, 4, 4]
+ * instead of the app-wide [2, 3, 3] — one extra round per level. Nivel 3's
+ * 4th candidate is a new decoy varying the SECOND shape's colour (decoy 1
+ * already varies its relation, decoy 2 varies the FIRST shape's colour), so
+ * the three decoys cover three distinct single-field perturbations without
+ * touching shape KIND — same "exactly one field differs" discipline as the
+ * original two, verified by hand per entry (see L3_POOL below).
  */
 
 type ShapeKind = 'circle' | 'square' | 'triangle'
@@ -165,24 +175,25 @@ interface L3Round {
 }
 
 const L1_POOL: L1Round[] = [
-  { scene: { shape: 'circle', color: 'red', relation: 'dentro' }, options: ['dentro', 'encima', 'izquierda'] },
-  { scene: { shape: 'square', color: 'blue', relation: 'encima' }, options: ['encima', 'debajo', 'derecha'] },
-  { scene: { shape: 'triangle', color: 'green', relation: 'izquierda' }, options: ['izquierda', 'derecha', 'dentro'] },
-  { scene: { shape: 'circle', color: 'purple', relation: 'debajo' }, options: ['debajo', 'encima', 'izquierda'] },
-  { scene: { shape: 'square', color: 'amber', relation: 'derecha' }, options: ['derecha', 'izquierda', 'dentro'] },
+  { scene: { shape: 'circle', color: 'red', relation: 'dentro' }, options: ['dentro', 'encima', 'izquierda', 'debajo'] },
+  { scene: { shape: 'square', color: 'blue', relation: 'encima' }, options: ['encima', 'debajo', 'derecha', 'izquierda'] },
+  { scene: { shape: 'triangle', color: 'green', relation: 'izquierda' }, options: ['izquierda', 'derecha', 'dentro', 'debajo'] },
+  { scene: { shape: 'circle', color: 'purple', relation: 'debajo' }, options: ['debajo', 'encima', 'izquierda', 'derecha'] },
+  { scene: { shape: 'square', color: 'amber', relation: 'derecha' }, options: ['derecha', 'izquierda', 'dentro', 'encima'] },
 ]
 
 const L2_POOL: L2Round[] = [
-  { target: 'encima', shape: 'circle', color: 'red', candidateRelations: ['encima', 'debajo', 'izquierda'] },
-  { target: 'izquierda', shape: 'square', color: 'blue', candidateRelations: ['izquierda', 'derecha', 'dentro'] },
-  { target: 'dentro', shape: 'triangle', color: 'green', candidateRelations: ['dentro', 'encima', 'derecha'] },
-  { target: 'derecha', shape: 'circle', color: 'purple', candidateRelations: ['derecha', 'izquierda', 'debajo'] },
-  { target: 'debajo', shape: 'square', color: 'amber', candidateRelations: ['debajo', 'dentro', 'encima'] },
+  { target: 'encima', shape: 'circle', color: 'red', candidateRelations: ['encima', 'debajo', 'izquierda', 'derecha'] },
+  { target: 'izquierda', shape: 'square', color: 'blue', candidateRelations: ['izquierda', 'derecha', 'dentro', 'debajo'] },
+  { target: 'dentro', shape: 'triangle', color: 'green', candidateRelations: ['dentro', 'encima', 'derecha', 'izquierda'] },
+  { target: 'derecha', shape: 'circle', color: 'purple', candidateRelations: ['derecha', 'izquierda', 'debajo', 'encima'] },
+  { target: 'debajo', shape: 'square', color: 'amber', candidateRelations: ['debajo', 'dentro', 'encima', 'izquierda'] },
 ]
 
-// Every reference's two decoys each differ from it in exactly ONE field
-// (verified by script — see the game's authoring notes): either the second
-// shape's relation, or the first shape's colour.
+// Cada referencia tiene TRES señuelos, cada uno difiriendo en EXACTAMENTE un
+// campo (verificado a mano, entrada por entrada): la relación de la segunda
+// figura, el color de la primera figura, o el color de la segunda figura —
+// nunca la relación de la primera ni el TIPO de ninguna de las dos figuras.
 const L3_POOL: L3Round[] = [
   {
     reference: [{ shape: 'circle', color: 'red', relation: 'encima' }, { shape: 'square', color: 'blue', relation: 'izquierda' }],
@@ -190,6 +201,7 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'circle', color: 'red', relation: 'encima' }, { shape: 'square', color: 'blue', relation: 'izquierda' }],
       [{ shape: 'circle', color: 'red', relation: 'encima' }, { shape: 'square', color: 'blue', relation: 'derecha' }],
       [{ shape: 'circle', color: 'green', relation: 'encima' }, { shape: 'square', color: 'blue', relation: 'izquierda' }],
+      [{ shape: 'circle', color: 'red', relation: 'encima' }, { shape: 'square', color: 'purple', relation: 'izquierda' }],
     ],
   },
   {
@@ -198,6 +210,7 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'triangle', color: 'green', relation: 'dentro' }, { shape: 'circle', color: 'purple', relation: 'derecha' }],
       [{ shape: 'triangle', color: 'green', relation: 'dentro' }, { shape: 'circle', color: 'purple', relation: 'debajo' }],
       [{ shape: 'triangle', color: 'amber', relation: 'dentro' }, { shape: 'circle', color: 'purple', relation: 'derecha' }],
+      [{ shape: 'triangle', color: 'green', relation: 'dentro' }, { shape: 'circle', color: 'red', relation: 'derecha' }],
     ],
   },
   {
@@ -206,6 +219,7 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'square', color: 'amber', relation: 'debajo' }, { shape: 'triangle', color: 'red', relation: 'izquierda' }],
       [{ shape: 'square', color: 'amber', relation: 'debajo' }, { shape: 'triangle', color: 'red', relation: 'encima' }],
       [{ shape: 'square', color: 'blue', relation: 'debajo' }, { shape: 'triangle', color: 'red', relation: 'izquierda' }],
+      [{ shape: 'square', color: 'amber', relation: 'debajo' }, { shape: 'triangle', color: 'green', relation: 'izquierda' }],
     ],
   },
   {
@@ -214,6 +228,7 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'circle', color: 'blue', relation: 'encima' }, { shape: 'square', color: 'green', relation: 'derecha' }],
       [{ shape: 'circle', color: 'blue', relation: 'encima' }, { shape: 'square', color: 'green', relation: 'izquierda' }],
       [{ shape: 'circle', color: 'purple', relation: 'encima' }, { shape: 'square', color: 'green', relation: 'derecha' }],
+      [{ shape: 'circle', color: 'blue', relation: 'encima' }, { shape: 'square', color: 'amber', relation: 'derecha' }],
     ],
   },
   {
@@ -222,6 +237,7 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'triangle', color: 'purple', relation: 'dentro' }, { shape: 'circle', color: 'amber', relation: 'izquierda' }],
       [{ shape: 'triangle', color: 'purple', relation: 'dentro' }, { shape: 'circle', color: 'amber', relation: 'derecha' }],
       [{ shape: 'triangle', color: 'red', relation: 'dentro' }, { shape: 'circle', color: 'amber', relation: 'izquierda' }],
+      [{ shape: 'triangle', color: 'purple', relation: 'dentro' }, { shape: 'circle', color: 'blue', relation: 'izquierda' }],
     ],
   },
   {
@@ -230,6 +246,7 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'square', color: 'red', relation: 'derecha' }, { shape: 'triangle', color: 'blue', relation: 'debajo' }],
       [{ shape: 'square', color: 'red', relation: 'derecha' }, { shape: 'triangle', color: 'blue', relation: 'encima' }],
       [{ shape: 'square', color: 'green', relation: 'derecha' }, { shape: 'triangle', color: 'blue', relation: 'debajo' }],
+      [{ shape: 'square', color: 'red', relation: 'derecha' }, { shape: 'triangle', color: 'purple', relation: 'debajo' }],
     ],
   },
   {
@@ -238,12 +255,14 @@ const L3_POOL: L3Round[] = [
       [{ shape: 'circle', color: 'green', relation: 'izquierda' }, { shape: 'square', color: 'purple', relation: 'encima' }],
       [{ shape: 'circle', color: 'green', relation: 'izquierda' }, { shape: 'square', color: 'purple', relation: 'debajo' }],
       [{ shape: 'circle', color: 'amber', relation: 'izquierda' }, { shape: 'square', color: 'purple', relation: 'encima' }],
+      [{ shape: 'circle', color: 'green', relation: 'izquierda' }, { shape: 'square', color: 'red', relation: 'encima' }],
     ],
   },
 ]
 
-// Same 2/3/3 tuning used across the app's leveled games.
-const ROUNDS_PER_LEVEL = [2, 3, 3]
+// [3, 4, 4] instead of the app-wide [2, 3, 3] — one extra round per level,
+// per explicit request to make this specific game longer and harder.
+const ROUNDS_PER_LEVEL = [3, 4, 4]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
 function shuffle<T>(arr: T[]): T[] {
@@ -469,7 +488,7 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
       {!done && levelIdx === 1 && l2Round && (
         <>
           <p className="mt-4 text-center text-xl font-extrabold text-tiam-blue">{RELATION_LABEL[l2Round.target]}</p>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {l2Candidates.map((rel, i) => {
               const isEliminated = eliminated.has(rel)
               return (
@@ -500,7 +519,7 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
           <p className="mt-3 text-center text-sm font-semibold text-slate-500">Modelo</p>
           <Scene shapes={l3Round.reference} highlight />
           <p className="mt-4 text-center text-sm font-semibold text-slate-500">¿Cuál es igual?</p>
-          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {l3Candidates.map((cand, i) => {
               const isEliminated = eliminated.has(String(i))
               return (
