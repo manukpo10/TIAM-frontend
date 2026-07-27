@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
-import { useSequencingPuzzle, type SequencingItem } from './useSequencingPuzzle'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -10,12 +9,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Each round shows a SOURCE word and a CLUE for a different word — the
  * ANSWER — built from exactly the same letters (a true anagram pair, e.g.
- * GOTA → GATO). The source word's own letters are shuffled into tappable
- * tiles; the player taps them in the order that spells the ANSWER, tapping
- * a placed tile to send it back to the pool (undo) — same tap-to-place-only
- * interaction as "Ordená la frase," just at the LETTER grain instead of the
- * WORD grain, so `useSequencingPuzzle` is reused as-is: letters are just
- * items, and the hook doesn't care whether an "item" is a word or a letter.
+ * GOTA → GATO). The tile pool is the answer's own letters PLUS a few decoy
+ * letters (DECOYS_PER_LEVEL, same scaling as día 28's "Dos pistas, una
+ * palabra"), so juntar solo las justas ya no alcanza — the player has to
+ * actually track which letters belong. Tap-to-place only, same interaction
+ * as "Ordená la frase," just at the LETTER grain. Decoys are why this game
+ * builds its own local tile bank instead of reusing `useSequencingPuzzle`:
+ * that hook treats the round "ready to check" once the WHOLE bank is
+ * placed, which would force the decoys into the word too — here "ready"
+ * means "as many tiles placed as the answer has letters," leaving decoys
+ * behind in the pool (same model as DosPistas.tsx's `buildTiles`).
  *
  * The clue is both the disambiguator (a few of these letter sets could spell
  * more than one real word — the clue picks which one) and part of the ramp:
@@ -39,14 +42,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * (same formula/reasoning as ElVuelto.tsx's comment on this).
  *
  * Correctness is checked against the actual SPELLED STRING
- * (`placed.map(i => i.value).join('')`), not the hook's own positional
- * `isCorrect`. Several answers here repeat a letter (LLAMA, VACA, NADAR,
- * RATA, ANIMAR) — the hook tracks tiles by original-index id (by design, so
- * duplicate-VALUE items don't collapse), which means two tiles can show the
- * identical letter but carry different ids. A player who happens to tap the
- * "other" instance of a repeated letter still spells the word correctly and
- * must not be marked wrong for it, so the check compares letters, not tile
- * identity.
+ * (`placed.map(i => i.value).join('')`), never by tile position or identity.
+ * Several answers repeat a letter (LLAMA, VACA, RATA), and a decoy can ALSO
+ * repeat a letter already in the answer — tiles carry a unique id (not
+ * keyed by value), so two tiles can show the identical letter but different
+ * ids. A player who taps the "other" instance of a repeated letter still
+ * spells the word correctly and must not be marked wrong for it, so the
+ * check compares letters, not tile identity.
  *
  * VARIAS rondas por nivel (mismo patrón que ElVuelto/ContadorMasMenos):
  * ROUNDS_PER_LEVEL = [2, 3, 3], 8 palabras en total — same tuning as every
@@ -121,6 +123,12 @@ const ROUNDS_PER_LEVEL = [2, 3, 3]
 // so totalAttempts = mistakes + this.
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
+// Decoy letters added on top of the answer's own letters — sube con la
+// dificultad, mismos valores que "Dos pistas, una palabra" (día 28), cuyos
+// largos de palabra por nivel son parecidos (4-5 / 4-5 / 6-8).
+const DECOYS_PER_LEVEL = [2, 3, 4]
+const DECOY_POOL = 'AEIOSRNTLDCUMPB'.split('')
+
 // L1 clue photos live in this game's OWN folder — photorealistic, isolated on
 // white, matched by id. Kept separate (not shared with buscar-rojos etc.) so
 // the photoreal set here can't affect games that deliberately stay illustrated
@@ -144,6 +152,19 @@ function shuffle<T>(arr: T[]): T[] {
 }
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+interface Tile {
+  id: number
+  value: string
+}
+// Letras de la respuesta + `decoys` señuelos, todo barajado. Ids únicos por
+// ficha para poder distinguir dos fichas del mismo valor (ver el comentario
+// de la cabecera sobre LLAMA/VACA/RATA).
+function buildTiles(answer: string, decoys: number): Tile[] {
+  const values = answer.split('')
+  for (let i = 0; i < decoys; i++) values.push(pickOne(DECOY_POOL))
+  return shuffle(values).map((value, id) => ({ id, value }))
 }
 
 const PRAISE_GOOD = ['¡Muy bien armada!', '¡Excelente, esa es la palabra!', '¡Así se hace!', '¡Perfecto!']
@@ -170,13 +191,22 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   )
   const [roundIdx, setRoundIdx] = useState(0)
   const entry = roundEntries[roundIdx]
-  const answerLetters = useMemo(() => entry.answer.split(''), [entry])
 
-  const { bank, placed, place, unplace } = useSequencingPuzzle(
-    answerLetters,
-    `${levelIdx}-${roundKey}-${roundIdx}`,
+  // Fichas de la ronda (respuesta + señuelos), estables dentro de la ronda;
+  // se rearman al cambiar de ronda/nivel. `placedIds` se resetea
+  // SINCRÓNICAMENTE en los handlers de abajo (nextRound/nextLevel/replay),
+  // nunca en un efecto — misma disciplina que DosPistas.tsx.
+  const tiles = useMemo(
+    () => buildTiles(entry.answer, DECOYS_PER_LEVEL[levelIdx]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [levelIdx, roundKey, roundIdx],
   )
-  const readyToCheck = bank.length === 0
+  const [placedIds, setPlacedIds] = useState<number[]>([])
+  const placed = placedIds.map((id) => tiles.find((t) => t.id === id)).filter((t): t is Tile => !!t)
+  const bank = tiles.filter((t) => !placedIds.includes(t.id))
+  // Lista para revisar cuando hay tantas letras puestas como tiene la
+  // respuesta — los señuelos que sobran quedan en el montón.
+  const readyToCheck = placed.length === entry.answer.length
 
   const [resolved, setResolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
@@ -195,21 +225,23 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   // a useEffect (see nextLevel()'s comment for why that matters).
   const done = resolved && roundIdx >= roundsForLevel - 1
 
-  function handlePlace(item: SequencingItem<string>) {
+  function handlePlace(item: Tile) {
+    if (resolved || placed.length >= entry.answer.length) return
     setHint(null)
-    place(item)
+    setPlacedIds((ids) => [...ids, item.id])
   }
-  function handleUnplace(item: SequencingItem<string>) {
+  function handleUnplace(item: Tile) {
+    if (resolved) return
     setHint(null)
-    unplace(item)
+    setPlacedIds((ids) => ids.filter((i) => i !== item.id))
   }
 
   function check() {
     if (!readyToCheck) return
     // See the file header comment: deliberately compares the spelled
-    // STRING to the answer, not the hook's own id-based `isCorrect` — a
-    // repeated letter in the answer means two tiles can share a value but
-    // not an id, and the player can't visually tell them apart.
+    // STRING to the answer, never tile position/identity — a repeated
+    // letter (or a decoy matching one) means two tiles can share a value
+    // but not an id, and the player can't visually tell them apart.
     const spelled = placed.map((item) => item.value).join('')
     if (spelled === entry.answer) {
       setPraise(pickOne(PRAISE_GOOD))
@@ -233,6 +265,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   function nextRound() {
     setResolved(false)
     setHint(null)
+    setPlacedIds([])
     setRoundIdx((i) => i + 1)
   }
   // Resets happen HERE, synchronously with the level/round change — never
@@ -248,6 +281,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
     const isWrap = levelIdx === LEVELS.length - 1
     setResolved(false)
     setHint(null)
+    setPlacedIds([])
     setRoundIdx(0)
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
@@ -258,6 +292,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   function replay() {
     setResolved(false)
     setHint(null)
+    setPlacedIds([])
     setRoundIdx(0)
     setRoundKey((k) => k + 1)
   }
