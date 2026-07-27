@@ -34,15 +34,16 @@ interface SentenceLevel {
   sentences: SentenceEntry[]
 }
 
+// Cada nivel tenía un pool de 5 frases (rounds=2/3/3, al azar); recortado a
+// las 2 frases más largas/complejas de cada pool (rounds=2 parejo), a pedido
+// del usuario ("dos ejercicios por nivel, deja los más difíciles") — no un
+// recorte al azar, así siempre quedan las mismas dos, las más exigentes.
 const LEVELS: SentenceLevel[] = [
   {
     n: 1,
     name: 'Nivel 1',
     rounds: 2,
     sentences: [
-      { words: ['El', 'mate', 'está', 'listo'] },
-      { words: ['Mi', 'nieta', 'llegó', 'temprano'] },
-      { words: ['Hoy', 'hace', 'mucho', 'frío'] },
       { words: ['El', 'perro', 'perdió', 'la', 'pelota'] },
       { words: ['Compré', 'pan', 'en', 'la', 'panadería'] },
     ],
@@ -50,11 +51,8 @@ const LEVELS: SentenceLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
-    rounds: 3,
+    rounds: 2,
     sentences: [
-      { words: ['Los', 'chicos', 'juegan', 'a', 'la', 'pelota', 'en', 'el', 'parque'] },
-      { words: ['El', 'colectivo', 'pasó', 'antes', 'de', 'tiempo', 'esta', 'mañana'] },
-      { words: ['Guardé', 'las', 'fotos', 'viejas', 'en', 'una', 'caja', 'de', 'cartón'] },
       { words: ['Mañana', 'temprano', 'visitamos', 'a', 'la', 'abuela', 'en', 'su', 'casa'] },
       { words: ['El', 'sol', 'entra', 'muy', 'fuerte', 'por', 'la', 'ventana', 'grande'] },
     ],
@@ -62,23 +60,11 @@ const LEVELS: SentenceLevel[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    rounds: 3,
+    rounds: 2,
     sentences: [
       {
         words: ['Mi', 'hermano', 'trabaja', 'en', 'una', 'farmacia', 'del', 'centro', 'desde', 'hace', 'diez', 'años'],
         distractor: 'paraguas',
-      },
-      {
-        words: ['El', 'técnico', 'vino', 'a', 'arreglar', 'la', 'heladera', 'esta', 'mañana', 'bien', 'temprano'],
-        distractor: 'chocolate',
-      },
-      {
-        words: ['La', 'radio', 'anunció', 'esta', 'mañana', 'que', 'después', 'va', 'a', 'llover'],
-        distractor: 'semáforo',
-      },
-      {
-        words: ['Ayer', 'a', 'la', 'tarde', 'tomamos', 'mate', 'con', 'las', 'vecinas', 'de', 'al', 'lado'],
-        distractor: 'computadora',
       },
       {
         words: ['Encontré', 'una', 'carta', 'vieja', 'en', 'el', 'fondo', 'del', 'placard', 'de', 'mi', 'cuarto'],
