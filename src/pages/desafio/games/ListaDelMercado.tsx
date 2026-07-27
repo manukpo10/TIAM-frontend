@@ -95,13 +95,14 @@ interface Round {
 }
 
 function buildL1(): Round {
-  return { studied: CATEGORIES.map((cat) => pick(byCategory(cat), 1)[0]), distractors: pick(FAR_DOMAIN, 6) }
+  const cats = pick(CATEGORIES, 4)
+  return { studied: cats.map((cat) => pick(byCategory(cat), 1)[0]), distractors: pick(FAR_DOMAIN, 4) }
 }
 
 function buildL2(): Round {
-  const studied = pick(MERCADO_ITEMS, 9)
+  const studied = pick(MERCADO_ITEMS, 6)
   const studiedIds = new Set(studied.map((o) => o.id))
-  const distractors = pick(MERCADO_ITEMS.filter((o) => !studiedIds.has(o.id)), 9)
+  const distractors = pick(MERCADO_ITEMS.filter((o) => !studiedIds.has(o.id)), 6)
   return { studied, distractors }
 }
 
@@ -131,8 +132,8 @@ function buildWithLures(count: number): Round {
   }
   return { studied, distractors }
 }
-const buildL3 = () => buildWithLures(12)
-const buildL4 = () => buildWithLures(15)
+const buildL3 = () => buildWithLures(8)
+const buildL4 = () => buildWithLures(10)
 
 interface Level {
   n: number
@@ -142,10 +143,9 @@ interface Level {
   build: () => Round
 }
 
-// 4 levels instead of 3: the old L2->L3 jump (9->15 studied items, LESS study
-// time than L2 despite more to memorize) was too steep. Spreading it into two
-// smaller steps (9->12->15) and giving MORE study time as the list grows
-// (never less) makes the ramp gentler without dropping the eventual ceiling.
+// Counts trimmed across all 4 levels (studied+distractors on the test board
+// was 12/18/24/30 — too many figures to scan for this audience). Ramp is now
+// 4/6/8/10 studied, +2 per level, test board 8/12/16/20.
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, build: buildL1 },
   { n: 2, name: 'Nivel 2', studySeconds: 24, minEarlySeconds: 8, build: buildL2 },
