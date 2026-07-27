@@ -88,17 +88,41 @@ const ROUNDS_PER_LEVEL = [2, 3, 3]
 // so totalAttempts = mistakes + this.
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
-const IMAGES = import.meta.glob(
-  [
-    '../../../assets/desafio/games/lista-mercado/*.webp',
-    '../../../assets/desafio/games/buscar-rojos/*.webp',
-    '../../../assets/desafio/games/el-vuelto/*.webp',
-  ],
-  { eager: true, import: 'default' },
-) as Record<string, string>
+// Several icon ids collide across these folders (naranja/limon/zanahoria/
+// tomate all exist in BOTH lista-mercado or el-vuelto — photoreal — AND
+// buscar-rojos — día 24's own flat illustrated set, left as-is). A single
+// multi-pattern glob's Object.entries() key order is NOT reliable pattern-
+// array order (verified live: it picked buscar-rojos's illustration over
+// lista-mercado's photo for 'zanahoria' even though lista-mercado was
+// listed first) — so each folder gets its OWN glob, and imgFor checks them
+// in an explicit priority list instead of trusting iteration order.
+// 'empanada' had no image in ANY folder at all (imgFor silently returned
+// undefined, so 2 of the 8 recetas rendered with no photo).
+const RECETA_IMAGES = import.meta.glob('../../../assets/desafio/games/receta-doble/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+const LISTA_MERCADO_IMAGES = import.meta.glob('../../../assets/desafio/games/lista-mercado/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+const EL_VUELTO_IMAGES = import.meta.glob('../../../assets/desafio/games/el-vuelto/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+const BUSCAR_ROJOS_IMAGES = import.meta.glob('../../../assets/desafio/games/buscar-rojos/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+// Priority order: receta-doble's dedicated assets win first, then the two
+// photoreal libraries, then buscar-rojos's illustrations as a last resort.
+const IMAGE_SOURCES = [RECETA_IMAGES, LISTA_MERCADO_IMAGES, EL_VUELTO_IMAGES, BUSCAR_ROJOS_IMAGES]
 function imgFor(id: string): string | undefined {
-  const match = Object.entries(IMAGES).find(([path]) => path.endsWith(`/${id}.webp`))
-  return match?.[1]
+  for (const source of IMAGE_SOURCES) {
+    const match = Object.entries(source).find(([path]) => path.endsWith(`/${id}.webp`))
+    if (match) return match[1]
+  }
+  return undefined
 }
 
 function shuffle<T>(arr: T[]): T[] {
