@@ -22,7 +22,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * VARIAS rondas por nivel (mismo patrón de LaCancionDeTuJuventud/LosOpuestos):
  * cada nivel resuelve `ROUNDS_PER_LEVEL[levelIdx]` compras distintas, elegidas
  * al azar del pool de escenarios de ese nivel (sin repetir dentro del nivel).
- * 8 vueltos en total (2+3+3).
+ * 6 vueltos en total, 2 por nivel.
  */
 
 interface Item {
@@ -135,11 +135,11 @@ const LEVELS: Level[] = [
 // Comfortably within each level's existing scenario pool (5/5/7), so every
 // round is a genuinely random, non-repeating subset — no new content needed.
 //
-// Tuned to 8 total after the reviewing professional played the 12-round version
-// and called it "muy cansador" — each round here is read-scenario + compute +
-// tap-out-the-bills, so 12 of them ate the whole 10-15 min/day the product
-// promises, for ONE of 30 days. 8 still gives a real workout without the slog.
-const ROUNDS_PER_LEVEL = [2, 3, 3]
+// Originally 12 rounds, trimmed to 8 (2+3+3) after the reviewing professional
+// called that version "muy cansador" for the 10-15 min/day this product
+// promises. Uniformed to 2 per level (6 total) per a later request — same
+// mechanic and scenario pools, just fewer compras per level across the board.
+const ROUNDS_PER_LEVEL = [2, 2, 2]
 // Every round resolves with a single correct "Listo" tap (no "me rindo"),
 // so totalAttempts = mistakes + this.
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
