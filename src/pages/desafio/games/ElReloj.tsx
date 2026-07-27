@@ -37,6 +37,13 @@ interface Level {
   rounds: ClockRound[]
 }
 
+// Cada nivel tenía 6 relojes (todos se mostraban, en orden al azar); recortado
+// a los 2 más difíciles de cada uno, a pedido del usuario ("dos ejercicios
+// por nivel, deja los más difíciles"). Criterio único en los 3 niveles: se
+// prefieren los minutos >30 (fuerza la lectura "menos X", la construcción
+// más difícil — hay que reconocer que la aguja horaria todavía NO llegó a la
+// hora siguiente) y, entre esos, el minuto más alto (aguja horaria más cerca
+// visualmente del próximo número, más ambiguo de leer).
 const LEVELS: Level[] = [
   {
     n: 1,
@@ -44,12 +51,8 @@ const LEVELS: Level[] = [
     showNumbers: true,
     hint: 'La aguja corta y gruesa marca la hora; la aguja larga y fina, los minutos.',
     rounds: [
-      { time: { hour: 3, minute: 0 }, decoys: [{ hour: 4, minute: 0 }, { hour: 3, minute: 30 }, { hour: 2, minute: 0 }] },
-      { time: { hour: 6, minute: 30 }, decoys: [{ hour: 7, minute: 30 }, { hour: 6, minute: 0 }, { hour: 5, minute: 30 }] },
       { time: { hour: 4, minute: 15 }, decoys: [{ hour: 5, minute: 15 }, { hour: 4, minute: 45 }, { hour: 3, minute: 15 }] },
       { time: { hour: 9, minute: 45 }, decoys: [{ hour: 9, minute: 15 }, { hour: 8, minute: 45 }, { hour: 10, minute: 15 }] },
-      { time: { hour: 1, minute: 0 }, decoys: [{ hour: 2, minute: 0 }, { hour: 1, minute: 30 }, { hour: 12, minute: 0 }] },
-      { time: { hour: 11, minute: 30 }, decoys: [{ hour: 12, minute: 30 }, { hour: 11, minute: 0 }, { hour: 10, minute: 30 }] },
     ],
   },
   {
@@ -58,12 +61,8 @@ const LEVELS: Level[] = [
     showNumbers: true,
     hint: 'Ahora los minutos son más variados. Fijate bien a qué marca apunta la aguja larga.',
     rounds: [
-      { time: { hour: 7, minute: 25 }, decoys: [{ hour: 7, minute: 20 }, { hour: 8, minute: 25 }, { hour: 7, minute: 30 }] },
       { time: { hour: 2, minute: 40 }, decoys: [{ hour: 2, minute: 35 }, { hour: 1, minute: 40 }, { hour: 2, minute: 45 }] },
-      { time: { hour: 10, minute: 10 }, decoys: [{ hour: 10, minute: 5 }, { hour: 11, minute: 10 }, { hour: 10, minute: 15 }] },
       { time: { hour: 4, minute: 50 }, decoys: [{ hour: 4, minute: 55 }, { hour: 3, minute: 50 }, { hour: 4, minute: 45 }] },
-      { time: { hour: 8, minute: 5 }, decoys: [{ hour: 8, minute: 0 }, { hour: 9, minute: 5 }, { hour: 8, minute: 10 }] },
-      { time: { hour: 1, minute: 35 }, decoys: [{ hour: 1, minute: 40 }, { hour: 1, minute: 30 }, { hour: 2, minute: 35 }] },
     ],
   },
   {
@@ -72,12 +71,8 @@ const LEVELS: Level[] = [
     showNumbers: false,
     hint: 'Este reloj no tiene números — guiate por las marcas y por dónde apunta cada aguja.',
     rounds: [
-      { time: { hour: 5, minute: 20 }, decoys: [{ hour: 5, minute: 25 }, { hour: 5, minute: 15 }, { hour: 6, minute: 20 }] },
-      { time: { hour: 9, minute: 35 }, decoys: [{ hour: 9, minute: 40 }, { hour: 9, minute: 30 }, { hour: 10, minute: 35 }] },
-      { time: { hour: 12, minute: 55 }, decoys: [{ hour: 12, minute: 50 }, { hour: 11, minute: 55 }, { hour: 12, minute: 45 }] },
-      { time: { hour: 3, minute: 10 }, decoys: [{ hour: 3, minute: 5 }, { hour: 3, minute: 15 }, { hour: 4, minute: 10 }] },
-      { time: { hour: 6, minute: 40 }, decoys: [{ hour: 6, minute: 35 }, { hour: 6, minute: 45 }, { hour: 5, minute: 40 }] },
       { time: { hour: 10, minute: 50 }, decoys: [{ hour: 10, minute: 55 }, { hour: 10, minute: 45 }, { hour: 9, minute: 50 }] },
+      { time: { hour: 12, minute: 55 }, decoys: [{ hour: 12, minute: 50 }, { hour: 11, minute: 55 }, { hour: 12, minute: 45 }] },
     ],
   },
 ]
