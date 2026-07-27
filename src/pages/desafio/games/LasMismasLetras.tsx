@@ -4,19 +4,26 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Las mismas letras" — an anagram-MATCHING game for ejecutivas (mentally
- * rearranging letters is working memory, not vocabulary). Two columns of
- * words; tap one on the left, then one on the right — if they're anagrams
- * of each other (exact same letters, just reordered), they lock in as a
- * matched pair. A wrong pairing is never a hard fail: a gentle text hint
- * plays and both tiles quietly deselect, fully retryable — same "never red"
- * rule as every other game in this folder.
+ * rearranging letters is working memory, not vocabulary). Two groups of
+ * words; tap one from each — if they're anagrams of each other (exact same
+ * letters, just reordered), they lock in as a matched pair. A wrong pairing
+ * is never a hard fail: a gentle text hint plays and both tiles quietly
+ * deselect, fully retryable — same "never red" rule as every other game in
+ * this folder.
  *
  * Reuses Memotest's two-tap selection state machine (pick one, pick a
  * second, compare, lock-in or deselect), adapted from a single grid to two
- * separate columns: `selectedLeft`/`selectedRight` replace Memotest's single
+ * separate groups: `selectedLeft`/`selectedRight` replace Memotest's single
  * `pending` array. Evaluation happens synchronously inside whichever tap
  * handler completes the pair (never in a `useEffect` watching "are both
  * sides selected"), so there's no stale-render window.
+ *
+ * The two groups render as side-by-side columns or a stacked top/bottom
+ * layout — `board.orientation`, randomized per round in `buildBoard` — but
+ * `left`/`right` stay the internal group names either way; only the
+ * container's CSS changes. Random orientation means the tap pattern itself
+ * (always "one from the left, one from the right") isn't a fixed, learnable
+ * shortcut, on top of the row-derangement guarantee below.
  *
  * ONE board per level, no inner round-index layer — same shape as
  * TuResumen.tsx (which deliberately has no `roundIdx`): a 5-pair board is
@@ -106,10 +113,22 @@ function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-// Randomizes which word of each pair lands in the left vs. right column,
-// then shuffles the order within each column independently — so pairs never
-// line up row-by-row and column position carries no information.
-function buildBoard(level: Level): { left: WordTile[]; right: WordTile[] } {
+// 'left'/'right' are just the two group identifiers the tap logic keys off
+// — 'columns' renders them side by side, 'rows' stacks group "left" fully
+// above group "right", so the two taps land top/bottom instead of
+// left/right. Randomized per round alongside the board so the pairing
+// layout itself isn't a fixed, learnable pattern either.
+type Orientation = 'columns' | 'rows'
+
+// Randomizes which word of each pair lands in the left vs. right group,
+// then shuffles the order within each group. Independent shuffles alone
+// do NOT guarantee a pair never lands on the same row — comparing two
+// random permutations of n items has an expected ~1 accidental match no
+// matter how big n is (simulated: ~63-66% of rounds had at least one row
+// line up for n=3..5), which defeats the point of a two-group matching
+// game. So the right group is rerolled until zero rows align with their
+// pair — a real derangement, not just "independently shuffled".
+function buildBoard(level: Level): { left: WordTile[]; right: WordTile[]; orientation: Orientation } {
   const left: WordTile[] = []
   const right: WordTile[] = []
   level.pairs.forEach((pair, pairId) => {
@@ -117,7 +136,12 @@ function buildBoard(level: Level): { left: WordTile[]; right: WordTile[] } {
     left.push({ pairId, word: first })
     right.push({ pairId, word: second })
   })
-  return { left: shuffle(left), right: shuffle(right) }
+  const shuffledLeft = shuffle(left)
+  let shuffledRight = shuffle(right)
+  while (shuffledLeft.some((tile, i) => tile.pairId === shuffledRight[i].pairId)) {
+    shuffledRight = shuffle(right)
+  }
+  return { left: shuffledLeft, right: shuffledRight, orientation: Math.random() < 0.5 ? 'columns' : 'rows' }
 }
 
 const MISMATCH_LINES = [
@@ -126,6 +150,14 @@ const MISMATCH_LINES = [
   '¡Buen intento! Fijate bien en las letras de cada palabra.',
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente ojo para las letras!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena observación!']
+
+// Default hint per orientation — a level's own `hint` (e.g. level 3's
+// same-length warning) always wins when set, since it doesn't reference
+// a layout direction at all.
+const DEFAULT_HINTS: Record<Orientation, string> = {
+  columns: 'Tocá una palabra de la izquierda y otra de la derecha. Si tienen las mismas letras, forman pareja.',
+  rows: 'Tocá una palabra de arriba y otra de abajo. Si tienen las mismas letras, forman pareja.',
+}
 
 export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
@@ -291,8 +323,7 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
               Encontrá las palabras con las mismas letras
             </h2>
             <p className="mt-2 text-base text-slate-500">
-              {level.hint ??
-                'Tocá una palabra de la izquierda y otra de la derecha. Si tienen las mismas letras, forman pareja.'}
+              {level.hint ?? DEFAULT_HINTS[board.orientation]}
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Encontraste {matchedPairIds.size} de {level.pairs.length} parejas
@@ -310,7 +341,13 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
       {/* Board */}
       {!done && (
         <>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+          <div
+            className={
+              board.orientation === 'columns'
+                ? 'mt-6 grid grid-cols-2 gap-3 sm:gap-4'
+                : 'mt-6 flex flex-col gap-4 sm:gap-5'
+            }
+          >
             <div className="flex flex-col gap-2.5 sm:gap-3">
               {board.left.map((tile, index) => renderTile('left', tile, index))}
             </div>
