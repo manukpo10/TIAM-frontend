@@ -9,10 +9,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * el estímulo evocador es el género/época en sí, no una canción puntual que
  * dejaría afuera a cualquiera cuya música no sea esa.
  *
- * Los 5 clips son fragmentos de ~15s de pistas instrumentales de Pixabay
- * (Pixabay Content License: uso comercial permitido, sin atribución
- * obligatoria; embeberlos como estímulo de juego no es "reventa standalone").
- * Recortados con PyAV a 96kbps para peso liviano en mobile.
+ * Cada género tiene 3 clips distintos (uno por nivel), no 1 solo repetido en
+ * los 3 niveles — antes el mismo audio de "tango" sonaba igual en nivel 1, 2
+ * y 3, así que para cuando llegabas a nivel 3 ya lo reconocías de memoria en
+ * vez de identificar el género. Los 15 clips (5 géneros × 3) son fragmentos
+ * de ~15s de pistas instrumentales de Pixabay (Pixabay Content License: uso
+ * comercial permitido, sin atribución obligatoria; embeberlos como estímulo
+ * de juego no es "reventa standalone"), ver SOURCES.md. Recortados con PyAV
+ * a 96kbps para peso liviano en mobile.
  *
  * VARIAS rondas por nivel (patrón de "Los opuestos"): cada nivel identifica
  * `rounds` géneros distintos (sin repetir dentro del mismo nivel), y la
@@ -49,8 +53,10 @@ const CLIPS = import.meta.glob('../../../assets/desafio/games/la-cancion-de-tu-j
   eager: true,
   import: 'default',
 }) as Record<string, string>
-function clipFor(id: string): string | undefined {
-  const match = Object.entries(CLIPS).find(([path]) => path.endsWith(`/${id}.mp3`))
+// Un clip distinto por nivel (genre-1/-2/-3.mp3) — nunca el mismo audio dos
+// veces en la misma partida, aunque el género se repita entre niveles.
+function clipFor(id: string, levelIdx: number): string | undefined {
+  const match = Object.entries(CLIPS).find(([path]) => path.endsWith(`/${id}-${levelIdx + 1}.mp3`))
   return match?.[1]
 }
 
@@ -115,7 +121,7 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
 
   function toggleClip() {
     if (!target) return
-    const src = clipFor(target.id)
+    const src = clipFor(target.id, levelIdx)
     if (!src) return
     if (!audioRef.current) {
       audioRef.current = new Audio()
