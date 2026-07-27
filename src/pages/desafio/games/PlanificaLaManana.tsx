@@ -39,6 +39,9 @@ interface MorningLevel {
   sets: MorningSet[]
 }
 
+// rounds uniformed to 2 per level (was 2/3/3) per user request — same fix as
+// ElVuelto.tsx (día 5). Pools stay at their original size (3/4/5 sets), so
+// every playthrough still draws a genuinely random, non-repeating subset.
 const LEVELS: MorningLevel[] = [
   {
     n: 1,
@@ -71,7 +74,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
-    rounds: 3,
+    rounds: 2,
     sets: [
       {
         tasks: [
@@ -111,7 +114,7 @@ const LEVELS: MorningLevel[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    rounds: 3,
+    rounds: 2,
     sets: [
       {
         tasks: [
