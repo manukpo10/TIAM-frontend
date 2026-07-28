@@ -116,24 +116,24 @@ interface Level {
 }
 
 // Cada etapa es el % de la LÍNEA que se muestra (por ranking, ver drawFragment),
-// así que estos números son literales y comparables entre objetos. Nivel 1
-// empieza a medio dibujar y con una pista queda casi entero; nivel 3 empieza
-// muy fragmentado (1/5 de la línea). El último valor es siempre 100 (revelado
-// completo al rendirse). Por debajo de ~18% deja de haber suficiente para cerrar
-// y pasa a ser azar.
+// así que estos números son literales y comparables entre objetos. Arranques
+// bajados (36/26/18) porque el primer vistazo se descifraba demasiado fácil;
+// nivel 3 arranca prácticamente en el piso (~18%, ver abajo). El último valor
+// es siempre 100 (revelado completo al rendirse). Por debajo de ~18% deja de
+// haber suficiente para cerrar y pasa a ser azar.
 const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
     rounds: 3,
-    stages: [50, 72, 100],
+    stages: [36, 58, 100],
     decoyStrategy: (target) => pick(OBJECTS.filter((o) => o.category !== target.category), 3),
   },
   {
     n: 2,
     name: 'Nivel 2',
     rounds: 4,
-    stages: [35, 50, 72, 100],
+    stages: [26, 42, 62, 100],
     decoyStrategy: (target) => [
       ...pick(OBJECTS.filter((o) => o.category !== target.category), 1),
       ...pick(byCategory(target.category).filter((o) => o.id !== target.id), 2),
@@ -143,7 +143,7 @@ const LEVELS: Level[] = [
     n: 3,
     name: 'Nivel 3',
     rounds: 5,
-    stages: [20, 32, 50, 100],
+    stages: [18, 29, 47, 100],
     decoyStrategy: (target) => pick(byCategory(target.category).filter((o) => o.id !== target.id), 4),
   },
 ]
@@ -210,7 +210,13 @@ function drawFragment(
   const p = revealPercent / 100
   const imgData = ctx.getImageData(0, 0, S, S)
   const dd = imgData.data
-  // ruido de cada píxel de tinta, para cortar por percentil p
+  // ruido de cada píxel de tinta, para cortar por percentil p. El umbral de
+  // 40 es a propósito solo para ESTA cuenta (ignora halos antialiaseados
+  // casi transparentes al calcular qué es "línea real"), NO para decidir
+  // qué borrar más abajo — si se usara ahí también, esos píxeles de borde
+  // (alpha 1-40) nunca entrarían en lineNoise y por lo tanto nunca se
+  // apagarían, quedando siempre visibles como un fantasma tenue de la
+  // figura completa sin importar el % de revelado.
   const lineNoise: number[] = []
   for (let i = 0; i < noise.length; i++) {
     if (dd[i * 4 + 3] > 40) lineNoise.push(noise[i])
@@ -218,8 +224,12 @@ function drawFragment(
   if (lineNoise.length === 0) return
   lineNoise.sort((a, b) => a - b)
   const cutoff = lineNoise[Math.min(lineNoise.length - 1, Math.floor(p * lineNoise.length))]
+  // Acá sí, CUALQUIER píxel con algo de tinta (alpha > 0) que caiga del lado
+  // "oculto" del corte se borra del todo — su ruido es casi idéntico al de
+  // sus vecinos de tinta fuerte (el campo es suave), así que sigue la misma
+  // regla de revelado aunque no haya contado para el percentil.
   for (let i = 0; i < noise.length; i++) {
-    if (dd[i * 4 + 3] > 40 && noise[i] > cutoff) dd[i * 4 + 3] = 0
+    if (dd[i * 4 + 3] > 0 && noise[i] > cutoff) dd[i * 4 + 3] = 0
   }
   ctx.putImageData(imgData, 0, 0)
 }
