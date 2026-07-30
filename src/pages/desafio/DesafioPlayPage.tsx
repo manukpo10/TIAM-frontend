@@ -6,14 +6,14 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import {
-  CHALLENGE_DAYS,
   CHALLENGE_TOTAL_DAYS,
+  getChallengeDays,
   type ChallengeAccess,
   type ChallengeArea,
 } from '@/lib/challengeContent'
 import { computeStars, type BadgeId, type ChallengeProgress, type CompleteDayResponse, type GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
-import { GAMES } from './games/registry'
+import { GAMES_BY_MONTH } from './games/registry'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
 import { DayResultOverlay } from './DayResultOverlay'
 import { BadgeUnlockOverlay } from './BadgeUnlockOverlay'
@@ -167,10 +167,18 @@ export function DesafioPlayPage() {
     )
   }
 
+  // The backend's `challengeMonth` is rolling out in parallel and may not be on
+  // every response yet — default to month 1 so existing buyers see zero change.
+  const month = access.challengeMonth ?? 1
+  const days = getChallengeDays(month)
+
   const selected = selectedDay
-    ? CHALLENGE_DAYS.find((d) => d.day === selectedDay) ?? null
+    ? days.find((d) => d.day === selectedDay) ?? null
     : null
-  const Game = selected?.type === 'game' ? GAMES[selected.day] : undefined
+  // Indexed directly (not via a helper function) so the lint rule that flags
+  // "components created during render" can see this is a stable lookup into a
+  // module-level map — see the comment above GAMES_BY_MONTH in registry.ts.
+  const Game = selected?.type === 'game' ? GAMES_BY_MONTH[month]?.[selected.day] : undefined
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-tiam-blue/5 to-white">
@@ -193,7 +201,7 @@ export function DesafioPlayPage() {
 
         {/* 30-day grid */}
         <div className="mt-10 grid grid-cols-4 gap-3 sm:grid-cols-5 sm:gap-4">
-          {CHALLENGE_DAYS.map((d) => {
+          {days.map((d) => {
             const meta = AREA_META[d.area]
             const locked = d.day > access.currentDay
             const isToday = d.day === access.currentDay

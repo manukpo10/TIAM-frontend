@@ -1,0 +1,273 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import type { GameProps } from '@/lib/challengeProgress'
+
+/**
+ * "Es esta sombra" — día 17 (Mes 2), agnosias. A colored reference object is
+ * shown; among 4-5 black silhouette candidates (same rough scale/pose —
+ * single centered everyday object, nothing rotated or resized to cheat with),
+ * only one is actually that object. Tap the matching silhouette.
+ *
+ * Silhouettes are DERIVED, not separately generated: every candidate reuses
+ * the exact same colored asset as the reference option, rendered with
+ * Tailwind's `brightness-0` filter utility (`filter: brightness(0)`), which
+ * zeroes RGB while preserving alpha — a crisp black cutout with no separate
+ * "shadow" art to keep in sync. This only works because the new
+ * `es-esta-sombra/` assets were matted to real alpha transparency (a
+ * border-seeded flood fill so enclosed pale regions — a sneaker's white
+ * sole, a fish's pale belly — stay opaque instead of being punched through
+ * by a same-color-as-background heuristic).
+ *
+ * Same eliminate-and-retry mechanic as EncontraLaFiguraIgual.tsx (this app's
+ * closest sibling: one target, several tappable options, a wrong tap just
+ * eliminates that option and nudges, never ends the round) — so
+ * totalAttempts = mistakes + a fixed round count, same accounting.
+ */
+
+const POOL_IDS = ['llave', 'tijera', 'zapatilla', 'sombrero', 'pez', 'hoja', 'paraguas', 'pelota', 'guitarra', 'taza']
+const LABELS: Record<string, string> = {
+  llave: 'la llave',
+  tijera: 'la tijera',
+  zapatilla: 'la zapatilla',
+  sombrero: 'el sombrero',
+  pez: 'el pez',
+  hoja: 'la hoja',
+  paraguas: 'el paraguas',
+  pelota: 'la pelota',
+  guitarra: 'la guitarra',
+  taza: 'la taza',
+}
+
+const IMAGES = import.meta.glob('../../../assets/desafio/games/es-esta-sombra/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function imgFor(id: string): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${id}.webp`))?.[1]
+}
+
+interface Level {
+  n: number
+  name: string
+  rounds: number
+  options: number
+}
+const LEVELS: Level[] = [
+  { n: 1, name: 'Nivel 1', rounds: 2, options: 4 },
+  { n: 2, name: 'Nivel 2', rounds: 3, options: 4 },
+  { n: 3, name: 'Nivel 3', rounds: 3, options: 5 },
+]
+const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+function pickOne<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+interface Round {
+  targetId: string
+  optionIds: string[]
+}
+function makeRound(level: Level): Round {
+  const targetId = pickOne(POOL_IDS)
+  const decoys = shuffle(POOL_IDS.filter((id) => id !== targetId)).slice(0, level.options - 1)
+  return { targetId, optionIds: shuffle([targetId, ...decoys]) }
+}
+
+const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen ojo!']
+const HINTS = ['Esa sombra no es — fijate bien en la forma.', 'Casi. Compará el contorno con cuidado.', 'No es esa — mirá bien la silueta de arriba.']
+const ACCENT = '#DB2777' // rose
+
+export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
+  const [levelIdx, setLevelIdx] = useState(0)
+  const [roundKey, setRoundKey] = useState(0)
+  const level = LEVELS[levelIdx]
+
+  const rounds = useMemo(
+    () => Array.from({ length: level.rounds }, () => makeRound(level)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [levelIdx, roundKey],
+  )
+  const [roundIdx, setRoundIdx] = useState(0)
+  const round = rounds[roundIdx]
+  const done = roundIdx >= level.rounds
+
+  const [eliminated, setEliminated] = useState<Set<string>>(new Set())
+  const [resolved, setResolved] = useState(false)
+  const [hint, setHint] = useState<string | null>(null)
+  const [levelPraise, setLevelPraise] = useState(PRAISE[0])
+  // Wrong-tap count, accumulated across levels 1→2→3, only zeroed on a true
+  // day restart (nextLevel's wrap branch) — same policy as every sibling game.
+  const [mistakes, setMistakes] = useState(0)
+
+  useEffect(() => {
+    if (done) setLevelPraise(pickOne(PRAISE))
+  }, [done])
+
+  function guess(optionId: string) {
+    if (!round || resolved || eliminated.has(optionId)) return
+    if (optionId === round.targetId) {
+      setResolved(true)
+      setHint(null)
+      window.setTimeout(() => {
+        setRoundIdx((i) => i + 1)
+        setEliminated(new Set())
+        setResolved(false)
+      }, 700)
+      return
+    }
+    setEliminated((prev) => new Set(prev).add(optionId))
+    setMistakes((m) => m + 1)
+    setHint(pickOne(HINTS))
+  }
+
+  // Resets happen HERE, synchronously with the level/round change — see
+  // ElVuelto.tsx for why an effect-based reset would let `done` read stale
+  // right as levelIdx reaches the last level, firing onComplete with garbage.
+  function nextLevel() {
+    const isWrap = levelIdx === LEVELS.length - 1
+    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
+    setRoundKey((k) => k + 1)
+    setRoundIdx(0)
+    setEliminated(new Set())
+    setResolved(false)
+    setHint(null)
+    if (isWrap) setMistakes(0)
+  }
+  function replay() {
+    setRoundKey((k) => k + 1)
+    setRoundIdx(0)
+    setEliminated(new Set())
+    setResolved(false)
+    setHint(null)
+  }
+
+  const reportedRoundKeyRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
+      reportedRoundKeyRef.current = roundKey
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done, levelIdx, roundKey, mistakes])
+
+  return (
+    <div className="px-5 pb-5 pt-4 sm:p-7">
+      {/* Header */}
+      <div className="text-center">
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide"
+          style={{ backgroundColor: 'rgba(219, 39, 119, 0.1)', color: ACCENT }}
+        >
+          {level.name}
+        </span>
+        {!done && (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Cuál es esta sombra?</h2>
+            <p className="mt-2 text-base text-slate-500">Tocá la sombra que es igual al objeto de arriba.</p>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {roundIdx} de {level.rounds}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full transition-[width] duration-300"
+                style={{ width: `${(roundIdx / level.rounds) * 100}%`, backgroundColor: ACCENT }}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {!done && round && (
+        <>
+          {/* Reference: the object in full color */}
+          <div className="relative mx-auto mt-3 aspect-square w-28 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white p-2 sm:mt-6 sm:w-32">
+            {imgFor(round.targetId) && (
+              <img src={imgFor(round.targetId)} alt={LABELS[round.targetId] ?? ''} className="h-full w-full object-contain" draggable={false} />
+            )}
+          </div>
+
+          {/* Candidates: same assets, rendered as pure black silhouettes */}
+          <div className={`mt-4 grid gap-3 sm:mt-6 ${level.options <= 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {round.optionIds.map((optId) => {
+              const isEliminated = eliminated.has(optId)
+              const isCorrectShown = resolved && optId === round.targetId
+              return (
+                <button
+                  key={optId}
+                  type="button"
+                  disabled={resolved || isEliminated}
+                  onClick={() => guess(optId)}
+                  aria-label="Sombra"
+                  className={[
+                    'relative flex h-24 items-center justify-center rounded-2xl border-2 bg-white p-2 transition sm:h-28',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-1',
+                    isCorrectShown ? 'border-tiam-green bg-tiam-green/5 ring-2 ring-tiam-green/30' : '',
+                    isEliminated ? 'border-slate-200 opacity-30' : '',
+                    !isCorrectShown && !isEliminated
+                      ? 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0'
+                      : '',
+                  ].join(' ')}
+                >
+                  {imgFor(optId) && (
+                    <img
+                      src={imgFor(optId)}
+                      alt=""
+                      className="h-full w-full object-contain brightness-0"
+                      draggable={false}
+                    />
+                  )}
+                  {isCorrectShown && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+        </>
+      )}
+
+      {/* Nivel completo */}
+      {done && (
+        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+            <Sparkles className="h-6 w-6 text-tiam-green" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
+          <p className="mt-1 text-slate-600">
+            ¡Encontraste las {level.rounds} sombras — completaste el {level.name.toLowerCase()}!
+          </p>
+          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={nextLevel}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+            >
+              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={replay}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Otra ronda
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

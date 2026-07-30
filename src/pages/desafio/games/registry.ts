@@ -30,48 +30,126 @@ import { LetrasEnMovimiento } from './LetrasEnMovimiento'
 import { UnaLetraDeCadaUno } from './UnaLetraDeCadaUno'
 import { QuePalabraSeEsconde } from './QuePalabraSeEsconde'
 import { LasMismasLetras } from './LasMismasLetras'
+import { DichosAMedias } from './DichosAMedias'
+import { RepetiLaSerie } from './RepetiLaSerie'
+import { ABuscarYEncontrar } from './ABuscarYEncontrar'
+import { ElDescuento } from './ElDescuento'
+import { CopiaLaFigura } from './CopiaLaFigura'
+import { UniendoPuntos } from './UniendoPuntos'
+import { Jeroglifico } from './Jeroglifico'
+import { QuienEsQuien } from './QuienEsQuien'
+import { UnEdificioConHistorias } from './UnEdificioConHistorias'
+import { OrdenAlfabetico } from './OrdenAlfabetico'
+import { EsLoMismoDecir } from './EsLoMismoDecir'
+import { ElPasoAPaso } from './ElPasoAPaso'
+import { Encaminada } from './Encaminada'
+import { FluenciaCerrada } from './FluenciaCerrada'
+import { ElGranObservador } from './ElGranObservador'
+import { DondeLoDeje } from './DondeLoDeje'
+import { EsEstaSombra } from './EsEstaSombra'
+import { LaIntrusa } from './LaIntrusa'
+import { AlmacenDeSilabas } from './AlmacenDeSilabas'
+import { SeguiElPatron } from './SeguiElPatron'
+import { FotosConectadas } from './FotosConectadas'
+import { DesafioDeDeduccion } from './DesafioDeDeduccion'
+import { UniteConPista } from './UniteConPista'
+import { LaPalabraEscondida } from './LaPalabraEscondida'
+import { FamiliaDePalabras } from './FamiliaDePalabras'
+import { Sudoku4x4 } from './Sudoku4x4'
+import { Coordenadas } from './Coordenadas'
+import { NoEstaRepetida } from './NoEstaRepetida'
+import { MesaDeCartas } from './MesaDeCartas'
+import { FigurasSuperpuestas } from './FigurasSuperpuestas'
 
 /**
- * Interactive games keyed by challenge day. A day whose `type` is 'game' and whose
- * number appears here renders its component in the modal instead of the static card.
+ * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
+ * and whose (month, day) pair has an entry here renders that component in the
+ * modal instead of the static-card fallback (illustration/icon + instructions) —
+ * see DesafioPlayPage.tsx, which falls back gracefully whenever a 'game' day has
+ * no matching registry entry (kept as a defensive fallback, not because either
+ * month currently relies on it — both months are fully wired below).
  *
- * To add a game: write the component, add one line here, and set the day's `type`
- * to 'game' in challengeContent.ts.
+ * To add a game: write the component, add one line under the right month below,
+ * and make sure the day's `type` is 'game' in challengeContent.ts (already true
+ * for every day in both months as of this writing).
  *
  * Typed `ComponentType<GameProps>`, but games not yet retrofitted to accept
  * `{ day, onComplete }` still satisfy it — TS structural typing allows a
  * zero-arg component to stand in for a component that accepts (unused) props,
  * so games can be migrated one at a time without breaking the rest.
  */
-export const GAMES: Record<number, ComponentType<GameProps>> = {
-  1: ArmaLasPalabras,
-  2: ListaDelMercado,
-  3: QuePalabraSeEsconde,
-  4: ClaveDeSimbolos,
-  5: ElVuelto,
-  7: CadaCosaEnSuGrupo,
-  9: ElReloj,
-  13: EmpecemosPorHoy,
-  14: LosOpuestos,
-  8: OrdenarLaFrase,
-  10: LaCancionDeTuJuventud,
-  11: CualNoVa,
-  12: OracionesAMedida,
-  16: LaPiramide,
-  17: CuantosHay,
-  18: PalabrasYColores,
-  19: Memotest,
-  20: DondeEsta,
-  21: PlanificaLaManana,
-  22: QueOficioEs,
-  24: BuscarLosRojos,
-  25: LasMismasLetras,
-  26: ContadorMasMenos,
-  27: QueCambio,
-  29: QueSera,
-  28: DosPistas,
-  30: PalabrasEnClave,
-  15: DeduciLaPalabra,
-  6: LetrasEnMovimiento,
-  23: UnaLetraDeCadaUno,
+export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType<GameProps>>>> = {
+  1: {
+    1: ArmaLasPalabras,
+    2: ListaDelMercado,
+    3: QuePalabraSeEsconde,
+    4: ClaveDeSimbolos,
+    5: ElVuelto,
+    6: LetrasEnMovimiento,
+    7: CadaCosaEnSuGrupo,
+    8: OrdenarLaFrase,
+    9: ElReloj,
+    10: LaCancionDeTuJuventud,
+    11: CualNoVa,
+    12: OracionesAMedida,
+    13: EmpecemosPorHoy,
+    14: LosOpuestos,
+    15: DeduciLaPalabra,
+    16: LaPiramide,
+    17: CuantosHay,
+    18: PalabrasYColores,
+    19: Memotest,
+    20: DondeEsta,
+    21: PlanificaLaManana,
+    22: QueOficioEs,
+    23: UnaLetraDeCadaUno,
+    24: BuscarLosRojos,
+    25: LasMismasLetras,
+    26: ContadorMasMenos,
+    27: QueCambio,
+    28: DosPistas,
+    29: QueSera,
+    30: PalabrasEnClave,
+  },
+  2: {
+    1: DichosAMedias,
+    2: RepetiLaSerie,
+    3: ABuscarYEncontrar,
+    4: ElDescuento,
+    5: CopiaLaFigura,
+    6: UniendoPuntos,
+    7: Jeroglifico,
+    8: QuienEsQuien,
+    9: UnEdificioConHistorias,
+    10: OrdenAlfabetico,
+    11: EsLoMismoDecir,
+    12: ElPasoAPaso,
+    13: Encaminada,
+    14: FluenciaCerrada,
+    15: ElGranObservador,
+    16: DondeLoDeje,
+    17: EsEstaSombra,
+    18: LaIntrusa,
+    19: AlmacenDeSilabas,
+    20: SeguiElPatron,
+    21: FotosConectadas,
+    22: DesafioDeDeduccion,
+    23: UniteConPista,
+    24: LaPalabraEscondida,
+    25: FamiliaDePalabras,
+    26: Sudoku4x4,
+    27: Coordenadas,
+    28: NoEstaRepetida,
+    29: MesaDeCartas,
+    30: FigurasSuperpuestas,
+  },
 }
+
+// Deliberately NOT wrapped in a `getGameComponent(month, day)` helper: the
+// react-hooks/static-components lint rule flags a component sourced from a
+// function call at its JSX call site ("Cannot create components during
+// render"), even though this lookup is a plain, stable index into a
+// module-level object — the same shape as the original single-month `GAMES`
+// map. Callers that render the result as `<Component />` should index
+// `GAMES_BY_MONTH[month]?.[day]` directly (see DesafioPlayPage.tsx) instead of
+// reintroducing a wrapper function.
