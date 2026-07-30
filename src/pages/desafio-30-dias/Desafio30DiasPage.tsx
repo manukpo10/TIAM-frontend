@@ -17,7 +17,7 @@ import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import mercadoPagoLogo from '@/assets/mercadopago-logo.svg'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import shotElReloj from '@/assets/desafio-screenshots/el-reloj.webp'
-import shotLaBalanza from '@/assets/desafio-screenshots/la-balanza.webp'
+import shotQueSera from '@/assets/desafio-screenshots/que-sera.webp'
 import shotMemotest from '@/assets/desafio-screenshots/memotest.webp'
 import shotCualNoVa from '@/assets/desafio-screenshots/cual-no-va.webp'
 import shotQueOficioEs from '@/assets/desafio-screenshots/que-oficio-es.webp'
@@ -108,7 +108,7 @@ const GAME_SHOWCASE = [
   { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
   { image: shotQueOficioEs, day: 22, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
   { image: shotLaRecetaDoble, day: 26, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
-  { image: shotLaBalanza, day: 29, title: 'La balanza', area: 'Razonamiento', color: '#4F46E5' },
+  { image: shotQueSera, day: 29, title: '¿Qué será?', area: 'Reconocimiento', color: '#DB2777' },
 ]
 
 const FAQS = [
