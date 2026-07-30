@@ -27,12 +27,21 @@ export function DesafioExitoPage() {
   const [params] = useSearchParams()
   const mpStatus = params.get('status') ?? params.get('collection_status')
 
+  // Allowlist the ONE positive signal (approved) instead of denylisting the
+  // negative ones — a visitor who taps MP's own "volver" link before ever
+  // attempting payment comes back with NO status param at all, and a
+  // denylist-shaped ternary (only rejected/cancelled/pending excluded) falls
+  // through to "ready" for that missing value, showing "¡Pago confirmado!"
+  // to someone who paid nothing. Defaulting the unmatched case to "pending"
+  // is always safe here: the real gate is the WhatsApp phone-match against
+  // the DB (see the class comment), so an unpaid visitor still can't get
+  // exercises no matter what this page says.
   const phase: Phase =
-    mpStatus === 'rejected' || mpStatus === 'failure' || mpStatus === 'cancelled'
-      ? 'error'
-      : mpStatus === 'pending' || mpStatus === 'in_process'
-        ? 'pending'
-        : 'ready'
+    mpStatus === 'approved'
+      ? 'ready'
+      : mpStatus === 'rejected' || mpStatus === 'failure' || mpStatus === 'cancelled'
+        ? 'error'
+        : 'pending'
 
   return (
     <div className="min-h-dvh bg-white flex flex-col">
