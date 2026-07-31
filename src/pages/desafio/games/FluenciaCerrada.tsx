@@ -214,7 +214,7 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
       </div>
 
       {wrongKey && !done && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">
+        <p className="mt-4 text-center text-base font-medium text-slate-500">
           Esa no tiene &quot;{level.target}&quot;, ¡probá con otra!
         </p>
       )}

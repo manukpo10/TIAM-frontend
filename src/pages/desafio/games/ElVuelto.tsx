@@ -348,7 +348,7 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
               })}
             </div>
             <div className={scenario.items.length === 3 ? 'min-w-0 text-center' : 'min-w-0 flex-1'}>
-              <p className="text-sm text-slate-700">
+              <p className="text-base text-slate-700">
                 <span className="font-semibold">{scenario.venue}:</span>{' '}
                 {scenario.items.map((i) => i.label).join(' + ')} — ${totalPrice.toLocaleString('es-AR')}
               </p>
@@ -364,7 +364,7 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
           <div className="mt-4 flex min-h-[64px] items-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-3">
             <div className="min-w-0 flex-1">
               {placed.length === 0 ? (
-                <p className="text-sm text-slate-400">Tocá los billetes de abajo</p>
+                <p className="text-base text-slate-400">Tocá los billetes de abajo</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {placed.map((b) => (
@@ -407,9 +407,9 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {hint && !resolved && <p className="mt-3 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-3 text-center text-base font-medium text-slate-500">{hint}</p>}
           {resolved && (
-            <p className="mt-3 text-center text-sm font-semibold text-tiam-green">
+            <p className="mt-3 text-center text-base font-semibold text-tiam-green">
               {praise} Era ${change.toLocaleString('es-AR')}.
             </p>
           )}

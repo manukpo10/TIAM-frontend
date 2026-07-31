@@ -212,7 +212,7 @@ export function QueSigue({ day: _day, onComplete }: GameProps) {
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué sigue?</h2>
             <p className="mt-2 text-base text-slate-500">Mirá la secuencia y tocá la imagen que sigue.</p>
-            {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {currentIndex} de {order.length}
             </p>
@@ -264,7 +264,7 @@ export function QueSigue({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Praise flash (fixed height so nothing jumps) */}
-          <p className="mt-3 h-5 text-center text-sm font-semibold text-tiam-green">
+          <p className="mt-3 h-6 text-center text-base font-semibold text-tiam-green">
             {revealed ? praise : ''}
           </p>
 

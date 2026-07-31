@@ -355,7 +355,7 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
                   <span className="text-xs font-semibold text-slate-400">{o.label}</span>
                 )}
               </div>
-              <span className="text-center text-[11px] font-medium leading-tight text-slate-600 sm:text-xs">
+              <span className="text-center text-xs font-medium leading-tight text-slate-600 sm:text-sm">
                 {o.label}
               </span>
 
@@ -415,7 +415,7 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-slate-500">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-slate-500">
             <span className="inline-flex items-center gap-1">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-tiam-green text-white">
                 <Check className="h-2.5 w-2.5" strokeWidth={3} />

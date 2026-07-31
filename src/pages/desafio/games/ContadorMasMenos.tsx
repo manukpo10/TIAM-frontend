@@ -307,9 +307,9 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
             </button>
           </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
           {resolved && (
-            <p className="mt-4 text-center text-sm font-semibold text-tiam-green">
+            <p className="mt-4 text-center text-base font-semibold text-tiam-green">
               {praise} {scenario.explanation}
             </p>
           )}

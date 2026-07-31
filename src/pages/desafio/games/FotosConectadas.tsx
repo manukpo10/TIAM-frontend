@@ -210,7 +210,7 @@ export function FotosConectadas({ day: _day, onComplete }: GameProps) {
         {!done && (
           <>
             <p className="mt-2 text-base font-semibold text-slate-700">¿Qué conecta a estas tres fotos?</p>
-            {level.hint && <p className="mt-1 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+            {level.hint && <p className="mt-1 text-base font-medium text-tiam-blue">{level.hint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {currentIndex} de {order.length}
             </p>
@@ -236,7 +236,7 @@ export function FotosConectadas({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Pista */}
-          <p className="mt-3 text-center text-sm font-medium text-slate-500">Pista: {theme.clue}</p>
+          <p className="mt-3 text-center text-base font-medium text-slate-500">Pista: {theme.clue}</p>
 
           {/* Opciones */}
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -266,11 +266,11 @@ export function FotosConectadas({ day: _day, onComplete }: GameProps) {
           </div>
 
           {solved && (
-            <p className="mt-4 text-center text-sm font-semibold text-tiam-green">
+            <p className="mt-4 text-center text-base font-semibold text-tiam-green">
               ¡Eso es! Las tres fotos conectan con "{theme.answer}".
             </p>
           )}
-          {hint && !solved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !solved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

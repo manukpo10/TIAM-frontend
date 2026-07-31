@@ -435,7 +435,7 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-2 text-base font-medium text-slate-500">
               {levelIdx === 0 && 'Mirá dónde está la figura y tocá cómo se llama esa posición.'}
               {levelIdx === 1 && 'Tocá el dibujo donde la figura está en la posición indicada.'}
               {levelIdx === 2 && 'Tocá el dibujo que tiene las dos figuras en el mismo lugar que el de arriba.'}
@@ -516,9 +516,9 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
       {/* Nivel 3 */}
       {!done && levelIdx === 2 && l3Round && (
         <>
-          <p className="mt-3 text-center text-sm font-semibold text-slate-500">Modelo</p>
+          <p className="mt-3 text-center text-base font-semibold text-slate-500">Modelo</p>
           <Scene shapes={l3Round.reference} highlight />
-          <p className="mt-4 text-center text-sm font-semibold text-slate-500">¿Cuál es igual?</p>
+          <p className="mt-4 text-center text-base font-semibold text-slate-500">¿Cuál es igual?</p>
           <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {l3Candidates.map((cand, i) => {
               const isEliminated = eliminated.has(String(i))
@@ -544,7 +544,7 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {hint && !solved && !done && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+      {hint && !solved && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
 
       {/* Nivel completo */}
       {done && (

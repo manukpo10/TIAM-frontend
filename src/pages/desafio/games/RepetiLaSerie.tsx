@@ -297,7 +297,7 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
           <p className="mt-3 text-xl font-bold text-slate-900">{lastCorrect ? praise : '¡Seguimos!'}</p>
           {!lastCorrect && <p className="mt-1 text-slate-600">{nudge}</p>}
           <p className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
-            <span className="text-sm font-medium text-slate-500">La serie era</span>
+            <span className="text-base font-medium text-slate-500">La serie era</span>
             {sequence.map((d, i) => (
               <span
                 key={i}
@@ -328,11 +328,11 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             {!lastCorrect && (
               <span className="mb-1 flex flex-wrap items-center justify-center gap-1.5">
-                <span className="text-sm font-medium text-slate-500">La serie era</span>
+                <span className="text-base font-medium text-slate-500">La serie era</span>
                 {sequence.map((d, i) => (
                   <span
                     key={i}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-tiam-green/10 text-sm font-bold text-tiam-green"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-tiam-green/10 text-base font-bold text-tiam-green"
                   >
                     {d}
                   </span>

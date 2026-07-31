@@ -347,7 +347,7 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
 
       {/* Wrong-tap hint */}
       {wrongId && !done && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">
+        <p className="mt-4 text-center text-base font-medium text-slate-500">
           Ese no es {level.n === 3 ? 'una fruta roja' : 'rojo'}, ¡probá con otro! 🙂
         </p>
       )}

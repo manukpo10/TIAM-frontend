@@ -251,7 +251,7 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
                     />
                   )}
                   {isMatched && (
-                    <span className="flex items-center justify-center gap-1 bg-tiam-green/15 py-1.5 text-sm font-bold text-tiam-green">
+                    <span className="flex items-center justify-center gap-1 bg-tiam-green/15 py-1.5 text-base font-bold text-tiam-green">
                       <Check className="h-4 w-4" strokeWidth={3} />
                       {matched[photo.id]}
                     </span>
@@ -290,7 +290,7 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          <p className="mt-4 text-center text-sm font-medium text-slate-500">
+          <p className="mt-4 text-center text-base font-medium text-slate-500">
             {hint ?? (selectedPhoto ? 'Ahora tocá la palabra que le corresponda.' : 'Tocá primero una foto.')}
           </p>
         </>

@@ -348,7 +348,7 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
       )}
 
       {hint && !solved && !done && phase === 'test' && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>
+        <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>
       )}
 
       {/* Nivel completo */}

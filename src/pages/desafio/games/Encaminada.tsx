@@ -282,7 +282,7 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-2 text-base font-medium text-slate-500">
               Seguí las flechas desde la celda marcada y elegí la palabra que se forma.
             </p>
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -378,7 +378,7 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {hint && !solved && !done && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+      {hint && !solved && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
 
       {/* Nivel completo */}
       {done && (

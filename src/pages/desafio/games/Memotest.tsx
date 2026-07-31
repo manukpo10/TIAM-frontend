@@ -310,7 +310,7 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
       </div>
 
       {mismatchLine && !done && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">{mismatchLine}</p>
+        <p className="mt-4 text-center text-base font-medium text-slate-500">{mismatchLine}</p>
       )}
 
       {/* Completion */}

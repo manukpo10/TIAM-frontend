@@ -244,7 +244,7 @@ export function CaminoNumerico({ day: _day, onComplete }: GameProps) {
               {foundCount + 1}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Buscá el número</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">Buscá el número</p>
               <p className="text-base font-semibold text-slate-500">
                 Encontraste {foundCount} de {level.count}
               </p>
@@ -257,7 +257,7 @@ export function CaminoNumerico({ day: _day, onComplete }: GameProps) {
             </div>
           </div>
 
-          {level.hint && <p className="mt-3 text-center text-sm font-medium text-tiam-blue">{level.hint}</p>}
+          {level.hint && <p className="mt-3 text-center text-base font-medium text-tiam-blue">{level.hint}</p>}
         </>
       )}
 
@@ -307,7 +307,7 @@ export function CaminoNumerico({ day: _day, onComplete }: GameProps) {
         })}
       </div>
 
-      {wrongHint && !done && <p className="mt-4 text-center text-sm font-medium text-slate-500">{wrongHint}</p>}
+      {wrongHint && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{wrongHint}</p>}
 
       {/* Completion */}
       {done && (

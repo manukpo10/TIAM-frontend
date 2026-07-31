@@ -10,12 +10,20 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Motor calcado de "¿Qué palabra se esconde?" (QuePalabraSeEsconde.tsx, día
  * 3 del mes 1): banco de fichas CON señuelos, tocar para ubicar en la ranura
- * siguiente, tocar una ficha puesta para sacarla, "Revisar" compara el
+ * siguiente, tocar una ficha puesta para sacarla, el chequeo compara el
  * STRING armado (nunca posición/identidad de ficha). Única diferencia real:
  * ahí la ranura era la palabra ENTERA vacía; acá la mayor parte de la
  * palabra ya está fija e impresa, y sólo el tramo final (2-3 casilleros)
  * es interactivo — el "banco" de cada palabra es chico (las letras
  * correctas del tramo + 1 señuelo) porque sólo hace falta llenar ese tramo.
+ *
+ * A diferencia de QuePalabraSeEsconde, acá el chequeo se dispara solo apenas
+ * se llena el tramo — sin botón "Revisar" que el jugador deba descubrir por
+ * su cuenta (mismo criterio anti-confusión de ArmaLasPalabras.tsx, día 1).
+ * checkedRef evita que un doble-invoke de React 18 cuente el mismo intento
+ * dos veces. Un intento incorrecto se avisa con una tarjeta naranja
+ * prominente (nunca roja) en vez de texto chico gris — igual visibilidad que
+ * el acierto.
  *
  * Cada palabra fue verificada para que NINGUNA reordenación de sus letras
  * correctas + el señuelo arme otra palabra real distinta (no sólo "no forme
@@ -165,8 +173,21 @@ export function FamiliaDePalabras({ day: _day, onComplete }: GameProps) {
     setPlacedIds((ids) => ids.filter((i) => i !== item.id))
   }
 
-  function check() {
-    if (!readyToCheck) return
+  // Auto-revisa apenas se llena el tramo en blanco — sin botón "Revisar"
+  // que el jugador deba descubrir (mismo criterio anti-confusión de
+  // ArmaLasPalabras.tsx, día 1). checkedRef recuerda qué combinación exacta
+  // ya se revisó para que un doble-invoke de React 18 no cuente el mismo
+  // intento dos veces.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!readyToCheck) {
+      checkedRef.current = null
+      return
+    }
+    const attemptKey = placedIds.join(',')
+    if (checkedRef.current === attemptKey) return
+    checkedRef.current = attemptKey
+
     const spelled = placed.map((item) => item.value).join('')
     if (spelled === entry.blank) {
       setPraise(pickOne(PRAISE_GOOD))
@@ -177,7 +198,8 @@ export function FamiliaDePalabras({ day: _day, onComplete }: GameProps) {
       setMistakes((m) => m + 1)
       // Las fichas quedan donde están — un error no borra lo ya puesto.
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readyToCheck, placedIds])
 
   function nextWord() {
     setResolved(false)
@@ -305,20 +327,19 @@ export function FamiliaDePalabras({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {/* Revisar */}
-          {readyToCheck && !resolved && (
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
+          {/* Tarjeta "todavía no" — tan visible como la de acierto, pegada al
+              banco de letras. Nunca roja: naranja suave + ícono de
+              reintentar. Se queda hasta que el jugador toca una ficha
+              (handlePlace/handleUnplace ya limpian el hint), sin timer. */}
+          {hint && !resolved && (
+            <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                <RotateCcw className="h-6 w-6 text-tiam-orange" />
+              </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es esa</p>
+              <p className="mt-1 text-slate-600">{hint}</p>
             </div>
           )}
-
-          {hint && !resolved && <p className="mt-3 text-center text-sm font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

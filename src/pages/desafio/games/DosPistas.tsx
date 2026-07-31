@@ -199,6 +199,24 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
     }
   }
 
+  // Revisa automáticamente apenas se completan las letras — sin toque a
+  // "Revisar" (a los adultos mayores les costaba notar el botón). checkedRef
+  // recuerda qué combinación exacta ya se revisó, para que un doble-invoke
+  // de efecto (React 18) no duplique un error ni se re-dispare en cada
+  // render mientras el intento no cambia — misma guarda que ArmaLasPalabras.tsx.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!readyToCheck) {
+      checkedRef.current = null
+      return
+    }
+    const key = placedIds.join(',')
+    if (checkedRef.current === key) return
+    checkedRef.current = key
+    check()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placedIds, readyToCheck])
+
   function nextRound() {
     setResolved(false)
     setHint(null)
@@ -247,7 +265,7 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-base text-slate-500">
+            <p className="mt-2 text-lg text-slate-500">
               Las dos imágenes son la misma palabra. Armala con las letras.
             </p>
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -318,6 +336,21 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
+          {/* Tarjeta "todavía no" — tan visible como la de "¡Correcto!" de
+              abajo, pegada a la fila de letras. Nunca roja: naranja suave +
+              ícono de reintentar. Se queda hasta que tocan una letra
+              (handlePlace/handleUnplace ya limpian el hint) — mismo
+              contrato que ArmaLasPalabras.tsx. */}
+          {hint && !resolved && (
+            <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                <RotateCcw className="h-6 w-6 text-tiam-orange" />
+              </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es esa</p>
+              <p className="mt-1 text-slate-600">{hint}</p>
+            </div>
+          )}
+
           {/* Montón de letras */}
           {!resolved && (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -335,30 +368,21 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {/* Revisar + Dame una idea */}
+          {/* Dame una idea — pista opcional sobre qué comparten las dos
+              imágenes; no tiene relación con el resultado de la revisión. */}
           {!resolved && (
             <div className="mt-4 flex flex-col items-center gap-2">
-              {readyToCheck && (
-                <button
-                  type="button"
-                  onClick={check}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-                >
-                  Revisar
-                </button>
-              )}
               {showIdea ? (
-                <p className="text-center text-sm font-medium text-tiam-blue">Pista: {entry.hint}.</p>
+                <p className="text-center text-base font-medium text-tiam-blue">Pista: {entry.hint}.</p>
               ) : (
                 <button
                   type="button"
                   onClick={() => setShowIdea(true)}
-                  className="text-sm font-semibold text-tiam-blue transition hover:underline"
+                  className="text-base font-semibold text-tiam-blue transition hover:underline"
                 >
                   Dame una idea
                 </button>
               )}
-              {hint && <p className="text-center text-sm font-medium text-slate-500">{hint}</p>}
             </div>
           )}
         </>

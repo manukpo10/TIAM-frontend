@@ -141,7 +141,7 @@ export function LetrasEnMovimiento({ day: _day, onComplete }: GameProps) {
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                   <GestureMark id={g.id} />
                 </span>
-                <span className="text-[13px] font-semibold leading-tight text-slate-700">{g.label}</span>
+                <span className="text-sm font-semibold leading-tight text-slate-700">{g.label}</span>
               </div>
             ))}
           </div>
@@ -163,7 +163,7 @@ export function LetrasEnMovimiento({ day: _day, onComplete }: GameProps) {
 
           {/* Palabras a deletrear + consigna. */}
           <div className="mt-2.5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-2.5">
-            <p className="text-sm font-semibold text-slate-600">
+            <p className="text-base font-semibold text-slate-600">
               <span className="font-bold text-tiam-blue">1.</span> Deletreá cada palabra en voz alta con el gesto de cada
               letra:
             </p>
@@ -174,7 +174,7 @@ export function LetrasEnMovimiento({ day: _day, onComplete }: GameProps) {
                 </span>
               ))}
             </div>
-            <p className="mt-2.5 text-sm font-semibold text-slate-600">
+            <p className="mt-2.5 text-base font-semibold text-slate-600">
               <span className="font-bold text-tiam-blue">2.</span> Tapala y anotá las que recuerdes.
             </p>
           </div>

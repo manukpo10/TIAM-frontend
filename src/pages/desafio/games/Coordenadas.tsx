@@ -294,7 +294,7 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-2 text-base font-medium text-slate-500">
               Tocá la celda que corresponde a cada coordenada, en orden.
             </p>
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -317,7 +317,7 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
           {/* Target coordinate */}
           {targetCell && (
             <div className="mx-auto mt-4 flex flex-col items-center">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Tocá la celda</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">Tocá la celda</p>
               <div className="mt-1 flex h-14 w-20 items-center justify-center rounded-2xl border-2 border-tiam-blue bg-tiam-blue/5 text-2xl font-black text-tiam-blue">
                 {coordLabel(targetCell)}
               </div>
@@ -405,7 +405,7 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {hint && !done && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+      {hint && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
 
       {/* Nivel completo */}
       {done && (

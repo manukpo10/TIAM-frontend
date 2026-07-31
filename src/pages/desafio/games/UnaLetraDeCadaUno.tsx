@@ -289,8 +289,21 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
     setPlacedIds((ids) => ids.filter((i) => i !== item.id))
   }
 
-  function check() {
-    if (!readyToCheck) return
+  // Auto-revisa apenas se llenan las letras del banco — sin botón "Revisar"
+  // que el jugador deba descubrir (mismo criterio anti-confusión de
+  // ArmaLasPalabras.tsx, día 1). checkedRef recuerda qué combinación exacta
+  // ya se revisó para que un doble-invoke de React 18 no cuente el mismo
+  // intento dos veces.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!readyToCheck) {
+      checkedRef.current = null
+      return
+    }
+    const attemptKey = placedIds.join(',')
+    if (checkedRef.current === attemptKey) return
+    checkedRef.current = attemptKey
+
     // Compara el STRING armado, no la posición: dos fichas pueden mostrar la
     // misma letra (respuesta con letra repetida, o señuelo que la repite) y
     // el jugador no puede distinguirlas.
@@ -304,7 +317,8 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
       setMistakes((m) => m + 1)
       // Las fichas quedan donde están: un error no barre todo lo puesto.
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readyToCheck, placedIds])
 
   function nextRound() {
     setResolved(false)
@@ -354,7 +368,7 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
             <p className="mt-2 text-base text-slate-500">
               Sacá una letra de cada dibujo, como dice abajo de cada uno, y armá la palabra.
             </p>
-            <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>
+            <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {roundsForLevel}
             </p>
@@ -386,11 +400,11 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
                       </span>
                     </div>
                     {showNames && (
-                      <span className="mt-1 text-center text-[10px] font-bold uppercase leading-tight text-slate-700">
+                      <span className="mt-1 text-center text-xs font-bold uppercase leading-tight text-slate-700">
                         {OBJETOS[paso.obj]}
                       </span>
                     )}
-                    <span className="mt-1 text-center text-[10px] font-semibold leading-tight text-slate-500">
+                    <span className="mt-1 text-center text-xs font-semibold leading-tight text-slate-500">
                       {REGLA_LABEL[paso.regla]}
                     </span>
                   </div>
@@ -402,7 +416,7 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
           {/* Palabra que se está armando */}
           <div className="mt-4 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
             {placed.length === 0 && (
-              <span className="text-sm text-slate-400">Tocá las letras de abajo para empezar</span>
+              <span className="text-base text-slate-400">Tocá las letras de abajo para empezar</span>
             )}
             {placed.map((item) => (
               <button
@@ -441,21 +455,18 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {readyToCheck && !resolved && (
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
-            </div>
-          )}
-
-          {/* Nudge en gris apagado, nunca rojo. */}
+          {/* Tarjeta "todavía no" — tan visible como la de acierto. Nunca
+              roja: naranja suave + ícono de reintentar. Se queda hasta que
+              el jugador toca una letra (handlePlace/handleUnplace ya limpian
+              el hint), sin timer. */}
           {hint && !resolved && (
-            <p className="mt-3 text-center text-sm font-medium text-slate-500">{hint}</p>
+            <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                <RotateCcw className="h-6 w-6 text-tiam-orange" />
+              </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es esa</p>
+              <p className="mt-1 text-slate-600">{hint}</p>
+            </div>
           )}
 
           {/* La ayuda revela los NOMBRES, que es donde se traba quien no
@@ -465,7 +476,7 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
               <button
                 type="button"
                 onClick={() => setShowNames(true)}
-                className="text-sm font-semibold text-tiam-blue underline underline-offset-4"
+                className="text-base font-semibold text-tiam-blue underline underline-offset-4"
               >
                 Dame una idea
               </button>
@@ -486,7 +497,7 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
           </p>
           {/* Recap: de dónde salió cada letra. Es la parte que enseña — sin
               esto, quien acertó por tanteo no aprende la regla. */}
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-slate-500">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-slate-500">
             {pasos.map((paso, i) => (
               <span key={i}>
                 <span className="font-bold text-slate-700">{extraer(OBJETOS[paso.obj], paso.regla)}</span>{' '}

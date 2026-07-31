@@ -476,7 +476,7 @@ export function QueSera({ day: _day, onComplete }: GameProps) {
                 Dame una pista
               </button>
             ) : (
-              <p className={`text-sm font-medium ${correct ? 'text-tiam-green' : 'text-tiam-blue'}`}>{praise}</p>
+              <p className={`text-base font-medium ${correct ? 'text-tiam-green' : 'text-tiam-blue'}`}>{praise}</p>
             )}
           </div>
 

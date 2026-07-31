@@ -208,7 +208,7 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué género es?</h2>
-            <p className="mt-2 text-sm font-medium text-tiam-blue">
+            <p className="mt-2 text-base font-medium text-tiam-blue">
               Escuchá el fragmento y tocá a qué género musical se parece más.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -238,7 +238,7 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
               {isPlaying ? <Pause className="h-10 w-10" /> : <Play className="ml-1 h-10 w-10" />}
             </button>
           </div>
-          <p className="mt-3 text-center text-sm text-slate-400">
+          <p className="mt-3 text-center text-base text-slate-400">
             {solved
               ? `${roundOk} Era ${target.label.toLowerCase()}.`
               : isPlaying

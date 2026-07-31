@@ -266,7 +266,7 @@ export function ElReloj({ day: _day, onComplete }: GameProps) {
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué hora muestra el reloj?</h2>
-            {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
             {/* Count and bar on one row — see the clock's own size note below for
                 why this screen fights for every pixel. */}
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -326,7 +326,7 @@ export function ElReloj({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
 
           {resolved && (
             <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">

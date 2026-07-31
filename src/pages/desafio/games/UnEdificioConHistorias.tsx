@@ -258,7 +258,7 @@ export function UnEdificioConHistorias({ day: _day, onComplete }: GameProps) {
                     {apt.id}
                   </span>
                   <Icon className="h-7 w-7 text-tiam-blue sm:h-8 sm:w-8" strokeWidth={2} />
-                  <p className="text-center text-[10px] font-medium leading-tight text-slate-600 sm:text-xs">{apt.caption}</p>
+                  <p className="text-center text-xs font-medium leading-tight text-slate-600 sm:text-sm">{apt.caption}</p>
                 </div>
               )
             })}
@@ -271,7 +271,7 @@ export function UnEdificioConHistorias({ day: _day, onComplete }: GameProps) {
         <>
           <div className="mt-6 text-center">
             <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{question.prompt}</h3>
-            <p className="mt-1 text-sm font-semibold text-slate-500">
+            <p className="mt-1 text-base font-semibold text-slate-500">
               Pregunta {roundIdx + 1} de {level.questions.length}
             </p>
           </div>
@@ -302,7 +302,7 @@ export function UnEdificioConHistorias({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

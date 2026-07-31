@@ -259,6 +259,25 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
     }
   }
 
+  // Auto-checks the instant the tiles fill up — no "Revisar" tap required
+  // (older adults didn't reliably notice the button). checkedRef remembers
+  // which exact combination was last checked so a stray double-invoke
+  // (React 18 effect re-run) can't double-count a mistake, and an unchanged
+  // wrong attempt doesn't re-fire on every render — same guard as
+  // ArmaLasPalabras.tsx.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!readyToCheck) {
+      checkedRef.current = null
+      return
+    }
+    const key = placedIds.join(',')
+    if (checkedRef.current === key) return
+    checkedRef.current = key
+    check()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placedIds, readyToCheck])
+
   // Advance to the next round within the level. Only reachable while
   // `!done` — the button that calls this doesn't render once the level is
   // complete.
@@ -321,7 +340,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-base text-slate-500">
+            <p className="mt-2 text-lg text-slate-500">
               Tocá las letras en el orden correcto para armar la otra palabra.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -343,7 +362,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
               Hidden once resolved — the clue is moot once the word's found. */}
           {!resolved && (
             <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-              <p className="text-center text-sm font-semibold text-slate-500">Con las letras de</p>
+              <p className="text-center text-base font-semibold text-slate-500">Con las letras de</p>
               <p className="mt-1 text-center text-3xl font-extrabold tracking-widest text-slate-800">
                 {entry.source}
               </p>
@@ -366,7 +385,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
               box; disappears only once the whole level is done. */}
           <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
             {placed.length === 0 && (
-              <span className="text-sm text-slate-400">Tocá las letras de abajo para empezar</span>
+              <span className="text-base text-slate-400">Tocá las letras de abajo para empezar</span>
             )}
             {placed.map((item) => (
               <button
@@ -388,6 +407,22 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
             ))}
           </div>
 
+          {/* Tarjeta "todavía no" — tan visible como la de "¡Correcto!" de
+              abajo, pegada a la fila de letras para que quede claro a qué se
+              refiere. Nunca roja: naranja suave + ícono de reintentar, no de
+              error. Se queda hasta que tocan una letra (handlePlace/
+              handleUnplace ya limpian el hint) — mismo contrato que
+              ArmaLasPalabras.tsx. */}
+          {hint && !resolved && (
+            <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                <RotateCcw className="h-6 w-6 text-tiam-orange" />
+              </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es esa</p>
+              <p className="mt-1 text-slate-600">{hint}</p>
+            </div>
+          )}
+
           {/* Letter pool */}
           {!resolved && (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -403,25 +438,6 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
                 </button>
               ))}
             </div>
-          )}
-
-          {/* Check button */}
-          {readyToCheck && !resolved && (
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
-            </div>
-          )}
-
-          {/* Wrong-attempt nudge — muted slate, never red/orange, always
-              retryable. */}
-          {hint && !resolved && (
-            <p className="mt-3 text-center text-sm font-medium text-slate-500">{hint}</p>
           )}
         </>
       )}

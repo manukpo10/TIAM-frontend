@@ -185,7 +185,7 @@ export function TuResumen({ day: _day, onComplete, progress }: GameProps) {
             </button>
           </div>
 
-          {hint && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
 
           <div className="mt-6 text-center">
             <button

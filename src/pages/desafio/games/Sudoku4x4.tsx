@@ -5,7 +5,12 @@ import type { GameProps } from '@/lib/challengeProgress'
 /**
  * "Sudoku 4×4" — día 26 (mes 2), ejecutivas. Classic mini-sudoku: numbers
  * 1-4, no repeats per row, column or 2×2 box. Tap a blank cell, then tap a
- * number to fill it; tap "Revisar" once every blank is filled.
+ * number to fill it; the grid checks itself automatically the instant every
+ * blank is filled — no manual "Revisar" tap to discover (same anti-confusion
+ * fix as ArmaLasPalabras.tsx, día 1). A checkedRef keys off the exact
+ * attempt (every filled value, in cell order) so changing one wrong cell and
+ * refilling it re-triggers the check, while a React 18 double-invoke of the
+ * same attempt can't double-count a mistake.
  *
  * Per the brief, this does NOT implement a sudoku solver/validator — it
  * pre-generates a small pool of already-SOLVED 4×4 grids and blanks a few
@@ -27,7 +32,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * 2 knowns + 2 unknowns in every row/column/box), which stays solvable by
  * simple elimination without ever requiring guesswork.
  *
- * A wrong "Revisar" never clears anything (same warm contract as DosPistas:
+ * A wrong check never clears anything (same warm contract as DosPistas:
  * "un error no barre todo lo puesto") — it only highlights which cells
  * don't match yet (muted slate, never red), so the player can fix just
  * those and check again. mistakes counts per failed check attempt (not per
@@ -180,8 +185,22 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
     setSelected(null)
   }
 
-  function check() {
-    if (!allFilled) return
+  // Auto-revisa apenas se llenan todas las celdas — sin botón "Revisar" que
+  // el jugador deba descubrir (mismo criterio anti-confusión de
+  // ArmaLasPalabras.tsx, día 1). checkedRef guarda qué combinación exacta de
+  // números ya se revisó, para que cambiar una celda y volver a completarla
+  // dispare una revisión nueva, y para que un doble-invoke de React 18 no
+  // cuente el mismo intento dos veces.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!allFilled) {
+      checkedRef.current = null
+      return
+    }
+    const attemptKey = level.blanks.map(([r, c]) => userEntries[key(r, c)]).join(',')
+    if (checkedRef.current === attemptKey) return
+    checkedRef.current = attemptKey
+
     const wrong = level.blanks.filter(([r, c]) => userEntries[key(r, c)] !== solution[r][c])
     if (wrong.length === 0) {
       setSolved(true)
@@ -190,7 +209,8 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
       setWrongCells(new Set(wrong.map(([r, c]) => key(r, c))))
       setMistakes((m) => m + 1)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allFilled, userEntries, level.blanks, solution])
 
   function nextRound() {
     setSolved(false)
@@ -286,10 +306,19 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
             )}
           </div>
 
+          {/* Tarjeta "todavía no" — tan visible como la de acierto de más
+              abajo. Nunca roja: naranja suave + ícono de reintentar. Las
+              celdas en gris (arriba) marcan cuáles exactamente hay que
+              cambiar; la tarjeta se queda hasta que el jugador las corrige y
+              vuelve a llenar la grilla, sin timer. */}
           {wrongCells.size > 0 && (
-            <p className="mt-3 text-center text-sm font-medium text-slate-500">
-              Los números marcados en gris no van ahí — tocalos para cambiarlos.
-            </p>
+            <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                <RotateCcw className="h-6 w-6 text-tiam-orange" />
+              </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">Todavía no está</p>
+              <p className="mt-1 text-slate-600">Los números marcados en gris no van ahí — tocalos para cambiarlos.</p>
+            </div>
           )}
 
           {/* Teclado 1-4 */}
@@ -313,22 +342,9 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
               </button>
             ))}
           </div>
-          <p className="mt-2 text-center text-sm text-slate-400">
+          <p className="mt-2 text-center text-base text-slate-400">
             {selected ? 'Tocá el número que va en esa celda.' : 'Tocá primero una celda vacía.'}
           </p>
-
-          {/* Revisar */}
-          {allFilled && (
-            <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
-            </div>
-          )}
         </>
       )}
 

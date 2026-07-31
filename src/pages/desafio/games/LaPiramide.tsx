@@ -288,7 +288,7 @@ export function LaPiramide({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-2 text-base font-medium text-slate-500">
               Cada número es la suma de los dos que tiene abajo.
             </p>
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -361,7 +361,7 @@ export function LaPiramide({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {hint && !resolving && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolving && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

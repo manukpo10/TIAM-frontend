@@ -452,7 +452,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                         </>
                       ) : (
                         <>
-                          <span className="text-sm font-semibold text-slate-400 line-through">{mine}</span>
+                          <span className="text-base font-semibold text-slate-400 line-through">{mine}</span>
                           <span className="text-lg font-extrabold text-slate-800">{real}</span>
                         </>
                       )}
@@ -521,7 +521,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                   style={!badge && isSelected ? { borderColor: ACCENT, backgroundColor: 'rgba(146,64,14,0.06)' } : undefined}
                 >
                   {img && <img src={img} alt="" className="h-10 w-10 object-contain" draggable={false} />}
-                  <span className="text-center text-[11px] font-medium leading-tight text-slate-600">{LABELS[id] ?? id}</span>
+                  <span className="text-center text-xs font-medium leading-tight text-slate-600">{LABELS[id] ?? id}</span>
                   {badge === 'hit' && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow">
                       <Check className="h-3.5 w-3.5" strokeWidth={3} />

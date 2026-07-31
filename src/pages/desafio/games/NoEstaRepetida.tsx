@@ -305,7 +305,7 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
 
       {/* Wrong-tap hint */}
       {!done && wrongKey !== null && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">Esa tiene pareja en algún lado, ¡seguí mirando! 🙂</p>
+        <p className="mt-4 text-center text-base font-medium text-slate-500">Esa tiene pareja en algún lado, ¡seguí mirando! 🙂</p>
       )}
 
       {/* Level complete */}

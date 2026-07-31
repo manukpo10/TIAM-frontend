@@ -258,7 +258,7 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
 
       {/* Wrong-tap hint */}
       {!done && wrongIdx !== null && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">Esa se repite, ¡seguí buscando! 🙂</p>
+        <p className="mt-4 text-center text-base font-medium text-slate-500">Esa se repite, ¡seguí buscando! 🙂</p>
       )}
 
       {/* Level complete */}

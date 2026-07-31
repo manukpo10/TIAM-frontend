@@ -423,7 +423,7 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
 
       {/* Wrong-tap hint */}
       {phase === 'change' && wrongHint && !done && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">Ese no cambió, ¡seguí mirando!</p>
+        <p className="mt-4 text-center text-base font-medium text-slate-500">Ese no cambió, ¡seguí mirando!</p>
       )}
 
       {/* "No encuentro más" safety net */}

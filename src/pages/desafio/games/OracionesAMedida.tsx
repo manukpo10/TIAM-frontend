@@ -93,7 +93,7 @@ export function OracionesAMedida({ day: _day, onComplete }: GameProps) {
         <div>
           {/* Cómo se lee: un ejemplo. */}
           <div className="rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3 text-center">
-            <p className="text-[13px] font-semibold text-slate-500">
+            <p className="text-sm font-semibold text-slate-500">
               Cada número es una palabra, y dice cuántas letras tiene:
             </p>
             <p className="mt-1.5 flex items-center justify-center gap-2 text-base">
@@ -118,10 +118,10 @@ export function OracionesAMedida({ day: _day, onComplete }: GameProps) {
 
           {/* Consigna en dos pasos. */}
           <div className="mt-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3">
-            <p className="text-sm font-semibold text-slate-600">
+            <p className="text-base font-semibold text-slate-600">
               <span className="font-bold text-tiam-blue">1.</span> Escribí una oración para cada renglón.
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-600">
+            <p className="mt-2 text-base font-semibold text-slate-600">
               <span className="font-bold text-tiam-blue">2.</span> Tapala y anotá las que recuerdes.
             </p>
           </div>

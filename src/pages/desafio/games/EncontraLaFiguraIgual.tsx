@@ -316,7 +316,7 @@ export function EncontraLaFiguraIgual({ day: _day, onComplete }: GameProps) {
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
               Tocá la figura igual a la de arriba, aunque esté girada
             </h2>
-            {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>
@@ -384,7 +384,7 @@ export function EncontraLaFiguraIgual({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

@@ -225,7 +225,7 @@ export function VerdaderoOFalso({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {currentIndex} de {order.length}
             </p>

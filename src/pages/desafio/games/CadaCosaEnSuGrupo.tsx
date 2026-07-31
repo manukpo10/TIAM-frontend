@@ -215,7 +215,7 @@ export function CadaCosaEnSuGrupo({ day: _day, onComplete }: GameProps) {
           {level.name}
         </span>
         <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tocá el grupo correcto para cada palabra</h2>
-        {level.hint && !done && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+        {level.hint && !done && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
         <p className="mt-2 text-base font-semibold text-slate-500">
           Llevás {currentIndex} de {order.length}
         </p>
@@ -276,7 +276,7 @@ export function CadaCosaEnSuGrupo({ day: _day, onComplete }: GameProps) {
           )}
 
           {wrongCategory && (
-            <p className="mt-4 text-center text-sm font-medium text-slate-500">
+            <p className="mt-4 text-center text-base font-medium text-slate-500">
               Ese no va ahí, ¡probá con otro grupo! 🙂
             </p>
           )}

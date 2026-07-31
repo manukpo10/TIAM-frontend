@@ -175,7 +175,7 @@ export function PalabrasYColores({ day: _day, onComplete }: GameProps) {
             {level.name} · Tarjeta {levelIdx + 1} de {LEVELS.length}
           </span>
           {/* Recordatorio corto, para quien pasó rápido la intro. */}
-          <p className="mt-2 text-sm font-semibold text-slate-500">
+          <p className="mt-2 text-base font-semibold text-slate-500">
             Primero las <span className="font-bold text-slate-700">palabras</span>. Después, de nuevo, los{' '}
             <span className="font-bold text-slate-700">colores</span>.
           </p>

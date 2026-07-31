@@ -229,7 +229,7 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
           {/* Sentence being built */}
           <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
             {placed.length === 0 && (
-              <span className="text-sm text-slate-400">Tocá las palabras de abajo para empezar</span>
+              <span className="text-base text-slate-400">Tocá las palabras de abajo para empezar</span>
             )}
             {placed.map((item, i) => {
               const isDistractor = item.id === distractorId

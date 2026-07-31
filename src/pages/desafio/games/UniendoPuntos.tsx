@@ -197,7 +197,7 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
             {labelFor(level, foundCount)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Tocá el que sigue</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">Tocá el que sigue</p>
             <p className="text-base font-semibold text-slate-500">
               Llevás {foundCount} de {points.length}
             </p>
@@ -257,7 +257,7 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
         })}
       </div>
 
-      {wrongHint && !done && <p className="mt-4 text-center text-sm font-medium text-slate-500">{wrongHint}</p>}
+      {wrongHint && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{wrongHint}</p>}
 
       {/* Completion */}
       {done && (

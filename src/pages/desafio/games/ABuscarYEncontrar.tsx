@@ -271,7 +271,7 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
       </div>
 
       {!done && (
-        <p className="mt-3 text-center text-sm font-medium text-slate-500">
+        <p className="mt-3 text-center text-base font-medium text-slate-500">
           Tocá cada objeto de la lista de arriba donde lo veas en la escena.
         </p>
       )}

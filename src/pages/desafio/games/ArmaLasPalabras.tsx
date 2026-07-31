@@ -271,7 +271,7 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-tiam-blue">
+            <p className="mt-2 text-base font-medium text-tiam-blue">
               Uní {level.chunksPerWord} fichas para formar una palabra. Hay {words.length} escondidas.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -313,7 +313,7 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
               {/* Ranura de armado */}
               <div className="mt-4 flex min-h-[64px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
                 {placed.length === 0 && (
-                  <span className="text-sm text-slate-400">Tocá las fichas de abajo para armar una palabra</span>
+                  <span className="text-base text-slate-400">Tocá las fichas de abajo para armar una palabra</span>
                 )}
                 {placed.map((id) => {
                   const t = tiles.find((tl) => tl.id === id)!

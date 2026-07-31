@@ -181,7 +181,7 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-tiam-blue">
+            <p className="mt-2 text-base font-medium text-tiam-blue">
               Una sola palabra cumple TODAS las pistas. Descartá y encontrala.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -236,7 +236,7 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !solved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !solved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

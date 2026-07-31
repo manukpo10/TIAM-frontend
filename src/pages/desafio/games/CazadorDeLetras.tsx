@@ -262,7 +262,7 @@ export function CazadorDeLetras({ day: _day, onComplete }: GameProps) {
 
       {/* Wrong-tap hint */}
       {wrongIdx !== null && !done && (
-        <p className="mt-4 text-center text-sm font-medium text-slate-500">
+        <p className="mt-4 text-center text-base font-medium text-slate-500">
           Esa no es {level.n === 3 ? 'una A ni una E' : 'una A'}, ¡probá con otra! 🙂
         </p>
       )}

@@ -180,7 +180,7 @@ export function Jeroglifico({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-tiam-blue">
+            <p className="mt-2 text-base font-medium text-tiam-blue">
               Para cada figura, tocá la letra que le corresponde según la clave.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -255,7 +255,7 @@ export function Jeroglifico({ day: _day, onComplete }: GameProps) {
             ))}
           </div>
 
-          {hint && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

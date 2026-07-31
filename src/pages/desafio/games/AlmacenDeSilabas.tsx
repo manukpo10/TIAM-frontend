@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Check, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -14,8 +14,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * fichas del banco — así es como una sílaba puede aparecer en más de una
  * palabra (p. ej. "JO" en CONEJO y CANGREJO): son dos fichas físicas
  * distintas con el mismo texto, ids distintos, ninguna lógica especial hace
- * falta. Nunca cronómetro, nunca rojo; un "Revisar" incorrecto dinamiza el
- * banco (las fichas quedan puestas, no se reinician) — mismo contrato.
+ * falta. Nunca cronómetro, nunca rojo; un chequeo incorrecto no reinicia el
+ * banco (las fichas quedan puestas) — mismo contrato.
+ *
+ * Sin botón "Revisar": el chequeo se dispara solo apenas se llena la ranura,
+ * igual que en ArmaLasPalabras — checkedRef evita que un doble-invoke de
+ * React 18 cuente el mismo intento dos veces. Correcto: tarjeta "¡Correcto!"
+ * breve que auto-avanza (~1.2s). Incorrecto: tarjeta naranja "Todavía no es
+ * ese", nunca roja, que se queda hasta que el jugador toca una ficha.
  *
  * A diferencia de ArmaLasPalabras (fragmentos arbitrarios de 3 letras
  * verificados para no formar palabras reales por accidente), acá los
@@ -130,6 +136,7 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
   const [placed, setPlaced] = useState<number[]>([]) // ids de fichas, en orden de ranura
   const [found, setFound] = useState<string[]>([]) // animales encontrados este nivel
   const [hint, setHint] = useState<string | null>(null)
+  const [correctWord, setCorrectWord] = useState<string | null>(null) // tarjeta breve "¡Correcto!"
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // No hace falta contador de aciertos: cada animal siempre se resuelve, así
   // que el total de aciertos es la constante fija TOTAL_WORDS (mismo
@@ -170,20 +177,37 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
     setHint(null)
     setPlaced((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : prev))
   }
-  function check() {
-    if (placed.length !== level.syllablesPerWord) return
+  // Auto-revisa apenas se llena la ranura — sin botón "Revisar" que el
+  // jugador deba descubrir (mismo criterio anti-confusión de
+  // ArmaLasPalabras.tsx, día 1, cuyo motor este juego clona). checkedRef
+  // recuerda qué combinación exacta ya se revisó para que un doble-invoke de
+  // React 18 no cuente el mismo error dos veces.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (placed.length !== level.syllablesPerWord) {
+      checkedRef.current = null
+      return
+    }
+    const attemptKey = placed.join(',')
+    if (checkedRef.current === attemptKey) return
+    checkedRef.current = attemptKey
+
     const attempt = placed.map((id) => tiles.find((t) => t.id === id)?.text ?? '').join('')
     const target = words.find((w) => w.word === attempt)
     if (target && !found.includes(target.word)) {
-      setFound((prev) => (prev.includes(target.word) ? prev : [...prev, target.word]))
-      setPlaced([])
-      setHint(null)
-    } else {
-      setMistakes((m) => m + 1)
-      setHint(pickOne(NUDGES_WORD))
-      // Las fichas quedan donde están — ajustar, no reiniciar.
+      setCorrectWord(target.word)
+      const timer = setTimeout(() => {
+        setFound((prev) => (prev.includes(target.word) ? prev : [...prev, target.word]))
+        setPlaced([])
+        setCorrectWord(null)
+      }, 1200)
+      return () => clearTimeout(timer)
     }
-  }
+    setMistakes((m) => m + 1)
+    setHint(pickOne(NUDGES_WORD))
+    // Las fichas quedan donde están — ajustar, no reiniciar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placed, level.syllablesPerWord])
 
   // Resets sincrónicos en el handler (nunca en un efecto keyed on [levelIdx]).
   function nextLevel() {
@@ -216,7 +240,7 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <p className="mt-2 text-sm font-medium text-tiam-blue">
+            <p className="mt-2 text-base font-medium text-tiam-blue">
               Uní {level.syllablesPerWord} sílabas para formar el nombre de un animal. Hay {words.length} escondidos.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -243,59 +267,73 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {/* Ranura de armado */}
-          <div className="mt-4 flex min-h-[64px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-            {placed.length === 0 && (
-              <span className="text-sm text-slate-400">Tocá las sílabas de abajo para armar un animal</span>
-            )}
-            {placed.map((id) => {
-              const t = tiles.find((tl) => tl.id === id)!
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => unplace(id)}
-                  aria-label={`Quitar sílaba ${t.text}`}
-                  className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 text-xl font-extrabold tracking-wide text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
-                >
-                  {t.text}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Banco de sílabas */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            {bank.map((id) => {
-              const t = tiles.find((tl) => tl.id === id)!
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => place(id)}
-                  aria-label={`Sílaba ${t.text}`}
-                  className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-4 text-xl font-extrabold tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-                >
-                  {t.text}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Revisar */}
-          {placed.length === level.syllablesPerWord && (
-            <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
+          {/* Tarjeta "¡Correcto!" — reemplaza la ranura mientras se confirma
+              el animal solo, sin pedir ningún toque más (mismo patrón que
+              ArmaLasPalabras.tsx, día 1). */}
+          {correctWord ? (
+            <div className="mt-4 rounded-2xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+                <CheckCircle2 className="h-7 w-7 text-tiam-green" />
+              </div>
+              <p className="mt-3 text-xl font-bold text-slate-900">¡Correcto!</p>
+              <p className="mt-1 text-slate-600">Armaste {correctWord}.</p>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Ranura de armado */}
+              <div className="mt-4 flex min-h-[64px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+                {placed.length === 0 && (
+                  <span className="text-base text-slate-400">Tocá las sílabas de abajo para armar un animal</span>
+                )}
+                {placed.map((id) => {
+                  const t = tiles.find((tl) => tl.id === id)!
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => unplace(id)}
+                      aria-label={`Quitar sílaba ${t.text}`}
+                      className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 text-xl font-extrabold tracking-wide text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                    >
+                      {t.text}
+                    </button>
+                  )
+                })}
+              </div>
 
-          {hint && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+              {/* Tarjeta "todavía no" — tan visible como la de "¡Correcto!",
+                  nunca roja: naranja suave + ícono de reintentar. Se queda
+                  hasta que el jugador toca una ficha (place/unplace ya
+                  limpian el hint). */}
+              {hint && (
+                <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                    <RotateCcw className="h-6 w-6 text-tiam-orange" />
+                  </div>
+                  <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es ese</p>
+                  <p className="mt-1 text-slate-600">{hint}</p>
+                </div>
+              )}
+
+              {/* Banco de sílabas */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {bank.map((id) => {
+                  const t = tiles.find((tl) => tl.id === id)!
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => place(id)}
+                      aria-label={`Sílaba ${t.text}`}
+                      className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-4 text-xl font-extrabold tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                    >
+                      {t.text}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </>
       )}
 

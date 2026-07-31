@@ -233,11 +233,11 @@ export function CualNoVa({ day: _day, onComplete }: GameProps) {
           </div>
 
           {solved && (
-            <p className="mt-4 text-center text-sm font-semibold text-tiam-green">
+            <p className="mt-4 text-center text-base font-semibold text-tiam-green">
               ¡Ese es! Las demás son {puzzle.categoria}.
             </p>
           )}
-          {hint && !solved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !solved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

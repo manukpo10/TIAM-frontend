@@ -171,7 +171,7 @@ export function OrdenaTuSemana({ day: _day, onComplete, progress }: GameProps) {
         >
           Orientación
         </span>
-        <p className="mt-4 text-base text-slate-600">
+        <p className="mt-4 text-lg text-slate-600">
           Todavía no tenés días jugados para repasar. ¡Seguí con el desafío y volvé más adelante!
         </p>
         <button
@@ -217,7 +217,7 @@ export function OrdenaTuSemana({ day: _day, onComplete, progress }: GameProps) {
           {/* Sequence being built */}
           <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
             {placed.length === 0 && (
-              <p className="text-center text-sm text-slate-400">Tocá los días de abajo para empezar</p>
+              <p className="text-center text-base text-slate-400">Tocá los días de abajo para empezar</p>
             )}
             <div className="flex flex-col gap-2">
               {placed.map((item, i) => {
@@ -284,7 +284,7 @@ export function OrdenaTuSemana({ day: _day, onComplete, progress }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
           {!isCorrect && (
-            <div className="mt-3 text-left text-sm text-slate-600">
+            <div className="mt-3 text-left text-base text-slate-600">
               <p className="font-semibold text-slate-700">El orden real era:</p>
               <ol className="mt-1 list-inside list-decimal space-y-1">
                 {roundDays.map((d) => (

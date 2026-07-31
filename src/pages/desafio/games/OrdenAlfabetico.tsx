@@ -192,7 +192,7 @@ export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
           {/* Lista que se va armando */}
           <div className="mt-5 min-h-[56px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
             {placed.length === 0 ? (
-              <p className="text-center text-sm text-slate-400">Tocá las palabras de abajo para empezar</p>
+              <p className="text-center text-base text-slate-400">Tocá las palabras de abajo para empezar</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {placed.map((word, i) => (
@@ -234,7 +234,7 @@ export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
           </div>
 
           {wrongWord && (
-            <p className="mt-4 text-center text-sm font-medium text-slate-500">
+            <p className="mt-4 text-center text-base font-medium text-slate-500">
               Esa todavía no — pensá cuál empieza antes en el abecedario.
             </p>
           )}

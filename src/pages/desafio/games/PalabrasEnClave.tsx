@@ -156,7 +156,7 @@ export function PalabrasEnClave({ day: _day, onComplete }: GameProps) {
 
           {/* Paso 1: decodificar las pistas. */}
           <div className="mt-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-4">
-            <p className="text-sm font-semibold text-slate-600">
+            <p className="text-base font-semibold text-slate-600">
               <span className="font-bold text-tiam-blue">1.</span> Descubrí cada palabra con el código. Tapala y anotá
               las que te acuerdes.
             </p>
@@ -171,7 +171,7 @@ export function PalabrasEnClave({ day: _day, onComplete }: GameProps) {
 
           {/* Paso 2: buscar más. */}
           <div className="mt-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-4">
-            <p className="text-sm font-semibold text-slate-600">
+            <p className="text-base font-semibold text-slate-600">
               <span className="font-bold text-tiam-blue">2.</span> Ahora buscá al menos 10 palabras más, armando otras
               combinaciones con esas mismas letras (vale repetir una letra). Tapalas y anotá las que recuerdes.
             </p>

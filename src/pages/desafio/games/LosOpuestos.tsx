@@ -204,7 +204,7 @@ export function LosOpuestos({ day: _day, onComplete }: GameProps) {
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Cuál es el opuesto?</h2>
-            {level.hint && <p className="mt-2 text-sm font-medium text-tiam-blue">{level.hint}</p>}
+            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
             {/* Count and bar on one row: they say the same thing, and the four
                 answer tiles below need the height more than the repetition does. */}
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -267,7 +267,7 @@ export function LosOpuestos({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !solved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !solved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

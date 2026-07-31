@@ -358,7 +358,7 @@ export function QueObjetoEs({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
         </>
       )}
 

@@ -291,7 +291,7 @@ export function DesafioDeDeduccion({ day: _day, onComplete }: GameProps) {
 
       {!done && round && (
         <>
-          <p className="mt-3 text-center text-sm text-slate-500">
+          <p className="mt-3 text-center text-base text-slate-500">
             Descubrí cuánto vale cada símbolo mirando las 3 cuentas.
           </p>
 
@@ -350,8 +350,8 @@ export function DesafioDeDeduccion({ day: _day, onComplete }: GameProps) {
             </>
           )}
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
-          {resolved && <p className="mt-4 text-center text-sm font-semibold text-tiam-green">{praise}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
+          {resolved && <p className="mt-4 text-center text-base font-semibold text-tiam-green">{praise}</p>}
         </>
       )}
 

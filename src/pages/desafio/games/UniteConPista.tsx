@@ -168,8 +168,21 @@ export function UniteConPista({ day: _day, onComplete }: GameProps) {
     setHint(null)
     setPlacedIds((ids) => ids.filter((i) => i !== item.id))
   }
-  function check() {
-    if (!readyToCheck) return
+  // Auto-revisa apenas se completan las letras de la palabra — sin botón
+  // "Revisar" que el jugador deba descubrir (mismo criterio anti-confusión
+  // de ArmaLasPalabras.tsx, día 1). checkedRef recuerda qué combinación
+  // exacta ya se revisó para que un doble-invoke de React 18 no cuente el
+  // mismo intento dos veces.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!readyToCheck) {
+      checkedRef.current = null
+      return
+    }
+    const attemptKey = placedIds.join(',')
+    if (checkedRef.current === attemptKey) return
+    checkedRef.current = attemptKey
+
     const spelled = placed.map((t) => t.value).join('')
     if (spelled === entry.answer) {
       setPraise(pickOne(PRAISE_GOOD))
@@ -179,7 +192,8 @@ export function UniteConPista({ day: _day, onComplete }: GameProps) {
       setHint(pickOne(NUDGE))
       setMistakes((m) => m + 1)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readyToCheck, placedIds])
   function nextPair() {
     setResolved(false)
     setHint(null)
@@ -339,19 +353,17 @@ export function UniteConPista({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {!resolved && (
-            <div className="mt-4 flex flex-col items-center gap-2">
-              {readyToCheck && (
-                <button
-                  type="button"
-                  onClick={check}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-6 font-semibold text-white transition"
-                  style={{ backgroundColor: ACCENT }}
-                >
-                  Revisar
-                </button>
-              )}
-              {hint && <p className="text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {/* Tarjeta "todavía no" — tan visible como el acierto de más abajo.
+              Nunca roja: naranja suave + ícono de reintentar. Se queda hasta
+              que el jugador toca una letra (handlePlace/handleUnplace ya
+              limpian el hint), sin timer. */}
+          {!resolved && hint && (
+            <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                <RotateCcw className="h-6 w-6 text-tiam-orange" />
+              </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es esa</p>
+              <p className="mt-1 text-slate-600">{hint}</p>
             </div>
           )}
 

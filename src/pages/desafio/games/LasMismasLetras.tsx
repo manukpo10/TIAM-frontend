@@ -288,8 +288,8 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
         disabled={isMatched || locked}
         onClick={() => handleTap(side, index)}
         className={[
-          'relative min-h-[44px] w-full rounded-xl border-2 px-3 py-2.5 text-center text-sm font-semibold transition',
-          'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 sm:text-base',
+          'relative min-h-[44px] w-full rounded-xl border-2 px-3 py-2.5 text-center text-base font-semibold transition',
+          'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 sm:text-lg',
           isMatched
             ? 'border-tiam-green bg-tiam-green/5 text-slate-900 ring-2 ring-tiam-green/30'
             : isSelected
@@ -357,7 +357,7 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
           </div>
 
           {mismatchLine && (
-            <p className="mt-4 text-center text-sm font-medium text-slate-500">{mismatchLine}</p>
+            <p className="mt-4 text-center text-base font-medium text-slate-500">{mismatchLine}</p>
           )}
         </>
       )}

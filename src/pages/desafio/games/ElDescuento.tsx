@@ -250,11 +250,11 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-slate-700">
+              <p className="text-base text-slate-700">
                 Precio de lista de {scenario.label}: <span className="font-semibold">{peso(scenario.original)}</span>
               </p>
               <p className="mt-1 flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-cyan-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                <span className="inline-flex items-center rounded-full bg-cyan-600 px-2.5 py-0.5 text-sm font-bold text-white">
                   −{scenario.percent}%
                 </span>
                 <span className="text-base font-bold text-slate-900">¿Cuál es el precio final?</span>
@@ -289,9 +289,9 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
           {resolved && (
-            <p className="mt-4 text-center text-sm font-semibold text-tiam-green">
+            <p className="mt-4 text-center text-base font-semibold text-tiam-green">
               {praise} {peso(scenario.original)} menos {scenario.percent}% son {peso(target)}.
             </p>
           )}
