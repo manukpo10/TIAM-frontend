@@ -14,6 +14,11 @@ interface DayResultOverlayProps {
    * "you beat your last score" note. Null on a routine replay with nothing
    * new to say. */
   message: string | null
+  /** Called on "Volver" — hides this card and reveals the game's own
+   * end-of-level screen underneath (its "¿jugar de nuevo?" prompt). Used to
+   * say "Continuar", which read as broken: only one game unlocks per day,
+   * so there's never a next thing to continue to — "Volver" matches what
+   * actually happens (going back to what was already there). */
   onDismiss: () => void
 }
 
@@ -51,7 +56,7 @@ export function DayResultOverlay({ stars, message, onDismiss }: DayResultOverlay
         {message && <p className="mt-2 max-w-xs text-sm text-slate-500">{message}</p>}
       </div>
       <Button size="lg" onClick={onDismiss} className="min-w-[160px]">
-        Continuar
+        Volver
       </Button>
     </div>
   )
