@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Check, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -22,8 +22,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * (level tiles minus placed minus consumed-by-found-words) and every state
  * transition is a functional update with an idempotent guard, so two taps
  * landing in one React batch can't place a tile twice or desync the check.
- * Wrong "Revisar" nudges and leaves tiles placed (día-3 contract: a wrong
+ * Wrong attempts nudge and leave tiles placed (día-3 contract: a wrong
  * check never undoes the player's work). No timer, never red.
+ *
+ * No manual "Revisar" button — older adults found the extra confirm tap
+ * confusing ("I placed the letters, why isn't it telling me if I'm right?").
+ * The check now fires automatically the instant the slots fill up: correct
+ * shows a brief full-width "¡Correcto!" card and clears itself, wrong shows
+ * the nudge in place (tiles stay put, exactly as before). checkedRef guards
+ * against re-checking the same placement twice (React 18 effect re-invoke).
  */
 
 interface WordEntry {
@@ -157,6 +164,7 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   const [placed, setPlaced] = useState<number[]>([]) // tile ids, in slot order
   const [found, setFound] = useState<string[]>([]) // words found this level
   const [hint, setHint] = useState<string | null>(null)
+  const [correctWord, setCorrectWord] = useState<string | null>(null) // brief "¡Correcto!" card
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // No success counter needed: every word always resolves, so the success total
   // is the constant TOTAL_WORDS (same fixed-sum reasoning as QuePalabraSeEsconde).
@@ -193,20 +201,36 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
     setHint(null)
     setPlaced((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : prev))
   }
-  function check() {
-    if (placed.length !== level.chunksPerWord) return
+  // Auto-checks the instant the slots fill up — no "Revisar" tap required.
+  // checkedRef remembers which exact placement was last checked so a stray
+  // double-invoke (React 18 effect re-run) can't double-count a mistake or
+  // re-fire the correct-card timer for the same attempt.
+  const checkedRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (placed.length !== level.chunksPerWord) {
+      checkedRef.current = null
+      return
+    }
+    const key = placed.join(',')
+    if (checkedRef.current === key) return
+    checkedRef.current = key
+
     const attempt = placed.map((id) => tiles.find((t) => t.id === id)?.text ?? '').join('')
     const target = words.find((w) => w.word === attempt)
     if (target && !found.includes(target.word)) {
-      setFound((prev) => (prev.includes(target.word) ? prev : [...prev, target.word]))
-      setPlaced([])
-      setHint(null)
-    } else {
-      setMistakes((m) => m + 1)
-      setHint(pickOne(NUDGES_WORD))
-      // Tiles stay where the player put them — adjust, don't restart.
+      setCorrectWord(target.word)
+      const timer = setTimeout(() => {
+        setFound((prev) => (prev.includes(target.word) ? prev : [...prev, target.word]))
+        setPlaced([])
+        setCorrectWord(null)
+      }, 1200)
+      return () => clearTimeout(timer)
     }
-  }
+    setMistakes((m) => m + 1)
+    setHint(pickOne(NUDGES_WORD))
+    // Tiles stay where the player put them — adjust, don't restart.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placed, level.chunksPerWord])
 
   // Synchronous resets in the handler (never a [levelIdx]-keyed effect).
   function nextLevel() {
@@ -269,59 +293,60 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {/* Ranura de armado */}
-          <div className="mt-4 flex min-h-[64px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-            {placed.length === 0 && (
-              <span className="text-sm text-slate-400">Tocá las fichas de abajo para armar una palabra</span>
-            )}
-            {placed.map((id) => {
-              const t = tiles.find((tl) => tl.id === id)!
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => unplace(id)}
-                  aria-label={`Quitar ficha ${t.text}`}
-                  className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 text-xl font-extrabold tracking-wide text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
-                >
-                  {t.text}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Banco de fichas */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            {bank.map((id) => {
-              const t = tiles.find((tl) => tl.id === id)!
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => place(id)}
-                  aria-label={`Ficha ${t.text}`}
-                  className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-4 text-xl font-extrabold tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-                >
-                  {t.text}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Revisar */}
-          {placed.length === level.chunksPerWord && (
-            <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
+          {/* Tarjeta "¡Correcto!" — reemplaza la ranura mientras se confirma
+              la palabra sola, sin pedir ningún toque más. */}
+          {correctWord ? (
+            <div className="mt-4 rounded-2xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+                <CheckCircle2 className="h-7 w-7 text-tiam-green" />
+              </div>
+              <p className="mt-3 text-xl font-bold text-slate-900">¡Correcto!</p>
+              <p className="mt-1 text-slate-600">Formaste {correctWord}.</p>
             </div>
-          )}
+          ) : (
+            <>
+              {/* Ranura de armado */}
+              <div className="mt-4 flex min-h-[64px] items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+                {placed.length === 0 && (
+                  <span className="text-sm text-slate-400">Tocá las fichas de abajo para armar una palabra</span>
+                )}
+                {placed.map((id) => {
+                  const t = tiles.find((tl) => tl.id === id)!
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => unplace(id)}
+                      aria-label={`Quitar ficha ${t.text}`}
+                      className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 text-xl font-extrabold tracking-wide text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                    >
+                      {t.text}
+                    </button>
+                  )
+                })}
+              </div>
 
-          {hint && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+              {/* Banco de fichas */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                {bank.map((id) => {
+                  const t = tiles.find((tl) => tl.id === id)!
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => place(id)}
+                      aria-label={`Ficha ${t.text}`}
+                      className="flex min-h-[48px] items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-4 text-xl font-extrabold tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                    >
+                      {t.text}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {hint && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
+            </>
+          )}
         </>
       )}
 
