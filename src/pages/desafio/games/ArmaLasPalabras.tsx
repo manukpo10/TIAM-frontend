@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Check, CheckCircle2, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -25,12 +25,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Wrong attempts nudge and leave tiles placed (día-3 contract: a wrong
  * check never undoes the player's work). No timer, never red.
  *
- * No manual "Revisar" button — older adults found the extra confirm tap
- * confusing ("I placed the letters, why isn't it telling me if I'm right?").
- * The check now fires automatically the instant the slots fill up: correct
- * shows a brief full-width "¡Correcto!" card and clears itself, wrong shows
- * the nudge in place (tiles stay put, exactly as before). checkedRef guards
- * against re-checking the same placement twice (React 18 effect re-invoke).
+ * No manual "Revisar" button — the check fires automatically the instant
+ * the slots fill up. Both outcomes get an equally visible full-width card
+ * right under the slots, on purpose: a quiet result is as confusing as no
+ * result for this audience. Correct auto-advances after a beat; wrong stays
+ * up (never red — orange "try again" framing, not an error) until they tap
+ * a tile, since that's a real decision, not something to rush past.
+ * checkedRef guards against re-checking the same placement twice (React 18
+ * effect re-invoke).
  */
 
 interface WordEntry {
@@ -326,6 +328,22 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
                 })}
               </div>
 
+              {/* Tarjeta "todavía no" — tan visible como la de "¡Correcto!",
+                  pegada a la ranura para que quede claro a qué se refiere.
+                  Nunca roja (día-1 contract): naranja suave + ícono de
+                  reintentar, no de error. Se queda hasta que tocan una ficha
+                  (place/unplace ya limpian el hint), no hay timer acá porque
+                  el jugador tiene que decidir qué cambiar. */}
+              {hint && (
+                <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
+                    <RotateCcw className="h-6 w-6 text-tiam-orange" />
+                  </div>
+                  <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es esa</p>
+                  <p className="mt-1 text-slate-600">{hint}</p>
+                </div>
+              )}
+
               {/* Banco de fichas */}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                 {bank.map((id) => {
@@ -343,8 +361,6 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
                   )
                 })}
               </div>
-
-              {hint && <p className="mt-4 text-center text-sm font-medium text-slate-500">{hint}</p>}
             </>
           )}
         </>
