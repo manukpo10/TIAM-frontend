@@ -7,10 +7,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * deduce hidden words (TYPE inspired by a competitor worksheet; content ours):
  * a bank of 3-letter tiles, and the player taps tiles into slots to build each
  * hidden word. Which words exist is not told — deducing them from the fragments
- * is the lexical/executive work. Levels ramp 3×2-tile words → 3×3-tile →
- * 4×3-tile (the reference's full size). Every cross-combination of tiles was
- * checked offline so no unintended valid Spanish word can be formed (the
- * JAR+DIN+ERA trap) — a rejected attempt is always genuinely not a word.
+ * is the lexical/executive work. Levels ramp 2×2-tile words → 2×3-tile →
+ * 3×3-tile — trimmed down from the reference's 3/3/4 (a 10-15 min/day product
+ * doesn't need that many rounds per level; the easiest word in each original
+ * set was dropped, keeping the more effortful pair/trio). Every
+ * cross-combination of tiles was checked offline so no unintended valid
+ * Spanish word can be formed (the JAR+DIN+ERA trap) — a rejected attempt is
+ * always genuinely not a word.
  *
  * This day used to open with a short date-orientation warm-up (an MMSE-style
  * "¿qué día es hoy?"), kept only so the challenge wouldn't lose its single
@@ -53,7 +56,9 @@ interface Level {
 // Sets verified offline (chunks concatenate exactly; no duplicate tiles per
 // set; cross-combinations checked by hand to not form real words — dropped
 // candidates like MANTEL/MANOTA, SALERO/PELERO, TESORO/TESINA, CABEZA/CABINA
-// where a stray tile pair spelled something real).
+// where a stray tile pair spelled something real). Trimmed to the more
+// effortful words of each original set — CAMINO/PELOTA/CHOCOLATE/COLECTIVO/
+// CARAMELOS/TELEVISOR dropped as the most immediately-obvious one per set.
 const LEVELS: Level[] = [
   {
     n: 1,
@@ -61,12 +66,10 @@ const LEVELS: Level[] = [
     chunksPerWord: 2,
     sets: [
       [
-        { word: 'CAMINO', chunks: ['CAM', 'INO'] },
         { word: 'PALOMA', chunks: ['PAL', 'OMA'] },
         { word: 'FUTURO', chunks: ['FUT', 'URO'] },
       ],
       [
-        { word: 'PELOTA', chunks: ['PEL', 'OTA'] },
         { word: 'CARTON', chunks: ['CAR', 'TON'] },
         { word: 'CAMISA', chunks: ['CAM', 'ISA'] },
       ],
@@ -79,13 +82,11 @@ const LEVELS: Level[] = [
     sets: [
       [
         { word: 'PRIMAVERA', chunks: ['PRI', 'MAV', 'ERA'] },
-        { word: 'CHOCOLATE', chunks: ['CHO', 'COL', 'ATE'] },
         { word: 'PANADERIA', chunks: ['PAN', 'ADE', 'RIA'] },
       ],
       [
         { word: 'CARNICERO', chunks: ['CAR', 'NIC', 'ERO'] },
         { word: 'ALMANAQUE', chunks: ['ALM', 'ANA', 'QUE'] },
-        { word: 'COLECTIVO', chunks: ['COL', 'ECT', 'IVO'] },
       ],
     ],
   },
@@ -96,12 +97,10 @@ const LEVELS: Level[] = [
     sets: [
       [
         { word: 'MERMELADA', chunks: ['MER', 'MEL', 'ADA'] },
-        { word: 'TELEVISOR', chunks: ['TEL', 'EVI', 'SOR'] },
         { word: 'MEDIALUNA', chunks: ['MED', 'IAL', 'UNA'] },
         { word: 'BICICLETA', chunks: ['BIC', 'ICL', 'ETA'] },
       ],
       [
-        { word: 'CARAMELOS', chunks: ['CAR', 'AME', 'LOS'] },
         { word: 'MARIPOSAS', chunks: ['MAR', 'IPO', 'SAS'] },
         { word: 'VERDULERO', chunks: ['VER', 'DUL', 'ERO'] },
         { word: 'TELEGRAMA', chunks: ['TEL', 'EGR', 'AMA'] },
@@ -110,7 +109,7 @@ const LEVELS: Level[] = [
   },
 ]
 // Every set within a level has the same word count, so this sum is
-// draw-independent (3 + 3 + 4).
+// draw-independent (2 + 2 + 3).
 const TOTAL_WORDS = LEVELS.reduce((s, l) => s + l.sets[0].length, 0)
 
 function shuffle<T>(arr: T[]): T[] {
