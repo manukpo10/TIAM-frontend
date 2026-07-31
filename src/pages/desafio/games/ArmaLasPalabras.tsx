@@ -7,13 +7,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * deduce hidden words (TYPE inspired by a competitor worksheet; content ours):
  * a bank of 3-letter tiles, and the player taps tiles into slots to build each
  * hidden word. Which words exist is not told — deducing them from the fragments
- * is the lexical/executive work. Levels ramp 2×2-tile words → 2×3-tile →
- * 3×3-tile — trimmed down from the reference's 3/3/4 (a 10-15 min/day product
- * doesn't need that many rounds per level; the easiest word in each original
- * set was dropped, keeping the more effortful pair/trio). Every
- * cross-combination of tiles was checked offline so no unintended valid
- * Spanish word can be formed (the JAR+DIN+ERA trap) — a rejected attempt is
- * always genuinely not a word.
+ * is the lexical/executive work. Every level builds 3-chunk words now —
+ * a 2-chunk nivel 1 read as a different, easier game rather than the same
+ * game at an easier step, so the fragment count is uniform across all three
+ * levels and only word count (2/2/3, trimmed from the reference's 3/3/4 —
+ * a 10-15 min/day product doesn't need that many rounds) and vocabulary
+ * ramp the difficulty. Every cross-combination of tiles was checked offline
+ * so no unintended valid Spanish word can be formed (the JAR+DIN+ERA trap)
+ * — a rejected attempt is always genuinely not a word.
  *
  * This day used to open with a short date-orientation warm-up (an MMSE-style
  * "¿qué día es hoy?"), kept only so the challenge wouldn't lose its single
@@ -56,22 +57,25 @@ interface Level {
 // Sets verified offline (chunks concatenate exactly; no duplicate tiles per
 // set; cross-combinations checked by hand to not form real words — dropped
 // candidates like MANTEL/MANOTA, SALERO/PELERO, TESORO/TESINA, CABEZA/CABINA
-// where a stray tile pair spelled something real). Trimmed to the more
-// effortful words of each original set — CAMINO/PELOTA/CHOCOLATE/COLECTIVO/
-// CARAMELOS/TELEVISOR dropped as the most immediately-obvious one per set.
+// where a stray tile pair spelled something real).
+//
+// Nivel 1 reuses CHOCOLATE/TELEVISOR/COLECTIVO/CARAMELOS — the four words
+// originally trimmed OUT of nivel 2/3 for being too immediately obvious.
+// "Too easy for nivel 2" is exactly the bar nivel 1 wants, and their
+// 3-chunk breakdown was already offline-verified in their original sets.
 const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
-    chunksPerWord: 2,
+    chunksPerWord: 3,
     sets: [
       [
-        { word: 'PALOMA', chunks: ['PAL', 'OMA'] },
-        { word: 'FUTURO', chunks: ['FUT', 'URO'] },
+        { word: 'CHOCOLATE', chunks: ['CHO', 'COL', 'ATE'] },
+        { word: 'TELEVISOR', chunks: ['TEL', 'EVI', 'SOR'] },
       ],
       [
-        { word: 'CARTON', chunks: ['CAR', 'TON'] },
-        { word: 'CAMISA', chunks: ['CAM', 'ISA'] },
+        { word: 'COLECTIVO', chunks: ['COL', 'ECT', 'IVO'] },
+        { word: 'CARAMELOS', chunks: ['CAR', 'AME', 'LOS'] },
       ],
     ],
   },
