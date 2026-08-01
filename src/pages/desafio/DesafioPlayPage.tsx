@@ -197,9 +197,11 @@ export function DesafioPlayPage() {
           </p>
         </header>
 
-        <ChallengeProgressPanel progress={progress} />
-
-        {/* 30-day grid */}
+        {/* 30-day grid — first thing after the header. Some older adults didn't
+            realize there was more below the achievements panel when it led;
+            the thing they actually came here to do (today's exercise) has to
+            be the first thing on screen, not something they have to scroll
+            past a stats panel to find. */}
         <div className="mt-10 grid grid-cols-4 gap-3 sm:grid-cols-5 sm:gap-4">
           {days.map((d) => {
             const meta = AREA_META[d.area]
@@ -266,6 +268,8 @@ export function DesafioPlayPage() {
         <p className="mt-8 text-center text-sm text-slate-400">
           Cada día se desbloquea uno nuevo. ¡Volvé mañana por el siguiente! 🌱
         </p>
+
+        <ChallengeProgressPanel progress={progress} />
       </div>
 
       {/* Day card modal */}
