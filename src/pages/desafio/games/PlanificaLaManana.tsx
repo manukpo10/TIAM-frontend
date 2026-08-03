@@ -197,13 +197,14 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // `rounds` distinct task-sets for this level, chosen once per
-  // level/roundKey — never repeats within a single level.
-  const roundSets = useMemo(
-    () => shuffle(level.sets).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // `rounds` distinct task-sets per level for THIS "epoch" (one full pass
+  // through 3 levels) — chosen once per epoch (on mount and on "Hacer
+  // otro"), never re-rolled by "Repetir" or by revisiting a level mid-
+  // epoch. Plain lookup (NOT useMemo): a useMemo here would get invalidated
+  // anyway since levelIdx cycles 0→1→2→0 on every restart, regardless of
+  // roundKey.
+  const [morningSetChoices, setMorningSetChoices] = useState(() => LEVELS.map((lvl) => shuffle(lvl.sets).slice(0, lvl.rounds)))
+  const roundSets = morningSetChoices[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const plan = roundSets[roundIdx]
   const pool = useMemo(
@@ -217,7 +218,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
   // every submission counts), only zeroed on a true day restart (see
-  // nextLevel's wrap branch). Same model as CuantosHay.tsx.
+  // restartEpoch). Same model as CuantosHay.tsx.
   const [accMistakes, setAccMistakes] = useState(0)
   const [accAttempts, setAccAttempts] = useState(0)
 
@@ -232,10 +233,11 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
     placedReal.every((item, i) => item.id === i)
 
   // True once the LAST round of the level has been checked — gates the
-  // level-complete screen (nextLevel/replay) instead of the plain "next
-  // round" button. Derived from `checked` + `roundIdx`, both real state
-  // reset synchronously below — never from a value reset inside a
-  // useEffect (see nextLevel()'s comment for why that matters).
+  // level-complete screen (advanceLevel / restartSame / restartDifferent)
+  // instead of the plain "next round" button. Derived from `checked` +
+  // `roundIdx`, both real state reset synchronously below — never from a
+  // value reset inside a useEffect (see restartEpoch()'s comment for why
+  // that matters).
   const done = checked && roundIdx >= level.rounds - 1
 
   function check() {
@@ -260,23 +262,37 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   // was already reset this way before this retrofit) — keeping it that way
   // means the onComplete-reporting effect below never sees a stale `checked`
   // (or `roundIdx`) paired with a fresh `levelIdx` on the same render.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+
+  // "Siguiente nivel" — advance within the SAME attempt, mid-epoch.
+  // morningSetChoices is left alone: level i+1's task-sets were already
+  // decided when this epoch started.
+  function advanceLevel() {
     setChecked(false)
     setRoundIdx(0)
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the accumulator — a same-round replay must NOT, even on level 1.
-    if (isWrap) {
-      setAccMistakes(0)
-      setAccAttempts(0)
-    }
+    setLevelIdx((i) => i + 1)
   }
-  function replay() {
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the accumulators either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses to
+  // fire again on a replay, independent of whether the task-sets changed.
+  function restartEpoch() {
     setChecked(false)
     setRoundIdx(0)
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
+    setAccMistakes(0)
+    setAccAttempts(0)
+  }
+  // "Repetir" — same task-sets as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random task-set draw per level, the only option
+  // there used to be before this feature existed.
+  function restartDifferent() {
+    restartEpoch()
+    setMorningSetChoices(LEVELS.map((lvl) => shuffle(lvl.sets).slice(0, lvl.rounds)))
   }
 
   // Reports the SUM across levels 1→2→3, not just level 3: check() already
@@ -408,27 +424,8 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
               )}
             </div>
           )}
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
-                <button
-                  type="button"
-                  onClick={nextLevel}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra mañana
-                </button>
-              </>
-            ) : (
+          {!done ? (
+            <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={nextRound}
@@ -437,8 +434,38 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
                 Siguiente mañana
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          ) : levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

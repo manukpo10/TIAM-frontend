@@ -95,13 +95,17 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Two 4-photo groups covering all 8 photos exactly once; which four land in
-  // round 1 vs round 2 is reshuffled every level/replay.
-  const groups = useMemo(() => {
-    const shuffled = shuffle(ALL_PHOTOS)
-    return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [levelIdx, roundKey])
+  // Two 4-photo groups covering all 8 photos exactly once per level, for the
+  // WHOLE epoch — generated once at mount, and again only inside
+  // restartDifferent(). Which four land in round 1 vs round 2 stays fixed
+  // for the rest of the epoch so "Repetir" hands back the same groups.
+  const [epochGroups, setEpochGroups] = useState(() =>
+    LEVELS.map(() => {
+      const shuffled = shuffle(ALL_PHOTOS)
+      return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
+    }),
+  )
+  const groups = epochGroups[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const photos = groups[roundIdx]
@@ -118,8 +122,8 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   const [wrongTag, setWrongTag] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   const [hint, setHint] = useState<string | null>(null)
-  // Accumulated across levels 1→2→3, only zeroed on a true day restart (wrap
-  // from level 3 back to level 1) — same policy as every other game here.
+  // Accumulated across levels 1→2→3, only zeroed by restartEpoch (a true
+  // day restart) — same policy as every other game here.
   const [mistakes, setMistakes] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
 
@@ -165,27 +169,49 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   // let the onComplete effect below read a stale `done` on the render that
   // just arrived at the new level — the hazard fixed across this codebase's
   // other games, e.g. CaminoNumerico/CadaCosaEnSuGrupo).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochGroups is left
+  // alone: every level's photo groups were already decided when this epoch
+  // started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setSelectedPhoto(null)
     setMatched({})
     setWrongTag(null)
     setHint(null)
-    if (isWrap) {
-      setMistakes(0)
-      setCorrectCount(0)
-    }
   }
-  function replay() {
+
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // both accumulators either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses to
+  // fire again on a replay, independent of whether the photos changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     setSelectedPhoto(null)
     setMatched({})
     setWrongTag(null)
     setHint(null)
+    setMistakes(0)
+    setCorrectCount(0)
+  }
+  // "Repetir" — same photo groups as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — fresh random groups per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochGroups(
+      LEVELS.map(() => {
+        const shuffled = shuffle(ALL_PHOTOS)
+        return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
+      }),
+    )
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -308,27 +334,8 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
               ? `¡Asociaste todas las fotos — completaste el ${level.name.toLowerCase()}!`
               : '¡Asociaste las 4 fotos de esta ronda!'}
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
-                <button
-                  type="button"
-                  onClick={nextLevel}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra ronda
-                </button>
-              </>
-            ) : (
+          {!done ? (
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={nextRound}
@@ -337,8 +344,38 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
                 Siguiente ronda
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          ) : levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

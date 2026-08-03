@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Circle, Square, Triangle, Star, Diamond, Heart, Hexagon, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
@@ -86,12 +86,13 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
   const [roundIdx, setRoundIdx] = useState(0)
   const done = roundIdx >= level.rounds
 
-  // The current row to decode — a fresh random sequence per level/round.
-  const row = useMemo(
-    () => randomRow(level.keySize, level.rowLen),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey, roundIdx],
+  // Every row (one per round) for the WHOLE epoch, generated once — at
+  // mount, and again only inside restartDifferent(). Never re-rolled just by
+  // revisiting a level/round, so "Repetir" hands back the exact same rows.
+  const [epochRows, setEpochRows] = useState(() =>
+    LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomRow(lvl.keySize, lvl.rowLen))),
   )
+  const row = epochRows[levelIdx][roundIdx]
 
   const [answered, setAnswered] = useState(0) // how many symbols of this row are decoded
   // Ref mirror of `answered`, read inside handleNumber instead of the closure
@@ -103,8 +104,8 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
   const answeredRef = useRef(0)
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
-  // Accumulated across levels 1→2→3, only zeroed on a true day restart (wrap) —
-  // same policy as QueObjetoEs.
+  // Accumulated across levels 1→2→3, only zeroed by restartEpoch (a true
+  // day restart) — same policy as QueObjetoEs.
   const [mistakes, setMistakes] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
 
@@ -140,25 +141,41 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
   // [levelIdx, roundKey], which would let the onComplete effect below read a
   // stale `done` on the render that just arrived at the new level (the bug fixed
   // in ElVuelto/CuantosHay/QueObjetoEs).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochRows is left
+  // alone: every round's row was already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     answeredRef.current = 0
     setAnswered(0)
     setHint(null)
-    if (isWrap) {
-      setMistakes(0)
-      setCorrectCount(0)
-    }
   }
-  function replay() {
+
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // both accumulators either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses to
+  // fire again on a replay, independent of whether the rows changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     answeredRef.current = 0
     setAnswered(0)
     setHint(null)
+    setMistakes(0)
+    setCorrectCount(0)
+  }
+  // "Repetir" — same rows as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — fresh random rows per level, same as before this feature
+  // existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRows(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomRow(lvl.keySize, lvl.rowLen))))
   }
 
   // Fires once per roundKey when level 3's last row is decoded.
@@ -257,24 +274,37 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Descifraste las {level.rounds} filas — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

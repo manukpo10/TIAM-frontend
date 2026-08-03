@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -185,16 +185,16 @@ interface PlacedBill {
 export function ElVuelto({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // `ROUNDS_PER_LEVEL[i]` compras drawn at random from level i's own scenario
+  // pool, for EVERY level at once — decided once per epoch (a full 1→2→3
+  // pass), at mount and again on "Hacer otro", never re-rolled by revisiting
+  // a level, so "Repetir" hands back the exact same compras deterministically.
+  const [epochScenarios, setEpochScenarios] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  // Subset of `roundsForLevel` compras picked at random from the level's
-  // scenario pool, recalculated once per level/roundKey — not per round.
-  const scenarios = useMemo(
-    () => shuffle(level.scenarios).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const scenarios = epochScenarios[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const scenario = scenarios[roundIdx]
@@ -209,7 +209,7 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   const [resolved, setResolved] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Wrong-sum count, accumulated across levels 1→2→3 and only zeroed on a true
-  // day restart (see nextLevel's wrap branch below).
+  // day restart (see restartEpoch below).
   const [mistakes, setMistakes] = useState(0)
 
   const sum = placed.reduce((s, b) => s + b.value, 0)
@@ -256,24 +256,43 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   // before the player has done anything. Setting `roundIdx` in the same
   // handler that sets `levelIdx`/`roundKey` means React batches them into one
   // render, so they're never observably out of sync.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. Only ever called
+  // while levelIdx < LEVELS.length - 1, so no wrap branch needed; epochScenarios
+  // is left alone — level i+1's compras were already decided when this epoch
+  // started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setPlaced([])
     setHint(null)
     setResolved(false)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the mistake count — "Otra compra" must NOT, even on level 1.
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Shared by both restart buttons on the FINAL level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the mistake accumulator either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay, independent of whether the compras
+  // themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     setPlaced([])
     setHint(null)
     setResolved(false)
+    setMistakes(0)
+  }
+  // "Repetir" — same compras as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random set of compras per level, same as before
+  // this feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochScenarios(LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3's last compra resolves. A full day
@@ -440,24 +459,37 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Armaste bien el vuelto en las {roundsForLevel} compras — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra compra
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

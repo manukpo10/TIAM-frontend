@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -88,13 +88,17 @@ const ACCENT = '#DB2777' // rose
 export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const level = LEVELS[levelIdx]
-
-  const rounds = useMemo(
-    () => Array.from({ length: level.rounds }, () => makeRound(level)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Which rounds (target + decoy silhouettes, one per round) are playing for
+  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
+  // mount, and again on "Hacer otro" — never re-rolled just because the
+  // player re-visits a level, so "Repetir" can hand back the exact same
+  // rounds deterministically instead of re-generating and accidentally
+  // landing on something new.
+  const [epochRounds, setEpochRounds] = useState(() =>
+    LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => makeRound(lvl))),
   )
+  const level = LEVELS[levelIdx]
+  const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
@@ -104,7 +108,7 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Wrong-tap count, accumulated across levels 1→2→3, only zeroed on a true
-  // day restart (nextLevel's wrap branch) — same policy as every sibling game.
+  // day restart (restartEpoch below) — same policy as every sibling game.
   const [mistakes, setMistakes] = useState(0)
 
   useEffect(() => {
@@ -131,22 +135,36 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change — see
   // ElVuelto.tsx for why an effect-based reset would let `done` read stale
   // right as levelIdx reaches the last level, firing onComplete with garbage.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+  // "Siguiente nivel" — advance within the SAME attempt. epochRounds is left
+  // alone: level i+1's rounds were already generated when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+  // Shared by both restart buttons on the final level's complete card.
+  // roundKey always bumps here: it's the "which attempt is this" generation
+  // counter the onComplete effect uses to fire again on a replay,
+  // independent of whether the rounds themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same rounds as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh set of rounds per level.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => makeRound(lvl))))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -248,24 +266,37 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             ¡Encontraste las {level.rounds} sombras — completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -152,14 +152,17 @@ const PRAISE = ['¡Muy bien!', '¡Excelente ubicación!', '¡Así se hace!', '¡
 export function Coordenadas({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which words (and in what order) are playing for level i THIS "epoch" (a
+  // full 3-level pass). Decided once per epoch — at mount, and again on
+  // "Hacer otro" — never re-rolled just because the player re-visits a
+  // level, so "Repetir" can hand back the exact same words deterministically
+  // instead of re-randomizing.
+  const [epochOrder, setEpochOrder] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  const order = useMemo(
-    () => shuffle(level.pool).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const order = epochOrder[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const done = roundIdx >= roundsForLevel
   const current = order[roundIdx] as CoordWord | undefined
@@ -241,29 +244,41 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
   // let the onComplete effect below read a stale `done` on the render that
   // just arrived at the new level (the bug already fixed in CaminoNumerico/
   // CazadorDeLetras/ClaveDeSimbolos).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    setRoundIdx(0)
-    setFoundCount(0)
-    setWrongKey(null)
-    setHint(null)
-    if (isWrap) {
-      setMistakes(0)
-      setTotalFound(0)
-    }
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. epochOrder is left
+  // alone: level i+1's drawn words were already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setFoundCount(0)
     setWrongKey(null)
     setHint(null)
   }
 
+  // Shared by both restart buttons on the final level's complete card.
+  function restartEpoch() {
+    setLevelIdx(0)
+    setRoundIdx(0)
+    setFoundCount(0)
+    setWrongKey(null)
+    setHint(null)
+    setMistakes(0)
+    setTotalFound(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same words, same order, as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random draw per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
+  }
+
   // Fires once per roundKey when level 3 is completed. A full day restart
-  // (the wrap to level 1) gets a new roundKey via nextLevel, so a genuine
+  // (the wrap to level 1) gets a new roundKey via restartEpoch, so a genuine
   // replay of the whole day reports again; re-rendering while still done on
   // level 3 does not fire twice. totalAttempts uses totalFound (every
   // coordinate found across the whole day) rather than a fixed round count,
@@ -417,24 +432,37 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Encontraste las {roundsForLevel} palabras — completaste el {levelName.toLowerCase()}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   RotateCcw,
   ArrowRight,
@@ -252,13 +252,14 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // `rounds` rutinas distintas para este nivel, elegidas una sola vez por
-  // nivel/roundKey — nunca se repiten dentro de un mismo nivel.
-  const roundRoutines = useMemo(
-    () => shuffle(level.routines).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // `rounds` rutinas distintas por nivel para ESTA "epoch" (una pasada
+  // completa de 3 niveles) — elegidas una sola vez por epoch (al montar y
+  // en "Hacer otro"), nunca vueltas a tirar por "Repetir" ni por re-visitar
+  // un nivel a mitad de epoch. Look-up plano (NO useMemo): un useMemo acá
+  // quedaría invalidado igual porque levelIdx cicla 0→1→2→0 en cada
+  // restart, sin importar roundKey.
+  const [routineChoices, setRoutineChoices] = useState(() => LEVELS.map((lvl) => shuffle(lvl.routines).slice(0, lvl.rounds)))
+  const roundRoutines = routineChoices[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const routine = roundRoutines[roundIdx]
   const pool = routine.steps
@@ -268,7 +269,7 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Acumulado a través de niveles 1→2→3 (y de cualquier repetición en el
   // mismo nivel — toda revisión cuenta), sólo en cero en un reinicio real
-  // del día (ver la rama isWrap de nextLevel). Mismo modelo que OrdenarLaFrase.
+  // del día (ver restartEpoch). Mismo modelo que OrdenarLaFrase.
   const [accMistakes, setAccMistakes] = useState(0)
   const [accAttempts, setAccAttempts] = useState(0)
 
@@ -276,10 +277,11 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   const readyToCheck = bank.length === 0
 
   // True recién cuando se revisó la ÚLTIMA ronda del nivel — habilita la
-  // pantalla de nivel completo (nextLevel/replay) en vez del botón de
-  // "siguiente ronda" común. Derivado de `checked` + `roundIdx`, ambos reset
-  // sincrónicos más abajo — nunca desde un valor puesto en cero dentro de un
-  // useEffect (ver el comentario de nextLevel() para el motivo).
+  // pantalla de nivel completo (advanceLevel / restartSame / restartDifferent)
+  // en vez del botón de "siguiente ronda" común. Derivado de `checked` +
+  // `roundIdx`, ambos reset sincrónicos más abajo — nunca desde un valor
+  // puesto en cero dentro de un useEffect (ver el comentario de
+  // restartEpoch() para el motivo).
   const done = checked && roundIdx >= level.rounds - 1
 
   function check() {
@@ -297,21 +299,38 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   }
   // Resets sincrónicos con el cambio de nivel/ronda — ver ElVuelto.tsx para
   // el motivo de no hacerlo en un efecto separado.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+
+  // "Siguiente nivel" — avanza dentro del MISMO intento. routineChoices
+  // queda intacto: las rutinas del nivel i+1 ya se decidieron al empezar
+  // esta epoch.
+  function advanceLevel() {
     setChecked(false)
     setRoundIdx(0)
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    if (isWrap) {
-      setAccMistakes(0)
-      setAccAttempts(0)
-    }
+    setLevelIdx((i) => i + 1)
   }
-  function replay() {
+  // Compartida por los dos botones de reinicio en la tarjeta final de nivel
+  // (sólo se muestra al completar el nivel 3, siempre un reinicio real del
+  // día — los acumuladores se ponen en cero en ambos casos). roundKey
+  // siempre avanza acá: es el contador de "qué intento es este" que usa el
+  // efecto de onComplete para dispararse otra vez en una repetición, sin
+  // importar si las rutinas cambiaron.
+  function restartEpoch() {
     setChecked(false)
     setRoundIdx(0)
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
+    setAccMistakes(0)
+    setAccAttempts(0)
+  }
+  // "Repetir" — mismas rutinas que el intento recién terminado.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — rutinas elegidas al azar de nuevo por nivel, el único
+  // comportamiento que existía antes de esta feature.
+  function restartDifferent() {
+    restartEpoch()
+    setRoutineChoices(LEVELS.map((lvl) => shuffle(lvl.routines).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -434,27 +453,8 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
               </ol>
             </div>
           )}
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
-                <button
-                  type="button"
-                  onClick={nextLevel}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra rutina
-                </button>
-              </>
-            ) : (
+          {!done ? (
+            <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={nextRound}
@@ -463,8 +463,38 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
                 Siguiente rutina
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          ) : levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

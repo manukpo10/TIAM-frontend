@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -95,6 +95,19 @@ function buildQueries(level: Level, studied: Face[]): Query[] {
   })
 }
 
+interface EpochLevelData {
+  studied: Face[]
+  queries: Query[]
+}
+// Draws the studied faces AND builds their test queries TOGETHER, once per
+// epoch. buildQueries has its own randomness (direction/decoys/order), so
+// re-calling it on a stable `studied` on every render would silently swap in
+// different decoys each time — the two must be snapshotted as a pair.
+function buildEpochLevel(level: Level): EpochLevelData {
+  const studied = shuffle(FACES).slice(0, level.count)
+  return { studied, queries: buildQueries(level, studied) }
+}
+
 const HINTS = ['Ese no es — pensá de nuevo en quién viste.', 'Casi. Fijate bien.', 'No era — probá con otra opción.']
 const PRAISE_GOOD = ['¡Muy bien!', '¡Excelente memoria!', '¡Así se hace!', '¡Qué buena memoria para las caras!']
 const PRAISE_OK = ['¡Buen intento! Con la práctica se recuerda cada vez más.', '¡Bien ahí! Seguí practicando.']
@@ -102,18 +115,14 @@ const PRAISE_OK = ['¡Buen intento! Con la práctica se recuerda cada vez más.'
 export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which faces were studied, and the derived test queries built from them,
+  // for level i THIS "epoch" (a full 3-level pass). Decided once per epoch —
+  // at mount, and again on "Hacer otro" — never re-rolled just because the
+  // player re-visits a level, so "Repetir" can hand back the exact same
+  // faces and queries deterministically instead of re-randomizing.
+  const [epochLevels, setEpochLevels] = useState(() => LEVELS.map((lvl) => buildEpochLevel(lvl)))
   const level = LEVELS[levelIdx]
-
-  const studied = useMemo(
-    () => shuffle(FACES).slice(0, level.count),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
-  const queries = useMemo(
-    () => buildQueries(level, studied),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [studied],
-  )
+  const { studied, queries } = epochLevels[levelIdx]
 
   const [phase, setPhase] = useState<'study' | 'test'>('study')
   const [canContinueEarly, setCanContinueEarly] = useState(false)
@@ -173,10 +182,12 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change — same
   // discipline as every sibling game (ElVuelto.tsx documents the stale-`done`
   // bug this avoids).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. epochLevels is left
+  // alone: level i+1's studied faces/queries were already decided when this
+  // epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setPhase('study')
     setCanContinueEarly(false)
     setQueryIdx(0)
@@ -184,10 +195,11 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
     setSolved(false)
     setHint(null)
     setCorrectCount(0)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on the final level's complete card.
+  function restartEpoch() {
+    setLevelIdx(0)
     setPhase('study')
     setCanContinueEarly(false)
     setQueryIdx(0)
@@ -195,6 +207,18 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
     setSolved(false)
     setHint(null)
     setCorrectCount(0)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same faces, same queries, as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random draw per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochLevels(LEVELS.map((lvl) => buildEpochLevel(lvl)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -358,24 +382,37 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Reconociste a {correctCount} de {level.count} — completaste el {level.name.toLowerCase()}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

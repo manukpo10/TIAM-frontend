@@ -179,14 +179,14 @@ const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfect
 export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which board (level.build() output) is playing for level i THIS "epoch"
+  // (a full 3-level pass). Decided once per epoch — at mount, and again on
+  // "Hacer otro" — never re-rolled just because the player re-visits a
+  // level, so "Repetir" can hand back the exact same board deterministically
+  // instead of re-generating and accidentally landing on something new.
+  const [epochBoards, setEpochBoards] = useState(() => LEVELS.map((lvl) => shuffle(lvl.build())))
   const level = LEVELS[levelIdx]
-
-  // A fresh, shuffled round whenever the level or roundKey changes.
-  const board = useMemo(
-    () => shuffle(level.build()),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const board = epochBoards[levelIdx]
   const targetIds = useMemo(
     () => new Set(board.filter(level.isTarget).map((o) => o.id)),
     [board, level],
@@ -197,7 +197,7 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE[0])
   // Mistakes + correct finds, accumulated across levels 1→2→3 and only
   // zeroed on a genuine day restart (wrap from level 3 back to level 1) —
-  // see nextLevel's isWrap branch below.
+  // see restartEpoch below.
   const [mistakes, setMistakes] = useState(0)
   const [foundAcrossLevels, setFoundAcrossLevels] = useState(0)
 
@@ -235,37 +235,51 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
     }
   }, [found, targetIds])
 
-  // isWrap resets happen synchronously HERE, in the same handler that
-  // changes levelIdx/roundKey — not in a separate effect keyed on them. An
-  // effect only catches up one tick after levelIdx changes, so `done`
-  // (derived straight from `found`/`targetIds`) would read the previous
-  // level's stale, still-true completion state on the very render that just
-  // arrived at the new level, firing onComplete instantly with garbage
-  // before the player has touched anything.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+  // Resets happen synchronously HERE, in the same handler that changes
+  // levelIdx/roundKey — not in a separate effect keyed on them. An effect
+  // only catches up one tick after levelIdx changes, so `done` (derived
+  // straight from `found`/`targetIds`) would read the previous level's
+  // stale, still-true completion state on the very render that just arrived
+  // at the new level, firing onComplete instantly with garbage before the
+  // player has touched anything.
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochBoards is left
+  // alone: level i+1's board was already generated when this epoch started.
+  function advanceLevel() {
     setFoundAcrossLevels((f) => f + found.size)
     reset()
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the accumulators — replaying a round must NOT, even on level 1.
-    if (isWrap) {
-      setMistakes(0)
-      setFoundAcrossLevels(0)
-    }
+    setLevelIdx((i) => i + 1)
   }
-  function replay() {
+
+  // Shared by both restart buttons on the "Empezar de nuevo" screen (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the accumulators either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses to
+  // fire again on a replay, independent of whether the board itself changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     reset()
+    setMistakes(0)
+    setFoundAcrossLevels(0)
     setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same board as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random board per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochBoards(LEVELS.map((lvl) => shuffle(lvl.build())))
   }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
-  // (the wrap to level 1) gets a new roundKey via nextLevel above, so a
-  // genuine replay of the whole day reports again; re-rendering while still
-  // done on level 3 does not fire twice. totalAttempts = accumulated
-  // mistakes + every object found across levels 1–3 (foundAcrossLevels
-  // covers 1–2, found.size covers the current/last level).
+  // (via restartEpoch) gets a new roundKey, so a genuine replay of the whole
+  // day reports again; re-rendering while still done on level 3 does not
+  // fire twice. totalAttempts = accumulated mistakes + every object found
+  // across levels 1–3 (foundAcrossLevels covers 1–2, found.size covers the
+  // current/last level).
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
     if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
@@ -362,24 +376,37 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Encontraste las {targetIds.size} — ¡completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Jugar esta ronda otra vez
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

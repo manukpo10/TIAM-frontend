@@ -165,14 +165,16 @@ const LEVEL_PRAISE_OK = ['¡Buen intento! Con la práctica el camino se hace má
 export function Encaminada({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // `ROUNDS_PER_LEVEL[i]` path-words drawn at random from level i's own pool,
+  // for EVERY level at once — decided once per epoch (a full 1→2→3 pass), at
+  // mount and again on "Hacer otro", never re-rolled by revisiting a level,
+  // so "Repetir" hands back the exact same paths deterministically.
+  const [epochOrder, setEpochOrder] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  const order = useMemo(
-    () => shuffle(level.pool).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const order = epochOrder[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const done = roundIdx >= roundsForLevel
   const current = order[roundIdx] as PathWord | undefined
@@ -235,19 +237,12 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
   // let the onComplete effect below read a stale `done` on the render that
   // just arrived at the new level (the bug already fixed in CaminoNumerico/
   // CazadorDeLetras/ClaveDeSimbolos).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    setRoundIdx(0)
-    setEliminated(new Set())
-    setSolved(false)
-    setHint(null)
-    setCorrectCount(0)
-    if (isWrap) setMistakes(0)
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. Only ever called
+  // while levelIdx < LEVELS.length - 1; epochOrder is left alone — level
+  // i+1's paths were already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setSolved(false)
@@ -255,10 +250,37 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
     setCorrectCount(0)
   }
 
+  // Shared by both restart buttons on the FINAL level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the mistake accumulator either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay, independent of whether the paths
+  // themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
+    setRoundKey((k) => k + 1)
+    setRoundIdx(0)
+    setEliminated(new Set())
+    setSolved(false)
+    setHint(null)
+    setCorrectCount(0)
+    setMistakes(0)
+  }
+  // "Repetir" — same paths as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random set of paths per level, same as before
+  // this feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
+  }
+
   // Fires once per roundKey when level 3 is completed. A full day restart
-  // (the wrap to level 1) gets a new roundKey via nextLevel, so a genuine
-  // replay of the whole day reports again; re-rendering while still done on
-  // level 3 does not fire twice.
+  // (via restartEpoch, from either restart button) gets a new roundKey, so a
+  // genuine replay of the whole day reports again; re-rendering while still
+  // done on level 3 does not fire twice.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
     if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
@@ -390,24 +412,37 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Encontraste el camino en las {roundsForLevel} rondas — completaste el {levelName.toLowerCase()}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otro camino
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

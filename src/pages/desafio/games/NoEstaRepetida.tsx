@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Star, Heart, Sun, Moon, Cloud,
   Cat, Dog, Fish, Bird, Rabbit, Flower2, Leaf,
@@ -151,7 +151,12 @@ function randomRotation(step: number): number {
   return Math.floor(Math.random() * steps) * step
 }
 
-function buildRound(level: Level): { tiles: Tile[]; loneId: string } {
+interface RoundData {
+  tiles: Tile[]
+  loneId: string
+}
+
+function buildRound(level: Level): RoundData {
   const loneIdx = Math.floor(Math.random() * level.pool.length)
   const tiles: Tile[] = []
   level.pool.forEach((def, i) => {
@@ -178,13 +183,13 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // `level.rounds` rondas armadas una sola vez por nivel/roundKey — mismo
-  // patrón que EncontraLaFiguraIgual/LaIntrusa.
-  const rounds = useMemo(
-    () => Array.from({ length: level.rounds }, () => buildRound(level)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Rounds for the WHOLE epoch (all 3 levels), generated once — at mount,
+  // and again only inside restartDifferent() — never re-rolled just by
+  // revisiting a level, so "Repetir" hands back the exact same boards.
+  const [epochRounds, setEpochRounds] = useState(() =>
+    LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => buildRound(lvl))),
   )
+  const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
@@ -192,8 +197,8 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
   const [found, setFound] = useState(false)
   const [wrongKey, setWrongKey] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
-  // Mistakes, accumulated across levels 1→2→3 and only zeroed on a genuine
-  // day restart (wrap from level 3 back to level 1) — see nextLevel below.
+  // Mistakes, accumulated across levels 1→2→3 and only zeroed by
+  // restartEpoch (a genuine day restart).
   const [mistakes, setMistakes] = useState(0)
 
   useEffect(() => {
@@ -219,20 +224,39 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
   // see every other game in this folder for why a separate effect can't
   // safely own this (it lags one render behind and lets `done` read the
   // previous level's stale true right as levelIdx reaches the last level).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochRounds is left
+  // alone: every level's boards were already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setFound(false)
     setWrongKey(null)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the mistake accumulator either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay, independent of whether the boards
+  // themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     setFound(false)
     setWrongKey(null)
+    setMistakes(0)
+  }
+  // "Repetir" — same boards as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — fresh random boards per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => buildRound(lvl))))
   }
 
   const totalRoundsAllLevels = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
@@ -316,24 +340,37 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
           <p className="mt-1 text-slate-600">¡Encontraste todas — completaste el {level.name.toLowerCase()}!</p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Jugar esta ronda otra vez
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

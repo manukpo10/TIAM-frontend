@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -126,13 +126,15 @@ const HINTS = [
 export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which rounds (3-of-4 pool entries drawn, already built into full
+  // BuiltRound objects) are playing for level i THIS "epoch" (a full
+  // 3-level pass). Decided once per epoch — at mount, and again on "Hacer
+  // otro" — never re-rolled just because the player re-visits a level, so
+  // "Repetir" can hand back the exact same rounds deterministically instead
+  // of re-randomizing.
+  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
   const level = LEVELS[levelIdx]
-
-  const rounds = useMemo(
-    () => buildRounds(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
@@ -142,7 +144,7 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Wrong-tap count, accumulated across levels 1→2→3 and only zeroed on a
-  // true day restart (see nextLevel's wrap branch below).
+  // true day restart (see restartEpoch below).
   const [mistakes, setMistakes] = useState(0)
 
   useEffect(() => {
@@ -170,22 +172,39 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
   // not in a separate effect (see every other game in this folder for why:
   // an effect lags one render behind and lets `done` read stale-true right
   // as levelIdx reaches the last level, firing onComplete with garbage).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. epochRounds is left
+  // alone: level i+1's drawn rounds were already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on the final level's complete card.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setEliminated(new Set())
     setResolved(false)
     setHint(null)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same rounds, same order, as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random draw per level, same as before this
+  // feature existed (the only option there used to be). Note: level 3's
+  // rounds count equals its pool size, so for that level this only reshuffles
+  // ORDER, not which entries are drawn — an accurate reflection of the data,
+  // not a bug.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(LEVELS.map((lvl) => buildRounds(lvl)))
   }
 
   // Fires once per roundKey when level 3's last round resolves. totalAttempts
@@ -278,24 +297,37 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
           <p className="mt-1 text-slate-600">¡Encontraste todas las palabras — completaste el {level.name.toLowerCase()}!</p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Jugar esta ronda otra vez
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

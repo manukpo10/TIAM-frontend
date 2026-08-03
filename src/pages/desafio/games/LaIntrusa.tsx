@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -125,15 +125,14 @@ const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfect
 export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Rondas armadas (pares sorteados Y su posición de intrusa, juntos como una
+  // sola unidad) para CADA nivel a la vez — decididas una vez por epoch (una
+  // pasada completa 1→2→3), al montar y de nuevo en "Hacer otro", nunca
+  // vueltas a sortear por revisitar un nivel, así "Repetir" devuelve
+  // exactamente las mismas rondas de forma determinística.
+  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
   const level = LEVELS[levelIdx]
-
-  // `level.rounds` rondas armadas una sola vez por nivel/roundKey — mismo
-  // patrón que EncontraLaFiguraIgual (no se regeneran al avanzar roundIdx).
-  const rounds = useMemo(
-    () => buildRounds(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
@@ -142,7 +141,7 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   const [wrongIdx, setWrongIdx] = useState<number | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Mistakes, accumulated across levels 1→2→3 and only zeroed on a genuine
-  // day restart (wrap from level 3 back to level 1) — see nextLevel below.
+  // day restart (wrap from level 3 back to level 1) — see restartEpoch below.
   const [mistakes, setMistakes] = useState(0)
 
   useEffect(() => {
@@ -169,20 +168,40 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   // let `done` read the previous level's stale true right as levelIdx
   // reaches the last level, firing onComplete with garbage (same trap
   // documented in every other game in this folder).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — avanza dentro de la MISMA epoch. Solo se llama
+  // mientras levelIdx < LEVELS.length - 1; epochRounds queda intacto — las
+  // rondas del nivel siguiente ya se armaron al empezar esta epoch.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setFound(false)
     setWrongIdx(null)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Compartida por los dos botones de la tarjeta final (solo se muestra
+  // cuando el nivel 3 está completo, así que siempre es un reinicio real del
+  // día — se pone en cero el contador de errores en ambos casos). roundKey
+  // siempre avanza acá: es el contador de "qué intento es este" que usa el
+  // efecto de onComplete para volver a dispararse en una repetición, más
+  // allá de si las rondas cambiaron o no.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     setFound(false)
     setWrongIdx(null)
+    setMistakes(0)
+  }
+  // "Repetir" — las mismas rondas del intento que acaba de terminar.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — un sorteo nuevo de rondas por nivel, igual que antes de
+  // que existiera esta funcionalidad (la única opción que había).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(LEVELS.map((lvl) => buildRounds(lvl)))
   }
 
   // Fires once per roundKey when level 3's last round resolves. A full day
@@ -269,24 +288,37 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
           <p className="mt-1 text-slate-600">¡Encontraste todas las intrusas — completaste el {level.name.toLowerCase()}!</p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Jugar esta ronda otra vez
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

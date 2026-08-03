@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Minus, Plus, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -147,16 +147,17 @@ const PRAISE_GOOD = [
 export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which recetas (drawn from the level's scenario pool) are playing for
+  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
+  // mount, and again on "Hacer otro" — never re-rolled just because the
+  // player re-visits a level, so "Repetir" can hand back the exact same
+  // recetas deterministically instead of re-randomizing.
+  const [epochScenarios, setEpochScenarios] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  // Subset of `roundsForLevel` recetas picked at random from the level's
-  // scenario pool, recalculated once per level/roundKey — not per round.
-  const scenarios = useMemo(
-    () => shuffle(level.scenarios).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const scenarios = epochScenarios[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const scenario = scenarios[roundIdx]
@@ -167,9 +168,9 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   const [resolved, setResolved] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Failed-check count, accumulated across levels 1→2→3 and only zeroed on a
-  // true day restart (see nextLevel's wrap branch below) — same policy as
-  // ElVuelto. There's no natural per-tap wrong/right here (the +/- stepper is
-  // always valid) — only a "Listo" check that doesn't match the target counts.
+  // true day restart (see restartEpoch below) — same policy as ElVuelto.
+  // There's no natural per-tap wrong/right here (the +/- stepper is always
+  // valid) — only a "Listo" check that doesn't match the target counts.
   const [mistakes, setMistakes] = useState(0)
 
   function increment() {
@@ -210,24 +211,40 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
   // why: an effect only catches up on the render AFTER levelIdx changes, so a
   // sibling effect watching `done` would still see the previous level's stale
   // `true` on the very render that just arrived at the new level.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+  // "Siguiente nivel" — advance within the SAME attempt. epochScenarios is
+  // left alone: level i+1's receta subset was already decided when this
+  // epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setCounter(0)
     setHint(null)
     setResolved(false)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the mistake count — "Otra receta" must NOT, even on level 1.
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on level 3's complete card (only ever
+  // shown once the final level is done, so always a genuine day restart —
+  // zero the mistake accumulator either way). roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay, independent of whether the
+  // recetas themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setCounter(0)
     setHint(null)
     setResolved(false)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same recetas as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random receta subset per level.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochScenarios(LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3's last receta resolves. A full day
@@ -338,24 +355,40 @@ export function ContadorMasMenos({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Calculaste bien las {roundsForLevel} recetas — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra receta
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            // Two ways to go again: "Repetir" replays the identical recetas,
+            // "Hacer otro" draws a fresh set per level — same choice
+            // ArmaLasPalabras.tsx (día 1) offers at epoch's end.
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Delete, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -71,14 +71,19 @@ const NUDGE = [
 export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which digit-sequence is playing for each round of each level THIS
+  // "epoch" (a full 3-level pass) — one array of sequences per level, one
+  // sequence per round. Decided once per epoch — at mount, and again on
+  // "Hacer otro" — never re-rolled just because the player re-visits a
+  // round, so "Repetir" can hand back the exact same sequences
+  // deterministically instead of re-generating and accidentally landing on
+  // something new.
+  const [epochSequences, setEpochSequences] = useState(() =>
+    LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomSequence(lvl.digits))),
+  )
   const level = LEVELS[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
-
-  const sequence = useMemo(
-    () => randomSequence(level.digits),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey, roundIdx],
-  )
+  const sequence = epochSequences[levelIdx][roundIdx]
 
   const [phase, setPhase] = useState<Phase>('show')
   const [revealIdx, setRevealIdx] = useState(0)
@@ -87,7 +92,7 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE[0])
   const [nudge, setNudge] = useState(NUDGE[0])
   // Mistakes accumulate across levels 1→2→3, only zeroed on a genuine day
-  // restart (nextLevel's wrap branch) — same policy as every sibling game.
+  // restart (restartEpoch below) — same policy as every sibling game.
   const [mistakes, setMistakes] = useState(0)
 
   const done = phase === 'feedback' && roundIdx >= level.rounds - 1
@@ -137,6 +142,8 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   // up one render late, so `done` (derived from `phase`) could read the
   // previous round's stale 'feedback' right as levelIdx reaches the last
   // level, firing onComplete with garbage (the ElVuelto.tsx lesson).
+  // Mid-level advance: a plain index bump. The next round's sequence was
+  // already generated when this epoch started — no need to touch roundKey.
   function nextRound() {
     setRoundIdx((i) => i + 1)
     setPhase('show')
@@ -144,24 +151,39 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
     setEntered([])
     setLastCorrect(null)
   }
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+  // "Siguiente nivel" — advance within the SAME attempt. epochSequences is
+  // left alone: level i+1's sequences were already generated when this
+  // epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setPhase('show')
     setRevealIdx(0)
     setEntered([])
     setLastCorrect(null)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+  // Shared by both restart buttons on the final level's complete card.
+  // roundKey always bumps here: it's the "which attempt is this" generation
+  // counter the onComplete effect uses to fire again on a replay,
+  // independent of whether the digits themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setPhase('show')
     setRevealIdx(0)
     setEntered([])
     setLastCorrect(null)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same sequences as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random sequence per round/level.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochSequences(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomSequence(lvl.digits))))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -341,24 +363,37 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
             )}
             Completaste las {level.rounds} series — terminaste el {level.name.toLowerCase()}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

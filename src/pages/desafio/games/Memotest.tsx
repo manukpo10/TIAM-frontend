@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -140,13 +140,14 @@ const TOTAL_PAIRS = LEVELS.reduce((sum, l) => sum + l.pairs, 0)
 export function Memotest({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // The built board (drawn animals AND their shuffled card positions, as one
+  // unit — see file header on why positions must stay fixed) for EVERY level
+  // at once — decided once per epoch (a full 1→2→3 pass), at mount and again
+  // on "Hacer otro", never re-rolled by revisiting a level, so "Repetir"
+  // hands back the exact same board deterministically.
+  const [epochBoard, setEpochBoard] = useState(() => LEVELS.map((lvl) => buildBoard(lvl)))
   const level = LEVELS[levelIdx]
-
-  const board = useMemo(
-    () => buildBoard(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const board = epochBoard[levelIdx]
 
   const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set())
   const [pending, setPending] = useState<number[]>([])
@@ -155,7 +156,7 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
   const [turns, setTurns] = useState(0)
   const [praise, setPraise] = useState(PRAISE[0])
   // Mismatch count, accumulated across levels 1→2→3 and only zeroed on a true
-  // day restart (see nextLevel's wrap branch below) — same policy as ElVuelto.
+  // day restart (see restartEpoch below) — same policy as ElVuelto.
   const [mistakes, setMistakes] = useState(0)
 
   const done = matchedIds.size >= level.pairs
@@ -217,26 +218,44 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
   // why: an effect only catches up on the render AFTER levelIdx changes, so
   // `done` (derived from matchedIds vs. the NEW level's pairs) could read
   // stale-true on the very render that just arrived at the new level.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. Only ever called
+  // while levelIdx < LEVELS.length - 1; epochBoard is left alone — level
+  // i+1's board was already built when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setMatchedIds(new Set())
     setPending([])
     setLocked(false)
     setMismatchLine(null)
     setTurns(0)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the mistake count — "Otra vuelta" must NOT, even on level 1.
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Shared by both restart buttons on the FINAL level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the mistake accumulator either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay, independent of whether the board itself
+  // changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setMatchedIds(new Set())
     setPending([])
     setLocked(false)
     setMismatchLine(null)
     setTurns(0)
+    setMistakes(0)
+  }
+  // "Repetir" — the exact same board as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a freshly built board per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochBoard(LEVELS.map((lvl) => buildBoard(lvl)))
   }
 
   return (
@@ -323,24 +342,37 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             ¡Encontraste las {level.pairs} parejas en {turns} vueltas — completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra vuelta
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

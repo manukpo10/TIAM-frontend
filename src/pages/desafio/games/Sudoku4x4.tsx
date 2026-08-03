@@ -134,13 +134,16 @@ const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se razona!', '¡Perfecto!
 export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const level = LEVELS[levelIdx]
-
-  const roundGrids = useMemo(
-    () => shuffle(GRIDS).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Which 2 grids (of the shared 4-grid pool) are playing for level i THIS
+  // "epoch" (a full 3-level pass). Decided once per epoch — at mount, and
+  // again on "Hacer otro" — never re-rolled just because the player
+  // re-visits a level, so "Repetir" can hand back the exact same grids
+  // deterministically instead of re-randomizing.
+  const [epochRoundGrids, setEpochRoundGrids] = useState(() =>
+    LEVELS.map((lvl) => shuffle(GRIDS).slice(0, lvl.rounds)),
   )
+  const level = LEVELS[levelIdx]
+  const roundGrids = epochRoundGrids[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const solution = roundGrids[roundIdx]
   const blankSet = useMemo(() => new Set(level.blanks.map(([r, c]) => key(r, c))), [level.blanks])
@@ -212,6 +215,9 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allFilled, userEntries, level.blanks, solution])
 
+  // Intra-level round advance (2 grids per level, drawn from the shared pool
+  // at epoch-start) — a different, existing mid-level mechanic from the
+  // whole-epoch restart below, so it's left untouched.
   function nextRound() {
     setSolved(false)
     setUserEntries({})
@@ -222,24 +228,39 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
   // Resets happen synchronously HERE, in the same handler that changes
   // levelIdx/roundKey — never in a separate effect keyed on them (the
   // stale-flag hazard fixed across this codebase's other games).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. epochRoundGrids is
+  // left alone: level i+1's drawn grids were already decided when this
+  // epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setSolved(false)
     setUserEntries({})
     setSelected(null)
     setWrongCells(new Set())
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on the final level's complete card.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setSolved(false)
     setUserEntries({})
     setSelected(null)
     setWrongCells(new Set())
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same grids, same order, as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random draw per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRoundGrids(LEVELS.map((lvl) => shuffle(GRIDS).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -358,27 +379,40 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             {done ? `¡Completaste la grilla — terminaste el ${level.name.toLowerCase()}!` : '¡Completaste la grilla de esta ronda!'}
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
+          {done ? (
+            levelIdx < LEVELS.length - 1 ? (
+              <div className="mt-5 flex justify-center">
                 <button
                   type="button"
-                  onClick={nextLevel}
+                  onClick={advanceLevel}
                   className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  Siguiente nivel
                   <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={restartSame}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
                 </button>
                 <button
                   type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                  onClick={restartDifferent}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra ronda
+                  Hacer otro
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              </>
-            ) : (
+              </div>
+            )
+          ) : (
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={nextRound}
@@ -387,8 +421,8 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
                 Siguiente grilla
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -80,13 +80,14 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Géneros objetivo del nivel: tantos distintos como rondas tenga, al azar,
-  // recalculados una sola vez por nivel/roundKey (sin repetir dentro del nivel).
-  const roundTargets = useMemo(
-    () => shuffle(GENRES).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Géneros objetivo de cada nivel para ESTA "epoch" (una pasada completa de
+  // 3 niveles): un subconjunto shuffleado por nivel, decidido una sola vez
+  // por epoch (al montar y en "Hacer otro"), nunca vuelto a tirar por
+  // "Repetir" ni por re-visitar un nivel a mitad de epoch. Look-up plano (NO
+  // useMemo): un useMemo acá quedaría invalidado igual porque levelIdx cicla
+  // 0→1→2→0 en cada restart, sin importar roundKey.
+  const [genreChoices, setGenreChoices] = useState(() => LEVELS.map((lvl) => shuffle(GENRES).slice(0, lvl.rounds)))
+  const roundTargets = genreChoices[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const target = roundTargets[roundIdx]
@@ -106,8 +107,9 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
   const [hasListened, setHasListened] = useState(false)
   const [roundOk, setRoundOk] = useState(ROUND_OK[0])
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
-  // Errores acumulados a través de los 3 niveles, reseteados solo en el
-  // wrap real (nextLevel al terminar nivel 3) — nunca en "otra ronda".
+  // Errores acumulados a través de los 3 niveles, reseteados solo en un
+  // reinicio real del día (restartEpoch, al completar el nivel 3) — nunca
+  // al simplemente avanzar de nivel.
   const [mistakes, setMistakes] = useState(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -161,30 +163,47 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
     }
   }
 
-  // Reset sincrónico dentro de nextLevel()/replay() — nunca en un efecto
-  // separado sobre [levelIdx, roundKey] (mismo bug ya resuelto en El vuelto:
-  // un efecto llega un render tarde y dispara onComplete con datos viejos).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+  // Reset sincrónico dentro de estas funciones — nunca en un efecto separado
+  // sobre [levelIdx, roundKey] (mismo bug ya resuelto en El vuelto: un
+  // efecto llega un render tarde y dispara onComplete con datos viejos).
+
+  // "Siguiente nivel" — avanza dentro del MISMO intento. genreChoices queda
+  // intacto: el subconjunto de género del nivel i+1 ya se decidió al
+  // empezar esta epoch.
+  function advanceLevel() {
     audioRef.current?.pause()
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setSolved(false)
     setIsPlaying(false)
     setHasListened(false)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+  // Compartida por los dos botones de reinicio en la tarjeta final de nivel
+  // (sólo se muestra al completar el nivel 3, siempre un reinicio real del
+  // día — el acumulador de errores se pone en cero en ambos casos). roundKey
+  // siempre avanza acá: es el contador de "qué intento es este" que usa el
+  // efecto de onComplete para dispararse otra vez en una repetición, sin
+  // importar si los géneros cambiaron.
+  function restartEpoch() {
     audioRef.current?.pause()
-    setRoundKey((k) => k + 1)
+    setLevelIdx(0)
     setRoundIdx(0)
     setEliminated(new Set())
     setSolved(false)
     setIsPlaying(false)
     setHasListened(false)
-    // NOT setMistakes(0) — una repetición del mismo nivel no borra lo acumulado.
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — mismos subconjuntos de género (y mismo orden) que el intento recién terminado.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — un subconjunto de género al azar por nivel, el único comportamiento que existía antes de esta feature.
+  function restartDifferent() {
+    restartEpoch()
+    setGenreChoices(LEVELS.map((lvl) => shuffle(GENRES).slice(0, lvl.rounds)))
   }
 
   // Dispara una vez por roundKey cuando la última ronda del nivel 3 se
@@ -290,24 +309,37 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Reconociste los {level.rounds} géneros — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -140,14 +140,17 @@ function optionsFor(s: Scenario, count: number): Option[] {
 export function ElDescuento({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which scenarios (drawn from the level's scenario pool) are playing for
+  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
+  // mount, and again on "Hacer otro" — never re-rolled just because the
+  // player re-visits a level, so "Repetir" can hand back the exact same
+  // scenarios deterministically instead of re-randomizing.
+  const [epochScenarios, setEpochScenarios] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  const scenarios = useMemo(
-    () => shuffle(level.scenarios).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const scenarios = epochScenarios[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const scenario = scenarios[roundIdx]
   const done = roundIdx >= roundsForLevel
@@ -164,7 +167,7 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Toques equivocados, acumulados a través de niveles 1→2→3 y sólo puestos
-  // en cero en un reinicio real del día (ver la rama isWrap de nextLevel).
+  // en cero en un reinicio real del día (ver restartEpoch).
   const [mistakes, setMistakes] = useState(0)
 
   function guess(id: string) {
@@ -189,22 +192,40 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
   // useEffect separado sobre [levelIdx, roundKey] — mismo motivo que
   // ElVuelto.tsx: un efecto llega un render tarde y "done" podría leerse
   // stale-true justo cuando levelIdx cambia, disparando onComplete de más.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+  // "Siguiente nivel" — advance within the SAME attempt. epochScenarios is
+  // left alone: level i+1's scenario subset was already decided when this
+  // epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setHint(null)
     setResolved(false)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on level 3's complete card (only ever
+  // shown once the final level is done, so always a genuine day restart —
+  // zero the mistake accumulator either way). roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay, independent of whether the
+  // scenarios themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setEliminated(new Set())
     setHint(null)
     setResolved(false)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same scenarios as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random scenario subset per level.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochScenarios(LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -308,24 +329,40 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Calculaste bien los {roundsForLevel} descuentos — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otro producto
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            // Two ways to go again: "Repetir" replays the identical
+            // scenarios, "Hacer otro" draws a fresh set per level — same
+            // choice ArmaLasPalabras.tsx (día 1) offers at epoch's end.
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

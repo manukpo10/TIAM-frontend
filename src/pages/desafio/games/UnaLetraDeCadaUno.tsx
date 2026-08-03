@@ -242,14 +242,18 @@ const NUDGE_MESSAGES = [
 export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which puzzle subset (drawn from the level's pool) is playing for level i
+  // THIS "epoch" (a full 3-level pass). Decided once per epoch — at mount,
+  // and again on "Hacer otro" — never re-rolled just because the player
+  // re-visits a level, so "Repetir" can hand back the exact same puzzles
+  // deterministically instead of re-randomizing and accidentally landing on
+  // something new.
+  const [epochPuzzles, setEpochPuzzles] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.puzzles).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  const roundPuzzles = useMemo(
-    () => shuffle(level.puzzles).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const roundPuzzles = epochPuzzles[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const pasos = roundPuzzles[roundIdx]
   const answer = useMemo(() => palabraDe(pasos), [pasos])
@@ -273,7 +277,7 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
   const [showNames, setShowNames] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Acumulado a través de los 3 niveles; solo se pone en cero en un reinicio
-  // real del día (rama isWrap de nextLevel).
+  // real del día (ver restartEpoch).
   const [mistakes, setMistakes] = useState(0)
 
   const done = resolved && roundIdx >= roundsForLevel - 1
@@ -327,24 +331,42 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
     setPlacedIds([])
     setRoundIdx((i) => i + 1)
   }
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+  // "Siguiente nivel" — advance within the SAME attempt. epochPuzzles is left
+  // alone: level i+1's puzzle subset was already decided when this epoch
+  // started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setResolved(false)
     setHint(null)
     setShowNames(false)
     setPlacedIds([])
     setRoundIdx(0)
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Shared by both restart buttons on level 3's complete card (only ever
+  // shown once the final level is done, so always a genuine day restart —
+  // zero the mistake accumulator either way). roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay, independent of whether the
+  // puzzles themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setResolved(false)
     setHint(null)
     setShowNames(false)
     setPlacedIds([])
     setRoundIdx(0)
+    setMistakes(0)
     setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same puzzle subsets as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random puzzle subset per level.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochPuzzles(LEVELS.map((lvl, i) => shuffle(lvl.puzzles).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -506,27 +528,43 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
             ))}
           </div>
           {done && <p className="mt-2 text-slate-600">Completaste el nivel {levelIdx + 1}.</p>}
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
+          {done ? (
+            levelIdx < LEVELS.length - 1 ? (
+              <div className="mt-5 flex justify-center">
                 <button
                   type="button"
-                  onClick={nextLevel}
+                  onClick={advanceLevel}
                   className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  Siguiente nivel
                   <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              // Two ways to go again: "Repetir" replays the identical
+              // puzzles, "Hacer otro" draws a fresh set per level — same
+              // choice ArmaLasPalabras.tsx (día 1) offers at epoch's end.
+              <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={restartSame}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
                 </button>
                 <button
                   type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                  onClick={restartDifferent}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra ronda
+                  Hacer otro
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              </>
-            ) : (
+              </div>
+            )
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={nextRound}
@@ -535,8 +573,8 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
                 Siguiente palabra
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

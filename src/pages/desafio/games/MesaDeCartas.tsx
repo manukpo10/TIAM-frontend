@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -293,11 +293,13 @@ export function MesaDeCartas({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
 
-  const rounds = useMemo(
-    () => Array.from({ length: roundsForLevel }, () => generateRound(levelIdx)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Rounds for the WHOLE epoch (all 3 levels), generated once — at mount,
+  // and again only inside restartDifferent() — never re-rolled just by
+  // revisiting a level, so "Repetir" hands back the exact same tables.
+  const [epochRounds, setEpochRounds] = useState(() =>
+    ROUNDS_PER_LEVEL.map((count, lvlIdx) => Array.from({ length: count }, () => generateRound(lvlIdx))),
   )
+  const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= roundsForLevel
@@ -307,7 +309,7 @@ export function MesaDeCartas({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Toques equivocados, acumulados a través de niveles 1→2→3 y sólo en cero
-  // en un reinicio real del día (ver la rama isWrap de nextLevel).
+  // en restartEpoch (reinicio real del día).
   const [mistakes, setMistakes] = useState(0)
 
   function guess(id: string) {
@@ -330,22 +332,39 @@ export function MesaDeCartas({ day: _day, onComplete }: GameProps) {
 
   // Resets sincrónicos con el cambio de nivel/ronda — ver ElVuelto.tsx para
   // el motivo de no hacerlo en un efecto separado.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVEL_NAMES.length - 1
-    setLevelIdx((i) => (i < LEVEL_NAMES.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — avanza dentro del MISMO intento. epochRounds queda
+  // como está: las mesas de cada nivel ya se decidieron al empezar la época.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setHint(null)
     setResolved(false)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Compartida por los dos botones de reinicio en la tarjeta final del
+  // último nivel (sólo se muestra ahí, así que siempre es un reinicio real
+  // del día — mistakes se pone en cero siempre). roundKey siempre avanza
+  // acá: es el contador de "qué intento es este" que usa el efecto de
+  // onComplete para volver a dispararse en una repetición.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     setEliminated(new Set())
     setHint(null)
     setResolved(false)
+    setMistakes(0)
+  }
+  // "Repetir" — las mismas mesas del intento recién terminado.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — mesas nuevas por nivel, igual que antes de esta feature.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(ROUNDS_PER_LEVEL.map((count, lvlIdx) => Array.from({ length: count }, () => generateRound(lvlIdx))))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -437,24 +456,37 @@ export function MesaDeCartas({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Resolviste las {roundsForLevel} mesas — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVEL_NAMES.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra mesa
-            </button>
-          </div>
+          {levelIdx < LEVEL_NAMES.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

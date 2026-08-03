@@ -28,7 +28,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Both phases run per level (one lámina each), matching this app's
  * 3-independent-levels shape. Levels pick one of 2 pre-authored lámina
- * variants at random each time, for replay variety without runtime layout.
+ * variants at random once per epoch (a full 3-level day attempt), for
+ * replay variety without runtime layout — see epochChoices below.
  */
 
 interface CompositionItem {
@@ -225,16 +226,16 @@ type Phase = 'play' | 'results' | 'recognize'
 export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const level = LEVELS[levelIdx]
-
-  // Picks one of the 2 pre-authored lámina variants at random — fresh pick
-  // every time levelIdx/roundKey changes (new level, "otra ronda", or a full
-  // day restart), giving replay variety without any runtime layout math.
-  const composition = useMemo(
-    () => pickOne(level.compositions),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Which composition (index into LEVELS[i].compositions) is playing for
+  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
+  // mount, and again on "Hacer otro" — never re-rolled just because the
+  // player re-visits a level, so "Repetir" can hand back the exact same 3
+  // láminas deterministically instead of re-randomizing.
+  const [epochChoices, setEpochChoices] = useState(() =>
+    LEVELS.map((lvl) => Math.floor(Math.random() * lvl.compositions.length)),
   )
+  const level = LEVELS[levelIdx]
+  const composition = level.compositions[epochChoices[levelIdx]]
 
   const truth = useMemo(() => {
     const m: Record<string, number> = {}
@@ -257,7 +258,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
   const [graded, setGraded] = useState(false)
   const [levelPraise, setLevelPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across both fases and levels 1→2→3, only zeroed on a genuine
-  // day restart (nextLevel's wrap branch) — same policy as every sibling game.
+  // day restart (restartEpoch) — same policy as every sibling game.
   const [mistakes, setMistakes] = useState(0)
   const [attempts, setAttempts] = useState(0)
 
@@ -310,25 +311,41 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change — same
   // discipline as CuantosHay/every sibling game (an effect-based reset reads
   // `done` stale right as levelIdx reaches the last level).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. epochChoices is left
+  // alone: level i+1's composition was already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setPhase('play')
     setCounts({})
     setSelected(new Set())
     setGraded(false)
-    if (isWrap) {
-      setMistakes(0)
-      setAttempts(0)
-    }
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the accumulators either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses to
+  // fire again on a replay, independent of whether the content changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setPhase('play')
     setCounts({})
     setSelected(new Set())
     setGraded(false)
+    setMistakes(0)
+    setAttempts(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same 3 láminas as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random lámina per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochChoices(LEVELS.map((lvl) => Math.floor(Math.random() * lvl.compositions.length)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -589,24 +606,39 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
               ? `¡Completaste la lámina ${levelIdx + 1}! Te espera una más difícil.`
               : '¡Completaste las tres láminas del día — cerraste el Mes 2!'}
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            // Two ways to go again, not one: some players want another crack
+            // at these exact láminas, others want fresh ones.
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

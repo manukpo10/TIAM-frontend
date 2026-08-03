@@ -182,13 +182,17 @@ function EquationRow({ eq, symbols }: { eq: Equation; symbols: Symbol[] }) {
 export function DesafioDeDeduccion({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  const rounds = useMemo(
-    () => Array.from({ length: roundsForLevel }, () => generateRound(levelIdx)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Qué rounds (símbolos + valores ocultos + ecuaciones) están en juego para
+  // cada nivel en ESTA "epoch" (una pasada completa de 3 niveles). Se
+  // deciden una sola vez por epoch — al montar, y de nuevo sólo en "Hacer
+  // otro" — nunca se re-generan sólo porque el jugador vuelve a visitar un
+  // nivel, así "Repetir" devuelve exactamente los mismos rounds en vez de
+  // generar otros nuevos por accidente.
+  const [epochRounds, setEpochRounds] = useState(() =>
+    ROUNDS_PER_LEVEL.map((count, idx) => Array.from({ length: count }, () => generateRound(idx))),
   )
+  const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
+  const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= roundsForLevel
@@ -199,7 +203,7 @@ export function DesafioDeDeduccion({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Toques equivocados, acumulados a través de niveles 1→2→3 y sólo en cero
-  // en un reinicio real del día (ver la rama isWrap de nextLevel).
+  // en un reinicio real del día (ver restartEpoch más abajo).
   const [mistakes, setMistakes] = useState(0)
 
   const options = useMemo(() => {
@@ -236,24 +240,39 @@ export function DesafioDeDeduccion({ day: _day, onComplete }: GameProps) {
 
   // Resets sincrónicos con el cambio de nivel/ronda — ver ElVuelto.tsx para
   // el motivo de no hacerlo en un efecto separado.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVEL_NAMES.length - 1
-    setLevelIdx((i) => (i < LEVEL_NAMES.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — avanza dentro del MISMO intento. epochRounds queda
+  // intacto: los rounds del nivel i+1 ya se generaron al empezar esta epoch.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setSymbolIdx(0)
     setEliminated(new Set())
     setHint(null)
     setResolved(false)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+  // Compartida por los dos botones de reinicio en la tarjeta del último
+  // nivel. roundKey siempre se incrementa acá: es el contador de "qué
+  // intento es este" que el efecto de onComplete usa para volver a disparar
+  // en una repetición, independientemente de si los rounds cambiaron.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setSymbolIdx(0)
     setEliminated(new Set())
     setHint(null)
     setResolved(false)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — los mismos rounds del intento que acaba de terminar.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — rounds nuevos por nivel.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(ROUNDS_PER_LEVEL.map((count, idx) => Array.from({ length: count }, () => generateRound(idx))))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -365,24 +384,37 @@ export function DesafioDeDeduccion({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Dedujiste los {roundsForLevel * 3} valores — completaste el nivel {levelIdx + 1}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVEL_NAMES.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otro desafío
-            </button>
-          </div>
+          {levelIdx < LEVEL_NAMES.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

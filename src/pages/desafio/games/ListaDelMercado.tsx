@@ -166,11 +166,13 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const round = useMemo(
-    () => level.build(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // The generated Round (studied items + distractors — there's no
+  // pre-authored "sets" to index into, the Round itself IS the content) for
+  // the WHOLE epoch, one per level — built once at mount, and again only
+  // inside restartDifferent(). Never re-rolled just by revisiting a level,
+  // so "Repetir" hands back the exact same list.
+  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => lvl.build()))
+  const round = epochRounds[levelIdx]
   const testBoard = useMemo(() => shuffle([...round.studied, ...round.distractors]), [round])
   const targetIds = useMemo(() => new Set(round.studied.map((o) => o.id)), [round])
 
@@ -180,15 +182,15 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Accumulated across levels 1→2→3 (and across any same-level replay —
   // every submission counts, same model as CuantosHay.tsx), only zeroed
-  // on a true day restart (see nextLevel's wrap branch).
+  // by restartEpoch (a true day restart).
   const [accMistakes, setAccMistakes] = useState(0)
   const [accAttempts, setAccAttempts] = useState(0)
 
   // Arms the auto-advance + early-continue timers for whichever level/round
   // is now current. `phase`/`selected`/`canContinueEarly` are deliberately
-  // NOT reset here — they're reset SYNCHRONOUSLY inside nextLevel()/replay()
-  // themselves (same handler that sets levelIdx/roundKey). An effect only
-  // catches up on the render AFTER levelIdx changes, so the onComplete-
+  // NOT reset here — they're reset SYNCHRONOUSLY inside advanceLevel()/
+  // restartEpoch() themselves (same handler that sets levelIdx/roundKey).
+  // An effect only catches up on the render AFTER levelIdx changes, so the onComplete-
   // reporting effect below (which watches `phase`) would still see the
   // previous level's stale 'results' on the very render that just arrived
   // at the new level — firing onComplete instantly with garbage. Keeping
@@ -239,25 +241,40 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
 
   // Resets happen HERE, synchronously with the level/round change — see the
   // comment on the timer effect above for why.
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochRounds is left
+  // alone: every level's list was already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setPhase('study')
     setSelected(new Set())
     setCanContinueEarly(false)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the accumulator — a same-round replay must NOT, even on level 1.
-    if (isWrap) {
-      setAccMistakes(0)
-      setAccAttempts(0)
-    }
   }
-  function replay() {
+
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once the last level is done, so always a genuine day restart
+  // — zero the accumulators either way; a same-round replay must NOT, which
+  // is why this never runs mid-epoch). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses to
+  // fire again on a replay, independent of whether the list changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setPhase('study')
     setSelected(new Set())
     setCanContinueEarly(false)
+    setAccMistakes(0)
+    setAccAttempts(0)
+  }
+  // "Repetir" — same list as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random list per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRounds(LEVELS.map((lvl) => lvl.build()))
   }
 
   // Reports the SUM across levels 1→2→3, not just level 3: submit() already
@@ -435,24 +452,37 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
               No estaba
             </span>
           </div>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Jugar esta ronda otra vez
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

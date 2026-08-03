@@ -179,23 +179,23 @@ const NUDGE_MESSAGES = [
 export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // `ROUNDS_PER_LEVEL[i]` distinct entries drawn at random from level i's own
+  // pool, for EVERY level at once — decided once per epoch (a full 1→2→3
+  // pass), at mount and again on "Hacer otro", never re-rolled by revisiting
+  // a level, so "Repetir" hands back the exact same words deterministically.
+  const [epochEntries, setEpochEntries] = useState(() =>
+    LEVELS.map((lvl, i) => shuffle(lvl.entries).slice(0, ROUNDS_PER_LEVEL[i])),
+  )
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
-
-  // `roundsForLevel` distinct entries picked at random from the level's own
-  // pool, recalculated once per level/roundKey — never repeats within a level.
-  const roundEntries = useMemo(
-    () => shuffle(level.entries).slice(0, roundsForLevel),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const roundEntries = epochEntries[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const entry = roundEntries[roundIdx]
 
   // Fichas de la ronda (respuesta + señuelos), estables dentro de la ronda;
   // se rearman al cambiar de ronda/nivel. `placedIds` se resetea
-  // SINCRÓNICAMENTE en los handlers de abajo (nextRound/nextLevel/replay),
-  // nunca en un efecto — misma disciplina que DosPistas.tsx.
+  // SINCRÓNICAMENTE en los handlers de abajo (nextRound/advanceLevel/
+  // restartEpoch), nunca en un efecto — misma disciplina que DosPistas.tsx.
   const tiles = useMemo(
     () => buildTiles(entry.answer, DECOYS_PER_LEVEL[levelIdx]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -212,17 +212,18 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Wrong-"Revisar" count, accumulated across levels 1→2→3 and only zeroed
-  // on a true day restart (see nextLevel's wrap branch) — same policy as
+  // on a true day restart (see restartEpoch below) — same policy as
   // ElVuelto/ContadorMasMenos. No separate attempts counter: totalAttempts
   // is derived as mistakes + TOTAL_ROUNDS when reporting (see the effect
   // below), since every round is guaranteed to resolve correctly eventually.
   const [mistakes, setMistakes] = useState(0)
 
   // True once the LAST round of the level has been resolved correctly —
-  // gates the level-complete buttons (nextLevel/replay) instead of the
-  // plain "next word" button. Derived from `resolved` + `roundIdx`, both
-  // real state reset synchronously below — never from a value reset inside
-  // a useEffect (see nextLevel()'s comment for why that matters).
+  // gates the level-complete buttons (advanceLevel, or restartSame/
+  // restartDifferent on the final level) instead of the plain "next word"
+  // button. Derived from `resolved` + `roundIdx`, both real state reset
+  // synchronously below — never from a value reset inside a useEffect (see
+  // advanceLevel/restartEpoch's comment for why that matters).
   const done = resolved && roundIdx >= roundsForLevel - 1
 
   function handlePlace(item: Tile) {
@@ -296,24 +297,43 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   // new level. Setting `resolved`/`roundIdx` in the same handler that sets
   // `levelIdx`/`roundKey` means React batches them into one render, so
   // they're never observably out of sync (same discipline as ElVuelto.tsx).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+
+  // "Siguiente nivel" — advance within the SAME epoch. Only ever called
+  // while levelIdx < LEVELS.length - 1, so no wrap branch needed; epochEntries
+  // is left alone — level i+1's words were already decided when this epoch
+  // started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setResolved(false)
     setHint(null)
     setPlacedIds([])
     setRoundIdx(0)
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-    // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the mistake count — "Otra palabra" must NOT, even on level 1.
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Shared by both restart buttons on the FINAL level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the mistake accumulator either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay, independent of whether the words
+  // themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setResolved(false)
     setHint(null)
     setPlacedIds([])
     setRoundIdx(0)
+    setMistakes(0)
     setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same words as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random set of words per level, same as before
+  // this feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochEntries(LEVELS.map((lvl, i) => shuffle(lvl.entries).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3's last word resolves. A full day
@@ -454,27 +474,8 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
             {entry.source}.
           </p>
           {done && <p className="mt-1 text-slate-600">Completaste el nivel {levelIdx + 1}.</p>}
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
-                <button
-                  type="button"
-                  onClick={nextLevel}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra palabra
-                </button>
-              </>
-            ) : (
+          {!done ? (
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={nextRound}
@@ -483,8 +484,38 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
                 Siguiente palabra
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          ) : levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

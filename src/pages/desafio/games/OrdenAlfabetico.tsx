@@ -86,13 +86,16 @@ const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se ordena!', '¡Perfecto!
 export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const level = LEVELS[levelIdx]
-
-  const roundSets = useMemo(
-    () => shuffle(level.pool).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Which 2 word-sets (and in what order) are playing for level i THIS
+  // "epoch" (a full 3-level pass). Decided once per epoch — at mount, and
+  // again on "Hacer otro" — never re-rolled just because the player
+  // re-visits a level, so "Repetir" can hand back the exact same rounds
+  // deterministically instead of re-randomizing.
+  const [epochRoundSets, setEpochRoundSets] = useState(() =>
+    LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)),
   )
+  const level = LEVELS[levelIdx]
+  const roundSets = epochRoundSets[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const words = roundSets[roundIdx]
   const correctOrder = useMemo(() => [...words].sort((a, b) => a.localeCompare(b, 'es')), [words])
@@ -130,6 +133,9 @@ export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
     }
   }
 
+  // Intra-level round advance (2 rounds per level, drawn from the pool at
+  // epoch-start) — a different, existing mid-level mechanic from the
+  // whole-epoch restart below, so it's left untouched.
   function nextRound() {
     setPlaced([])
     setWrongWord(null)
@@ -138,23 +144,35 @@ export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
   // Resets happen synchronously HERE, in the same handler that changes
   // levelIdx/roundKey — never in a separate effect keyed on them (the
   // stale-flag hazard fixed across this codebase's other games).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME epoch. epochRoundSets is left
+  // alone: level i+1's drawn rounds were already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setPlaced([])
     setWrongWord(null)
-    if (isWrap) {
-      setMistakes(0)
-      setCorrectCount(0)
-    }
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+
+  // Shared by both restart buttons on the final level's complete card.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundIdx(0)
     setPlaced([])
     setWrongWord(null)
+    setMistakes(0)
+    setCorrectCount(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same word-sets, same order, as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random draw per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochRoundSets(LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -253,27 +271,40 @@ export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
               ? `¡Ordenaste todas las palabras — completaste el ${level.name.toLowerCase()}!`
               : `¡Ordenaste las ${words.length} palabras de esta ronda!`}
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {done ? (
-              <>
+          {done ? (
+            levelIdx < LEVELS.length - 1 ? (
+              <div className="mt-5 flex justify-center">
                 <button
                   type="button"
-                  onClick={nextLevel}
+                  onClick={advanceLevel}
                   className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
-                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  Siguiente nivel
                   <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={restartSame}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
                 </button>
                 <button
                   type="button"
-                  onClick={replay}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                  onClick={restartDifferent}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
-                  <RotateCcw className="h-4 w-4" />
-                  Otra ronda
+                  Hacer otro
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-              </>
-            ) : (
+              </div>
+            )
+          ) : (
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={nextRound}
@@ -282,8 +313,8 @@ export function OrdenAlfabetico({ day: _day, onComplete }: GameProps) {
                 Siguiente ronda
                 <ArrowRight className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

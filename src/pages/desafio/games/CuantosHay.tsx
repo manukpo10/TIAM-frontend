@@ -332,15 +332,15 @@ type Phase = 'play' | 'results'
 export function CuantosHay({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const level = LEVELS[levelIdx]
-
-  // `rounds` composiciones del pool del nivel, al azar y sin repetir dentro del
-  // nivel — recalculadas una sola vez por nivel/roundKey.
-  const rounds = useMemo(
-    () => shuffle(level.compositions).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // `level.rounds` composiciones drawn at random from each level's own pool,
+  // for EVERY level at once — decided once per epoch (a full 1→2→3 pass), at
+  // mount and again on "Hacer otro", never re-rolled by revisiting a level,
+  // so "Repetir" hands back the exact same lámina(s) deterministically.
+  const [epochCompositions, setEpochCompositions] = useState(() =>
+    LEVELS.map((lvl) => shuffle(lvl.compositions).slice(0, lvl.rounds)),
   )
+  const level = LEVELS[levelIdx]
+  const rounds = epochCompositions[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const composition = rounds[roundIdx]
@@ -359,8 +359,8 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
   const [counts, setCounts] = useState<Record<string, number>>({})
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   const [levelPraise, setLevelPraise] = useState(PRAISE_GOOD[0])
-  // Acumulados a través de los niveles 1→2→3 y de las repeticiones del mismo
-  // nivel; sólo se ponen en cero en un reinicio real del día (ver nextLevel).
+  // Acumulados a través de los niveles 1→2→3; sólo se ponen en cero en un
+  // reinicio real del día (ver restartEpoch).
   const [accMistakes, setAccMistakes] = useState(0)
   const [accAttempts, setAccAttempts] = useState(0)
 
@@ -397,24 +397,42 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
   // useEffect con dependencia [levelIdx, roundKey]: un efecto llega un render
   // tarde y `done` leería el valor viejo justo al llegar al último nivel,
   // disparando onComplete con datos basura (ver ElVuelto.tsx).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — avanza dentro de la MISMA epoch (nivel 1→2, 2→3).
+  // Solo se llama mientras levelIdx < LEVELS.length - 1; epochCompositions
+  // queda intacto — las láminas del nivel siguiente ya se sortearon al
+  // empezar esta epoch.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setRoundIdx(0)
     setCounts({})
     setPhase('play')
-    if (isWrap) {
-      setAccMistakes(0)
-      setAccAttempts(0)
-    }
   }
-  function replay() {
+
+  // Compartida por los dos botones de la tarjeta final (solo se muestra
+  // cuando el nivel 3 está completo, así que siempre es un reinicio real del
+  // día — se ponen en cero los acumulados en ambos casos). roundKey siempre
+  // avanza acá: es el contador de "qué intento es este" que usa el efecto de
+  // onComplete para volver a dispararse en una repetición, más allá de si el
+  // contenido cambió o no.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
     setCounts({})
     setPhase('play')
-    // NO se ponen en cero los acumulados: repetir un nivel no borra lo anterior.
+    setAccMistakes(0)
+    setAccAttempts(0)
+  }
+  // "Repetir" — las mismas láminas del intento que acaba de terminar.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — un sorteo nuevo de láminas por nivel, igual que antes de
+  // que existiera esta funcionalidad (la única opción que había).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochCompositions(LEVELS.map((lvl) => shuffle(lvl.compositions).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -595,24 +613,37 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
               ? `¡Completaste la lámina ${levelIdx + 1}! Te espera una más difícil.`
               : '¡Completaste las tres láminas del día — el nivel más difícil incluido!'}
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

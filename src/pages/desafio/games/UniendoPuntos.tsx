@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles, Check } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -96,13 +96,17 @@ const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto di
 export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const level = LEVELS[levelIdx]
-
-  const points = useMemo(
-    () => starPolygonPoints(level.shape.n, pickOne(level.shape.kOptions), level.jitter),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Which star-polygon points are playing for level i THIS "epoch" (a full
+  // 3-level pass). Decided once per epoch — at mount, and again on "Hacer
+  // otro" — never re-rolled just because the player re-visits a level, so
+  // "Repetir" can hand back the exact same drawing deterministically instead
+  // of re-generating (a fresh rotation/jitter) and accidentally landing on
+  // something new.
+  const [epochPoints, setEpochPoints] = useState(() =>
+    LEVELS.map((lvl) => starPolygonPoints(lvl.shape.n, pickOne(lvl.shape.kOptions), lvl.jitter)),
   )
+  const level = LEVELS[levelIdx]
+  const points = epochPoints[levelIdx]
 
   const [foundCount, setFoundCount] = useState(0)
   const [wrongIdx, setWrongIdx] = useState<number | null>(null)
@@ -145,24 +149,36 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
   // let the onComplete effect below read a stale `done` the render it
   // arrives at the new level, the same hazard fixed across this codebase's
   // other games — see CaminoNumerico's identical comment).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
+  // "Siguiente nivel" — advance within the SAME attempt. epochPoints is left
+  // alone: level i+1's shape was already generated when this epoch started.
+  function advanceLevel() {
     setFoundAcrossLevels((f) => f + foundCount)
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+    setLevelIdx((i) => i + 1)
     setFoundCount(0)
     setWrongIdx(null)
     setWrongHint(null)
-    if (isWrap) {
-      setMistakes(0)
-      setFoundAcrossLevels(0)
-    }
   }
-  function replay() {
-    setRoundKey((k) => k + 1)
+  // Shared by both restart buttons on the final level's complete card.
+  // roundKey always bumps here: it's the "which attempt is this" generation
+  // counter the onComplete effect uses to fire again on a replay,
+  // independent of whether the drawing itself changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setFoundCount(0)
     setWrongIdx(null)
     setWrongHint(null)
+    setMistakes(0)
+    setFoundAcrossLevels(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same drawing as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh drawing per level.
+  function restartDifferent() {
+    restartEpoch()
+    setEpochPoints(LEVELS.map((lvl) => starPolygonPoints(lvl.shape.n, pickOne(lvl.shape.kOptions), lvl.jitter)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -269,24 +285,37 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             ¡Uniste los {points.length} puntos — completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otro dibujo
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

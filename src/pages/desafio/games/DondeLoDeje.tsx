@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -119,11 +119,12 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const layout = useMemo(
-    () => buildLayout(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Layout (objects AND their cell positions, decided together) for the
+  // WHOLE epoch, one per level — generated once at mount, and again only
+  // inside restartDifferent(). Never re-rolled just by revisiting a level,
+  // so "Repetir" hands back the exact same layout.
+  const [epochLayouts, setEpochLayouts] = useState(() => LEVELS.map((lvl) => buildLayout(lvl)))
+  const layout = epochLayouts[levelIdx]
 
   const [phase, setPhase] = useState<'study' | 'test'>('study')
   const [canContinueEarly, setCanContinueEarly] = useState(false)
@@ -133,7 +134,8 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE_GOOD[0])
   const [correctCount, setCorrectCount] = useState(0)
-  // Accumulated across levels 1→2→3, only zeroed on a true day restart.
+  // Accumulated across levels 1→2→3, only zeroed by restartEpoch (a true
+  // day restart).
   const [mistakes, setMistakes] = useState(0)
 
   const done = queryIdx >= level.objects
@@ -185,10 +187,11 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change — same
   // discipline as every sibling game (see ElVuelto.tsx / Memotest.tsx for why
   // an effect-based reset would let `done` read stale right at the last level).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochLayouts is left
+  // alone: every level's layout was already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setPhase('study')
     setCanContinueEarly(false)
     setQueryIdx(0)
@@ -196,9 +199,16 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
     setSolved(false)
     setHint(null)
     setCorrectCount(0)
-    if (isWrap) setMistakes(0)
   }
-  function replay() {
+
+  // Shared by both restart buttons on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // the mistake accumulator either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay, independent of whether the layout
+  // changed.
+  function restartEpoch() {
+    setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setPhase('study')
     setCanContinueEarly(false)
@@ -207,6 +217,17 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
     setSolved(false)
     setHint(null)
     setCorrectCount(0)
+    setMistakes(0)
+  }
+  // "Repetir" — same layout as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Hacer otro" — a fresh random layout per level, same as before this
+  // feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochLayouts(LEVELS.map((lvl) => buildLayout(lvl)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -361,24 +382,37 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Encontraste los {level.objects} objetos — completaste el {level.name.toLowerCase()}.
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Hacer otro
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
