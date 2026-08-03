@@ -132,7 +132,12 @@ function buildWithLures(count: number): Round {
   }
   return { studied, distractors }
 }
-const buildL3 = () => buildWithLures(8)
+// L3 stays at 6 studied (matching L2's board size, not L1's original 8) so
+// the test board tops out at 12 images and still fits inside the modal
+// without scrolling — some players in this audience don't realize there's
+// more below the fold. The difficulty step up from L2 is the lure quality
+// (same-category near-misses), not a bigger board.
+const buildL3 = () => buildWithLures(6)
 const buildL4 = () => buildWithLures(10)
 
 interface Level {
@@ -145,7 +150,8 @@ interface Level {
 
 // Counts trimmed across all 4 levels (studied+distractors on the test board
 // was 12/18/24/30 — too many figures to scan for this audience). Ramp is now
-// 4/6/8/10 studied, +2 per level, test board 8/12/16/20.
+// 4/6/6/10 studied, test board 8/12/12/20 — L3 ties L2's board size on
+// purpose (see buildL3 above) instead of continuing the +2 step.
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, build: buildL1 },
   { n: 2, name: 'Nivel 2', studySeconds: 24, minEarlySeconds: 8, build: buildL2 },
