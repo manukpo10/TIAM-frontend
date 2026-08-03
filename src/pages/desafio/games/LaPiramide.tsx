@@ -197,6 +197,11 @@ export function LaPiramide({ day: _day, onComplete }: GameProps) {
   const [mistakes, setMistakes] = useState(0)
 
   const activeBlank = puzzle?.blanks[activeBlankIdx]
+  // La fila del blanco activo decide qué explicación mostrar: un blanco de la
+  // fila de ABAJO se resuelve al revés que uno de arriba o del medio (sus
+  // "hijos" no están los dos visibles — hay que restar desde el de arriba),
+  // y eso es justamente lo que confundía sin esta aclaración dinámica.
+  const activeBlankRow = activeBlank ? CELL_POSITIONS.find((c) => c.key === activeBlank.key)?.row : undefined
   const activeOptions = useMemo(
     () => (activeBlank ? shuffle(activeBlank.options) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -313,6 +318,15 @@ export function LaPiramide({ day: _day, onComplete }: GameProps) {
             <p className="mt-2 text-base font-medium text-slate-500">
               Cada número es la suma de los dos que tiene abajo.
             </p>
+            {activeBlankRow === 2 ? (
+              <p className="mt-1 text-base font-semibold text-tiam-blue">
+                Para este: al número de arriba, restale el que ya ves al lado.
+              </p>
+            ) : (
+              <p className="mt-1 text-base font-semibold text-tiam-blue">
+                Para este: sumá los dos números que tiene abajo.
+              </p>
+            )}
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
               <p className="shrink-0 text-base font-semibold text-slate-500">
                 Llevás {roundIdx} de {roundsForLevel}
@@ -357,30 +371,36 @@ export function LaPiramide({ day: _day, onComplete }: GameProps) {
             ))}
           </div>
 
-          {/* Options for the active blank */}
+          {/* Options for the active blank — labeled so the three boxes don't
+              read as another row of the pyramid. */}
           {activeBlank && (
-            <div className="mx-auto mt-6 grid max-w-xs grid-cols-3 gap-2.5">
-              {activeOptions.map((opt) => {
-                const isEliminated = eliminated.has(opt)
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    disabled={isEliminated || resolving}
-                    onClick={() => guess(opt)}
-                    className={[
-                      'min-h-[56px] rounded-2xl border-2 text-xl font-extrabold transition',
-                      'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                      isEliminated
-                        ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
-                        : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
-                    ].join(' ')}
-                  >
-                    {opt}
-                  </button>
-                )
-              })}
-            </div>
+            <>
+              <p className="mt-6 text-center text-sm font-semibold uppercase tracking-wide text-slate-400">
+                Elegí el número que falta
+              </p>
+              <div className="mx-auto mt-2 grid max-w-xs grid-cols-3 gap-2.5">
+                {activeOptions.map((opt) => {
+                  const isEliminated = eliminated.has(opt)
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      disabled={isEliminated || resolving}
+                      onClick={() => guess(opt)}
+                      className={[
+                        'min-h-[56px] rounded-2xl border-2 text-xl font-extrabold transition',
+                        'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                        isEliminated
+                          ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
+                          : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
+                      ].join(' ')}
+                    >
+                      {opt}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
           )}
 
           {hint && !resolving && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
