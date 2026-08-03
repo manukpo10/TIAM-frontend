@@ -285,48 +285,52 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
         </div>
       </div>
 
-      {/* Board */}
-      <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5">
-        {board.map((card, index) => {
-          const isMatched = matchedIds.has(card.pairId)
-          const isFaceUp = isMatched || pending.includes(index)
-          const img = card.kind === 'image' ? imgFor(card.pairId) : undefined
+      {/* Board — oculto una vez completado el nivel: antes quedaba debajo del
+          tablero entero (hasta 24 cartas en nivel 3) y había que deslizar para
+          ver el cartel de "completaste el nivel", así que a veces no se veía. */}
+      {!done && (
+        <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5">
+          {board.map((card, index) => {
+            const isMatched = matchedIds.has(card.pairId)
+            const isFaceUp = isMatched || pending.includes(index)
+            const img = card.kind === 'image' ? imgFor(card.pairId) : undefined
 
-          return (
-            <button
-              key={index}
-              type="button"
-              disabled={isMatched || locked}
-              onClick={() => handleTap(index)}
-              aria-label={isFaceUp ? card.label : 'Carta tapada'}
-              className={[
-                'relative flex aspect-square items-center justify-center rounded-2xl border-2 p-2 transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                isMatched
-                  ? 'border-tiam-green bg-white ring-2 ring-tiam-green/30'
-                  : isFaceUp
-                    ? 'border-slate-200 bg-white'
-                    : 'border-tiam-blue/20 bg-tiam-blue/10 hover:bg-tiam-blue/15 active:scale-95',
-              ].join(' ')}
-            >
-              {isFaceUp &&
-                (card.kind === 'image'
-                  ? img && <img src={img} alt={card.label} className="h-full w-full object-contain" draggable={false} />
-                  : (
-                    <span className="text-center text-xs font-bold leading-tight text-slate-700 sm:text-sm">
-                      {card.label}
-                    </span>
-                  ))}
+            return (
+              <button
+                key={index}
+                type="button"
+                disabled={isMatched || locked}
+                onClick={() => handleTap(index)}
+                aria-label={isFaceUp ? card.label : 'Carta tapada'}
+                className={[
+                  'relative flex aspect-square items-center justify-center rounded-2xl border-2 p-2 transition',
+                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                  isMatched
+                    ? 'border-tiam-green bg-white ring-2 ring-tiam-green/30'
+                    : isFaceUp
+                      ? 'border-slate-200 bg-white'
+                      : 'border-tiam-blue/20 bg-tiam-blue/10 hover:bg-tiam-blue/15 active:scale-95',
+                ].join(' ')}
+              >
+                {isFaceUp &&
+                  (card.kind === 'image'
+                    ? img && <img src={img} alt={card.label} className="h-full w-full object-contain" draggable={false} />
+                    : (
+                      <span className="text-center text-xs font-bold leading-tight text-slate-700 sm:text-sm">
+                        {card.label}
+                      </span>
+                    ))}
 
-              {isMatched && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+                {isMatched && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {mismatchLine && !done && (
         <p className="mt-4 text-center text-base font-medium text-slate-500">{mismatchLine}</p>
