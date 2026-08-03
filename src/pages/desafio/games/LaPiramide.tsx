@@ -129,10 +129,9 @@ const LEVELS: Level[] = [
   },
 ]
 
-// Same 2/3/3 tuning as ElVuelto/ContadorMasMenos/AlcanzaLaPlata — the
-// reviewing professional called a longer version of this shape "muy
-// cansador" for one of 30 days.
-const ROUNDS_PER_LEVEL = [2, 3, 3]
+// Uniform 2 rounds per level, same trim applied across the other days'
+// exercises this pass.
+const ROUNDS_PER_LEVEL = [2, 2, 2]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
 function shuffle<T>(arr: T[]): T[] {
