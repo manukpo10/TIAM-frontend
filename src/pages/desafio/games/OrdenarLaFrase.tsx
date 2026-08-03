@@ -61,15 +61,12 @@ const LEVELS: SentenceLevel[] = [
     n: 3,
     name: 'Nivel 3',
     rounds: 2,
+    // No distractor word here anymore: the 12-word length is already the
+    // step up from nivel 2 (9 words) — stacking "also spot the foreign
+    // word" on top made this level a bigger jump than the app's usual pace.
     sentences: [
-      {
-        words: ['Mi', 'hermano', 'trabaja', 'en', 'una', 'farmacia', 'del', 'centro', 'desde', 'hace', 'diez', 'años'],
-        distractor: 'paraguas',
-      },
-      {
-        words: ['Encontré', 'una', 'carta', 'vieja', 'en', 'el', 'fondo', 'del', 'placard', 'de', 'mi', 'cuarto'],
-        distractor: 'zapatillas',
-      },
+      { words: ['Mi', 'hermano', 'trabaja', 'en', 'una', 'farmacia', 'del', 'centro', 'desde', 'hace', 'diez', 'años'] },
+      { words: ['Encontré', 'una', 'carta', 'vieja', 'en', 'el', 'fondo', 'del', 'placard', 'de', 'mi', 'cuarto'] },
     ],
   },
 ]
