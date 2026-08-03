@@ -143,16 +143,14 @@ interface Tile {
 export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Which set (index into LEVELS[i].sets) is playing for level i THIS "epoch"
+  // (a full 3-level pass). Decided once per epoch — at mount, and again on
+  // "Empezar de nuevo" — never re-rolled just because the player re-visits a
+  // level, so "Repetir" can hand back the exact same 3 sets deterministically
+  // instead of re-randomizing and accidentally landing on something new.
+  const [epochChoices, setEpochChoices] = useState(() => LEVELS.map((lvl) => Math.floor(Math.random() * lvl.sets.length)))
   const level = LEVELS[levelIdx]
-
-  // One word-set drawn at random per visit to the level — a replay (new
-  // roundKey) or a fresh open serves different words, same as every other
-  // game's pool-and-shuffle pattern.
-  const words = useMemo(
-    () => pickOne(level.sets),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  const words = level.sets[epochChoices[levelIdx]]
 
   // All tiles of the drawn set, stable ids.
   const tiles: Tile[] = useMemo(
@@ -238,17 +236,39 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   }, [placed, level.chunksPerWord])
 
   // Synchronous resets in the handler (never a [levelIdx]-keyed effect).
-  function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
-    setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
+
+  // "Siguiente nivel" — advance within the SAME attempt. epochChoices is left
+  // alone: level i+1's word-set was already decided when this epoch started.
+  function advanceLevel() {
+    setLevelIdx((i) => i + 1)
     setPlaced([])
     setFound([])
     setHint(null)
-    if (isWrap) {
-      // Genuine day restart: zero the accumulator.
-      setMistakes(0)
-    }
+  }
+
+  // Shared by both restart buttons on the "Empezar de nuevo" screen (only
+  // ever shown once level 3 is done, so always a genuine day restart —
+  // zero the mistake accumulator either way). roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay, independent of whether the
+  // words themselves changed.
+  function restartEpoch() {
+    setLevelIdx(0)
+    setPlaced([])
+    setFound([])
+    setHint(null)
+    setMistakes(0)
+    setRoundKey((k) => k + 1)
+  }
+  // "Repetir" — same 3 word-sets as the attempt just finished.
+  function restartSame() {
+    restartEpoch()
+  }
+  // "Empezar de nuevo" — a fresh random word-set per level, same as before
+  // this feature existed (the only option there used to be).
+  function restartDifferent() {
+    restartEpoch()
+    setEpochChoices(LEVELS.map((lvl) => Math.floor(Math.random() * lvl.sets.length)))
   }
 
   // Fires once per roundKey when level 3's last word is found.
@@ -379,16 +399,41 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Encontraste las {words.length} palabras: {words.map((w) => w.word).join(', ')}.
           </p>
-          <div className="mt-5 flex justify-center">
-            <button
-              type="button"
-              onClick={nextLevel}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-            >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
+          {levelIdx < LEVELS.length - 1 ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={advanceLevel}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente nivel
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            // Two ways to go again, not one: some players want another crack
+            // at these exact words, others want fresh ones — "Empezar de
+            // nuevo" alone used to always mean the latter with no way to ask
+            // for the former.
+            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir estas palabras
+              </button>
+              <button
+                type="button"
+                onClick={restartDifferent}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Empezar de nuevo
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
