@@ -52,7 +52,7 @@ const LEVELS: Level[] = [
   {
     n: 2,
     name: 'Nivel 2',
-    rounds: 3,
+    rounds: 2,
     pool: [
       { answer: 'CAMINO', clues: ['Tiene 6 letras', 'Tiene 3 vocales', 'Termina en vocal', 'Contiene la letra I'], options: ['CAMINO', 'SENDA', 'RUTA', 'PUENTE', 'CALLE', 'ATAJO'] },
       { answer: 'VENTANA', clues: ['Tiene 7 letras', 'Tiene 3 vocales', 'Termina en vocal', 'No lleva acento'], options: ['VENTANA', 'PUERTA', 'TECHO', 'PARED', 'PISO', 'BALCÓN'] },
@@ -63,7 +63,7 @@ const LEVELS: Level[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    rounds: 3,
+    rounds: 2,
     pool: [
       { answer: 'MARIPOSA', clues: ['Tiene 8 letras', 'Tiene 4 vocales', 'Termina en vocal', 'No lleva acento', 'Contiene la letra R'], options: ['MARIPOSA', 'LIBÉLULA', 'HORMIGA', 'ABEJA', 'MOSQUITO', 'GRILLO', 'ARAÑA'] },
       { answer: 'ZANAHORIA', clues: ['Tiene 9 letras', 'Tiene 5 vocales', 'Termina en vocal', 'No lleva acento'], options: ['ZANAHORIA', 'TOMATE', 'LECHUGA', 'ESPINACA', 'CEBOLLA', 'MORRÓN', 'ACELGA'] },
