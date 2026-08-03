@@ -80,7 +80,11 @@ const LEVELS: Level[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    pairs: 12,
+    // 7, no 12: en mobile el tablero no entra en pantalla sin deslizar más
+    // allá de 5 filas (14 cartas) aunque el título y la pista se contraigan
+    // (ver COLLAPSE_HINT_MS más abajo) — medido en vivo contra el alto real
+    // del modal, no a ojo.
+    pairs: 7,
     pool: ANIMALS,
     asymmetric: true,
     hint: 'Ahora las parejas son distintas: una carta tiene el dibujo y la otra tiene el nombre. ¡Fijate bien!',
@@ -132,10 +136,18 @@ const MISMATCH_LINES = [
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente memoria!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
 
-// Fixed total of successful matches across the whole day (3+6+12) — every pair
+// Fixed total of successful matches across the whole day (3+6+7) — every pair
 // is matched exactly once no matter how many mismatches happen along the way,
 // so this is a derivable constant rather than a piece of state to track.
 const TOTAL_PAIRS = LEVELS.reduce((sum, l) => sum + l.pairs, 0)
+
+// How long the title + hint stay expanded before collapsing to free up board
+// space (measured live against the real modal height: nivel 3's 7 pairs need
+// that extra room on a mobile viewport, or the board doesn't fit without
+// scrolling). Generous enough for an unhurried first read — this is cosmetic
+// space-reclaiming, never a gameplay timer, so it stays purely one-way with
+// no rush implied.
+const COLLAPSE_HINT_MS = 6000
 
 export function Memotest({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
@@ -158,8 +170,19 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
   // Mismatch count, accumulated across levels 1→2→3 and only zeroed on a true
   // day restart (see restartEpoch below) — same policy as ElVuelto.
   const [mistakes, setMistakes] = useState(0)
+  // Title + hint start expanded on every level so the mechanic is explained
+  // up front, then collapse on their own after COLLAPSE_HINT_MS to free up
+  // room for the board (nivel 3's 7 pairs need it). Resets on every level
+  // change and on a full restart, never on a mismatch or a match.
+  const [instructionsCollapsed, setInstructionsCollapsed] = useState(false)
 
   const done = matchedIds.size >= level.pairs
+
+  useEffect(() => {
+    setInstructionsCollapsed(false)
+    const t = window.setTimeout(() => setInstructionsCollapsed(true), COLLAPSE_HINT_MS)
+    return () => window.clearTimeout(t)
+  }, [levelIdx, roundKey])
 
   useEffect(() => {
     if (done) setPraise(pickOne(PRAISE))
@@ -265,15 +288,26 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
           {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          {level.asymmetric ? 'Encontrá cada dibujo con su palabra' : 'Encontrá las parejas'}
-        </h2>
-        {!done && (
-          <p className="mt-2 text-base text-slate-500">
-            {level.hint ??
-              'Tocá dos cartas. Si son iguales, quedan destapadas. Si no, se vuelven a tapar y las volvés a intentar.'}
-          </p>
-        )}
+        {/* Título + pista: se leen una vez y se contraen solos para dejarle
+            lugar al tablero (nivel 3 necesita esa fila extra en mobile). El
+            overflow-hidden es lo que hace que max-h-0 valga como "ocupa cero
+            espacio" en vez de solo recortar la vista. */}
+        <div
+          className={[
+            'overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out',
+            instructionsCollapsed ? 'max-h-0 opacity-0' : 'max-h-40 opacity-100',
+          ].join(' ')}
+        >
+          <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+            {level.asymmetric ? 'Encontrá cada dibujo con su palabra' : 'Encontrá las parejas'}
+          </h2>
+          {!done && (
+            <p className="mt-2 text-base text-slate-500">
+              {level.hint ??
+                'Tocá dos cartas. Si son iguales, quedan destapadas. Si no, se vuelven a tapar y las volvés a intentar.'}
+            </p>
+          )}
+        </div>
         <p className="mt-2 text-base font-semibold text-slate-500">
           Encontraste {matchedIds.size} de {level.pairs} parejas
         </p>
