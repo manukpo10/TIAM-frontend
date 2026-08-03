@@ -412,9 +412,11 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
             </div>
           ) : (
             // Two ways to go again, not one: some players want another crack
-            // at these exact words, others want fresh ones — "Empezar de
-            // nuevo" alone used to always mean the latter with no way to ask
-            // for the former.
+            // at these exact words, others want fresh ones. "Empezar de
+            // nuevo" read as "start over" (wiping progress) to this audience,
+            // so the second option is phrased as "Hacer otro" instead — one
+            // more round, not a reset. Neither label repeats "estas
+            // palabras": the result text right above already names them.
             <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
               <button
                 type="button"
@@ -422,14 +424,14 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
               >
                 <RotateCcw className="h-4 w-4" />
-                Repetir estas palabras
+                Repetir
               </button>
               <button
                 type="button"
                 onClick={restartDifferent}
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
-                Empezar de nuevo
+                Hacer otro
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
