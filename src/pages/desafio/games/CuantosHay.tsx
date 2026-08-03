@@ -465,19 +465,6 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
                 Acertaste {correctCount} de {types.length} — {praise}
               </p>
             )}
-            {/* Barra de avance de niveles (1→2→3), no de rondas: cada nivel es una
-                sola lámina, así que "llevás 0 de 1" no diría nada. */}
-            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
-              <p className="shrink-0 text-base font-semibold text-slate-500">
-                Lámina {levelIdx + 1} de {LEVELS.length}
-              </p>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-tiam-orange transition-[width] duration-300"
-                  style={{ width: `${(levelIdx / LEVELS.length) * 100}%` }}
-                />
-              </div>
-            </div>
           </>
         )}
       </div>
