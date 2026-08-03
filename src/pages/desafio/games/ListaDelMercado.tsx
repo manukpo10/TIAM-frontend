@@ -106,10 +106,9 @@ function buildL2(): Round {
   return { studied, distractors }
 }
 
-// Shared by L3/L4: same-category "lure" distractors (e.g. studied "leche" ->
-// decoy "yogur", both lácteos) — the hardest distractor type, since a lure
-// can't be rejected just by noticing it's off-domain. Only the studied COUNT
-// differs between the two levels; the lure logic itself is identical.
+// L3's distractors: same-category "lure" items (e.g. studied "leche" -> decoy
+// "yogur", both lácteos) — the hardest distractor type, since a lure can't be
+// rejected just by noticing it's off-domain.
 function buildWithLures(count: number): Round {
   const studied = pick(MERCADO_ITEMS, count)
   const studiedIds = new Set(studied.map((o) => o.id))
@@ -138,7 +137,6 @@ function buildWithLures(count: number): Round {
 // more below the fold. The difficulty step up from L2 is the lure quality
 // (same-category near-misses), not a bigger board.
 const buildL3 = () => buildWithLures(6)
-const buildL4 = () => buildWithLures(10)
 
 interface Level {
   n: number
@@ -148,15 +146,14 @@ interface Level {
   build: () => Round
 }
 
-// Counts trimmed across all 4 levels (studied+distractors on the test board
-// was 12/18/24/30 — too many figures to scan for this audience). Ramp is now
-// 4/6/6/10 studied, test board 8/12/12/20 — L3 ties L2's board size on
-// purpose (see buildL3 above) instead of continuing the +2 step.
+// Trimmed to 3 levels (a 4th was one level too many for this audience —
+// separately, its studied+distractors count also overflowed the modal).
+// Studied ramp is 4/6/6, test board 8/12/12 — L3 ties L2's board size on
+// purpose (see buildL3 above) instead of growing further.
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, build: buildL1 },
   { n: 2, name: 'Nivel 2', studySeconds: 24, minEarlySeconds: 8, build: buildL2 },
   { n: 3, name: 'Nivel 3', studySeconds: 28, minEarlySeconds: 10, build: buildL3 },
-  { n: 4, name: 'Nivel 4', studySeconds: 32, minEarlySeconds: 10, build: buildL4 },
 ]
 
 const PRAISE_GOOD = ['¡Excelente memoria!', '¡Muy bien!', '¡Así se hace!', '¡Qué buena atención!']
