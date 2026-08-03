@@ -12,11 +12,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * exercise in the whole challenge that gets the person physically MOVING, which
  * for an older adult is worth double.
  *
- * Like día 18 (Stroop) and día 30 (cipher), this is a PAPEL Y LÁPIZ day — solved
- * off the phone, standing up. The phone shows the gesture legend, the
- * alphabet→gesture key and the words; the person does the movements and writes
- * their recalled words on paper. Opens with "hoy es día de papel y lápiz" and
- * closes with a single "Ya lo hice" that reports a trivial completion —
+ * Like día 18 (Stroop) and día 30 (cipher), this is solved off the phone,
+ * standing up — but unlike those two, the headline act here is physical, not
+ * writing (the phone shows the gesture legend, the alphabet→gesture key and
+ * the words; the person does the movements, and only writes their recalled
+ * words on paper as the final step), so it opens with "hoy es día de ponerse
+ * en movimiento" instead of the "papel y lápiz" framing those two use.
+ * Closes with a single "Ya lo hice" that reports a trivial completion —
  * computeStars treats totalAttempts === 0 as full accuracy, so the day counts
  * toward the streak (3 estrellas por participar) without a fake score.
  *
@@ -110,7 +112,7 @@ export function LetrasEnMovimiento({ day: _day, onComplete }: GameProps) {
       {phase === 'intro' && (
         <div className="text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
-            Hoy es día de papel y lápiz
+            Hoy es día de ponerse en movimiento
           </span>
           <h2 className="mt-4 text-xl font-bold text-slate-900 sm:text-2xl">
             Hoy se juega de pie: cada letra es un movimiento.
