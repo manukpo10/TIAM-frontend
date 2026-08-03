@@ -19,7 +19,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Difficulty ramps on two axes at once:
  *   - how NEAR the intruder is: L1 a far domain (a hammer among fruit), L2 an
- *     adjacent category (a carrot among fruit; a food among drinking vessels),
+ *     adjacent category (a carrot among fruit; a spoon among drinking vessels),
  *     L3 a shared abstract property (the one thing that isn't round; the one
  *     that doesn't fly).
  *   - how MANY items to scan: L1 shows 4 options, L2/L3 show 5.
@@ -65,7 +65,7 @@ const LEVELS: Level[] = [
     pool: [
       { members: ['manzana', 'pera', 'naranja', 'uvas'], intruder: 'zanahoria', categoria: 'frutas' },
       { members: ['martillo', 'destornillador', 'pinza', 'llave-inglesa'], intruder: 'cuchara', categoria: 'herramientas' },
-      { members: ['vaso', 'taza', 'mate', 'botella'], intruder: 'plato', categoria: 'cosas para tomar' },
+      { members: ['vaso', 'taza', 'mate', 'botella'], intruder: 'cuchara', categoria: 'cosas para tomar' },
       { members: ['zanahoria', 'tomate', 'papa', 'cebolla'], intruder: 'manzana', categoria: 'verduras' },
     ],
   },
