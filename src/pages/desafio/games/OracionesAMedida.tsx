@@ -94,7 +94,7 @@ export function OracionesAMedida({ day: _day, onComplete }: GameProps) {
           {/* Cómo se lee: un ejemplo. */}
           <div className="rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3 text-center">
             <p className="text-sm font-semibold text-slate-500">
-              Cada número es una palabra, y dice cuántas letras tiene:
+              Cada número es la cantidad de letras que tiene esa palabra:
             </p>
             <p className="mt-1.5 flex items-center justify-center gap-2 text-base">
               <span className="font-extrabold tracking-wider text-tiam-blue">{fmt(EXAMPLE.pattern)}</span>
