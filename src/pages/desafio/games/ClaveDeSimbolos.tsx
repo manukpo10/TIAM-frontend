@@ -45,8 +45,8 @@ interface Level {
 }
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', keySize: 5, rowLen: 5, rounds: 2 },
-  { n: 2, name: 'Nivel 2', keySize: 6, rowLen: 6, rounds: 3 },
-  { n: 3, name: 'Nivel 3', keySize: 7, rowLen: 7, rounds: 3 },
+  { n: 2, name: 'Nivel 2', keySize: 6, rowLen: 6, rounds: 2 },
+  { n: 3, name: 'Nivel 3', keySize: 7, rowLen: 7, rounds: 2 },
 ]
 // Every decoded symbol is a genuine correct tap (no give-up path), so
 // totalAttempts = mistakes + correctCount (same shape as QueOficioEs).
