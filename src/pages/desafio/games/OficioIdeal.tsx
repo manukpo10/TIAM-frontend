@@ -47,7 +47,6 @@ const LEVELS: Level[] = [
       { id: 'bombero', vignette: 'Desde muy chico, a Raúl le fascinaban las sirenas y los camiones rojos que pasaban por su calle.', decoys: ['cocinero', 'costurera', 'peluquero'] },
       { id: 'veterinario', vignette: 'Tomás siempre traía a casa algún animal herido para cuidarlo hasta que se recuperara.', decoys: ['albanil', 'electricista', 'juez'] },
       { id: 'cocinero', vignette: 'A Elsa le encantaba ayudar a su mamá en la cocina, mezclando ingredientes para inventar postres nuevos.', decoys: ['bombero', 'carpintero', 'cartero'] },
-      { id: 'peluquero', vignette: 'De adolescente, Marcelo le cortaba el pelo a todos sus primos, siempre con paciencia y buena mano.', decoys: ['verdulero', 'plomero', 'medico'] },
     ],
   },
   {
@@ -57,8 +56,6 @@ const LEVELS: Level[] = [
     rounds: [
       { id: 'electricista', vignette: 'Héctor siempre fue el que arreglaba todo en casa: un enchufe, un cable pelado, una lámpara que no prendía.', decoys: ['plomero', 'carpintero', 'verdulero'] },
       { id: 'panadero', vignette: 'Osvaldo aprendió a amasar con su abuela, y hasta hoy se despierta antes que nadie por el olor a horno recién prendido.', decoys: ['cocinero', 'costurera', 'juez'] },
-      { id: 'juez', vignette: 'Graciela siempre resolvía los conflictos entre sus hermanos con calma, escuchando primero a cada uno antes de decidir.', decoys: ['medico', 'albanil', 'cartero'] },
-      { id: 'carpintero', vignette: 'Ramón tenía mano para la madera desde chico — armaba juguetes con los restos que sobraban en el taller de su tío.', decoys: ['albanil', 'plomero', 'peluquero'] },
       { id: 'enfermero', vignette: 'Delia siempre fue la primera en socorrer a cualquiera que se lastimara en el patio del colegio.', decoys: ['medico', 'veterinario', 'bombero'] },
       { id: 'costurera', vignette: 'Beatriz heredó de su madre la costumbre de arreglarle la ropa a toda la familia, puntada por puntada.', decoys: ['peluquero', 'pintor', 'cartero'] },
     ],
@@ -70,8 +67,6 @@ const LEVELS: Level[] = [
     rounds: [
       { id: 'verdulero', vignette: 'Nélida sabía, con solo tocar un tomate, si estaba a punto o si convenía esperar unos días más — los vecinos le pedían consejo antes de comprar.', decoys: ['cocinero', 'panadero', 'peluquero'] },
       { id: 'pintor', vignette: 'Aníbal se pasaba horas mezclando colores hasta encontrar el tono exacto que el cliente le pedía para la pared del living.', decoys: ['albanil', 'carpintero', 'electricista'] },
-      { id: 'enfermero', vignette: 'Marisa memorizaba sin esfuerzo la dosis exacta de cada remedio que el médico indicaba, y nunca fallaba al aplicar una inyección.', decoys: ['medico', 'veterinario', 'juez'] },
-      { id: 'plomero', vignette: 'Walter reconocía, con solo escuchar el ruido de una canilla, si el problema era una junta floja o un caño roto.', decoys: ['electricista', 'albanil', 'carpintero'] },
       { id: 'costurera', vignette: 'Norma cosía a mano cada dobladillo con una puntada tan pareja que parecía hecha a máquina.', decoys: ['peluquero', 'pintor', 'juez'] },
       { id: 'cartero', vignette: 'Rodolfo memorizaba cada calle y atajo del barrio, y nunca entregaba una carta en la casa equivocada.', decoys: ['bombero', 'medico', 'verdulero'] },
     ],
