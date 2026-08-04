@@ -414,10 +414,10 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
               {pasos.map((paso, i) => {
                 const img = imgFor(paso.obj)
                 return (
-                  <div key={i} className="flex w-[68px] shrink-0 flex-col items-center sm:w-[84px]">
-                    <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-1 sm:h-16 sm:w-16">
+                  <div key={i} className="flex w-[96px] shrink-0 flex-col items-center sm:w-[116px]">
+                    <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-1 sm:h-24 sm:w-24">
                       {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
-                      <span className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-orange text-[11px] font-bold text-white">
+                      <span className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-orange text-xs font-bold text-white">
                         {i + 1}
                       </span>
                     </div>
