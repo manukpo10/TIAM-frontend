@@ -132,20 +132,38 @@ function ShapeGlyph({ kind, color }: { kind: ShapeKind; color: ColorKey }) {
   )
 }
 
+// Percentage-based positioning (computed from the fixed SCENE_W/SCENE_H
+// pixel geometry above) so the whole scene scales down inside narrow grid
+// cells instead of forcing a fixed 200px width — that fixed width was what
+// pushed nivel 2/3's 4-candidate grids below the fold on mobile.
 function Scene({ shapes, highlight }: { shapes: PlacedShape[]; highlight?: boolean }) {
   return (
     <div
-      className={`relative mx-auto shrink-0 rounded-xl ${highlight ? 'bg-tiam-blue/5' : ''}`}
-      style={{ width: SCENE_W, height: SCENE_H }}
+      className={`relative mx-auto w-full max-w-[200px] shrink-0 rounded-xl ${highlight ? 'bg-tiam-blue/5' : ''}`}
+      style={{ aspectRatio: `${SCENE_W} / ${SCENE_H}` }}
     >
       <div
         className="absolute rounded-lg border-2 border-slate-300 bg-white"
-        style={{ left: BOX_LEFT, top: BOX_TOP, width: BOX_W, height: BOX_H }}
+        style={{
+          left: `${(BOX_LEFT / SCENE_W) * 100}%`,
+          top: `${(BOX_TOP / SCENE_H) * 100}%`,
+          width: `${(BOX_W / SCENE_W) * 100}%`,
+          height: `${(BOX_H / SCENE_H) * 100}%`,
+        }}
       />
       {shapes.map((s, i) => {
         const pos = slotPos(s.relation)
         return (
-          <div key={i} className="absolute" style={{ left: pos.left, top: pos.top, width: SLOT, height: SLOT }}>
+          <div
+            key={i}
+            className="absolute"
+            style={{
+              left: `${(pos.left / SCENE_W) * 100}%`,
+              top: `${(pos.top / SCENE_H) * 100}%`,
+              width: `${(SLOT / SCENE_W) * 100}%`,
+              height: `${(SLOT / SCENE_H) * 100}%`,
+            }}
+          >
             <ShapeGlyph kind={s.shape} color={s.color} />
           </div>
         )
@@ -284,6 +302,7 @@ function samePair(a: [PlacedShape, PlacedShape], b: [PlacedShape, PlacedShape]):
 }
 
 const HINTS = ['Ese no es — fijate bien dónde está.', 'Casi. Mirá con calma la posición.', 'No es ese. Probá con otro.']
+const ROUND_PRAISE = ['¡Correcto!', '¡Exacto!', '¡Muy bien!', '¡Así se hace!']
 const LEVEL_PRAISE_GOOD = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen ojo espacial!']
 const LEVEL_PRAISE_OK = ['¡Buen intento! Con la práctica se ve cada vez más fácil.', '¡Bien ahí! Seguí practicando.']
 
@@ -310,6 +329,7 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
 
   const [eliminated, setEliminated] = useState<Set<string>>(new Set())
   const [solved, setSolved] = useState(false)
+  const [roundOk, setRoundOk] = useState(ROUND_PRAISE[0])
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(LEVEL_PRAISE_GOOD[0])
   const [mistakes, setMistakes] = useState(0)
@@ -320,13 +340,13 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done])
 
-  function advance() {
-    window.setTimeout(() => {
-      setRoundIdx((i) => i + 1)
-      setEliminated(new Set())
-      setSolved(false)
-      setHint(null)
-    }, 1000)
+  // "Seguir" en la tarjeta de acierto — sin timer: antes esto pasaba solo al
+  // segundo, sin ninguna señal de que la respuesta era correcta.
+  function nextRound() {
+    setRoundIdx((i) => i + 1)
+    setEliminated(new Set())
+    setSolved(false)
+    setHint(null)
   }
 
   // ── Nivel 1: tap the correct word ───────────────────────────────────
@@ -340,9 +360,9 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
     if (!l1Round || solved || eliminated.has(relation)) return
     if (relation === l1Round.scene.relation) {
       setSolved(true)
+      setRoundOk(pickOne(ROUND_PRAISE))
       setHint(null)
       setCorrectCount((c) => c + 1)
-      advance()
     } else {
       setEliminated((prev) => (prev.has(relation) ? prev : new Set(prev).add(relation)))
       setMistakes((m) => m + 1)
@@ -361,9 +381,9 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
     if (!l2Round || solved || eliminated.has(relation)) return
     if (relation === l2Round.target) {
       setSolved(true)
+      setRoundOk(pickOne(ROUND_PRAISE))
       setHint(null)
       setCorrectCount((c) => c + 1)
-      advance()
     } else {
       setEliminated((prev) => (prev.has(relation) ? prev : new Set(prev).add(relation)))
       setMistakes((m) => m + 1)
@@ -383,9 +403,9 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
     const candidate = l3Candidates[idx]
     if (samePair(candidate, l3Round.reference)) {
       setSolved(true)
+      setRoundOk(pickOne(ROUND_PRAISE))
       setHint(null)
       setCorrectCount((c) => c + 1)
-      advance()
     } else {
       setEliminated((prev) => (prev.has(String(idx)) ? prev : new Set(prev).add(String(idx))))
       setMistakes((m) => m + 1)
@@ -473,7 +493,7 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
       </div>
 
       {/* Nivel 1 */}
-      {!done && levelIdx === 0 && l1Round && (
+      {!done && !solved && levelIdx === 0 && l1Round && (
         <>
           <Scene shapes={[l1Round.scene]} />
           <div className="mx-auto mt-5 flex max-w-sm flex-col gap-2.5">
@@ -502,10 +522,10 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
       )}
 
       {/* Nivel 2 */}
-      {!done && levelIdx === 1 && l2Round && (
+      {!done && !solved && levelIdx === 1 && l2Round && (
         <>
           <p className="mt-4 text-center text-xl font-extrabold text-tiam-blue">{RELATION_LABEL[l2Round.target]}</p>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             {l2Candidates.map((rel, i) => {
               const isEliminated = eliminated.has(rel)
               return (
@@ -531,12 +551,12 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
       )}
 
       {/* Nivel 3 */}
-      {!done && levelIdx === 2 && l3Round && (
+      {!done && !solved && levelIdx === 2 && l3Round && (
         <>
           <p className="mt-3 text-center text-base font-semibold text-slate-500">Modelo</p>
           <Scene shapes={l3Round.reference} highlight />
           <p className="mt-4 text-center text-base font-semibold text-slate-500">¿Cuál es igual?</p>
-          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-2 grid grid-cols-2 gap-3">
             {l3Candidates.map((cand, i) => {
               const isEliminated = eliminated.has(String(i))
               return (
@@ -562,6 +582,26 @@ export function DondeEsta({ day: _day, onComplete }: GameProps) {
       )}
 
       {hint && !solved && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
+
+      {/* Ronda acertada — reemplaza el timer de 1s de antes (que no daba
+          ninguna señal visual de acierto) con un cartel explícito y un
+          botón "Seguir", mismo patrón que el resto de la app. */}
+      {!done && solved && (
+        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+            <Sparkles className="h-6 w-6 text-tiam-green" />
+          </div>
+          <p className="mt-3 text-lg font-bold text-slate-900">{roundOk}</p>
+          <button
+            type="button"
+            onClick={nextRound}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Seguir
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Nivel completo */}
       {done && (
