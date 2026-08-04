@@ -21,7 +21,7 @@ import { ArmaLasPalabras } from './ArmaLasPalabras'
 import { CuantosHay } from './CuantosHay'
 import { QueCambio } from './QueCambio'
 import { ElReloj } from './ElReloj'
-import { QueOficioEs } from './QueOficioEs'
+import { OficioIdeal } from './OficioIdeal'
 import { LosOpuestos } from './LosOpuestos'
 import { DosPistas } from './DosPistas'
 import { PalabrasEnClave } from './PalabrasEnClave'
@@ -101,7 +101,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     19: Memotest,
     20: DondeEsta,
     21: PlanificaLaManana,
-    22: QueOficioEs,
+    22: OficioIdeal,
     23: UnaLetraDeCadaUno,
     24: BuscarLosRojos,
     25: LasMismasLetras,

@@ -130,8 +130,8 @@ const MONTH_1_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego visoespacial: mirá dónde está la figura respecto de la caja y tocá cómo se llama esa posición. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'ejecutivas', title: 'Planificá la mañana',
     instructions: 'Un juego de razonamiento: ordená las tareas de la mañana en el orden correcto. Subís de dificultad a medida que avanzás.' },
-  { day: 22, type: 'game', area: 'lenguaje', title: '¿Qué oficio es?',
-    instructions: 'Un juego de lenguaje: mirá las herramientas de un oficio y tocá cuál es. Subís de dificultad a medida que avanzás.' },
+  { day: 22, type: 'game', area: 'ejecutivas', title: '¿Qué oficio le queda?',
+    instructions: 'Un juego de razonamiento: leé la historia de cada persona y tocá qué oficio le queda mejor. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 4 — integradoras + cierre ──────────────────────────────────────
   { day: 23, type: 'game', area: 'agnosias', title: 'Una letra de cada uno',

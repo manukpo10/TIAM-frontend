@@ -20,7 +20,6 @@ import shotElReloj from '@/assets/desafio-screenshots/el-reloj.webp'
 import shotQueSera from '@/assets/desafio-screenshots/que-sera.webp'
 import shotMemotest from '@/assets/desafio-screenshots/memotest.webp'
 import shotCualNoVa from '@/assets/desafio-screenshots/cual-no-va.webp'
-import shotQueOficioEs from '@/assets/desafio-screenshots/que-oficio-es.webp'
 import shotLaRecetaDoble from '@/assets/desafio-screenshots/la-receta-doble.webp'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
@@ -106,7 +105,6 @@ const GAME_SHOWCASE = [
   { image: shotElReloj, day: 9, title: 'El reloj', area: 'Visuoespacial', color: '#7C3AED' },
   { image: shotCualNoVa, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
   { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
-  { image: shotQueOficioEs, day: 22, title: '¿Qué oficio es?', area: 'Lenguaje', color: '#4CA52E' },
   { image: shotLaRecetaDoble, day: 26, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
   { image: shotQueSera, day: 29, title: '¿Qué será?', area: 'Reconocimiento', color: '#DB2777' },
 ]
