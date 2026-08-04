@@ -63,10 +63,18 @@ interface Level {
   instruction: string
 }
 
+// `remove` (an object vanishing, leaving an empty dashed cell) was dropped
+// from every level: testing showed players couldn't tell an intentional
+// "empty on purpose" cell from a rendering glitch, and there's nothing to
+// visually compare it against the way a replaced or swapped object has.
+// Its share of each level's target count moved to `replace` so difficulty
+// (k = how many changes to find) is unchanged. Nivel 3's board also shrank
+// 18->12 (matching nivel 2) so the grid fits the modal without scrolling —
+// its higher k=6 (vs nivel 2's k=3) still carries the difficulty step up.
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, size: 6, replace: 2, remove: 0, swap: 0, instruction: 'Tocá los objetos que cambiaron.' },
-  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, size: 12, replace: 2, remove: 1, swap: 0, instruction: 'Tocá los objetos que cambiaron: pueden ser distintos o haber desaparecido.' },
-  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 18, replace: 1, remove: 1, swap: 2, instruction: 'Tocá todo lo que cambió: objetos distintos, que desaparecieron, o que cambiaron de lugar. Cada lugar cuenta por separado.' },
+  { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, size: 6, replace: 2, remove: 0, swap: 0, instruction: 'Tocá los objetos que son distintos a los que viste antes.' },
+  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, size: 12, replace: 3, remove: 0, swap: 0, instruction: 'Tocá los objetos que son distintos a los que viste antes.' },
+  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 12, replace: 2, remove: 0, swap: 2, instruction: 'Tocá lo que cambió: un objeto distinto, o dos que cambiaron de lugar entre sí.' },
 ]
 
 // One glob across the theme folders; lookups are namespaced by FOLDER (not
