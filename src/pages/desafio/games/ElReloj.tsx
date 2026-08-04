@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -286,47 +286,48 @@ export function ElReloj({ day: _day, onComplete }: GameProps) {
 
       {!done && round && (
         <>
-          {/* Clock. Sized so the four answers below it are on screen at the same
-              time as the hands: a phone showing the browser bar has ~570px to
-              work with, and a clock you have to scroll away from to read the
-              options is a memory test, not a clock-reading one. */}
-          <div className="relative mx-auto mt-4 aspect-square w-44 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-6 sm:w-64">
-            <ClockFace hour={round.time.hour} minute={round.time.minute} showNumbers={level.showNumbers} />
-          </div>
+          {/* Clock + options hide once resolved — the confirmation card below
+              already states the full answer as a sentence ("Son las cuatro y
+              cuarto"), so nothing is lost, and keeping all three (clock,
+              options, card) mounted at once is what was pushing the card
+              below the fold on mobile. */}
+          {!resolved && (
+            <>
+              {/* Clock. Sized so the four answers below it are on screen at the same
+                  time as the hands: a phone showing the browser bar has ~570px to
+                  work with, and a clock you have to scroll away from to read the
+                  options is a memory test, not a clock-reading one. */}
+              <div className="relative mx-auto mt-4 aspect-square w-44 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-6 sm:w-64">
+                <ClockFace hour={round.time.hour} minute={round.time.minute} showNumbers={level.showNumbers} />
+              </div>
 
-          {/* Options */}
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6">
-            {options.map((opt) => {
-              const isEliminated = eliminated.has(opt.id)
-              const isCorrectShown = resolved && opt.id === correctId
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  disabled={resolved || isEliminated}
-                  onClick={() => guess(opt.id)}
-                  className={[
-                    'relative min-h-[64px] rounded-2xl border-2 px-4 py-3 text-base font-bold transition sm:text-lg',
-                    'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                    isCorrectShown
-                      ? 'border-tiam-green bg-tiam-green/10 text-slate-900'
-                      : isEliminated
-                        ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
-                        : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
-                  ].join(' ')}
-                >
-                  {opt.label}
-                  {isCorrectShown && (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+              {/* Options */}
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6">
+                {options.map((opt) => {
+                  const isEliminated = eliminated.has(opt.id)
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      disabled={isEliminated}
+                      onClick={() => guess(opt.id)}
+                      className={[
+                        'relative min-h-[64px] rounded-2xl border-2 px-4 py-3 text-base font-bold transition sm:text-lg',
+                        'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                        isEliminated
+                          ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
+                          : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
+                      ].join(' ')}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
 
-          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
+              {hint && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
+            </>
+          )}
 
           {resolved && (
             <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
