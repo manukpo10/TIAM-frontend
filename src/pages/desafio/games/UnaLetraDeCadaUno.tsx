@@ -50,8 +50,8 @@ const OBJETOS = {
   bicicleta: 'BICICLETA',
   bufanda: 'BUFANDA',
   cuaderno: 'CUADERNO',
-  dedal: 'DEDAL',
-  factura: 'FACTURA',
+  cuchara: 'CUCHARA',
+  dado: 'DADO',
   flamenco: 'FLAMENCO',
   galleta: 'GALLETA',
   guitarra: 'GUITARRA',
@@ -63,8 +63,8 @@ const OBJETOS = {
   paraguas: 'PARAGUAS',
   pato: 'PATO',
   pelota: 'PELOTA',
+  perro: 'PERRO',
   rana: 'RANA',
-  termo: 'TERMO',
   tijera: 'TIJERA',
   tortuga: 'TORTUGA',
   vaso: 'VASO',
@@ -155,11 +155,11 @@ const LEVELS: Level[] = [
     name: 'Nivel 1',
     hint: 'Acá solo hay que mirar la primera o la última letra de cada palabra.',
     puzzles: [
-      [{ obj: 'mariposa', regla: 'primera' }, { obj: 'mate', regla: 'ultima' }, { obj: 'paraguas', regla: 'ultima' }, { obj: 'factura', regla: 'ultima' }], // MESA
+      [{ obj: 'mariposa', regla: 'primera' }, { obj: 'mate', regla: 'ultima' }, { obj: 'paraguas', regla: 'ultima' }, { obj: 'cuchara', regla: 'ultima' }], // MESA
       [{ obj: 'paraguas', regla: 'ultima' }, { obj: 'vaso', regla: 'ultima' }, { obj: 'pato', regla: 'primera' }, { obj: 'bufanda', regla: 'ultima' }], // SOPA
       [{ obj: 'mariposa', regla: 'primera' }, { obj: 'pelota', regla: 'ultima' }, { obj: 'pan', regla: 'ultima' }, { obj: 'cuaderno', regla: 'ultima' }], // MANO
       [{ obj: 'rana', regla: 'primera' }, { obj: 'pelota', regla: 'ultima' }, { obj: 'mariposa', regla: 'primera' }, { obj: 'cuaderno', regla: 'ultima' }], // RAMO
-      [{ obj: 'pan', regla: 'primera' }, { obj: 'mate', regla: 'ultima' }, { obj: 'rana', regla: 'primera' }, { obj: 'factura', regla: 'ultima' }], // PERA
+      [{ obj: 'pan', regla: 'primera' }, { obj: 'mate', regla: 'ultima' }, { obj: 'rana', regla: 'primera' }, { obj: 'cuchara', regla: 'ultima' }], // PERA
     ],
   },
   {
@@ -168,10 +168,10 @@ const LEVELS: Level[] = [
     hint: 'Ahora también hay que contar letras, y aparecen las vocales.',
     puzzles: [
       [{ obj: 'paraguas', regla: 'primera' }, { obj: 'flamenco', regla: 'segunda' }, { obj: 'rana', regla: 'primeraVocal' }, { obj: 'mate', regla: 'tercera' }, { obj: 'cuaderno', regla: 'ultima' }], // PLATO
-      [{ obj: 'factura', regla: 'tercera' }, { obj: 'mariposa', regla: 'segunda' }, { obj: 'rana', regla: 'primera' }, { obj: 'mate', regla: 'tercera' }, { obj: 'maceta', regla: 'ultima' }], // CARTA
+      [{ obj: 'cuchara', regla: 'tercera' }, { obj: 'mariposa', regla: 'segunda' }, { obj: 'rana', regla: 'primera' }, { obj: 'mate', regla: 'tercera' }, { obj: 'maceta', regla: 'ultima' }], // CARTA
       [{ obj: 'pan', regla: 'tercera' }, { obj: 'bicicleta', regla: 'segunda' }, { obj: 'pelota', regla: 'primeraVocal' }, { obj: 'tijera', regla: 'primera' }, { obj: 'ladrillo', regla: 'ultima' }], // NIETO
-      [{ obj: 'vaso', regla: 'primera' }, { obj: 'termo', regla: 'primeraVocal' }, { obj: 'tortuga', regla: 'tercera' }, { obj: 'dedal', regla: 'primera' }, { obj: 'pelota', regla: 'segunda' }], // VERDE
-      [{ obj: 'tortuga', regla: 'primera' }, { obj: 'zanahoria', regla: 'ultima' }, { obj: 'termo', regla: 'tercera' }, { obj: 'dedal', regla: 'primera' }, { obj: 'vela', regla: 'segunda' }], // TARDE
+      [{ obj: 'vaso', regla: 'primera' }, { obj: 'perro', regla: 'primeraVocal' }, { obj: 'tortuga', regla: 'tercera' }, { obj: 'dado', regla: 'primera' }, { obj: 'pelota', regla: 'segunda' }], // VERDE
+      [{ obj: 'tortuga', regla: 'primera' }, { obj: 'zanahoria', regla: 'ultima' }, { obj: 'perro', regla: 'tercera' }, { obj: 'dado', regla: 'primera' }, { obj: 'vela', regla: 'segunda' }], // TARDE
       [{ obj: 'vaso', regla: 'tercera' }, { obj: 'bicicleta', regla: 'primeraVocal' }, { obj: 'flamenco', regla: 'segunda' }, { obj: 'ladrillo', regla: 'primera' }, { obj: 'galleta', regla: 'ultima' }], // SILLA
     ],
   },
@@ -182,13 +182,13 @@ const LEVELS: Level[] = [
     puzzles: [
       [{ obj: 'vela', regla: 'primera' }, { obj: 'tijera', regla: 'cuarta' }, { obj: 'mariposa', regla: 'tercera' }, { obj: 'zanahoria', regla: 'vocalRepetida' }, { obj: 'banana', regla: 'consonanteRepetida' }, { obj: 'tortuga', regla: 'segunda' }], // VERANO
       [{ obj: 'tijera', regla: 'tercera' }, { obj: 'rana', regla: 'segundaVocal' }, { obj: 'guitarra', regla: 'consonanteRepetida' }, { obj: 'cuaderno', regla: 'cuarta' }, { obj: 'ladrillo', regla: 'segundaVocal' }, { obj: 'pan', regla: 'ultima' }], // JARDIN
-      [{ obj: 'flamenco', regla: 'cuarta' }, { obj: 'galleta', regla: 'ultima' }, { obj: 'rana', regla: 'tercera' }, { obj: 'tortuga', regla: 'consonanteRepetida' }, { obj: 'termo', regla: 'segunda' }, { obj: 'ladrillo', regla: 'primera' }], // MANTEL
+      [{ obj: 'flamenco', regla: 'cuarta' }, { obj: 'galleta', regla: 'ultima' }, { obj: 'rana', regla: 'tercera' }, { obj: 'tortuga', regla: 'consonanteRepetida' }, { obj: 'perro', regla: 'segunda' }, { obj: 'ladrillo', regla: 'primera' }], // MANTEL
       [{ obj: 'paraguas', regla: 'ultima' }, { obj: 'bicicleta', regla: 'vocalRepetida' }, { obj: 'galleta', regla: 'tercera' }, { obj: 'ladrillo', regla: 'primera' }, { obj: 'tortuga', regla: 'segunda' }, { obj: 'banana', regla: 'consonanteRepetida' }], // SILLON
-      [{ obj: 'bicicleta', regla: 'consonanteRepetida' }, { obj: 'guitarra', regla: 'tercera' }, { obj: 'factura', regla: 'segundaVocal' }, { obj: 'dedal', regla: 'primera' }, { obj: 'galleta', regla: 'vocalRepetida' }, { obj: 'cuaderno', regla: 'cuarta' }], // CIUDAD
-      [{ obj: 'factura', regla: 'tercera' }, { obj: 'rana', regla: 'vocalRepetida' }, { obj: 'maceta', regla: 'primera' }, { obj: 'mariposa', regla: 'cuarta' }, { obj: 'banana', regla: 'consonanteRepetida' }, { obj: 'cuaderno', regla: 'ultima' }], // CAMINO
+      [{ obj: 'bicicleta', regla: 'consonanteRepetida' }, { obj: 'guitarra', regla: 'tercera' }, { obj: 'cuchara', regla: 'segunda' }, { obj: 'dado', regla: 'primera' }, { obj: 'galleta', regla: 'vocalRepetida' }, { obj: 'cuaderno', regla: 'cuarta' }], // CIUDAD
+      [{ obj: 'cuchara', regla: 'tercera' }, { obj: 'rana', regla: 'vocalRepetida' }, { obj: 'maceta', regla: 'primera' }, { obj: 'mariposa', regla: 'cuarta' }, { obj: 'banana', regla: 'consonanteRepetida' }, { obj: 'cuaderno', regla: 'ultima' }], // CAMINO
       [{ obj: 'flamenco', regla: 'segundaVocal' }, { obj: 'vaso', regla: 'tercera' }, { obj: 'bicicleta', regla: 'consonanteRepetida' }, { obj: 'pelota', regla: 'cuarta' }, { obj: 'bufanda', regla: 'primera' }, { obj: 'maceta', regla: 'ultima' }], // ESCOBA
-      [{ obj: 'maceta', regla: 'primera' }, { obj: 'mariposa', regla: 'vocalRepetida' }, { obj: 'dedal', regla: 'tercera' }, { obj: 'mate', regla: 'segundaVocal' }, { obj: 'ladrillo', regla: 'cuarta' }, { obj: 'galleta', regla: 'segunda' }], // MADERA
-      [{ obj: 'rana', regla: 'cuarta' }, { obj: 'bufanda', regla: 'primera' }, { obj: 'cuaderno', regla: 'segunda' }, { obj: 'galleta', regla: 'segundaVocal' }, { obj: 'vela', regla: 'tercera' }, { obj: 'factura', regla: 'vocalRepetida' }], // ABUELA
+      [{ obj: 'maceta', regla: 'primera' }, { obj: 'mariposa', regla: 'vocalRepetida' }, { obj: 'dado', regla: 'tercera' }, { obj: 'mate', regla: 'segundaVocal' }, { obj: 'ladrillo', regla: 'cuarta' }, { obj: 'galleta', regla: 'segunda' }], // MADERA
+      [{ obj: 'rana', regla: 'cuarta' }, { obj: 'bufanda', regla: 'primera' }, { obj: 'cuaderno', regla: 'segunda' }, { obj: 'galleta', regla: 'segundaVocal' }, { obj: 'vela', regla: 'tercera' }, { obj: 'cuchara', regla: 'vocalRepetida' }], // ABUELA
     ],
   },
 ]
