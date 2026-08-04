@@ -506,7 +506,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
       )}
 
       {/* Fase 2: repaso / reconocimiento */}
-      {phase === 'recognize' && (
+      {phase === 'recognize' && !graded && (
         <>
           <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
             {recognitionOptions.map((id) => {

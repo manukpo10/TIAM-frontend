@@ -181,94 +181,98 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
         </div>
       </div>
 
-      {/* "Find these" strip */}
-      <div className="mx-auto mt-4 flex max-w-md flex-wrap justify-center gap-2">
-        {level.targetIds.map((id) => {
-          const def = OBJECT_POOL[id]
-          const img = imgFor(id)
-          const isFound = found.has(id)
-          return (
-            <div
-              key={id}
-              className={[
-                'relative flex h-12 w-12 items-center justify-center rounded-xl border-2 bg-white p-1.5 transition sm:h-14 sm:w-14',
-                isFound ? 'border-tiam-green/40 opacity-50' : 'border-slate-200',
-              ].join(' ')}
-              aria-label={def.label}
-            >
-              {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
-              {isFound && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow">
-                  <Check className="h-3 w-3" strokeWidth={3} />
-                </span>
-              )}
-            </div>
-          )
-        })}
-      </div>
+      {!done && (
+        <>
+          {/* "Find these" strip */}
+          <div className="mx-auto mt-4 flex max-w-md flex-wrap justify-center gap-2">
+            {level.targetIds.map((id) => {
+              const def = OBJECT_POOL[id]
+              const img = imgFor(id)
+              const isFound = found.has(id)
+              return (
+                <div
+                  key={id}
+                  className={[
+                    'relative flex h-12 w-12 items-center justify-center rounded-xl border-2 bg-white p-1.5 transition sm:h-14 sm:w-14',
+                    isFound ? 'border-tiam-green/40 opacity-50' : 'border-slate-200',
+                  ].join(' ')}
+                  aria-label={def.label}
+                >
+                  {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
+                  {isFound && (
+                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow">
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
 
-      {/* Scene */}
-      <div
-        className={[
-          'relative mx-auto mt-4 aspect-[4/5] w-full max-w-md overflow-hidden rounded-3xl border-2 bg-slate-50 transition',
-          missFlash ? 'border-slate-300' : 'border-slate-200',
-        ].join(' ')}
-        onClick={handleSceneMiss}
-        role="presentation"
-      >
-        {sceneSrc && (
-          <img
-            src={sceneSrc}
-            alt="Un desván lleno de estantes, cajas y objetos"
-            className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
-            draggable={false}
-          />
-        )}
+          {/* Scene */}
+          <div
+            className={[
+              'relative mx-auto mt-4 aspect-[4/5] w-full max-w-md overflow-hidden rounded-3xl border-2 bg-slate-50 transition',
+              missFlash ? 'border-slate-300' : 'border-slate-200',
+            ].join(' ')}
+            onClick={handleSceneMiss}
+            role="presentation"
+          >
+            {sceneSrc && (
+              <img
+                src={sceneSrc}
+                alt="Un desván lleno de estantes, cajas y objetos"
+                className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
+                draggable={false}
+              />
+            )}
 
-        {level.targetIds.map((id) => {
-          const def = OBJECT_POOL[id]
-          const img = imgFor(id)
-          const isFound = found.has(id)
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                tapObject(id)
-              }}
-              aria-label={def.label}
-              aria-pressed={isFound}
-              className={[
-                'absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/60 focus:ring-offset-1',
-                'min-h-[44px] min-w-[44px]',
-                isFound ? 'drop-shadow-none' : 'hover:scale-110 active:scale-95',
-              ].join(' ')}
-              style={{
-                left: `${def.x}%`,
-                top: `${def.y}%`,
-                width: `max(44px, ${level.iconPct}%)`,
-                height: `max(44px, ${level.iconPct}%)`,
-              }}
-            >
-              {img && (
-                <img
-                  src={img}
-                  alt=""
-                  className={['h-full w-full object-contain drop-shadow-md transition', isFound ? 'opacity-40 saturate-50' : ''].join(' ')}
-                  draggable={false}
-                />
-              )}
-              {isFound && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                  <Check className="h-4 w-4" strokeWidth={3} />
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+            {level.targetIds.map((id) => {
+              const def = OBJECT_POOL[id]
+              const img = imgFor(id)
+              const isFound = found.has(id)
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    tapObject(id)
+                  }}
+                  aria-label={def.label}
+                  aria-pressed={isFound}
+                  className={[
+                    'absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition',
+                    'focus:outline-none focus:ring-2 focus:ring-tiam-blue/60 focus:ring-offset-1',
+                    'min-h-[44px] min-w-[44px]',
+                    isFound ? 'drop-shadow-none' : 'hover:scale-110 active:scale-95',
+                  ].join(' ')}
+                  style={{
+                    left: `${def.x}%`,
+                    top: `${def.y}%`,
+                    width: `max(44px, ${level.iconPct}%)`,
+                    height: `max(44px, ${level.iconPct}%)`,
+                  }}
+                >
+                  {img && (
+                    <img
+                      src={img}
+                      alt=""
+                      className={['h-full w-full object-contain drop-shadow-md transition', isFound ? 'opacity-40 saturate-50' : ''].join(' ')}
+                      draggable={false}
+                    />
+                  )}
+                  {isFound && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                      <Check className="h-4 w-4" strokeWidth={3} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {!done && (
         <p className="mt-3 text-center text-base font-medium text-slate-500">

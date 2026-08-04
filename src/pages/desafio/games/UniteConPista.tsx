@@ -390,13 +390,13 @@ export function UniteConPista({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {/* Fase 2: repaso / reconocimiento. Stays visible (with its graded
-          badges) even after `done` flips true, so the hit/missed/false-
-          positive feedback is actually seen — the "Nivel completo" card
-          below is additional, not a replacement (same layered structure as
-          QueHayEnLaMesa's results phase: graded board + progression card
-          together, never one instead of the other). */}
-      {subPhase === 'recognize' && (
+      {/* Fase 2: repaso / reconocimiento. Hides once `graded` flips true
+          (same !done-gating discipline as CualNoVa/LaPiramide/Memotest) so
+          the "Nivel completo" card below is never pushed past the fold for
+          players who don't scroll. The per-word hit/missed/false-positive
+          badges are traded for the aggregate legend already shown on that
+          completion card. */}
+      {subPhase === 'recognize' && !graded && (
         <>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             {recognitionOptions.map((word) => {

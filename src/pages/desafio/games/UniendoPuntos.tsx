@@ -228,50 +228,52 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
       )}
 
       {/* Scatter canvas */}
-      <div className="relative mx-auto mt-5 aspect-square w-full max-w-[380px] rounded-3xl border-2 border-slate-100 bg-slate-50/60">
-        <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full">
-          <polyline
-            points={closedTrailStr}
-            fill="none"
-            stroke="#4CA52E"
-            strokeWidth="1.2"
-            strokeOpacity="0.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        {points.map((p, i) => {
-          const isFound = i < foundCount
-          const isWrongFlash = wrongIdx === i
-          return (
-            <button
-              key={i}
-              type="button"
-              disabled={isFound || done}
-              onClick={() => handleTap(i)}
-              aria-label={`Punto ${labelFor(level, i)}`}
-              style={{ left: `${p.x}%`, top: `${p.y}%` }}
-              className={[
-                'absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center',
-                'rounded-full border-2 text-base font-bold transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                isFound
-                  ? 'border-tiam-green bg-white text-slate-700 ring-2 ring-tiam-green/30'
-                  : isWrongFlash
-                    ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-400 bg-white text-slate-700'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-tiam-blue/40 hover:shadow-md active:scale-95',
-              ].join(' ')}
-            >
-              {labelFor(level, i)}
-              {isFound && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                  <Check className="h-3 w-3" strokeWidth={3} />
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+      {!done && (
+        <div className="relative mx-auto mt-5 aspect-square w-full max-w-[380px] rounded-3xl border-2 border-slate-100 bg-slate-50/60">
+          <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full">
+            <polyline
+              points={closedTrailStr}
+              fill="none"
+              stroke="#4CA52E"
+              strokeWidth="1.2"
+              strokeOpacity="0.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          {points.map((p, i) => {
+            const isFound = i < foundCount
+            const isWrongFlash = wrongIdx === i
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={isFound || done}
+                onClick={() => handleTap(i)}
+                aria-label={`Punto ${labelFor(level, i)}`}
+                style={{ left: `${p.x}%`, top: `${p.y}%` }}
+                className={[
+                  'absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center',
+                  'rounded-full border-2 text-base font-bold transition',
+                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                  isFound
+                    ? 'border-tiam-green bg-white text-slate-700 ring-2 ring-tiam-green/30'
+                    : isWrongFlash
+                      ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-400 bg-white text-slate-700'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-tiam-blue/40 hover:shadow-md active:scale-95',
+                ].join(' ')}
+              >
+                {labelFor(level, i)}
+                {isFound && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {wrongHint && !done && <p className="mt-4 text-center text-base font-medium text-slate-500">{wrongHint}</p>}
 

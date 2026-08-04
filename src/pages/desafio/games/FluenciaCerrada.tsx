@@ -199,36 +199,38 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
       </div>
 
       {/* Board */}
-      <div className="mt-5 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3">
-        {board.map((word, i) => {
-          const cellKey = `${word}-${i}`
-          const isFound = found.has(cellKey)
-          const isWrong = wrongKey === cellKey
-          return (
-            <button
-              key={cellKey}
-              type="button"
-              onClick={() => handleTap(word, cellKey)}
-              aria-pressed={isFound}
-              className={[
-                'relative flex min-h-[56px] items-center justify-center rounded-2xl border-2 bg-white p-2 text-center transition sm:min-h-[64px]',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
-                isFound
-                  ? 'border-tiam-green ring-2 ring-tiam-green/30'
-                  : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
-                isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out]' : '',
-              ].join(' ')}
-            >
-              <span className="text-base font-bold text-slate-700 sm:text-lg">{word}</span>
-              {isFound && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                  <Check className="h-4 w-4" strokeWidth={3} />
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+      {!done && (
+        <div className="mt-5 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3">
+          {board.map((word, i) => {
+            const cellKey = `${word}-${i}`
+            const isFound = found.has(cellKey)
+            const isWrong = wrongKey === cellKey
+            return (
+              <button
+                key={cellKey}
+                type="button"
+                onClick={() => handleTap(word, cellKey)}
+                aria-pressed={isFound}
+                className={[
+                  'relative flex min-h-[56px] items-center justify-center rounded-2xl border-2 bg-white p-2 text-center transition sm:min-h-[64px]',
+                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
+                  isFound
+                    ? 'border-tiam-green ring-2 ring-tiam-green/30'
+                    : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
+                  isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out]' : '',
+                ].join(' ')}
+              >
+                <span className="text-base font-bold text-slate-700 sm:text-lg">{word}</span>
+                {isFound && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                    <Check className="h-4 w-4" strokeWidth={3} />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {wrongKey && !done && (
         <p className="mt-4 text-center text-base font-medium text-slate-500">

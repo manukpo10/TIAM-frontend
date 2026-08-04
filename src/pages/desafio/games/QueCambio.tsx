@@ -189,6 +189,12 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
   const [helpUsed, setHelpUsed] = useState(false)
   const [helpAvailable, setHelpAvailable] = useState(false)
   const [revealed, setRevealed] = useState(false)
+  // "No encuentro más" sets `revealed`, which immediately makes `done` true
+  // too — without this, the grid (and the blue "showMissed" highlights it's
+  // the only place that render) would vanish in the same instant, so the
+  // person giving up would never actually SEE what they missed. No timer:
+  // stays true until they tap the "ya las vi" button below, at their own pace.
+  const [revealAcknowledged, setRevealAcknowledged] = useState(false)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   // Mistakes + correct finds, accumulated across levels 1→2→3 and only
   // zeroed on a genuine day restart (wrap from level 3 back to level 1) —
@@ -221,6 +227,12 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
   }, [phase])
 
   const done = phase === 'change' && (found.size >= k || revealed)
+  // True only during the gap between "no encuentro más" and the person
+  // tapping "ya las vi" — `done` is already true in that window (scoring/
+  // onComplete don't care about the reveal), but the grid must stay up and
+  // the completion card must wait, or the reveal and the card would both
+  // try to occupy the screen at once.
+  const revealPending = revealed && !revealAcknowledged
 
   const handleTap = useCallback(
     (i: number) => {
@@ -270,6 +282,7 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
     setHelpUsed(false)
     setHelpAvailable(false)
     setRevealed(false)
+    setRevealAcknowledged(false)
   }
 
   // Shared by both restart buttons on the final level's complete card.
@@ -287,6 +300,7 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
     setHelpUsed(false)
     setHelpAvailable(false)
     setRevealed(false)
+    setRevealAcknowledged(false)
     setMistakes(0)
     setFoundAcrossLevels(0)
   }
@@ -367,59 +381,63 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {/* Grid — fixed 3 columns so positions mean the same thing across phases. */}
-      <div className="mx-auto mt-6 grid max-w-md grid-cols-3 gap-3 sm:gap-4">
-        {cells.map((id, i) => {
-          const isTarget = round.targets.has(i)
-          const isFound = found.has(i)
-          const isWrong = wrongIdx === i
-          const showMissed = (done || revealed) && isTarget && !isFound
-          const folder = round.theme.folder
-          const img = id ? imgFor(folder, id) : undefined
+      {/* Grid — fixed 3 columns so positions mean the same thing across phases.
+          Stays up through revealPending too, so a "no encuentro más" reveal
+          is actually visible before the grid gives way to the completion card. */}
+      {(!done || revealPending) && (
+        <div className="mx-auto mt-6 grid max-w-md grid-cols-3 gap-3 sm:gap-4">
+          {cells.map((id, i) => {
+            const isTarget = round.targets.has(i)
+            const isFound = found.has(i)
+            const isWrong = wrongIdx === i
+            const showMissed = (done || revealed) && isTarget && !isFound
+            const folder = round.theme.folder
+            const img = id ? imgFor(folder, id) : undefined
 
-          let stateClass = 'border-slate-200 bg-white'
-          if (phase === 'study') {
-            stateClass = id ? 'border-slate-200 bg-white' : 'border-dashed border-slate-300 bg-slate-50/50'
-          } else if (isFound) {
-            stateClass = 'border-tiam-green bg-tiam-green/5 ring-2 ring-tiam-green/30'
-          } else if (showMissed) {
-            stateClass = 'border-tiam-blue bg-tiam-blue/5 ring-2 ring-tiam-blue/30'
-          } else if (isWrong) {
-            stateClass = 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-400 bg-white'
-          } else if (!id) {
-            stateClass = 'border-dashed border-slate-300 bg-slate-50/50'
-          } else {
-            stateClass = 'border-slate-200 bg-white hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0'
-          }
+            let stateClass = 'border-slate-200 bg-white'
+            if (phase === 'study') {
+              stateClass = id ? 'border-slate-200 bg-white' : 'border-dashed border-slate-300 bg-slate-50/50'
+            } else if (isFound) {
+              stateClass = 'border-tiam-green bg-tiam-green/5 ring-2 ring-tiam-green/30'
+            } else if (showMissed) {
+              stateClass = 'border-tiam-blue bg-tiam-blue/5 ring-2 ring-tiam-blue/30'
+            } else if (isWrong) {
+              stateClass = 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-400 bg-white'
+            } else if (!id) {
+              stateClass = 'border-dashed border-slate-300 bg-slate-50/50'
+            } else {
+              stateClass = 'border-slate-200 bg-white hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0'
+            }
 
-          return (
-            <button
-              key={i}
-              type="button"
-              disabled={phase !== 'change' || isFound || done}
-              onClick={() => handleTap(i)}
-              aria-label={id ? labelFor(id) : 'lugar vacío'}
-              className={[
-                'relative flex aspect-square items-center justify-center rounded-2xl border-2 p-2 transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                stateClass,
-              ].join(' ')}
-            >
-              {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
-              {isFound && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                </span>
-              )}
-              {showMissed && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-blue text-white shadow">
-                  <Eye className="h-3.5 w-3.5" />
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={phase !== 'change' || isFound || done}
+                onClick={() => handleTap(i)}
+                aria-label={id ? labelFor(id) : 'lugar vacío'}
+                className={[
+                  'relative flex aspect-square items-center justify-center rounded-2xl border-2 p-2 transition',
+                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                  stateClass,
+                ].join(' ')}
+              >
+                {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
+                {isFound && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  </span>
+                )}
+                {showMissed && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-blue text-white shadow">
+                    <Eye className="h-3.5 w-3.5" />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Early-continue during study */}
       {phase === 'study' && !done && (
@@ -449,8 +467,23 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
         </div>
       )}
 
+      {/* Reveal acknowledgment — the bridge between "no encuentro más" and the
+          completion card below. No timer: waits for the person, how long they
+          need to look at the blue highlights above. */}
+      {revealPending && (
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => setRevealAcknowledged(true)}
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Ya los vi, continuar
+          </button>
+        </div>
+      )}
+
       {/* Completion */}
-      {done && (
+      {done && !revealPending && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />

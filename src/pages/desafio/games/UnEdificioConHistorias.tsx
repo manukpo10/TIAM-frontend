@@ -241,30 +241,32 @@ export function UnEdificioConHistorias({ day: _day, onComplete }: GameProps) {
       {/* The building — persistent scene, stays on screen for every question
           in this level. Roof drawn as a flat SVG triangle (brand navy), body
           as a plain bordered panel holding the apartment grid. */}
-      <div className="mx-auto mt-4 max-w-sm">
-        <svg viewBox="0 0 200 36" className="w-full" preserveAspectRatio="none" aria-hidden="true">
-          <polygon points="0,36 100,0 200,36" fill="#15436F" />
-        </svg>
-        <div className="rounded-b-2xl border-2 border-t-0 border-slate-200 bg-white p-2.5 sm:p-3">
-          <div className={`grid gap-2 sm:gap-2.5 ${level.gridCols}`}>
-            {level.apartments.map((apt) => {
-              const Icon = apt.Icon
-              return (
-                <div
-                  key={apt.id}
-                  className="relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-slate-200 bg-tiam-blue/5 px-2 py-2.5"
-                >
-                  <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-blue-dark text-[10px] font-bold text-white shadow">
-                    {apt.id}
-                  </span>
-                  <Icon className="h-7 w-7 text-tiam-blue sm:h-8 sm:w-8" strokeWidth={2} />
-                  <p className="text-center text-xs font-medium leading-tight text-slate-600 sm:text-sm">{apt.caption}</p>
-                </div>
-              )
-            })}
+      {!done && (
+        <div className="mx-auto mt-4 max-w-sm">
+          <svg viewBox="0 0 200 36" className="w-full" preserveAspectRatio="none" aria-hidden="true">
+            <polygon points="0,36 100,0 200,36" fill="#15436F" />
+          </svg>
+          <div className="rounded-b-2xl border-2 border-t-0 border-slate-200 bg-white p-2.5 sm:p-3">
+            <div className={`grid gap-2 sm:gap-2.5 ${level.gridCols}`}>
+              {level.apartments.map((apt) => {
+                const Icon = apt.Icon
+                return (
+                  <div
+                    key={apt.id}
+                    className="relative flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-slate-200 bg-tiam-blue/5 px-2 py-2.5"
+                  >
+                    <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-blue-dark text-[10px] font-bold text-white shadow">
+                      {apt.id}
+                    </span>
+                    <Icon className="h-7 w-7 text-tiam-blue sm:h-8 sm:w-8" strokeWidth={2} />
+                    <p className="text-center text-xs font-medium leading-tight text-slate-600 sm:text-sm">{apt.caption}</p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Question */}
       {!done && question && (

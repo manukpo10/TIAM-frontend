@@ -313,51 +313,53 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
       </div>
 
       {/* Board */}
-      <div className={`mt-5 grid ${BOARD_CLASS[level.n]}`}>
-        {board.map((o, i) => {
-          const cellKey = `${o.id}-${i}`
-          const isFound = found.has(cellKey)
-          const isWrong = wrongId === cellKey
-          const img = imgFor(o.id)
-          return (
-            <button
-              key={cellKey}
-              type="button"
-              onClick={() => handleTap(o, cellKey)}
-              aria-label={o.label}
-              aria-pressed={isFound}
-              className={[
-                'relative flex items-center justify-center rounded-2xl border-2 bg-white transition',
-                'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
-                TILE_CLASS[level.n],
-                isFound
-                  ? 'border-tiam-green ring-2 ring-tiam-green/30'
-                  : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
-                // The wiggle alone marks a wrong tap. This used to paint the border
-                // red too, which nothing else in this folder does — a wrong tap here
-                // ends nothing and is never held against you, so it has no business
-                // looking like an alarm.
-                isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-300' : '',
-              ].join(' ')}
-            >
-              {img ? (
-                <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />
-              ) : (
-                <span
-                  className="h-2/3 w-2/3 rounded-full"
-                  style={{ backgroundColor: COLOR_HEX[o.color] }}
-                  aria-hidden
-                />
-              )}
-              {isFound && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                  <Check className="h-4 w-4" strokeWidth={3} />
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+      {!done && (
+        <div className={`mt-5 grid ${BOARD_CLASS[level.n]}`}>
+          {board.map((o, i) => {
+            const cellKey = `${o.id}-${i}`
+            const isFound = found.has(cellKey)
+            const isWrong = wrongId === cellKey
+            const img = imgFor(o.id)
+            return (
+              <button
+                key={cellKey}
+                type="button"
+                onClick={() => handleTap(o, cellKey)}
+                aria-label={o.label}
+                aria-pressed={isFound}
+                className={[
+                  'relative flex items-center justify-center rounded-2xl border-2 bg-white transition',
+                  'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
+                  TILE_CLASS[level.n],
+                  isFound
+                    ? 'border-tiam-green ring-2 ring-tiam-green/30'
+                    : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
+                  // The wiggle alone marks a wrong tap. This used to paint the border
+                  // red too, which nothing else in this folder does — a wrong tap here
+                  // ends nothing and is never held against you, so it has no business
+                  // looking like an alarm.
+                  isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-300' : '',
+                ].join(' ')}
+              >
+                {img ? (
+                  <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />
+                ) : (
+                  <span
+                    className="h-2/3 w-2/3 rounded-full"
+                    style={{ backgroundColor: COLOR_HEX[o.color] }}
+                    aria-hidden
+                  />
+                )}
+                {isFound && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                    <Check className="h-4 w-4" strokeWidth={3} />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Wrong-tap hint */}
       {wrongId && !done && (
