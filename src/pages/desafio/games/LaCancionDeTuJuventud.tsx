@@ -148,19 +148,21 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
       setRoundOk(pickOne(ROUND_OK))
       audioRef.current?.pause()
       setIsPlaying(false)
-      // Avanzá a la próxima ronda del nivel tras un breve feedback. Cuando
-      // roundIdx llega a level.rounds, `done` pasa a true y se muestra la
-      // pantalla de fin de nivel.
-      window.setTimeout(() => {
-        setRoundIdx((i) => i + 1)
-        setEliminated(new Set())
-        setSolved(false)
-        setHasListened(false)
-      }, 850)
     } else {
       setMistakes((m) => m + 1)
       setEliminated((prev) => new Set(prev).add(id))
     }
+  }
+
+  // "Seguir" en la tarjeta de acierto — sin timer: antes esto pasaba solo a
+  // los 850ms, un feedback pobre y que nadie pedía cruzar. Cuando roundIdx
+  // llega a level.rounds, `done` pasa a true y se muestra la pantalla de fin
+  // de nivel.
+  function nextRound() {
+    setRoundIdx((i) => i + 1)
+    setEliminated(new Set())
+    setSolved(false)
+    setHasListened(false)
   }
 
   // Reset sincrónico dentro de estas funciones — nunca en un efecto separado
@@ -245,53 +247,68 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
 
       {!done && target && (
         <>
-          {/* Play button */}
-          <div className="mt-6 flex justify-center">
-            <button
-              type="button"
-              onClick={toggleClip}
-              disabled={solved}
-              aria-label={isPlaying ? 'Pausar' : hasListened ? 'Escuchar de nuevo' : 'Escuchar'}
-              className="flex h-24 w-24 items-center justify-center rounded-full bg-tiam-blue text-white shadow-lg transition hover:bg-tiam-blue-dark active:scale-95 disabled:opacity-50"
-            >
-              {isPlaying ? <Pause className="h-10 w-10" /> : <Play className="ml-1 h-10 w-10" />}
-            </button>
-          </div>
-          <p className="mt-3 text-center text-base text-slate-400">
-            {solved
-              ? `${roundOk} Era ${target.label.toLowerCase()}.`
-              : isPlaying
-                ? 'Escuchando…'
-                : hasListened
-                  ? 'Tocá para escuchar de nuevo'
-                  : 'Tocá para escuchar'}
-          </p>
-
-          {/* Options */}
-          <div className="mx-auto mt-6 grid max-w-sm grid-cols-2 gap-3">
-            {options.map((g) => {
-              const isEliminated = eliminated.has(g.id)
-              const isCorrect = solved && g.id === target.id
-              return (
+          {!solved && (
+            <>
+              {/* Play button */}
+              <div className="mt-6 flex justify-center">
                 <button
-                  key={g.id}
                   type="button"
-                  disabled={solved || isEliminated}
-                  onClick={() => guess(g.id)}
-                  className={[
-                    'min-h-[56px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                    isCorrect
-                      ? 'border-tiam-green bg-tiam-green/5 text-slate-900 ring-2 ring-tiam-green/30'
-                      : isEliminated
-                        ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
-                        : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
-                  ].join(' ')}
+                  onClick={toggleClip}
+                  aria-label={isPlaying ? 'Pausar' : hasListened ? 'Escuchar de nuevo' : 'Escuchar'}
+                  className="flex h-24 w-24 items-center justify-center rounded-full bg-tiam-blue text-white shadow-lg transition hover:bg-tiam-blue-dark active:scale-95"
                 >
-                  {g.label}
+                  {isPlaying ? <Pause className="h-10 w-10" /> : <Play className="ml-1 h-10 w-10" />}
                 </button>
-              )
-            })}
-          </div>
+              </div>
+              <p className="mt-3 text-center text-base text-slate-400">
+                {isPlaying ? 'Escuchando…' : hasListened ? 'Tocá para escuchar de nuevo' : 'Tocá para escuchar'}
+              </p>
+
+              {/* Options */}
+              <div className="mx-auto mt-6 grid max-w-sm grid-cols-2 gap-3">
+                {options.map((g) => {
+                  const isEliminated = eliminated.has(g.id)
+                  return (
+                    <button
+                      key={g.id}
+                      type="button"
+                      disabled={isEliminated}
+                      onClick={() => guess(g.id)}
+                      className={[
+                        'min-h-[56px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                        isEliminated
+                          ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
+                          : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
+                      ].join(' ')}
+                    >
+                      {g.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Round-correct card — replaces the old 850ms auto-advance timer
+              with an explicit "Seguir" button, same pattern as every other
+              per-round reveal in this app (e.g. ElReloj). */}
+          {solved && (
+            <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+                <Sparkles className="h-6 w-6 text-tiam-green" />
+              </div>
+              <p className="mt-3 text-lg font-bold text-slate-900">{roundOk}</p>
+              <p className="mt-1 text-slate-600">Era {target.label.toLowerCase()}.</p>
+              <button
+                type="button"
+                onClick={nextRound}
+                className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Seguir
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </>
       )}
 
