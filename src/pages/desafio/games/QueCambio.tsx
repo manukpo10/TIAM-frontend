@@ -71,10 +71,17 @@ interface Level {
 // (k = how many changes to find) is unchanged. Nivel 3's board also shrank
 // 18->12 (matching nivel 2) so the grid fits the modal without scrolling —
 // its higher k=6 (vs nivel 2's k=3) still carries the difficulty step up.
+//
+// One instruction for all three levels: from the tap standpoint a swap is
+// indistinguishable from a replace — each of the two swapped cells just
+// looks different from what you studied there, same as a replaced object —
+// so explaining swap as a separate case in words was extra complexity the
+// mechanic never actually required.
+const INSTRUCTION = 'Tocá los objetos que cambiaron.'
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, size: 6, replace: 2, remove: 0, swap: 0, instruction: 'Tocá los objetos que son distintos a los que viste antes.' },
-  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, size: 12, replace: 3, remove: 0, swap: 0, instruction: 'Tocá los objetos que son distintos a los que viste antes.' },
-  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 12, replace: 2, remove: 0, swap: 2, instruction: 'Tocá lo que cambió: un objeto distinto, o dos que cambiaron de lugar entre sí.' },
+  { n: 1, name: 'Nivel 1', studySeconds: 20, minEarlySeconds: 8, size: 6, replace: 2, remove: 0, swap: 0, instruction: INSTRUCTION },
+  { n: 2, name: 'Nivel 2', studySeconds: 25, minEarlySeconds: 8, size: 12, replace: 3, remove: 0, swap: 0, instruction: INSTRUCTION },
+  { n: 3, name: 'Nivel 3', studySeconds: 30, minEarlySeconds: 8, size: 12, replace: 2, remove: 0, swap: 2, instruction: INSTRUCTION },
 ]
 
 // One glob across the theme folders; lookups are namespaced by FOLDER (not
