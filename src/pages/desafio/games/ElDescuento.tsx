@@ -266,7 +266,7 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
           {/* Producto */}
           <div className="mt-4 flex items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
             {img && (
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-white p-1.5 sm:h-24 sm:w-24">
                 <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />
               </div>
             )}

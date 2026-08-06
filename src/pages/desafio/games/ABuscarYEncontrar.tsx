@@ -193,7 +193,7 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
                 <div
                   key={id}
                   className={[
-                    'relative flex h-12 w-12 items-center justify-center rounded-xl border-2 bg-white p-1.5 transition sm:h-14 sm:w-14',
+                    'relative flex h-20 w-20 items-center justify-center rounded-xl border-2 bg-white p-1.5 transition sm:h-24 sm:w-24',
                     isFound ? 'border-tiam-green/40 opacity-50' : 'border-slate-200',
                   ].join(' ')}
                   aria-label={def.label}

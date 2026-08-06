@@ -528,7 +528,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                   aria-pressed={isSelected}
                   aria-label={LABELS[id] ?? id}
                   className={[
-                    'relative flex min-h-[76px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white p-2 transition',
+                    'relative flex min-h-[132px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white p-2 transition',
                     'focus:outline-none focus:ring-2 focus:ring-offset-1',
                     badge === 'hit' ? 'border-tiam-green bg-tiam-green/5' : '',
                     badge === 'missed' ? 'border-tiam-blue bg-tiam-blue/5' : '',
@@ -537,7 +537,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                   ].join(' ')}
                   style={!badge && isSelected ? { borderColor: ACCENT, backgroundColor: 'rgba(146,64,14,0.06)' } : undefined}
                 >
-                  {img && <img src={img} alt="" className="h-10 w-10 object-contain" draggable={false} />}
+                  {img && <img src={img} alt="" className="h-20 w-20 object-contain sm:h-24 sm:w-24" draggable={false} />}
                   <span className="text-center text-xs font-medium leading-tight text-slate-600">{LABELS[id] ?? id}</span>
                   {badge === 'hit' && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow">

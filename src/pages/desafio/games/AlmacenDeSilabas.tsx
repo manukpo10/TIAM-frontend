@@ -4,8 +4,8 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Almacén de sílabas" — día 19 (mes 2), lenguaje. Un banco chico de fichas
- * de sílabas (algunas se repiten) que hay que unir, en orden, para armar 4
- * nombres de animales escondidos.
+ * de sílabas (algunas se repiten, otras son señuelos) que hay que unir, en
+ * orden, para armar 4 nombres de animales escondidos.
  *
  * Motor calcado de "Armá las palabras" (ArmaLasPalabras.tsx, día 1 del mes
  * 1): TODAS las fichas del nivel se vuelcan a un mismo banco compartido; el
@@ -40,6 +40,18 @@ import type { GameProps } from '@/lib/challengeProgress'
  * UN solo set de palabras por nivel (sin variantes para reintentos, mismo
  * criterio que TuResumen.tsx/LasMismasLetras.tsx: rejugar sólo rebaraja el
  * orden de las fichas, no cambia qué animales hay que armar).
+ *
+ * Señuelos (DECOYS_PER_LEVEL/DECOY_POOL_PER_LEVEL, ver más abajo): de más en
+ * el banco, ramping 1/2/3 por nivel — mismo objetivo que DECOYS_PER_LEVEL de
+ * UnaLetraDeCadaUno.tsx (día 23), pero acá el pool es POR NIVEL en vez de
+ * uno solo compartido. Cada sílaba señuelo es real en español pero NINGUNA
+ * es sílaba real de este juego, y cada una fue chequeada a mano contra TODAS
+ * las sílabas reales de su nivel (en ambos órdenes) para no repetir el
+ * problema de CA+GA/CA+CA de arriba — dos señuelos quedaron afuera de un
+ * nivel puntual por el mismo motivo (detalle junto a la constante). El
+ * chequeo de completado sigue comparando el string armado contra la lista
+ * de palabras, nunca la identidad de la ficha, así que un señuelo nunca
+ * bloquea una respuesta correcta.
  */
 
 interface AnimalEntry {
@@ -92,6 +104,24 @@ const LEVELS: Level[] = [
 // una constante fija (4+4+4).
 const TOTAL_WORDS = LEVELS.reduce((s, l) => s + l.words.length, 0)
 
+// Sílabas señuelo — de más en el banco, ramping por nivel. A diferencia de
+// DECOY_POOL en UnaLetraDeCadaUno.tsx (letras sueltas, un solo pool
+// compartido) acá el pool es POR NIVEL: cada sílaba señuelo es real en
+// español pero NINGUNA es sílaba real de este juego (no pisa ninguna de las
+// listas de arriba), y cada una fue chequeada a mano contra TODAS las
+// sílabas reales de su nivel, en ambos órdenes, para que ninguna combinación
+// arme una palabra real inapropiada — mismo cuidado que llevó a rediseñar el
+// set de nivel 1 (ver comentario de archivo sobre CA+GA/CA+CA). FI queda
+// afuera del pool de nivel 2 (FI+GA se acerca a un vulgarismo regional) y ZO
+// afuera del de nivel 3 (ZO+TE arma "zote", insulto leve). Bajo a propósito
+// en nivel 1: fragmentos de 2 letras son los que más fácil chocan.
+const DECOYS_PER_LEVEL = [1, 2, 3]
+const DECOY_POOL_PER_LEVEL: string[][] = [
+  ['FE', 'VI', 'ZO', 'FI'], // nivel 1
+  ['FE', 'VI', 'ZO'], // nivel 2
+  ['FE', 'VI', 'FI'], // nivel 3
+]
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
@@ -122,11 +152,12 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
   const words = level.words
 
-  // Todas las fichas del nivel, ids estables.
-  const tiles: Tile[] = useMemo(
-    () => words.flatMap((w) => w.syllables).map((text, id) => ({ id, text })),
-    [words],
-  )
+  // Todas las fichas del nivel: sílabas reales + señuelos, ids estables.
+  const tiles: Tile[] = useMemo(() => {
+    const real = words.flatMap((w) => w.syllables)
+    const decoys = shuffle(DECOY_POOL_PER_LEVEL[levelIdx]).slice(0, DECOYS_PER_LEVEL[levelIdx])
+    return [...real, ...decoys].map((text, id) => ({ id, text }))
+  }, [words, levelIdx])
   const tileOrder = useMemo(
     () => shuffle(tiles.map((t) => t.id)),
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -25,7 +25,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * TODOS los dichos de un nivel se juegan en cada pasada, sólo se baraja el
  * ORDEN (mismo criterio que LosOpuestos: `shuffle(level.rounds)` completo,
- * sin sub-muestreo tipo ROUNDS_PER_LEVEL) — 6 dichos por nivel, 18 en total.
+ * sin sub-muestreo tipo ROUNDS_PER_LEVEL) — 2/3/3 dichos por nivel (el
+ * app-wide default, ver Encaminada.tsx), 8 en total. Originalmente 6 por
+ * nivel (18 en total); recortado tras el mismo feedback de "muy cansador"
+ * que ajustó ElVuelto y compañía. Al elegir cuáles quedaban se priorizó que
+ * los dichos sobrevivientes de un mismo nivel enseñen lecciones bien
+ * distintas entre sí (evitar dos refranes casi sinónimos en el mismo nivel).
  */
 
 interface Round {
@@ -45,10 +50,6 @@ const LEVELS: Level[] = [
     name: 'Nivel 1',
     rounds: [
       { before: 'Más vale pájaro en mano que cien', answer: 'volando', decoys: ['cantando', 'corriendo', 'durmiendo'] },
-      { before: 'Camarón que se duerme, se lo lleva la', answer: 'corriente', decoys: ['marea', 'ola', 'tormenta'] },
-      { before: 'A caballo regalado, no se le mira el', answer: 'diente', decoys: ['pelo', 'ojo', 'casco'] },
-      { before: 'En boca cerrada no entran', answer: 'moscas', decoys: ['hormigas', 'abejas', 'mosquitos'] },
-      { before: 'Al mal tiempo, buena', answer: 'cara', decoys: ['suerte', 'actitud', 'onda'] },
       { before: 'Perro que ladra no', answer: 'muerde', decoys: ['corre', 'ataca', 'asusta'] },
     ],
   },
@@ -56,21 +57,15 @@ const LEVELS: Level[] = [
     n: 2,
     name: 'Nivel 2',
     rounds: [
-      { before: 'Cría cuervos y te sacarán los', answer: 'ojos', decoys: ['dientes', 'brazos', 'dedos'] },
       { before: 'No hay mal que por bien no', answer: 'venga', decoys: ['pase', 'llegue', 'dure'] },
       { before: 'Dime con quién andas y te diré quién', answer: 'eres', decoys: ['serás', 'fuiste', 'vives'] },
-      { before: 'El que mucho abarca, poco', answer: 'aprieta', decoys: ['gana', 'tiene', 'alcanza'] },
       { before: 'A palabras necias, oídos', answer: 'sordos', decoys: ['cerrados', 'atentos', 'curiosos'] },
-      { before: 'Ojos que no ven, corazón que no', answer: 'siente', decoys: ['sufre', 'llora', 'duele'] },
     ],
   },
   {
     n: 3,
     name: 'Nivel 3',
     rounds: [
-      { before: 'Cuando el río suena, agua', answer: 'lleva', decoys: ['trae', 'tiene', 'corre'] },
-      { before: 'No por mucho madrugar amanece más', answer: 'temprano', decoys: ['rápido', 'pronto', 'lindo'] },
-      { before: 'Genio y figura, hasta la', answer: 'sepultura', decoys: ['muerte', 'vejez', 'tumba'] },
       { before: 'El que se fue a Sevilla, perdió su', answer: 'silla', decoys: ['casa', 'lugar', 'puesto'] },
       { before: 'Árbol que nace torcido, jamás su tronco', answer: 'endereza', decoys: ['mejora', 'arregla', 'cambia'] },
       { before: 'Más sabe el diablo por viejo que por', answer: 'diablo', decoys: ['sabio', 'malo', 'listo'] },

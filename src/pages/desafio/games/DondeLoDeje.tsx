@@ -20,11 +20,19 @@ import type { GameProps } from '@/lib/challengeProgress'
  *     genuine correct tap (guaranteed-eventual-success ⇒ totalAttempts =
  *     mistakes + fixed query count, same accounting as DondeEsta).
  *
- * Grid size AND object count both climb with level (3×3/4 objects → 4×4/6 →
- * 4×4/8), so both "how much space" and "how many items" ramp up. Objects
- * reuse QueHayEnLaMesa's existing photo library (`que-hay-en-la-mesa/`) — a
- * deliberate cross-game reuse of already-generated everyday-object photos
- * rather than regenerating near-duplicates for a second memory game.
+ * Grid size climbs once, object count ramps by +1 per level (3×3/4 objects →
+ * 4×4/5 → 4×4/6) — originally a +2 jump at both steps (4→6→8, 18 total),
+ * rebalanced to match the app-wide "+1 between levels, never +2" convention
+ * and keep the day's total lighter. `cols` stays 4 across niveles 2-3
+ * unchanged: the grid was already sparsely filled by design (so the object
+ * is never trivially findable by "the only non-empty-looking cell"), and
+ * the new fill ratios (5/16≈31%, 6/16=37.5%) are close to or at the old
+ * numbers' floor (old 6/16=37.5%, 8/16=50%), so a 4-column grid still
+ * reads as intentional at the lower counts, just a bit sparser.
+ * Objects reuse QueHayEnLaMesa's existing photo library
+ * (`que-hay-en-la-mesa/`) — a deliberate cross-game reuse of already-
+ * generated everyday-object photos rather than regenerating near-duplicates
+ * for a second memory game.
  */
 
 interface PoolObject {
@@ -75,8 +83,8 @@ interface Level {
 }
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', cols: 3, objects: 4, studySeconds: 14, minEarlySeconds: 6 },
-  { n: 2, name: 'Nivel 2', cols: 4, objects: 6, studySeconds: 18, minEarlySeconds: 7 },
-  { n: 3, name: 'Nivel 3', cols: 4, objects: 8, studySeconds: 22, minEarlySeconds: 8 },
+  { n: 2, name: 'Nivel 2', cols: 4, objects: 5, studySeconds: 18, minEarlySeconds: 7 },
+  { n: 3, name: 'Nivel 3', cols: 4, objects: 6, studySeconds: 22, minEarlySeconds: 8 },
 ]
 const TOTAL_QUERIES = LEVELS.reduce((sum, l) => sum + l.objects, 0)
 
@@ -272,7 +280,7 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
             <p className="mt-2 text-base text-slate-500">¿En qué casillero estaba?</p>
             <div className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-2xl border-2 border-slate-100 bg-white px-4 py-2">
               {imgFor(currentQuery.id) && (
-                <img src={imgFor(currentQuery.id)} alt="" className="h-10 w-10 object-contain" draggable={false} />
+                <img src={imgFor(currentQuery.id)} alt="" className="h-20 w-20 object-contain sm:h-24 sm:w-24" draggable={false} />
               )}
               <span className="text-lg font-extrabold text-slate-900">{currentQuery.label}</span>
             </div>
@@ -309,7 +317,7 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
                 >
                   {obj && imgFor(obj.id) && (
                     <>
-                      <img src={imgFor(obj.id)} alt="" className="h-8 w-8 object-contain sm:h-10 sm:w-10" draggable={false} />
+                      <img src={imgFor(obj.id)} alt="" className="h-10 w-10 object-contain sm:h-12 sm:w-12" draggable={false} />
                       <span className="text-center text-[9px] font-medium leading-tight text-slate-500 sm:text-[10px]">
                         {obj.label}
                       </span>

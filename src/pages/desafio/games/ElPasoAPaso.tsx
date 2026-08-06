@@ -368,38 +368,35 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
 
       {!done && (
         <>
-          {/* Secuencia en construcción */}
-          <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
-            {placed.length === 0 && (
-              <p className="text-center text-base text-slate-400">Tocá los pasos de abajo para empezar</p>
-            )}
-            <div className="flex flex-col gap-2">
-              {placed.map((item, i) => {
-                const isRight = checked && item.id === i
-                const isWrong = checked && item.id !== i
-                const StepIcon = item.value.Icon
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    disabled={checked}
-                    onClick={() => unplace(item)}
-                    className={[
-                      'flex items-start gap-2.5 rounded-xl border-2 px-4 py-2.5 text-left text-base transition',
-                      'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                      isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : '',
-                      isWrong ? 'border-slate-300 bg-white text-slate-500' : '',
-                      !checked ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 hover:bg-tiam-blue/10' : '',
-                    ].join(' ')}
-                  >
-                    <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
-                    <StepIcon className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" />
-                    <span>{item.value.label}</span>
-                  </button>
-                )
-              })}
+          {/* Secuencia en construcción — se oculta al revisar para que la
+              tarjeta de Resultado no tenga que competir por espacio (acá los
+              pasos son oraciones completas; varias filas empujan bastante
+              hacia abajo). El listado "El orden correcto era" de esa tarjeta
+              ya repite el orden completo cuando la respuesta está mal. */}
+          {!checked && (
+            <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+              {placed.length === 0 && (
+                <p className="text-center text-base text-slate-400">Tocá los pasos de abajo para empezar</p>
+              )}
+              <div className="flex flex-col gap-2">
+                {placed.map((item, i) => {
+                  const StepIcon = item.value.Icon
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => unplace(item)}
+                      className="flex items-start gap-2.5 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-2.5 text-left text-base text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                    >
+                      <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
+                      <StepIcon className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" />
+                      <span>{item.value.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Banco de pasos */}
           {!checked && (
