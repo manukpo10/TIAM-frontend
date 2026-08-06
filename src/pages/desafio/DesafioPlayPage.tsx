@@ -269,7 +269,7 @@ export function DesafioPlayPage() {
           Cada día se desbloquea uno nuevo. ¡Volvé mañana por el siguiente! 🌱
         </p>
 
-        <ChallengeProgressPanel progress={progress} />
+        <ChallengeProgressPanel progress={progress} month={month} />
       </div>
 
       {/* Day card modal */}

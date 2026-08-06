@@ -1,6 +1,6 @@
 import { Flame, Star, Trophy, type LucideIcon } from 'lucide-react'
 import { BADGE_META, type BadgeId, type ChallengeProgress } from '@/lib/challengeProgress'
-import { CHALLENGE_DAYS, type ChallengeArea } from '@/lib/challengeContent'
+import { getChallengeDays, type ChallengeArea } from '@/lib/challengeContent'
 
 /**
  * Summary card for the "Desafío 30 días" day-grid page: streak, earned
@@ -49,7 +49,17 @@ const AREA_COLOR: Record<ChallengeArea, string> = {
   ejecutivas: '#4F46E5',
 }
 
-export function ChallengeProgressPanel({ progress }: { progress: ChallengeProgress | null }) {
+export function ChallengeProgressPanel({
+  progress,
+  month,
+}: {
+  progress: ChallengeProgress | null
+  /** Which 30-day catalog `progress` was computed against — the per-area
+   * day totals below differ by month (e.g. 'lenguaje' is 5 days in month 1,
+   * 6 in month 2), so the denominator must match the same catalog the
+   * backend used to derive `played`, not always month 1. */
+  month: number
+}) {
   if (!progress || progress.days.length === 0) return null
 
   const { streak, badges, areaBreakdown } = progress
@@ -111,7 +121,7 @@ export function ChallengeProgressPanel({ progress }: { progress: ChallengeProgre
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Por área</p>
           <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
             {playedAreas.map(({ area, played }) => {
-              const total = gameDaysForArea(area)
+              const total = gameDaysForArea(area, month)
               const pct = total > 0 ? Math.round((played / total) * 100) : 0
               return (
                 <div key={area}>
@@ -139,9 +149,13 @@ export function ChallengeProgressPanel({ progress }: { progress: ChallengeProgre
   )
 }
 
-/** How many 'game'-type days exist for a given area — the API only sends
- * `played`, not a total, so the "de N días" denominator is derived here from
- * the day catalog that's already available client-side. */
-function gameDaysForArea(area: ChallengeArea): number {
-  return CHALLENGE_DAYS.filter((d) => d.area === area && d.type === 'game').length
+/** How many 'game'-type days exist for a given area in the given month's
+ * catalog — the API only sends `played`, not a total, so the "de N días"
+ * denominator is derived here from the day catalog that's already available
+ * client-side. Must use the SAME month the backend used to compute `played`
+ * (see the `month` prop doc above) — month 1 and month 2 assign areas to
+ * days differently, so hardcoding month 1 here undercounts/overcounts and
+ * can push the percentage past 100%. */
+function gameDaysForArea(area: ChallengeArea, month: number): number {
+  return getChallengeDays(month).filter((d) => d.area === area && d.type === 'game').length
 }
