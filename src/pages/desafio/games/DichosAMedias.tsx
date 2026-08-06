@@ -1,20 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { useSequencingPuzzle } from './useSequencingPuzzle'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Dichos a medias" — día 1 (mes 2), lenguaje. Completá el refrán/dicho
- * popular al que le falta la última palabra, eligiéndola entre 4 opciones —
- * nunca texto libre, tal como pide el brief para este batch.
+ * "Dichos a medias" — día 1 (mes 2), lenguaje.
  *
- * Mecánicamente es el motor de "Los opuestos" (LosOpuestos.tsx, día 14 del
- * mes 1) en su variante NO ilustrada: una tarjeta con el estímulo (acá, la
- * frase con el hueco) + una grilla de 4 opciones de solo texto; tocar una
- * incorrecta la elimina (gris, tachada, nunca roja) y deja retocar; tocar la
- * correcta resuelve la ronda y avanza. Se reutiliza esa variante tal cual
- * porque el estímulo es una frase larga, no una palabra sola fotografiable —
- * no hace falta ilustrar nada (todos los juegos de este batch son de
- * texto/palabra, ninguno necesita arte nuevo).
+ * Niveles 1 y 2: completá el refrán/dicho popular al que le falta la última
+ * palabra, eligiéndola entre 4 opciones — mecánicamente el motor de "Los
+ * opuestos" (LosOpuestos.tsx, día 14 del mes 1) en su variante no ilustrada.
+ *
+ * Nivel 3: mecánica distinta a pedido del profesional que revisó el mes 2 —
+ * repetir el mismo "completar con opciones" tres niveles seguidos se sentía
+ * repetitivo ("medio aburrido, todo lo mismo"). En vez de eso, el dicho
+ * completo aparece desordenado y hay que tocarlo palabra por palabra en el
+ * orden correcto — el motor de "Ordená la frase" (OrdenarLaFrase.tsx, día 8
+ * del mes 2), vía el mismo hook compartido `useSequencingPuzzle`. Igual que
+ * ahí: sin retoque tras "Revisar" (la respuesta correcta se muestra como
+ * referencia, nunca como un "fallaste" duro), sin auto-avance por timer.
  *
  * El refranero es folclore de dominio público — no hay autoría ni copyright
  * sobre un dicho tradicional, así que el texto de cada refrán es el dicho
@@ -24,30 +27,45 @@ import type { GameProps } from '@/lib/challengeProgress'
  * dichos reales y verificados, ninguno inventado).
  *
  * TODOS los dichos de un nivel se juegan en cada pasada, sólo se baraja el
- * ORDEN (mismo criterio que LosOpuestos: `shuffle(level.rounds)` completo,
+ * ORDEN (mismo criterio que LosOpuestos: se shufflea un array de índices,
  * sin sub-muestreo tipo ROUNDS_PER_LEVEL) — 2/3/3 dichos por nivel (el
- * app-wide default, ver Encaminada.tsx), 8 en total. Originalmente 6 por
- * nivel (18 en total); recortado tras el mismo feedback de "muy cansador"
- * que ajustó ElVuelto y compañía. Al elegir cuáles quedaban se priorizó que
- * los dichos sobrevivientes de un mismo nivel enseñen lecciones bien
- * distintas entre sí (evitar dos refranes casi sinónimos en el mismo nivel).
+ * app-wide default, ver Encaminada.tsx), 8 en total.
+ *
+ * Conteo de errores unificado entre los dos modos: cada ronda (sea completar
+ * con opciones o armar la frase) contribuye como máximo 1 a `mistakes` por
+ * intento fallido, así totalAttempts = mistakes + TOTAL_ROUNDS sigue
+ * describiendo correctamente las 8 rondas sin importar el modo — no se
+ * cuenta por palabra individual en el modo reorder (eso rompería la
+ * comparación con el modo fill, que sí cuenta por opción descartada).
  */
 
-interface Round {
+interface FillRound {
   before: string
   answer: string
   decoys: string[]
 }
-interface Level {
+interface ReorderRound {
+  words: string[]
+}
+interface FillLevel {
   n: number
   name: string
-  rounds: Round[]
+  mode: 'fill'
+  rounds: FillRound[]
 }
+interface ReorderLevel {
+  n: number
+  name: string
+  mode: 'reorder'
+  rounds: ReorderRound[]
+}
+type Level = FillLevel | ReorderLevel
 
 const LEVELS: Level[] = [
   {
     n: 1,
     name: 'Nivel 1',
+    mode: 'fill',
     rounds: [
       { before: 'Más vale pájaro en mano que cien', answer: 'volando', decoys: ['cantando', 'corriendo', 'durmiendo'] },
       { before: 'Perro que ladra no', answer: 'muerde', decoys: ['corre', 'ataca', 'asusta'] },
@@ -56,6 +74,7 @@ const LEVELS: Level[] = [
   {
     n: 2,
     name: 'Nivel 2',
+    mode: 'fill',
     rounds: [
       { before: 'No hay mal que por bien no', answer: 'venga', decoys: ['pase', 'llegue', 'dure'] },
       { before: 'Dime con quién andas y te diré quién', answer: 'eres', decoys: ['serás', 'fuiste', 'vives'] },
@@ -65,17 +84,19 @@ const LEVELS: Level[] = [
   {
     n: 3,
     name: 'Nivel 3',
+    mode: 'reorder',
     rounds: [
-      { before: 'El que se fue a Sevilla, perdió su', answer: 'silla', decoys: ['casa', 'lugar', 'puesto'] },
-      { before: 'Árbol que nace torcido, jamás su tronco', answer: 'endereza', decoys: ['mejora', 'arregla', 'cambia'] },
-      { before: 'Más sabe el diablo por viejo que por', answer: 'diablo', decoys: ['sabio', 'malo', 'listo'] },
+      { words: ['El', 'que', 'se', 'fue', 'a', 'Sevilla', 'perdió', 'su', 'silla'] },
+      { words: ['Árbol', 'que', 'nace', 'torcido', 'jamás', 'su', 'tronco', 'endereza'] },
+      { words: ['Más', 'sabe', 'el', 'diablo', 'por', 'viejo', 'que', 'por', 'diablo'] },
     ],
   },
 ]
 
 // Total de dichos a través de los 3 niveles — cada ronda se resuelve tras el
-// toque correcto (no hay forma de "rendirse"), así que totalAttempts =
-// mistakes + esta constante.
+// intento correcto (en el modo fill no hay forma de "rendirse"; en el modo
+// reorder no hay reintento tras Revisar), así que totalAttempts = mistakes +
+// esta constante.
 const TOTAL_ROUNDS = LEVELS.reduce((sum, lvl) => sum + lvl.rounds.length, 0)
 
 function shuffle<T>(arr: T[]): T[] {
@@ -91,39 +112,68 @@ function pickOne<T>(arr: T[]): T {
 }
 
 const HINTS = ['Esa no completa el dicho — probá con otra.', 'Casi. Pensá cómo sigue el dicho.', 'No es esa, ¡fijate de nuevo!']
-const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
+const PRAISE_GOOD = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
+const PRAISE_OK = ['¡Buen intento! Mirá cómo queda el dicho completo.', '¡Casi! Con la práctica te sale cada vez mejor.']
 
 export function DichosAMedias({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
+  // Índices barajados, no las rondas en sí — así el mismo memo sirve para
+  // cualquiera de los dos modos sin pelear con el union type de Level.
   const order = useMemo(
-    () => shuffle(level.rounds),
+    () => shuffle(level.rounds.map((_, i) => i)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
 
   const [currentIndex, setCurrentIndex] = useState(0)
+  // Sólo relevante en modo reorder (ver `checked` más abajo) — declarado acá
+  // arriba porque `done` lo necesita.
+  const [checked, setChecked] = useState(false)
+  // "Done" (nivel completo) difiere por modo: en fill, el índice ya avanzó
+  // más allá del final apenas se acierta la última ronda (auto-avance con
+  // timeout). En reorder no hay auto-avance — el índice de la última ronda
+  // se queda quieto hasta que el jugador la revisa, así que done depende de
+  // `checked` en vez del índice (mismo criterio que OrdenarLaFrase).
+  const done =
+    level.mode === 'fill' ? currentIndex >= order.length : checked && currentIndex >= order.length - 1
+  const currentRoundIdx = order[currentIndex]
+
+  // ── Estado del modo "fill" (niveles 1-2) ──────────────────────────────
   const [eliminated, setEliminated] = useState<Set<string>>(new Set())
   const [solved, setSolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
-  const [levelPraise, setLevelPraise] = useState(PRAISE[0])
+  const fillRound = level.mode === 'fill' && !done ? level.rounds[currentRoundIdx] : null
+  const fillOptions = useMemo(
+    () => (fillRound ? shuffle([fillRound.answer, ...fillRound.decoys]) : []),
+    [fillRound],
+  )
+
+  // ── Estado del modo "reorder" (nivel 3) — useSequencingPuzzle se llama
+  // siempre (las reglas de hooks lo exigen), con un array vacío cuando el
+  // nivel actual no es reorder o ya está done; el resultado simplemente no
+  // se usa en ese caso. ─────────────────────────────────────────────────
+  const reorderWords = level.mode === 'reorder' && !done ? level.rounds[currentRoundIdx].words : []
+  const reorderKey = `${levelIdx}-${roundKey}-${currentIndex}`
+  const { bank, placed, place, unplace } = useSequencingPuzzle(reorderWords, reorderKey)
+  const [roundPraise, setRoundPraise] = useState(PRAISE_GOOD[0])
+  const readyToCheck = level.mode === 'reorder' && bank.length === 0
+  const reorderIsCorrect = placed.length > 0 && placed.every((item, i) => item.id === i)
+
+  const [levelPraise, setLevelPraise] = useState(PRAISE_GOOD[0])
   // Acumulado a través de los niveles 1→2→3, sólo se pone en cero en un
   // reinicio real del día (ver la rama isWrap de nextLevel más abajo).
   const [mistakes, setMistakes] = useState(0)
 
-  const round = order[currentIndex]
-  const done = currentIndex >= order.length
-  const options = useMemo(() => (round ? shuffle([round.answer, ...round.decoys]) : []), [round])
-
   useEffect(() => {
-    if (done) setLevelPraise(pickOne(PRAISE))
+    if (done) setLevelPraise(pickOne(PRAISE_GOOD))
   }, [done])
 
-  function guess(word: string) {
-    if (!round || solved || eliminated.has(word)) return
-    if (word === round.answer) {
+  function guessFill(word: string) {
+    if (!fillRound || solved || eliminated.has(word)) return
+    if (word === fillRound.answer) {
       setSolved(true)
       setHint(null)
       window.setTimeout(() => {
@@ -138,6 +188,17 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
     }
   }
 
+  function checkReorder() {
+    const correct = reorderIsCorrect
+    setRoundPraise(pickOne(correct ? PRAISE_GOOD : PRAISE_OK))
+    setChecked(true)
+    if (!correct) setMistakes((m) => m + 1)
+  }
+  function nextReorderRound() {
+    setChecked(false)
+    setCurrentIndex((i) => i + 1)
+  }
+
   // Resets sincrónicos acá mismo, nunca en un efecto separado keyed on
   // [levelIdx, roundKey] — un reset por efecto llega un render tarde y el
   // onComplete de abajo leería `done` viejo justo al llegar al nivel 3 (misma
@@ -150,6 +211,7 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
     setEliminated(new Set())
     setSolved(false)
     setHint(null)
+    setChecked(false)
     if (isWrap) setMistakes(0)
   }
   function replay() {
@@ -158,6 +220,7 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
     setEliminated(new Set())
     setSolved(false)
     setHint(null)
+    setChecked(false)
   }
 
   // Dispara una vez por roundKey cuando se resuelve el último dicho del
@@ -181,7 +244,12 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Cómo termina el dicho?</h2>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+              {level.mode === 'fill' ? '¿Cómo termina el dicho?' : 'Ordená las palabras para armar el dicho'}
+            </h2>
+            {level.mode === 'reorder' && (
+              <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
+            )}
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
               <p className="shrink-0 text-base font-semibold text-slate-500">
                 Llevás {currentIndex} de {order.length}
@@ -197,12 +265,12 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {!done && round && (
+      {/* ── Modo fill (niveles 1-2) ── */}
+      {!done && level.mode === 'fill' && fillRound && (
         <>
-          {/* Dicho con el hueco */}
           <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4 text-center sm:mt-6">
             <p className="text-lg font-bold leading-snug text-slate-800 sm:text-xl">
-              {round.before}{' '}
+              {fillRound.before}{' '}
               <span
                 aria-hidden="true"
                 className="inline-block h-6 w-20 translate-y-1 rounded-md border-b-4 border-dashed border-tiam-blue/50 align-middle"
@@ -211,17 +279,16 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
             </p>
           </div>
 
-          {/* Opciones */}
           <div className="mt-5 grid grid-cols-2 gap-3">
-            {options.map((word) => {
+            {fillOptions.map((word) => {
               const isEliminated = eliminated.has(word)
-              const isSolved = solved && word === round.answer
+              const isSolved = solved && word === fillRound.answer
               return (
                 <button
                   key={word}
                   type="button"
                   disabled={solved || isEliminated}
-                  onClick={() => guess(word)}
+                  onClick={() => guessFill(word)}
                   className={[
                     'min-h-[64px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
@@ -242,8 +309,126 @@ export function DichosAMedias({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {/* Completion */}
-      {done && (
+      {/* ── Modo reorder (nivel 3) ── */}
+      {!done && level.mode === 'reorder' && (
+        <>
+          <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+            {placed.length === 0 && (
+              <span className="text-base text-slate-400">Tocá las palabras de abajo para empezar</span>
+            )}
+            {!checked &&
+              placed.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => unplace(item)}
+                  className="min-h-[44px] rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-2 text-base font-semibold text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                >
+                  {item.value}
+                </button>
+              ))}
+            {checked &&
+              placed.map((item, i) => {
+                const isRight = item.id === i
+                return (
+                  <span
+                    key={item.id}
+                    className={[
+                      'min-h-[44px] rounded-xl border-2 px-4 py-2 text-base font-semibold',
+                      isRight ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : 'border-slate-300 bg-white text-slate-500',
+                    ].join(' ')}
+                  >
+                    {item.value}
+                  </span>
+                )
+              })}
+          </div>
+
+          {!checked && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {bank.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => place(item)}
+                  className="min-h-[44px] rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-base font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                >
+                  {item.value}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {readyToCheck && !checked && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={checkReorder}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+              >
+                Revisar
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Resultado del dicho — igual patrón que OrdenarLaFrase: gateado por
+          `checked` solo (no por `!done`), así en la ÚLTIMA ronda del nivel
+          (donde `done` ya está activo y el bloque `!done` de arriba dejó de
+          renderizar el tablero) este cartel sigue mostrando si ESA ronda
+          puntual salió bien o mal — nunca se pierde el resultado individual
+          por pasar directo al "nivel completo". */}
+      {level.mode === 'reorder' && checked && (
+        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+            <Sparkles className="h-6 w-6 text-tiam-green" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">{roundPraise}</p>
+          {!reorderIsCorrect && (
+            <p className="mt-2 text-slate-600">
+              El dicho completo era:{' '}
+              <span className="font-semibold text-slate-800">"{level.rounds[currentRoundIdx].words.join(' ')}."</span>
+            </p>
+          )}
+          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+            {done ? (
+              <>
+                <button
+                  type="button"
+                  onClick={nextLevel}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                >
+                  {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={replay}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Otra ronda
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={nextReorderRound}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                Siguiente dicho
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Completion — nivel completo, sólo modo fill. En modo reorder el
+          cartel de arriba (gateado por `checked`) ya cubre el caso "done"
+          mostrando el resultado de la última ronda + los mismos botones. */}
+      {done && level.mode === 'fill' && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
