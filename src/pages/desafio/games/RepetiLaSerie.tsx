@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Delete, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Delete, Eye, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -38,7 +38,7 @@ const LEVELS: Level[] = [
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
 const REVEAL_MS = 900
 
-type Phase = 'show' | 'input' | 'feedback'
+type Phase = 'ready' | 'show' | 'input' | 'feedback'
 
 // No immediate repeat (e.g. 3-3) — a repeated digit back to back reads as
 // "did it blink twice?" rather than a clean two-item memory step.
@@ -86,7 +86,7 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   const [roundIdx, setRoundIdx] = useState(0)
   const sequence = epochSequences[levelIdx][roundIdx]
 
-  const [phase, setPhase] = useState<Phase>('show')
+  const [phase, setPhase] = useState<Phase>('ready')
   const [revealIdx, setRevealIdx] = useState(0)
   const [entered, setEntered] = useState<number[]>([])
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null)
@@ -129,6 +129,17 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entered, phase])
 
+  // Gate between rounds: the digit reveal never starts on its own — the
+  // player taps "Empezar" when ready, same "no surprise timer" contract
+  // this app uses everywhere else. Applies to every round, not just the
+  // day's first: someone still reading the previous round's feedback
+  // shouldn't get digits flashing at them the instant they tap "Siguiente
+  // serie" either.
+  function startRound() {
+    if (phase !== 'ready') return
+    setPhase('show')
+  }
+
   function tapDigit(d: number) {
     if (phase !== 'input' || entered.length >= sequence.length) return
     setEntered((prev) => [...prev, d])
@@ -147,7 +158,7 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   // already generated when this epoch started — no need to touch roundKey.
   function nextRound() {
     setRoundIdx((i) => i + 1)
-    setPhase('show')
+    setPhase('ready')
     setRevealIdx(0)
     setEntered([])
     setLastCorrect(null)
@@ -158,7 +169,7 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   function advanceLevel() {
     setLevelIdx((i) => i + 1)
     setRoundIdx(0)
-    setPhase('show')
+    setPhase('ready')
     setRevealIdx(0)
     setEntered([])
     setLastCorrect(null)
@@ -170,7 +181,7 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
-    setPhase('show')
+    setPhase('ready')
     setRevealIdx(0)
     setEntered([])
     setLastCorrect(null)
@@ -207,9 +218,11 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
         </span>
         {phase !== 'feedback' && (
           <>
-            <p className="mt-2 text-base text-slate-500">
-              {phase === 'show' ? 'Memorizá el orden de los números.' : 'Repetilo tocando los números en el mismo orden.'}
-            </p>
+            {phase !== 'ready' && (
+              <p className="mt-2 text-base text-slate-500">
+                {phase === 'show' ? 'Memorizá el orden de los números.' : 'Repetilo tocando los números en el mismo orden.'}
+              </p>
+            )}
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
               <p className="shrink-0 text-base font-semibold text-slate-500">
                 Llevás {roundIdx} de {level.rounds}
@@ -224,6 +237,29 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
           </>
         )}
       </div>
+
+      {/* Ready gate: nothing starts until the player taps "Empezar" — same
+          "no surprise timer" contract as the rest of this app. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Eye className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Vas a ver {sequence.length} números, uno por uno. Prestá atención — después vas a tener que repetirlos en el
+            mismo orden.
+          </p>
+          <button
+            type="button"
+            onClick={startRound}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Show phase: one digit at a time, nothing stays on screen */}
       {phase === 'show' && (
