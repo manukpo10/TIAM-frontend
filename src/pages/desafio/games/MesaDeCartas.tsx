@@ -4,10 +4,11 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Mesa de cartas" — día 29 del Mes 2, cierre del área cálculo. Una grilla
- * de cartas españolas... no, de baraja francesa (♥♦♣♠) renderizadas 100% en
+ * de cartas de baraja ESPAÑOLA (oro/copa/espada/basto) renderizadas 100% en
  * SVG/CSS (sin ningún asset), y una pregunta a la vez de un pool que rota:
- * contar un palo/color/valor, sumar una fila o columna, o encontrar la
- * única carta repetida. Selección múltiple, nunca teclado.
+ * contar un palo o un valor, sumar una fila o columna, restar entre dos
+ * palos, o encontrar la única carta repetida. Selección múltiple, nunca
+ * teclado.
  *
  * Cada ronda se genera PROCEDURALMENTE: se elige el tipo de pregunta
  * primero y RECIÉN DESPUÉS se arma la grilla de cartas (para el tipo
@@ -18,21 +19,30 @@ import type { GameProps } from '@/lib/challengeProgress'
  * pueda desincronizar del contenido.
  *
  * Los distractores son intencionalmente "el error típico": para
- * "¿cuántos corazones hay?" un distractor es el conteo de OTRO palo (el
- * error de confundir de cuál palo se preguntaba); para una suma de fila, un
- * distractor es la suma de OTRA fila. Ver fillDecoys().
+ * "¿cuántas copas hay?" un distractor es el conteo de OTRO palo (el error
+ * de confundir de cuál palo se preguntaba); para una suma de fila, un
+ * distractor es la suma de OTRA fila; para la resta entre palos
+ * (suitCrossSum), los distractores típicos son "sumar y olvidarse de
+ * restar" y "sumar los dos palos en vez de restar". Ver fillDecoys().
  *
  * La grilla crece con el nivel (2×3 → 3×3 → 3×4, 6/9/12 cartas) y el pool de
- * preguntas se amplía: nivel 1 sólo cuenta (palo/color/valor); nivel 2 suma
- * una fila o columna; nivel 3 agrega la carta repetida — la pregunta más
- * exigente porque obliga a comparar la grilla entera, no sólo escanearla.
+ * preguntas se amplía: nivel 1 sólo cuenta (palo/valor); nivel 2 suma una
+ * fila o columna y agrega la resta entre dos palos (hay que sumar cada palo
+ * por separado y recién después restar — el pedido puntual del play-test:
+ * "que sume el palo de copa y reste el palo de oro"); nivel 3 suma también
+ * por columna y agrega la carta repetida — la pregunta más exigente porque
+ * obliga a comparar la grilla entera, no sólo escanearla.
+ *
+ * La baraja española no colorea por palo como la francesa (no hay
+ * convención roja/negra) — los 4 palos se distinguen sólo por la silueta
+ * del glyph (ver SuitGlyph), pensada para leerse clara en tamaño chico.
  *
  * VARIAS rondas por nivel (2 por nivel, 6 en total) — mismo patrón
  * "uniformado" del resto del lote (ver ElDescuento.tsx).
  */
 
-type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades'
-const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades']
+type Suit = 'oro' | 'copa' | 'espada' | 'basto'
+const SUITS: Suit[] = ['oro', 'copa', 'espada', 'basto']
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] as const
 type Rank = (typeof RANKS)[number]
 
@@ -41,7 +51,7 @@ interface CardData {
   suit: Suit
 }
 
-const SUIT_PLURAL: Record<Suit, string> = { hearts: 'corazones', diamonds: 'diamantes', clubs: 'tréboles', spades: 'picas' }
+const SUIT_PLURAL: Record<Suit, string> = { oro: 'oros', copa: 'copas', espada: 'espadas', basto: 'bastos' }
 const RANK_SIMPLE: Record<Rank, string> = {
   A: 'As', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10',
   J: 'Jota', Q: 'Reina', K: 'Rey',
@@ -58,9 +68,10 @@ function cardValue(rank: Rank): number {
   if (rank === 'K') return 13
   return Number(rank)
 }
-function isRed(suit: Suit): boolean {
-  return suit === 'hearts' || suit === 'diamonds'
-}
+// La baraja española no colorea por palo como la francesa (no hay
+// convención roja/negra) — todas las cartas usan la misma tinta; el palo
+// se distingue por la silueta del glyph, no por color.
+const CARD_INK = '#1e293b'
 function cardLabel(c: CardData): string {
   return `${RANK_ARTICLE[c.rank]} ${RANK_SIMPLE[c.rank]} de ${SUIT_PLURAL[c.suit]}`
 }
@@ -105,7 +116,7 @@ function fillDecoys(correct: number, seeds: number[], need: number): number[] {
   return shuffle(Array.from(set)).slice(0, need)
 }
 
-type QuestionType = 'countSuit' | 'countColor' | 'countRank' | 'rowSum' | 'colSum' | 'repeated'
+type QuestionType = 'countSuit' | 'countRank' | 'rowSum' | 'colSum' | 'repeated' | 'suitCrossSum'
 
 interface Option {
   id: string
@@ -139,9 +150,9 @@ const LEVEL_GRID: [number, number][] = [
   [3, 4],
 ]
 const LEVEL_QUESTION_TYPES: QuestionType[][] = [
-  ['countSuit', 'countColor', 'countRank'],
-  ['countSuit', 'countColor', 'countRank', 'rowSum'],
-  ['countSuit', 'countColor', 'countRank', 'rowSum', 'colSum', 'repeated'],
+  ['countSuit', 'countRank'],
+  ['countSuit', 'countRank', 'rowSum', 'suitCrossSum'],
+  ['countSuit', 'countRank', 'rowSum', 'colSum', 'repeated', 'suitCrossSum'],
 ]
 
 function generateRound(levelIdx: number): Round {
@@ -170,12 +181,6 @@ function generateRound(levelIdx: number): Round {
     prompt = `¿Cuántas cartas de ${SUIT_PLURAL[suit]} hay?`
     const seeds = SUITS.filter((s) => s !== suit).map((s) => grid.filter((c) => c.suit === s).length)
     numericOptions = shuffle([correctValue, ...fillDecoys(correctValue, seeds, 3)])
-  } else if (type === 'countColor') {
-    const wantRed = Math.random() < 0.5
-    correctValue = grid.filter((c) => isRed(c.suit) === wantRed).length
-    prompt = `¿Cuántas cartas ${wantRed ? 'rojas' : 'negras'} hay?`
-    const seeds = [grid.filter((c) => isRed(c.suit) !== wantRed).length]
-    numericOptions = shuffle([correctValue, ...fillDecoys(correctValue, seeds, 3)])
   } else if (type === 'countRank') {
     const rank = pickOne(RANKS)
     correctValue = grid.filter((c) => c.rank === rank).length
@@ -198,6 +203,24 @@ function generateRound(levelIdx: number): Round {
     const seeds = Array.from({ length: cols }, (_, i) => i)
       .filter((i) => i !== c)
       .map((i) => sumOf(colCards(grid, cols, i)))
+    numericOptions = shuffle([correctValue, ...fillDecoys(correctValue, seeds, 3)])
+  } else if (type === 'suitCrossSum') {
+    const [suitA, suitB] = shuffle(SUITS)
+    const sumA = sumOf(grid.filter((c) => c.suit === suitA))
+    const sumB = sumOf(grid.filter((c) => c.suit === suitB))
+    // Siempre restamos el palo con menos puntos al de más puntos, así el
+    // resultado nunca da negativo — la resta entre palos ya es la parte
+    // difícil, no hace falta sumarle números negativos.
+    const plusSuit = sumA >= sumB ? suitA : suitB
+    const minusSuit = sumA >= sumB ? suitB : suitA
+    correctValue = Math.max(sumA, sumB) - Math.min(sumA, sumB)
+    prompt = `Sumá las cartas de ${SUIT_PLURAL[plusSuit]} y restá las de ${SUIT_PLURAL[minusSuit]}. ¿Cuánto da?`
+    const otherSuits = SUITS.filter((s) => s !== plusSuit && s !== minusSuit)
+    const seeds = [
+      Math.max(sumA, sumB), // error típico: sumar y olvidarse de restar
+      sumA + sumB, // error típico: sumar los dos palos en vez de restar
+      ...otherSuits.map((s) => sumOf(grid.filter((c) => c.suit === s))),
+    ]
     numericOptions = shuffle([correctValue, ...fillDecoys(correctValue, seeds, 3)])
   } else {
     // repeated
@@ -229,30 +252,40 @@ function SuitGlyph({ suit, size, color }: { suit: Suit; size: number; color: str
   const s = size
   return (
     <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} className="shrink-0">
-      {suit === 'diamonds' && (
-        <polygon points={`${s * 0.5},${s * 0.05} ${s * 0.92},${s * 0.5} ${s * 0.5},${s * 0.95} ${s * 0.08},${s * 0.5}`} fill={color} />
-      )}
-      {suit === 'hearts' && (
+      {suit === 'oro' && (
         <>
-          <circle cx={s * 0.32} cy={s * 0.36} r={s * 0.22} fill={color} />
-          <circle cx={s * 0.68} cy={s * 0.36} r={s * 0.22} fill={color} />
-          <polygon points={`${s * 0.06},${s * 0.42} ${s * 0.94},${s * 0.42} ${s * 0.5},${s * 0.94}`} fill={color} />
+          {/* Moneda: círculo con una cruz que asoma apenas por el borde. */}
+          <circle cx={s * 0.5} cy={s * 0.5} r={s * 0.3} fill={color} />
+          <polygon points={`${s * 0.45},${s * 0.15} ${s * 0.55},${s * 0.15} ${s * 0.55},${s * 0.85} ${s * 0.45},${s * 0.85}`} fill={color} />
+          <polygon points={`${s * 0.15},${s * 0.45} ${s * 0.85},${s * 0.45} ${s * 0.85},${s * 0.55} ${s * 0.15},${s * 0.55}`} fill={color} />
         </>
       )}
-      {suit === 'spades' && (
+      {suit === 'copa' && (
         <>
-          <circle cx={s * 0.32} cy={s * 0.62} r={s * 0.2} fill={color} />
-          <circle cx={s * 0.68} cy={s * 0.62} r={s * 0.2} fill={color} />
-          <polygon points={`${s * 0.5},${s * 0.04} ${s * 0.92},${s * 0.6} ${s * 0.08},${s * 0.6}`} fill={color} />
-          <polygon points={`${s * 0.42},${s * 0.68} ${s * 0.58},${s * 0.68} ${s * 0.5},${s * 0.96}`} fill={color} />
+          {/* Cáliz: copa + pie + base, silueta angosta-ancha-angosta-ancha. */}
+          <polygon points={`${s * 0.22},${s * 0.08} ${s * 0.78},${s * 0.08} ${s * 0.6},${s * 0.48} ${s * 0.4},${s * 0.48}`} fill={color} />
+          <polygon points={`${s * 0.44},${s * 0.48} ${s * 0.56},${s * 0.48} ${s * 0.56},${s * 0.78} ${s * 0.44},${s * 0.78}`} fill={color} />
+          <polygon points={`${s * 0.34},${s * 0.78} ${s * 0.66},${s * 0.78} ${s * 0.74},${s * 0.92} ${s * 0.26},${s * 0.92}`} fill={color} />
         </>
       )}
-      {suit === 'clubs' && (
+      {suit === 'espada' && (
         <>
-          <circle cx={s * 0.5} cy={s * 0.28} r={s * 0.2} fill={color} />
-          <circle cx={s * 0.3} cy={s * 0.54} r={s * 0.2} fill={color} />
-          <circle cx={s * 0.7} cy={s * 0.54} r={s * 0.2} fill={color} />
-          <polygon points={`${s * 0.4},${s * 0.62} ${s * 0.6},${s * 0.62} ${s * 0.5},${s * 0.96}`} fill={color} />
+          {/* Espada: hoja en punta + guarda + puño + pomo. */}
+          <polygon
+            points={`${s * 0.5},${s * 0.05} ${s * 0.58},${s * 0.24} ${s * 0.58},${s * 0.66} ${s * 0.42},${s * 0.66} ${s * 0.42},${s * 0.24}`}
+            fill={color}
+          />
+          <polygon points={`${s * 0.2},${s * 0.66} ${s * 0.8},${s * 0.66} ${s * 0.8},${s * 0.75} ${s * 0.2},${s * 0.75}`} fill={color} />
+          <polygon points={`${s * 0.44},${s * 0.75} ${s * 0.56},${s * 0.75} ${s * 0.56},${s * 0.9} ${s * 0.44},${s * 0.9}`} fill={color} />
+          <circle cx={s * 0.5} cy={s * 0.93} r={s * 0.055} fill={color} />
+        </>
+      )}
+      {suit === 'basto' && (
+        <>
+          {/* Basto: garrote grueso, cuerpo levemente cónico con puntas redondeadas. */}
+          <polygon points={`${s * 0.38},${s * 0.1} ${s * 0.62},${s * 0.1} ${s * 0.66},${s * 0.86} ${s * 0.34},${s * 0.86}`} fill={color} />
+          <circle cx={s * 0.5} cy={s * 0.1} r={s * 0.15} fill={color} />
+          <circle cx={s * 0.5} cy={s * 0.86} r={s * 0.18} fill={color} />
         </>
       )}
     </svg>
@@ -260,7 +293,7 @@ function SuitGlyph({ suit, size, color }: { suit: Suit; size: number; color: str
 }
 
 function PlayingCard({ card, width }: { card: CardData; width: number }) {
-  const color = isRed(card.suit) ? '#dc2626' : '#1e293b'
+  const color = CARD_INK
   const height = Math.round(width * 1.42)
   const corner = (
     <div className="flex flex-col items-center leading-none" style={{ color }}>

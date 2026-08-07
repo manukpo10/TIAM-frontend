@@ -78,6 +78,13 @@ const LEVELS: Level[] = [
       { word: 'MAR', path: [{ row: 0, col: 2 }, { row: 1, col: 2 }, { row: 1, col: 1 }] },
       { word: 'OJO', path: [{ row: 2, col: 2 }, { row: 2, col: 1 }, { row: 1, col: 1 }] },
       { word: 'PIE', path: [{ row: 0, col: 0 }, { row: 1, col: 0 }, { row: 1, col: 1 }] },
+      // SUR/MIL/OSO added so SOL/MAR/OJO each get a same-first-letter pool
+      // partner too (see buildOptions) — professional feedback from the mes 2
+      // catalog review: without one, a player can spot "the only word
+      // starting with this letter" and tap it without tracing the path.
+      { word: 'SUR', path: [{ row: 2, col: 0 }, { row: 2, col: 1 }, { row: 1, col: 1 }] },
+      { word: 'MIL', path: [{ row: 0, col: 2 }, { row: 0, col: 1 }, { row: 1, col: 1 }] },
+      { word: 'OSO', path: [{ row: 2, col: 2 }, { row: 1, col: 2 }, { row: 1, col: 1 }] },
     ],
   },
   {
@@ -93,6 +100,14 @@ const LEVELS: Level[] = [
       { word: 'GATO', path: [{ row: 3, col: 3 }, { row: 3, col: 2 }, { row: 2, col: 2 }, { row: 2, col: 1 }] },
       { word: 'LUNA', path: [{ row: 0, col: 0 }, { row: 1, col: 0 }, { row: 2, col: 0 }, { row: 2, col: 1 }] },
       { word: 'ROSA', path: [{ row: 0, col: 2 }, { row: 0, col: 1 }, { row: 0, col: 0 }, { row: 1, col: 0 }] },
+      // COLA/MANO/PISO/GOTA/LOMA/RUTA give every word above a same-first-letter
+      // pool partner (see buildOptions) — same reasoning as Nivel 1's SUR/MIL/OSO.
+      { word: 'COLA', path: [{ row: 0, col: 0 }, { row: 0, col: 1 }, { row: 1, col: 1 }, { row: 2, col: 1 }] },
+      { word: 'MANO', path: [{ row: 0, col: 3 }, { row: 0, col: 2 }, { row: 1, col: 2 }, { row: 2, col: 2 }] },
+      { word: 'PISO', path: [{ row: 0, col: 3 }, { row: 1, col: 3 }, { row: 1, col: 2 }, { row: 0, col: 2 }] },
+      { word: 'GOTA', path: [{ row: 3, col: 0 }, { row: 2, col: 0 }, { row: 2, col: 1 }, { row: 3, col: 1 }] },
+      { word: 'LOMA', path: [{ row: 0, col: 1 }, { row: 1, col: 1 }, { row: 1, col: 0 }, { row: 2, col: 0 }] },
+      { word: 'RUTA', path: [{ row: 3, col: 2 }, { row: 3, col: 3 }, { row: 2, col: 3 }, { row: 1, col: 3 }] },
     ],
   },
   {
@@ -110,6 +125,11 @@ const LEVELS: Level[] = [
       { word: 'PLATO', path: [{ row: 4, col: 2 }, { row: 4, col: 1 }, { row: 3, col: 1 }, { row: 3, col: 0 }, { row: 2, col: 0 }] },
       { word: 'CAMPO', path: [{ row: 0, col: 0 }, { row: 0, col: 1 }, { row: 1, col: 1 }, { row: 2, col: 1 }, { row: 2, col: 0 }] },
       { word: 'NIETO', path: [{ row: 4, col: 0 }, { row: 4, col: 1 }, { row: 3, col: 1 }, { row: 3, col: 2 }, { row: 4, col: 2 }] },
+      // ABEJA/VIAJE give ARBOL/VERDE (the only two words here without an
+      // in-pool same-first-letter partner) one — same reasoning as the other
+      // two levels' additions.
+      { word: 'ABEJA', path: [{ row: 0, col: 0 }, { row: 1, col: 0 }, { row: 1, col: 1 }, { row: 2, col: 1 }, { row: 2, col: 0 }] },
+      { word: 'VIAJE', path: [{ row: 2, col: 2 }, { row: 2, col: 3 }, { row: 3, col: 3 }, { row: 4, col: 3 }, { row: 4, col: 4 }] },
     ],
   },
 ]
@@ -150,8 +170,19 @@ function buildBoard(entry: PathWord, rows: number, cols: number): string[][] {
 }
 function buildOptions(pool: PathWord[], current: PathWord, numOptions: number): string[] {
   const decoyPool = pool.filter((p) => p.word !== current.word).map((p) => p.word)
-  const decoys = shuffle(decoyPool).slice(0, numOptions - 1)
-  return shuffle([current.word, ...decoys])
+  // At least one decoy must start with the same letter as the answer — plain
+  // random sampling could easily miss the pool's same-first-letter partner
+  // (see the level pools' SUR/MIL/OSO-style additions). Without this, a
+  // player can spot "the only option starting with this letter" and tap it
+  // without ever tracing the arrow path (professional feedback from the mes
+  // 2 catalog review). Every level pool is authored so this candidate always
+  // exists; the random fallback only guards a future pool edit that breaks
+  // that invariant.
+  const sameFirstLetter = decoyPool.filter((w) => w[0] === current.word[0])
+  if (sameFirstLetter.length === 0) return shuffle([current.word, ...shuffle(decoyPool).slice(0, numOptions - 1)])
+  const forcedDecoy = pickOne(sameFirstLetter)
+  const otherDecoys = shuffle(decoyPool.filter((w) => w !== forcedDecoy)).slice(0, numOptions - 2)
+  return shuffle([current.word, forcedDecoy, ...otherDecoys])
 }
 
 const HINTS = [

@@ -32,6 +32,24 @@ import type { GameProps } from '@/lib/challengeProgress'
  * matching), L2 adds one, L3 adds two — same "more options to sift" ramp
  * CualNoVa/QueOficioEs use, adapted to a many-to-one-at-a-time match instead
  * of a single odd-one-out.
+ *
+ * KNOWN GAP (professional feedback, mes 2 catalog review): Nivel 3 should
+ * show photos NOT already seen in Nivel 1 ("nivel uno y dos está bien...
+ * nivel tres pero con otras fotos" — Nivel 1/2 sharing this pool is fine,
+ * Nivel 3 repeating it is not). Left unfixed for now because it's a content
+ * gap, not a logic bug: this game only has these 8 photos, and Nivel 1
+ * alone already uses all 8 across its 2 rounds, so there's nothing left
+ * over for Nivel 3 to draw from without new images. Checked the rest of the
+ * project first (per house discipline) — no unused entries in this folder,
+ * and the only same-CONCEPT assets elsewhere (empecemos-por-hoy's
+ * primavera.webp/tarde.webp) turned out to be flat vector icons on closer
+ * look, not photorealistic scenes, so dropping them into this grid would
+ * look visibly broken next to the other 8. NIVEL_3_PHOTOS below is wired up
+ * as its own pool ready to take a disjoint set the moment ~6-8 new
+ * atmospheric photos exist (a beach, a mountain, a forest, a desert, a
+ * storm, a sunset would round out a second full set) generated the same
+ * way the original 8 were (the local Flux instance) — intentionally not
+ * faked here with mismatched-style images.
  */
 
 interface PhotoConcept {
@@ -49,6 +67,12 @@ const ALL_PHOTOS: PhotoConcept[] = [
   { id: 'campo', tag: 'Campo' },
   { id: 'otono', tag: 'Otoño' },
 ]
+
+// Nivel 3's own pool, kept as a separate constant so the day new photos
+// exist it's a one-line swap (see the file header's KNOWN GAP note) instead
+// of a re-read of this whole component. Currently just an alias for
+// ALL_PHOTOS — there is nothing else to give it yet.
+const NIVEL_3_PHOTOS: PhotoConcept[] = ALL_PHOTOS
 
 interface Level {
   n: number
@@ -95,13 +119,16 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Two 4-photo groups covering all 8 photos exactly once per level, for the
-  // WHOLE epoch — generated once at mount, and again only inside
+  // Two 4-photo groups covering a level's pool exactly once, for the WHOLE
+  // epoch — generated once at mount, and again only inside
   // restartDifferent(). Which four land in round 1 vs round 2 stays fixed
   // for the rest of the epoch so "Repetir" hands back the same groups.
+  // Nivel 3 draws from its own NIVEL_3_PHOTOS pool (currently == ALL_PHOTOS,
+  // see the file header's KNOWN GAP note) so the split is ready to diverge
+  // the moment that pool gets real content of its own.
   const [epochGroups, setEpochGroups] = useState(() =>
-    LEVELS.map(() => {
-      const shuffled = shuffle(ALL_PHOTOS)
+    LEVELS.map((lvl) => {
+      const shuffled = shuffle(lvl.n === 3 ? NIVEL_3_PHOTOS : ALL_PHOTOS)
       return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
     }),
   )
@@ -207,8 +234,8 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   function restartDifferent() {
     restartEpoch()
     setEpochGroups(
-      LEVELS.map(() => {
-        const shuffled = shuffle(ALL_PHOTOS)
+      LEVELS.map((lvl) => {
+        const shuffled = shuffle(lvl.n === 3 ? NIVEL_3_PHOTOS : ALL_PHOTOS)
         return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
       }),
     )

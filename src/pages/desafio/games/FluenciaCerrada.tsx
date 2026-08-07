@@ -83,7 +83,7 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
   // ÉPOCA completa — generados una sola vez al montar, y de nuevo sólo
   // dentro de restartDifferent(). Nunca se vuelven a sortear sólo por
   // revisitar un nivel, así "Repetir" devuelve exactamente el mismo tablero.
-  const [epochBoard, setEpochBoard] = useState(() =>
+  const [epochBoard] = useState(() =>
     LEVELS.map((lvl) => shuffle([...pick(lvl.targetPool, 6), ...pick(lvl.distractorPool, 6)])),
   )
   const board = epochBoard[levelIdx]
@@ -157,12 +157,6 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
   // "Repetir" — el mismo tablero del intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — un tablero nuevo por nivel, igual que antes de esta
-  // feature.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochBoard(LEVELS.map((lvl) => shuffle([...pick(lvl.targetPool, 6), ...pick(lvl.distractorPool, 6)])))
   }
 
   // Dispara una vez por roundKey cuando el nivel 3 se completa.
@@ -268,14 +262,6 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -26,6 +26,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * VARIAS rondas por nivel (2 por nivel, 6 en total) — mismo patrón
  * "uniformado" que ElVuelto/OrdenarLaFrase/PlanificaLaManana.
+ *
+ * Subtítulo agregado tras feedback profesional: no todos calculan % de
+ * cabeza, así que se aclara que vale resolverlo en el cuaderno y después
+ * tocar el resultado — copy-only, la mecánica de elección múltiple no cambia.
  */
 
 interface Scenario {
@@ -247,17 +251,22 @@ export function ElDescuento({ day: _day, onComplete }: GameProps) {
           {level.name}
         </span>
         {!done && (
-          <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
-            <p className="shrink-0 text-base font-semibold text-slate-500">
-              Llevás {roundIdx} de {roundsForLevel}
+          <>
+            <p className="mt-2 text-base text-slate-500">
+              Podés calcularlo mentalmente o hacer la cuenta en tu cuaderno y después tocar el resultado.
             </p>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-cyan-600 transition-[width] duration-300"
-                style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
-              />
+            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+              <p className="shrink-0 text-base font-semibold text-slate-500">
+                Llevás {roundIdx} de {roundsForLevel}
+              </p>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-cyan-600 transition-[width] duration-300"
+                  style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 

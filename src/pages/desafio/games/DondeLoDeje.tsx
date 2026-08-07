@@ -131,7 +131,7 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
   // WHOLE epoch, one per level — generated once at mount, and again only
   // inside restartDifferent(). Never re-rolled just by revisiting a level,
   // so "Repetir" hands back the exact same layout.
-  const [epochLayouts, setEpochLayouts] = useState(() => LEVELS.map((lvl) => buildLayout(lvl)))
+  const [epochLayouts] = useState(() => LEVELS.map((lvl) => buildLayout(lvl)))
   const layout = epochLayouts[levelIdx]
 
   const [phase, setPhase] = useState<'study' | 'test'>('study')
@@ -230,12 +230,6 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same layout as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random layout per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochLayouts(LEVELS.map((lvl) => buildLayout(lvl)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -410,14 +404,6 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

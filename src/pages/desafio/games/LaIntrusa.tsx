@@ -21,6 +21,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * cell) — same convention as BuscarLosRojos/CazadorDeLetras, since graying
  * out dozens of cells as the player scans would look cluttered and would
  * quietly shrink the search space for them.
+ *
+ * Nivel 3's board now matches nivel 2's size (30 cells, 5 columns) exactly —
+ * cell WIDTH is set by column count, not total cell count, so a denser
+ * 6-column grid would still render cramped even with fewer cells. Nivel 3's
+ * difficulty still comes entirely from the word pairs, not from the grid.
+ *
+ * Nivel 3's LAST round is the one exception to "find THE intruder"
+ * (singular): it hides TWO different intruder words at once (see
+ * `lastRoundIntruders` on Level / the plural `intruderIdxs` on Round) and
+ * only resolves once both are tapped.
  */
 
 interface WordPair {
@@ -61,6 +71,12 @@ interface Level {
   cells: number
   boardClass: string
   textClass: string
+  /** How many intruders the LAST round of this level requires. Default 1. */
+  lastRoundIntruders?: number
+  /** Instruction shown only during the last round, when it differs from the
+   *  level's usual "find the one different word" (e.g. nivel 3's final round
+   *  needs the player to know TWO intruders are hiding). */
+  lastRoundInstruction?: string
 }
 
 const LEVELS: Level[] = [
@@ -88,11 +104,15 @@ const LEVELS: Level[] = [
     n: 3,
     name: 'Nivel 3',
     instruction: 'Tocá la palabra diferente (fijate bien, letra por letra)',
-    rounds: 4,
+    rounds: 2,
     pool: L3_PAIRS,
-    cells: 42,
-    boardClass: 'grid-cols-6 gap-1 sm:gap-2',
-    textClass: 'text-[11px] sm:text-sm',
+    // Same cells/boardClass/textClass as nivel 2 on purpose — see the file
+    // header comment. Do not shrink textClass or grow columns past 5 here.
+    cells: 30,
+    boardClass: 'grid-cols-5 gap-1.5 sm:gap-2.5',
+    textClass: 'text-sm sm:text-base',
+    lastRoundIntruders: 2,
+    lastRoundInstruction: 'Tocá las DOS palabras diferentes (hay dos intrusas)',
   },
 ]
 
@@ -108,15 +128,36 @@ const pick = <T,>(arr: T[], n: number) => shuffle(arr).slice(0, n)
 
 interface Round {
   pair: WordPair
-  intruderIdx: number
+  intruderIdxs: number[]
   cells: string[]
 }
 
 function buildRounds(level: Level): Round[] {
-  return pick(level.pool, level.rounds).map((pair) => {
-    const intruderIdx = Math.floor(Math.random() * level.cells)
-    const cells = Array.from({ length: level.cells }, (_, i) => (i === intruderIdx ? pair.intruder : pair.base))
-    return { pair, intruderIdx, cells }
+  // Normally 1 intruder per round, sourced from that round's own pair. A
+  // level can require MORE intruders on its last round only (nivel 3 here).
+  // The extra intruder WORD(S) are drawn from additional pairs pulled from
+  // the pool in this same shuffle, so the whole epoch still respects "sin
+  // reemplazo" — no pair backs two different rounds, or a round and its own
+  // extra intruder.
+  const intrudersOnLastRound = level.lastRoundIntruders ?? 1
+  const extraPairsNeeded = Math.max(0, intrudersOnLastRound - 1)
+  const drawn = pick(level.pool, level.rounds + extraPairsNeeded)
+  const roundPairs = drawn.slice(0, level.rounds)
+  const extraIntruderWords = drawn.slice(level.rounds).map((p) => p.intruder)
+
+  return roundPairs.map((pair, i) => {
+    const isLastRound = i === level.rounds - 1
+    const intruderCount = isLastRound ? intrudersOnLastRound : 1
+    const intruderWords = [pair.intruder, ...extraIntruderWords.slice(0, intruderCount - 1)]
+    const intruderIdxs = pick(
+      Array.from({ length: level.cells }, (_, idx) => idx),
+      intruderCount,
+    )
+    const cells = Array.from({ length: level.cells }, (_, idx) => {
+      const slot = intruderIdxs.indexOf(idx)
+      return slot === -1 ? pair.base : intruderWords[slot]
+    })
+    return { pair, intruderIdxs, cells }
   })
 }
 
@@ -137,7 +178,12 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
 
-  const [found, setFound] = useState(false)
+  // Indices (within round.cells) of intruders tapped so far THIS round — 1
+  // slot fills up for every round except nivel 3's last, which needs 2.
+  const [foundIdxs, setFoundIdxs] = useState<number[]>([])
+  // `round` is undefined once `done` (roundIdx runs one past the last valid
+  // index) — guard here since this recomputes on every render regardless.
+  const isRoundSolved = !!round && foundIdxs.length === round.intruderIdxs.length
   const [wrongIdx, setWrongIdx] = useState<number | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Mistakes, accumulated across levels 1→2→3 and only zeroed on a genuine
@@ -149,13 +195,19 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   }, [done])
 
   function handleTap(idx: number) {
-    if (!round || found) return
-    if (idx === round.intruderIdx) {
-      setFound(true)
-      window.setTimeout(() => {
-        setRoundIdx((i) => i + 1)
-        setFound(false)
-      }, 700)
+    if (!round || isRoundSolved) return
+    if (round.intruderIdxs.includes(idx)) {
+      if (foundIdxs.includes(idx)) return // already-found intruder cell, no-op
+      const nextFound = [...foundIdxs, idx]
+      setFoundIdxs(nextFound)
+      // Only advance once EVERY intruder this round needs has been tapped —
+      // 1 for every round today except nivel 3's last round, which needs 2.
+      if (nextFound.length === round.intruderIdxs.length) {
+        window.setTimeout(() => {
+          setRoundIdx((i) => i + 1)
+          setFoundIdxs([])
+        }, 700)
+      }
       return
     }
     setWrongIdx(idx)
@@ -175,7 +227,7 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   function advanceLevel() {
     setLevelIdx((i) => i + 1)
     setRoundIdx(0)
-    setFound(false)
+    setFoundIdxs([])
     setWrongIdx(null)
   }
 
@@ -189,7 +241,7 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setRoundIdx(0)
-    setFound(false)
+    setFoundIdxs([])
     setWrongIdx(null)
     setMistakes(0)
   }
@@ -228,7 +280,9 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">{level.instruction}</h2>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
+              {roundIdx === level.rounds - 1 && level.lastRoundInstruction ? level.lastRoundInstruction : level.instruction}
+            </h2>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Ronda {roundIdx + 1} de {level.rounds}
             </p>
@@ -246,15 +300,14 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
       {!done && round && (
         <div className={`mx-auto mt-5 grid max-w-lg ${level.boardClass}`}>
           {round.cells.map((word, i) => {
-            const isIntruder = i === round.intruderIdx
-            const isFoundCell = found && isIntruder
+            const isFoundCell = foundIdxs.includes(i)
             const isWrong = wrongIdx === i
             return (
               <button
                 key={i}
                 type="button"
                 onClick={() => handleTap(i)}
-                disabled={found}
+                disabled={isRoundSolved || isFoundCell}
                 aria-label={`palabra ${word}`}
                 className={[
                   'relative flex min-h-[44px] items-center justify-center rounded-xl border-2 bg-white px-1 py-2 font-bold uppercase tracking-wide text-slate-700 transition sm:min-h-[48px]',

@@ -139,7 +139,7 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
   // again on "Hacer otro" — never re-rolled just because the player
   // re-visits a level, so "Repetir" can hand back the exact same grids
   // deterministically instead of re-randomizing.
-  const [epochRoundGrids, setEpochRoundGrids] = useState(() =>
+  const [epochRoundGrids] = useState(() =>
     LEVELS.map((lvl) => shuffle(GRIDS).slice(0, lvl.rounds)),
   )
   const level = LEVELS[levelIdx]
@@ -255,12 +255,6 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same grids, same order, as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random draw per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRoundGrids(LEVELS.map((lvl) => shuffle(GRIDS).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -400,14 +394,6 @@ export function Sudoku4x4({ day: _day, onComplete }: GameProps) {
                 >
                   <RotateCcw className="h-4 w-4" />
                   Repetir
-                </button>
-                <button
-                  type="button"
-                  onClick={restartDifferent}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  Hacer otro
-                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             )

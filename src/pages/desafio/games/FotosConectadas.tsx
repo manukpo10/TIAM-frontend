@@ -17,17 +17,24 @@ import type { GameProps } from '@/lib/challengeProgress'
  * interaction, since the shape is the same: N photo/icon clues, multiple
  * text options, exactly one right answer.
  *
- * Content is a small pool of 3 hand-authored "connection themes" (a
- * country, a continent, a profession — deliberately different concept
- * TYPES so the game doesn't feel like the same puzzle three times), each
- * with its own dedicated photo triad generated via the local Flux instance
- * (nothing in the existing asset library — all single-object photos on
- * plain backgrounds — reads as "3 photos that seem unrelated" the way a
- * landmark/animal/landscape triad does). All 3 themes play every level
- * (the pool IS the round count), and difficulty ramps the same way
- * CualNoVa/QueOficioEs do: the WRONG options get closer to the answer's own
- * category as the level rises (far/obvious → same-region → easily
- * confused), while the photos and correct answer never change.
+ * Content is SIX hand-authored "connection themes" (two countries, four
+ * professions), each with its own dedicated photo triad, split 2-per-level
+ * with ZERO repeats across levels. This used to be 3 themes that ALL played
+ * every level (only the distractor tier changed) — professional feedback
+ * from the mes 2 catalog review flagged that as a real problem: a player
+ * who solves "Francia" in Nivel 1 sees the exact same 3 photos again in
+ * Nivel 2 and 3, so it stops being a puzzle and just becomes "tap the
+ * option I already know is right." Each theme now plays exactly once, in
+ * the level matching its difficulty (Nivel 1 = far/obvious wrong options,
+ * Nivel 3 = easily-confused ones) — same ramp direction as before, just
+ * baked into which level a theme lives in instead of a 3-tier array on
+ * every theme. Francia/Australia/Médico keep their original Nivel 1/2/3
+ * photos and their matching original distractor tier; Maestro/Enfermero/
+ * Costurero are new, reusing existing photorealistic single-object photos
+ * already in the project (que-oficio-es, el-vuelto, que-objeto-es) rather
+ * than sourcing new images — same "check what's already there first"
+ * discipline as ElGranObservador's own asset investigation for this same
+ * review round.
  */
 
 interface Theme {
@@ -35,54 +42,83 @@ interface Theme {
   clue: string
   photoIds: [string, string, string]
   answer: string
-  distractorsByLevel: [string[], string[], string[]]
+  /** Single tier now, sized for whichever level this theme is assigned to
+   * (see Level.themes below) — a theme used to carry [easy, medium, hard]
+   * because the same 3 themes played every level; now each theme plays
+   * exactly once, so it only ever needs the one tier matching its level. */
+  distractors: string[]
 }
-
-const THEMES: Theme[] = [
-  {
-    id: 'francia',
-    clue: 'Es un país europeo.',
-    photoIds: ['francia-torre', 'francia-baguette', 'francia-boina'],
-    answer: 'Francia',
-    distractorsByLevel: [
-      ['Japón', 'Egipto', 'Brasil'],
-      ['España', 'Italia', 'Alemania'],
-      ['Bélgica', 'Suiza', 'Portugal'],
-    ],
-  },
-  {
-    id: 'australia',
-    clue: 'Es un país y continente a la vez.',
-    photoIds: ['australia-canguro', 'australia-opera', 'australia-desierto'],
-    answer: 'Australia',
-    distractorsByLevel: [
-      ['Egipto', 'Canadá', 'Rusia'],
-      ['Sudáfrica', 'Argentina', 'India'],
-      ['Nueva Zelanda', 'Indonesia', 'Papúa Nueva Guinea'],
-    ],
-  },
-  {
-    id: 'medico',
-    clue: 'Es una profesión.',
-    photoIds: ['medico-estetoscopio', 'medico-termometro', 'medico-tensiometro'],
-    answer: 'Médico/a',
-    distractorsByLevel: [
-      ['Panadero/a', 'Jardinero/a', 'Mecánico/a'],
-      ['Enfermero/a', 'Veterinario/a', 'Farmacéutico/a'],
-      ['Enfermero/a', 'Kinesiólogo/a', 'Farmacéutico/a'],
-    ],
-  },
-]
 
 interface Level {
   n: number
   name: string
   hint?: string
+  themes: Theme[]
 }
+
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', hint: 'Mirá las tres fotos y pensá qué tienen en común.' },
-  { n: 2, name: 'Nivel 2' },
-  { n: 3, name: 'Nivel 3', hint: 'Ahora las opciones se parecen más entre sí — fijate bien.' },
+  {
+    n: 1,
+    name: 'Nivel 1',
+    hint: 'Mirá las tres fotos y pensá qué tienen en común.',
+    themes: [
+      {
+        id: 'francia',
+        clue: 'Es un país europeo.',
+        photoIds: ['francia-torre', 'francia-baguette', 'francia-boina'],
+        answer: 'Francia',
+        distractors: ['Japón', 'Egipto', 'Brasil'],
+      },
+      {
+        id: 'medico',
+        clue: 'Es una profesión.',
+        photoIds: ['medico-estetoscopio', 'medico-termometro', 'medico-tensiometro'],
+        answer: 'Médico/a',
+        distractors: ['Panadero/a', 'Jardinero/a', 'Mecánico/a'],
+      },
+    ],
+  },
+  {
+    n: 2,
+    name: 'Nivel 2',
+    themes: [
+      {
+        id: 'australia',
+        clue: 'Es un país y continente a la vez.',
+        photoIds: ['australia-canguro', 'australia-opera', 'australia-desierto'],
+        answer: 'Australia',
+        distractors: ['Sudáfrica', 'Argentina', 'India'],
+      },
+      {
+        id: 'maestro',
+        clue: 'Es una profesión.',
+        photoIds: ['maestro-pizarron', 'maestro-tiza', 'maestro-libro'],
+        answer: 'Maestro/a',
+        distractors: ['Bibliotecario/a', 'Psicólogo/a', 'Cartero/a'],
+      },
+    ],
+  },
+  {
+    n: 3,
+    name: 'Nivel 3',
+    hint: 'Ahora las opciones se parecen más entre sí — fijate bien.',
+    themes: [
+      {
+        id: 'enfermero',
+        clue: 'Es una profesión.',
+        photoIds: ['enfermero-gorro', 'enfermero-jeringa', 'enfermero-venda'],
+        answer: 'Enfermero/a',
+        distractors: ['Médico/a', 'Kinesiólogo/a', 'Farmacéutico/a'],
+      },
+      {
+        id: 'costurero',
+        clue: 'Es una profesión.',
+        photoIds: ['costurero-aguja', 'costurero-dedal', 'costurero-tijera'],
+        answer: 'Costurero/a',
+        distractors: ['Zapatero/a', 'Tejedor/a', 'Bordador/a'],
+      },
+    ],
+  },
 ]
 
 const IMAGES = import.meta.glob('../../../assets/desafio/games/fotos-conectadas/*.webp', {
@@ -117,10 +153,10 @@ export function FotosConectadas({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // All 3 themes play every level (the pool IS the round count) — only the
-  // ORDER is reshuffled per level/replay.
+  // Each level's own themes (2, zero repeats across levels — see LEVELS
+  // above) — only the ORDER is reshuffled per level/replay.
   const order = useMemo(
-    () => shuffle(THEMES),
+    () => shuffle(level.themes),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
@@ -137,10 +173,7 @@ export function FotosConectadas({ day: _day, onComplete }: GameProps) {
 
   const theme = order[currentIndex]
   const done = currentIndex >= order.length
-  const options = useMemo(
-    () => (theme ? shuffle([theme.answer, ...theme.distractorsByLevel[levelIdx]]) : []),
-    [theme, levelIdx],
-  )
+  const options = useMemo(() => (theme ? shuffle([theme.answer, ...theme.distractors]) : []), [theme])
 
   useEffect(() => {
     if (done) setLevelPraise(pickOne(PRAISE))

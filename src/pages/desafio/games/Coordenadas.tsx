@@ -157,7 +157,7 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
   // "Hacer otro" — never re-rolled just because the player re-visits a
   // level, so "Repetir" can hand back the exact same words deterministically
   // instead of re-randomizing.
-  const [epochOrder, setEpochOrder] = useState(() =>
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -269,12 +269,6 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same words, same order, as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random draw per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
@@ -452,14 +446,6 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

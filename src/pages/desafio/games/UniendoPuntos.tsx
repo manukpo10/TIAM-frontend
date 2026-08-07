@@ -29,8 +29,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * is needed here at all.
  *
  * Difficulty ramps on three axes per the brief ("more dots/less-obvious
- * spatial layout at higher levels"): dot count (5 → 8 → 11, the 11 using
- * LETTERS A-K per the brief's own example), a small random per-dot jitter
+ * spatial layout at higher levels"): dot count (5 → 8 → 11), a small random per-dot jitter
  * that grows with level (L1 is a clean, instantly-legible star; L3's jitter
  * means you genuinely can't guess the shape ahead of tapping), and a fresh
  * random rotation every round/replay so the picture is never memorized.
@@ -52,10 +51,15 @@ interface Level {
   shape: ShapeSpec
 }
 
+// labelType por nivel invertido a pedido del profesional que revisó el
+// catálogo: originalmente número/número/letra, se sentía repetitivo con otro
+// ejercicio de números del mes. Ahora letra/letra/número — deja el nivel 3
+// (más puntos, más jitter) con etiquetas familiares justo cuando las otras
+// dos variables de dificultad ya están al máximo.
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', labelType: 'number', jitter: 0, shape: { n: 5, kOptions: [2] } },
-  { n: 2, name: 'Nivel 2', labelType: 'number', jitter: 0.06, shape: { n: 8, kOptions: [3] } },
-  { n: 3, name: 'Nivel 3', labelType: 'letter', jitter: 0.13, shape: { n: 11, kOptions: [3, 4, 5] } },
+  { n: 1, name: 'Nivel 1', labelType: 'letter', jitter: 0, shape: { n: 5, kOptions: [2] } },
+  { n: 2, name: 'Nivel 2', labelType: 'letter', jitter: 0.06, shape: { n: 8, kOptions: [3] } },
+  { n: 3, name: 'Nivel 3', labelType: 'number', jitter: 0.13, shape: { n: 11, kOptions: [3, 4, 5] } },
 ]
 
 function pickOne<T>(arr: T[]): T {

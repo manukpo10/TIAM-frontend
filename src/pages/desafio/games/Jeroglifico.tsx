@@ -20,16 +20,24 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Sin ronda interna: cada nivel ES una frase (mismo achatamiento que
  * LasMismasLetras.tsx — "ONE board per level, no inner round-index layer"),
- * porque una frase de hasta 13 letras ya son 13 toques de por sí.
+ * porque una frase de hasta 12 letras ya son 12 toques de por sí.
  *
  * La clave (12 letras: A,B,D,E,I,M,N,O,T,U,V,Y → Anchor,Bell,Diamond,Egg,
  * Star,Moon,Feather,Cloud,Turtle,Umbrella,Cake,Gift) es fija y arbitraria —
  * igual que en Clave de símbolos un círculo no "significa" 1, acá un ancla no
- * significa A; son sólo 12 formas bien distinguibles entre sí. Las 3 frases
- * fueron elegidas para reusar EXACTAMENTE esas 12 letras entre sí (nivel 3 no
- * agrega ninguna letra nueva a la clave, sólo combina las de los niveles
- * anteriores en una frase más larga) y para tener un arco cálido y afín al
- * tono de la app: "MUY BIEN" → "TODO VA BIEN" → "TODO VA MUY BIEN".
+ * significa A; son sólo 12 formas bien distinguibles entre sí. Toda frase
+ * usada acá sólo puede usar letras de esa lista: iconFor() cae en el ícono
+ * por defecto (Anchor/A) para cualquier letra que no esté en la clave, lo
+ * que rompería el puzzle en silencio.
+ *
+ * Las 3 frases son independientes entre sí a propósito — feedback
+ * profesional post-review: la versión anterior encadenaba cada nivel como
+ * continuación del previo ("MUY BIEN" → "TODO VA BIEN" → "TODO VA MUY
+ * BIEN"), así que para el nivel 3 el jugador ya había descifrado casi toda
+ * la frase en los niveles 1 y 2 y no pensaba de nuevo. Ahora cada nivel es
+ * una frase corta autocontenida que ninguna otra frase contiene como
+ * substring, para que cada nivel obligue a pensar desde cero: "VOY BIEN" →
+ * "UN BUEN DIA" → "TODO ANDA BIEN".
  */
 
 interface Level {
@@ -39,9 +47,9 @@ interface Level {
 }
 
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', words: ['MUY', 'BIEN'] },
-  { n: 2, name: 'Nivel 2', words: ['TODO', 'VA', 'BIEN'] },
-  { n: 3, name: 'Nivel 3', words: ['TODO', 'VA', 'MUY', 'BIEN'] },
+  { n: 1, name: 'Nivel 1', words: ['VOY', 'BIEN'] },
+  { n: 2, name: 'Nivel 2', words: ['UN', 'BUEN', 'DIA'] },
+  { n: 3, name: 'Nivel 3', words: ['TODO', 'ANDA', 'BIEN'] },
 ]
 
 // Total de letras a través de los 3 niveles — cada posición se resuelve tras

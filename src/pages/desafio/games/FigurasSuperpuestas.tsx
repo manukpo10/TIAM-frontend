@@ -431,7 +431,13 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                 <div
                   key={id}
                   className={[
-                    'flex items-center gap-1 rounded-2xl border-2 bg-white px-1.5 py-1.5 transition',
+                    // Stacked (image on top, controls below) on mobile — same fix
+                    // CuantosHay.tsx documents: with 5-6 types per lámina in 3
+                    // columns, a horizontal row left the "+" button rendering
+                    // ~40px outside the chip (measured live: btnRight overshot
+                    // chipRight on every chip at 375px). Row layout returns from
+                    // sm: where there's width to spare.
+                    'flex flex-col items-center gap-1 rounded-2xl border-2 bg-white px-1.5 py-2 transition sm:flex-row sm:py-1.5',
                     ok ? 'border-tiam-green bg-tiam-green/5' : '',
                     off ? 'border-slate-300 bg-slate-50' : '',
                     phase === 'play' ? 'border-slate-200' : '',
@@ -439,13 +445,13 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                 >
                   {img && <img src={img} alt={LABELS[id] ?? id} className="h-8 w-8 shrink-0 object-contain" draggable={false} />}
                   {phase === 'play' ? (
-                    <div className="flex flex-1 items-center justify-end gap-0.5">
+                    <div className="flex w-full items-center justify-center gap-1 sm:w-auto sm:flex-1 sm:justify-end sm:gap-0.5">
                       <button
                         type="button"
                         onClick={() => bump(id, -1)}
                         disabled={mine === 0}
                         aria-label={`Menos ${LABELS[id] ?? id}`}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition active:scale-95 disabled:opacity-30"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition active:scale-95 disabled:opacity-30 sm:h-9 sm:w-9"
                       >
                         <Minus className="h-4 w-4" strokeWidth={3} />
                       </button>
@@ -454,14 +460,14 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                         type="button"
                         onClick={() => bump(id, 1)}
                         aria-label={`Más ${LABELS[id] ?? id}`}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white transition active:scale-95"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white transition active:scale-95 sm:h-9 sm:w-9"
                         style={{ backgroundColor: ACCENT }}
                       >
                         <Plus className="h-4 w-4" strokeWidth={3} />
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-1 items-center justify-end gap-1.5 pr-1">
+                    <div className="flex w-full items-center justify-center gap-1.5 sm:w-auto sm:flex-1 sm:justify-end sm:pr-1">
                       {ok ? (
                         <>
                           <Check className="h-4 w-4 text-tiam-green" strokeWidth={3} />

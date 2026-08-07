@@ -52,6 +52,21 @@ const SYMBOL_POOL: Symbol[] = [
 // para que "deducir" el valor de cada símbolo sea un problema real y no
 // una adivinanza. Nivel 3 usa una ecuación con los 3 símbolos juntos (un
 // paso más de integración que niveles 1/2, que sólo combinan de a 2).
+//
+// Nivel 2 REUSA la misma estructura de a-pares que nivel 1 (antes tenía
+// [[2,1,0],[0,1,1],[1,0,2]], con un coeficiente 2 — reporte de un
+// profesional que jugó el mes 2 completo: "el segundo nivel... esas
+// cuentas están malas... no pude avanzar en el 22"). La causa: con
+// coeficientes uniformes de 1 (como nivel 1), sumar las 3 ecuaciones y
+// dividir por 2 da A+B+C exacto — el único truco mental razonable para
+// resolver 3 ecuaciones con 3 incógnitas sin álgebra en papel. Ese
+// coeficiente 2 rompía el truco (para A=5,B=12,C=9 daba sumas 22/21/23,
+// mitad de la suma = 33 en vez del A+B+C real = 26), así que cualquiera
+// que extendiera la estrategia de nivel 1 llegaba a un número que no
+// coincidía con ninguno de los símbolos — exactamente el síntoma
+// reportado. La dificultad extra de nivel 2 frente a nivel 1 queda dada
+// por RANGES (números más grandes) y OPTIONS_COUNT (más opciones para
+// descartar), no por una operación distinta.
 const PATTERNS: [number, number, number][][] = [
   [
     [1, 1, 0],
@@ -59,9 +74,9 @@ const PATTERNS: [number, number, number][][] = [
     [1, 0, 1],
   ],
   [
-    [2, 1, 0],
+    [1, 0, 1],
+    [1, 1, 0],
     [0, 1, 1],
-    [1, 0, 2],
   ],
   [
     [1, 1, 1],

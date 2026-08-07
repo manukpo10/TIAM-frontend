@@ -10,13 +10,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * same house rule every other game follows.
  *
  * Sequence length is the difficulty lever, escalating 3 → 5 → 7 digits
- * (level 1 warm-up up to level 3's harder span), 3 rounds per level = 9
- * total. A round is graded whole (matched exactly or not) rather than
- * per-digit — same coarse, forgiving grading DosPistas uses for its words —
- * so totalAttempts is the fixed 9 rounds, never inflated by retries: there
- * is no retry within a round (like QueHayEnLaMesa/CuantosHay's "single
- * hidden test", not DondeEsta's eliminate-and-retry) because letting someone
- * keep guessing digits would turn a memory test into trial and error.
+ * (level 1 warm-up up to level 3's harder span), 2 rounds per level = 6
+ * total (trimmed from 3/level after professional feedback that 3 was too
+ * much for this task). A round is graded whole (matched exactly or not)
+ * rather than per-digit — same coarse, forgiving grading DosPistas uses for
+ * its words — so totalAttempts is the fixed 6 rounds, never inflated by
+ * retries: there is no retry within a round (like QueHayEnLaMesa/CuantosHay's
+ * "single hidden test", not DondeEsta's eliminate-and-retry) because letting
+ * someone keep guessing digits would turn a memory test into trial and error.
  *
  * A wrong round is never shown in red: the correct sequence is revealed
  * alongside a calm, encouraging line, then the player moves on.
@@ -30,9 +31,9 @@ interface Level {
 }
 
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', digits: 3, rounds: 3 },
-  { n: 2, name: 'Nivel 2', digits: 5, rounds: 3 },
-  { n: 3, name: 'Nivel 3', digits: 7, rounds: 3 },
+  { n: 1, name: 'Nivel 1', digits: 3, rounds: 2 },
+  { n: 2, name: 'Nivel 2', digits: 5, rounds: 2 },
+  { n: 3, name: 'Nivel 3', digits: 7, rounds: 2 },
 ]
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
 const REVEAL_MS = 900

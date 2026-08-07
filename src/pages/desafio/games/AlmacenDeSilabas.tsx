@@ -115,9 +115,18 @@ const TOTAL_WORDS = LEVELS.reduce((s, l) => s + l.words.length, 0)
 // afuera del pool de nivel 2 (FI+GA se acerca a un vulgarismo regional) y ZO
 // afuera del de nivel 3 (ZO+TE arma "zote", insulto leve). Bajo a propósito
 // en nivel 1: fragmentos de 2 letras son los que más fácil chocan.
-const DECOYS_PER_LEVEL = [1, 2, 3]
+//
+// Nivel 1 quedó en CERO señuelos (no sólo bajo) tras feedback real de un
+// profesional que jugó el catálogo completo — se trabó específicamente en el
+// 4to animal del nivel 1 apenas se agregó 1 señuelo ahí ("no sé qué será, la
+// verdad que no es animado, no sé qué animal puede ser"). Nivel 1 es el
+// primer contacto del jugador con el mecanismo de armar sílabas a ciegas (sin
+// imagen, sin pista por animal); un señuelo de más ahí resultó bloqueante en
+// la práctica, no sólo "más difícil". Niveles 2 y 3 no fueron reportados como
+// problema y mantienen los suyos.
+const DECOYS_PER_LEVEL = [0, 2, 3]
 const DECOY_POOL_PER_LEVEL: string[][] = [
-  ['FE', 'VI', 'ZO', 'FI'], // nivel 1
+  [], // nivel 1 — sin señuelos
   ['FE', 'VI', 'ZO'], // nivel 2
   ['FE', 'VI', 'FI'], // nivel 3
 ]
