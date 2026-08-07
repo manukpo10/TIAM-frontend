@@ -22,34 +22,26 @@ import type { GameProps } from '@/lib/challengeProgress'
  * player can just try another tag — no penalty beyond the mistake count, and
  * the round is never blocked.
  *
- * Content is a single pool of 8 photo↔concept pairs (invierno, verano,
- * noche, mañana, lluvia, ciudad, campo, otoño), split into two 4-photo
+ * Content is TWO disjoint pools of 8 photo↔concept pairs each — Nivel 1/2
+ * draw from ALL_PHOTOS (invierno, verano, noche, mañana, lluvia, ciudad,
+ * campo, otoño), Nivel 3 draws from its own NIVEL_3_PHOTOS (montaña,
+ * bosque, desierto, tormenta, atardecer, primavera, río, cascada) — per
+ * professional feedback from the mes 2 catalog review ("nivel uno y dos
+ * está bien... nivel tres pero con otras fotos"), Nivel 3 must never repeat
+ * a photo Nivel 1/2 already showed. Each pool is split into two 4-photo
  * rounds per playthrough (so every round uses genuinely different photos,
  * not a repeat) — which four land in which round is reshuffled each replay.
+ * The two pools were chosen to avoid look-alike concepts across the
+ * boundary (e.g. verano is already a beach, so Nivel 3 doesn't get "playa";
+ * noche already has mountain silhouettes, so montaña is a distinct
+ * daytime close-up) — same "no ambiguous tag" discipline the distractor
+ * logic below applies within a single round.
  * Difficulty ramps by adding DISTRACTOR tags drawn from the OTHER round's
  * concepts (never from the photos actually on screen, which would make a
  * tag ambiguous): L1 has no distractors (four photos, four tags, pure
  * matching), L2 adds one, L3 adds two — same "more options to sift" ramp
  * CualNoVa/QueOficioEs use, adapted to a many-to-one-at-a-time match instead
  * of a single odd-one-out.
- *
- * KNOWN GAP (professional feedback, mes 2 catalog review): Nivel 3 should
- * show photos NOT already seen in Nivel 1 ("nivel uno y dos está bien...
- * nivel tres pero con otras fotos" — Nivel 1/2 sharing this pool is fine,
- * Nivel 3 repeating it is not). Left unfixed for now because it's a content
- * gap, not a logic bug: this game only has these 8 photos, and Nivel 1
- * alone already uses all 8 across its 2 rounds, so there's nothing left
- * over for Nivel 3 to draw from without new images. Checked the rest of the
- * project first (per house discipline) — no unused entries in this folder,
- * and the only same-CONCEPT assets elsewhere (empecemos-por-hoy's
- * primavera.webp/tarde.webp) turned out to be flat vector icons on closer
- * look, not photorealistic scenes, so dropping them into this grid would
- * look visibly broken next to the other 8. NIVEL_3_PHOTOS below is wired up
- * as its own pool ready to take a disjoint set the moment ~6-8 new
- * atmospheric photos exist (a beach, a mountain, a forest, a desert, a
- * storm, a sunset would round out a second full set) generated the same
- * way the original 8 were (the local Flux instance) — intentionally not
- * faked here with mismatched-style images.
  */
 
 interface PhotoConcept {
@@ -68,11 +60,19 @@ const ALL_PHOTOS: PhotoConcept[] = [
   { id: 'otono', tag: 'Otoño' },
 ]
 
-// Nivel 3's own pool, kept as a separate constant so the day new photos
-// exist it's a one-line swap (see the file header's KNOWN GAP note) instead
-// of a re-read of this whole component. Currently just an alias for
-// ALL_PHOTOS — there is nothing else to give it yet.
-const NIVEL_3_PHOTOS: PhotoConcept[] = ALL_PHOTOS
+// Nivel 3's own disjoint pool — see file header. Kept as a separate
+// constant (rather than folded into ALL_PHOTOS) so the "which pool" choice
+// stays a one-line lookup at the call site below.
+const NIVEL_3_PHOTOS: PhotoConcept[] = [
+  { id: 'montana', tag: 'Montaña' },
+  { id: 'bosque', tag: 'Bosque' },
+  { id: 'desierto', tag: 'Desierto' },
+  { id: 'tormenta', tag: 'Tormenta' },
+  { id: 'atardecer', tag: 'Atardecer' },
+  { id: 'primavera', tag: 'Primavera' },
+  { id: 'rio', tag: 'Río' },
+  { id: 'cascada', tag: 'Cascada' },
+]
 
 interface Level {
   n: number
@@ -123,9 +123,8 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   // epoch — generated once at mount, and again only inside
   // restartDifferent(). Which four land in round 1 vs round 2 stays fixed
   // for the rest of the epoch so "Repetir" hands back the same groups.
-  // Nivel 3 draws from its own NIVEL_3_PHOTOS pool (currently == ALL_PHOTOS,
-  // see the file header's KNOWN GAP note) so the split is ready to diverge
-  // the moment that pool gets real content of its own.
+  // Nivel 3 draws from its own disjoint NIVEL_3_PHOTOS pool (see file
+  // header) so it never repeats a photo Nivel 1/2 already showed.
   const [epochGroups, setEpochGroups] = useState(() =>
     LEVELS.map((lvl) => {
       const shuffled = shuffle(lvl.n === 3 ? NIVEL_3_PHOTOS : ALL_PHOTOS)
