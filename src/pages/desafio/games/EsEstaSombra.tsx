@@ -12,30 +12,81 @@ import type { GameProps } from '@/lib/challengeProgress'
  * the exact same colored asset as the reference option, rendered with
  * Tailwind's `brightness-0` filter utility (`filter: brightness(0)`), which
  * zeroes RGB while preserving alpha — a crisp black cutout with no separate
- * "shadow" art to keep in sync. This only works because the new
- * `es-esta-sombra/` assets were matted to real alpha transparency (a
- * border-seeded flood fill so enclosed pale regions — a sneaker's white
- * sole, a fish's pale belly — stay opaque instead of being punched through
- * by a same-color-as-background heuristic).
+ * "shadow" art to keep in sync. This only works because the `es-esta-sombra/`
+ * assets are matted to real alpha transparency (a border-seeded flood fill
+ * so enclosed pale regions — a sneaker's white sole — stay opaque instead of
+ * being punched through by a same-color-as-background heuristic).
  *
  * Same eliminate-and-retry mechanic as EncontraLaFiguraIgual.tsx (this app's
  * closest sibling: one target, several tappable options, a wrong tap just
  * eliminates that option and nudges, never ends the round) — so
  * totalAttempts = mistakes + a fixed round count, same accounting.
+ *
+ * REBUILT per professional feedback ("muy fácil, muy infantil") + explicit
+ * user request to harden rather than replace the exercise. Two independent
+ * problems, two independent fixes:
+ * (1) "Infantil": the original 10 objects were flat cartoon-sticker icons
+ *     (bold uniform outline, candy-flat colors) — a visibly different, more
+ *     childish genre than the photorealistic style everywhere else in this
+ *     app. Regenerated all objects as photorealistic studio product photos.
+ * (2) "Fácil": decoys were picked uniform-random from a small pool of
+ *     maximally-DIFFERENT silhouette shapes (a shoe vs a guitar vs a fish),
+ *     so matching was trivial by rough outline category with zero real
+ *     discrimination needed. Fixed by expanding the pool to 18 objects
+ *     organized into 9 deliberately-confusable SILHOUETTE PAIRS (same rough
+ *     outline family, genuinely different only on close inspection — see
+ *     SIBLING below) and biasing L2/L3 decoys to always include the
+ *     target's pair-sibling, so the harder levels force a real look instead
+ *     of eliminating options by category at a glance. L1 stays fully random
+ *     (gentle intro), matching this app's usual easy-first ramp.
  */
 
-const POOL_IDS = ['llave', 'tijera', 'zapatilla', 'sombrero', 'pez', 'hoja', 'paraguas', 'pelota', 'guitarra', 'taza']
+const POOL_IDS = [
+  'zapatilla', 'bota',
+  'sombrero', 'gorra',
+  'paraguas', 'baston',
+  'guitarra', 'violin',
+  'taza', 'jarra',
+  'tijera', 'pinza',
+  'pez', 'hoja',
+  'llave', 'destornillador',
+  'pelota', 'manzana',
+]
 const LABELS: Record<string, string> = {
-  llave: 'la llave',
-  tijera: 'la tijera',
   zapatilla: 'la zapatilla',
+  bota: 'la bota',
   sombrero: 'el sombrero',
+  gorra: 'la gorra',
+  paraguas: 'el paraguas',
+  baston: 'el bastón',
+  guitarra: 'la guitarra',
+  violin: 'el violín',
+  taza: 'la taza',
+  jarra: 'la jarra',
+  tijera: 'la tijera',
+  pinza: 'la pinza',
   pez: 'el pez',
   hoja: 'la hoja',
-  paraguas: 'el paraguas',
+  llave: 'la llave',
+  destornillador: 'el destornillador',
   pelota: 'la pelota',
-  guitarra: 'la guitarra',
-  taza: 'la taza',
+  manzana: 'la manzana',
+}
+
+// Deliberately confusable silhouette pairs (same rough outline family —
+// footwear, headwear, handled vessel, hinged tool, curvy string instrument,
+// etc.) — see the file header. Symmetric: every id maps to exactly one
+// sibling and vice versa.
+const SIBLING: Record<string, string> = {
+  zapatilla: 'bota', bota: 'zapatilla',
+  sombrero: 'gorra', gorra: 'sombrero',
+  paraguas: 'baston', baston: 'paraguas',
+  guitarra: 'violin', violin: 'guitarra',
+  taza: 'jarra', jarra: 'taza',
+  tijera: 'pinza', pinza: 'tijera',
+  pez: 'hoja', hoja: 'pez',
+  llave: 'destornillador', destornillador: 'llave',
+  pelota: 'manzana', manzana: 'pelota',
 }
 
 const IMAGES = import.meta.glob('../../../assets/desafio/games/es-esta-sombra/*.webp', {
@@ -51,11 +102,15 @@ interface Level {
   name: string
   rounds: number
   options: number
+  // Force the target's confusable SIBLING into the decoy set (see SIBLING
+  // above) instead of picking decoys fully at random. Off for nivel 1 so
+  // the day still opens with an easy, unambiguous warm-up round.
+  biasSibling: boolean
 }
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', rounds: 2, options: 4 },
-  { n: 2, name: 'Nivel 2', rounds: 3, options: 4 },
-  { n: 3, name: 'Nivel 3', rounds: 3, options: 5 },
+  { n: 1, name: 'Nivel 1', rounds: 2, options: 4, biasSibling: false },
+  { n: 2, name: 'Nivel 2', rounds: 3, options: 4, biasSibling: true },
+  { n: 3, name: 'Nivel 3', rounds: 3, options: 5, biasSibling: true },
 ]
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
 
@@ -77,7 +132,18 @@ interface Round {
 }
 function makeRound(level: Level): Round {
   const targetId = pickOne(POOL_IDS)
-  const decoys = shuffle(POOL_IDS.filter((id) => id !== targetId)).slice(0, level.options - 1)
+  const rest = POOL_IDS.filter((id) => id !== targetId)
+  let decoys: string[]
+  if (level.biasSibling) {
+    // Guarantee the target's look-alike sibling is one of the decoys, then
+    // fill the rest at random — the sibling is what actually makes this
+    // round require a careful look instead of a glance.
+    const sibling = SIBLING[targetId]
+    const others = shuffle(rest.filter((id) => id !== sibling))
+    decoys = [sibling, ...others].slice(0, level.options - 1)
+  } else {
+    decoys = shuffle(rest).slice(0, level.options - 1)
+  }
   return { targetId, optionIds: shuffle([targetId, ...decoys]) }
 }
 
