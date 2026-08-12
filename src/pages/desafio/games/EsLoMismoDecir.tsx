@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Equal, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -27,6 +27,18 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ONE board por nivel, sin capa de ronda interna (mismo motivo que
  * LasMismasLetras: un tablero de 4-5 parejas ya son 8-10 toques).
+ *
+ * Pantalla previa "¿Listo?" única al principio del día (mismo patrón que
+ * Encaminada.tsx, día 13) — saca el texto de instrucciones del header
+ * persistente, que antes se repetía en cada nivel/"Otra vuelta". Caso real
+ * que lo forzó: nivel 3 (10 fichas) + orientación "rows" apila las dos
+ * listas completas una sobre la otra; sumado al párrafo fijo del header, no
+ * entraba en 375×812 sin scroll. La orientación sigue aleatoria a propósito
+ * (ver `Orientation` más abajo) — no se saca "rows" del pool de nivel 3, se
+ * recortan sólo los gaps entre listas para ese caso puntual, nunca el
+ * tamaño de ficha. `phase` pasa a 'playing' una sola vez por montaje y
+ * nunca se resetea (avanzar de nivel u "Otra vuelta" no debe repetir la
+ * intro).
  */
 
 interface WordPair {
@@ -37,7 +49,6 @@ interface Level {
   n: number
   name: string
   pairs: WordPair[]
-  hint?: string
 }
 
 const LEVELS: Level[] = [
@@ -71,7 +82,6 @@ const LEVELS: Level[] = [
       { a: 'generoso', b: 'desprendido' },
       { a: 'antiguo', b: 'vetusto' },
     ],
-    hint: 'Estas palabras son menos comunes en el día a día — pensá en su significado, no en cómo suenan.',
   },
 ]
 
@@ -132,12 +142,8 @@ const MISMATCH_LINES = [
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente vocabulario!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria de palabras!']
 
-const DEFAULT_HINTS: Record<Orientation, string> = {
-  columns: 'Tocá una palabra de la izquierda y otra de la derecha. Si significan lo mismo, forman pareja.',
-  rows: 'Tocá una palabra de arriba y otra de abajo. Si significan lo mismo, forman pareja.',
-}
-
 export function EsLoMismoDecir({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -275,6 +281,11 @@ export function EsLoMismoDecir({ day: _day, onComplete }: GameProps) {
     )
   }
 
+  // Nivel 3 + orientación "rows" apila las 10 fichas (5+5) en una sola
+  // columna — el peor caso de alto en mobile (ver comentario del archivo).
+  // Sólo recorta gaps entre listas, nunca el tamaño de ficha.
+  const tightRows = level.n === 3 && board.orientation === 'rows'
+
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
@@ -282,14 +293,11 @@ export function EsLoMismoDecir({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        {!done && (
+        {phase === 'playing' && !done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
               Encontrá las palabras que significan lo mismo
             </h2>
-            <p className="mt-2 text-base text-slate-500">
-              {level.hint ?? DEFAULT_HINTS[board.orientation]}
-            </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Encontraste {matchedPairIds.size} de {level.pairs.length} parejas
             </p>
@@ -303,20 +311,47 @@ export function EsLoMismoDecir({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
+      {/* Pantalla previa: única vez, al principio del día — ver el comentario
+          del encabezado del archivo sobre por qué el texto de instrucciones
+          se saca de acá (no se repite por nivel ni por "Otra vuelta"). */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Equal className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Dos grupos de palabras — a veces lado a lado, a veces uno arriba del otro. Tocá una de cada grupo: si
+            significan lo mismo, forman pareja y quedan fijas en verde. En el nivel 3 las palabras son menos
+            comunes: pensá en el significado, no en cómo suenan.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Board */}
-      {!done && (
+      {phase === 'playing' && !done && (
         <>
           <div
             className={
               board.orientation === 'columns'
                 ? 'mt-6 grid grid-cols-2 gap-3 sm:gap-4'
-                : 'mt-6 flex flex-col gap-4 sm:gap-5'
+                : tightRows
+                  ? 'mt-4 flex flex-col gap-2 sm:gap-5'
+                  : 'mt-6 flex flex-col gap-4 sm:gap-5'
             }
           >
-            <div className="flex flex-col gap-2.5 sm:gap-3">
+            <div className={tightRows ? 'flex flex-col gap-2 sm:gap-3' : 'flex flex-col gap-2.5 sm:gap-3'}>
               {board.left.map((tile, index) => renderTile('left', tile, index))}
             </div>
-            <div className="flex flex-col gap-2.5 sm:gap-3">
+            <div className={tightRows ? 'flex flex-col gap-2 sm:gap-3' : 'flex flex-col gap-2.5 sm:gap-3'}>
               {board.right.map((tile, index) => renderTile('right', tile, index))}
             </div>
           </div>
