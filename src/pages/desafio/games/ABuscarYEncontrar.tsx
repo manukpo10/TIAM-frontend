@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { Check, RotateCcw, ArrowRight, Sparkles, Search } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -81,6 +81,11 @@ function imgFor(id: string): string | undefined {
 const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena búsqueda!']
 
 export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
+  // One-time gate for the day (never resets on level-advance/replay) — moves
+  // the "how to play" sentence out of the persistent per-round area to
+  // reclaim height at 375×812. Same pattern as Encaminada; see the ready
+  // screen and the scene's comment below for why nivel 3 still needed more.
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -168,23 +173,54 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
           {level.name}
         </span>
         <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Encontrá estos objetos escondidos</h2>
-        <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
-          <p className="shrink-0 text-base font-semibold text-slate-500">
-            Encontraste {found.size} de {targetIds.size}
-          </p>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-              style={{ width: `${targetIds.size ? (found.size / targetIds.size) * 100 : 0}%` }}
-            />
+        {phase === 'playing' && (
+          <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+            <p className="shrink-0 text-base font-semibold text-slate-500">
+              Encontraste {found.size} de {targetIds.size}
+            </p>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${targetIds.size ? (found.size / targetIds.size) * 100 : 0}%` }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: única vez, al principio del día — ver el comentario
+          de `phase` más arriba y el de Encaminada para el porqué no se
+          repite en cada ronda ni se resetea al avanzar de nivel. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Search className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Tocá cada objeto de la lista de arriba donde lo veas en la escena.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
-          {/* "Find these" strip */}
-          <div className="mx-auto mt-4 flex max-w-md flex-wrap justify-center gap-2">
+          {/* "Find these" strip — purely a visual legend, never tappable
+              (the real hit-targets are the buttons inside the scene below),
+              so nivel 3's 9 icons can shrink with zero touch-target cost.
+              Still overflowed 375×812 by 81px after the ready-screen fix
+              alone (measured live) — nivel1/2's 3-5 icons fit fine at the
+              accessibility-standard size, only nivel3 needs the smaller cap.
+              h-14 got it down to 9px (measured live); h-12 clears it. */}
+          <div className="mx-auto mt-3 flex max-w-md flex-wrap justify-center gap-2">
             {level.targetIds.map((id) => {
               const def = OBJECT_POOL[id]
               const img = imgFor(id)
@@ -193,7 +229,9 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
                 <div
                   key={id}
                   className={[
-                    'relative flex h-20 w-20 items-center justify-center rounded-xl border-2 bg-white p-1.5 transition sm:h-24 sm:w-24',
+                    level.targetIds.length >= 7
+                      ? 'relative flex h-12 w-12 items-center justify-center rounded-xl border-2 bg-white p-1 transition sm:h-24 sm:w-24 sm:p-1.5'
+                      : 'relative flex h-20 w-20 items-center justify-center rounded-xl border-2 bg-white p-1.5 transition sm:h-24 sm:w-24',
                     isFound ? 'border-tiam-green/40 opacity-50' : 'border-slate-200',
                   ].join(' ')}
                   aria-label={def.label}
@@ -209,10 +247,14 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
             })}
           </div>
 
-          {/* Scene */}
+          {/* Scene — reference image is constant-size across levels (only the
+              tap-target icons inside it shrink via iconPct). Aspect trimmed
+              on mobile (7/8 vs the original 4/5) to claw back height for
+              nivel 3's 9-icon strip at 375×812; sm: restores the original,
+              more generous portrait ratio once there's room to spare. */}
           <div
             className={[
-              'relative mx-auto mt-4 aspect-[4/5] w-full max-w-md overflow-hidden rounded-3xl border-2 bg-slate-50 transition',
+              'relative mx-auto mt-3 aspect-[7/8] w-full max-w-md overflow-hidden rounded-3xl border-2 bg-slate-50 transition sm:aspect-[4/5]',
               missFlash ? 'border-slate-300' : 'border-slate-200',
             ].join(' ')}
             onClick={handleSceneMiss}
@@ -272,12 +314,6 @@ export function ABuscarYEncontrar({ day: _day, onComplete }: GameProps) {
             })}
           </div>
         </>
-      )}
-
-      {!done && (
-        <p className="mt-3 text-center text-base font-medium text-slate-500">
-          Tocá cada objeto de la lista de arriba donde lo veas en la escena.
-        </p>
       )}
 
       {/* Completion */}
