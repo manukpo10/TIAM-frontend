@@ -33,9 +33,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * por columna y agrega la carta repetida — la pregunta más exigente porque
  * obliga a comparar la grilla entera, no sólo escanearla.
  *
- * La baraja española no colorea por palo como la francesa (no hay
- * convención roja/negra) — los 4 palos se distinguen sólo por la silueta
- * del glyph (ver SuitGlyph), pensada para leerse clara en tamaño chico.
+ * Cada palo tiene su color propio — oro dorado, copa roja, espada azul,
+ * basto verde, con detalles en acento dorado (aro/borde/guarda/punta) —
+ * como en una baraja española real. A diferencia de la francesa, acá no
+ * hay una convención roja/negra COMPARTIDA entre dos palos: cada uno es
+ * distinguible por color Y por la silueta del glyph (ver SuitGlyph),
+ * pensada para leerse clara en tamaño chico.
  *
  * VARIAS rondas por nivel (2 por nivel, 6 en total) — mismo patrón
  * "uniformado" del resto del lote (ver ElDescuento.tsx).
@@ -68,10 +71,22 @@ function cardValue(rank: Rank): number {
   if (rank === 'K') return 13
   return Number(rank)
 }
-// La baraja española no colorea por palo como la francesa (no hay
-// convención roja/negra) — todas las cartas usan la misma tinta; el palo
-// se distingue por la silueta del glyph, no por color.
+// Tinta neutra para el índice de rango (esquinas) — el palo se distingue
+// por color propio (ver SUIT_COLOR), como en una baraja española real
+// (oro dorado, copa roja, espada azul, basto verde — a diferencia de la
+// francesa, acá no hay una convención compartida roja/negra entre dos
+// palos, cada palo tiene el suyo).
 const CARD_INK = '#1e293b'
+const SUIT_COLOR: Record<Suit, string> = {
+  oro: '#D4A017',
+  copa: '#B91C1C',
+  espada: '#3B6EA5',
+  basto: '#3F7D3F',
+}
+// Acento dorado compartido para los detalles (aro de la moneda, borde del
+// cáliz, guarda de la espada, punta del basto) — eco del dorado que domina
+// la ornamentación de la baraja española real.
+const SUIT_ACCENT = '#B8860B'
 function cardLabel(c: CardData): string {
   return `${RANK_ARTICLE[c.rank]} ${RANK_SIMPLE[c.rank]} de ${SUIT_PLURAL[c.suit]}`
 }
@@ -248,43 +263,48 @@ const ROUNDS_PER_LEVEL = [2, 2, 2]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 const LEVEL_NAMES = ['Nivel 1', 'Nivel 2', 'Nivel 3']
 
-function SuitGlyph({ suit, size, color }: { suit: Suit; size: number; color: string }) {
+function SuitGlyph({ suit, size }: { suit: Suit; size: number }) {
   const s = size
+  const color = SUIT_COLOR[suit]
   return (
     <svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} className="shrink-0">
       {suit === 'oro' && (
         <>
-          {/* Moneda: círculo con una cruz que asoma apenas por el borde. */}
-          <circle cx={s * 0.5} cy={s * 0.5} r={s * 0.3} fill={color} />
-          <polygon points={`${s * 0.45},${s * 0.15} ${s * 0.55},${s * 0.15} ${s * 0.55},${s * 0.85} ${s * 0.45},${s * 0.85}`} fill={color} />
-          <polygon points={`${s * 0.15},${s * 0.45} ${s * 0.85},${s * 0.45} ${s * 0.85},${s * 0.55} ${s * 0.15},${s * 0.55}`} fill={color} />
+          {/* Moneda lisa: disco dorado con un aro más oscuro marcando el
+              borde, como en la baraja real (nada de cruces ni emblemas —
+              a este tamaño sólo hace falta leerse como "moneda"). */}
+          <circle cx={s * 0.5} cy={s * 0.5} r={s * 0.42} fill={color} stroke={SUIT_ACCENT} strokeWidth={s * 0.04} />
         </>
       )}
       {suit === 'copa' && (
         <>
-          {/* Cáliz: copa + pie + base, silueta angosta-ancha-angosta-ancha. */}
+          {/* Cáliz: copa + pie + base, silueta angosta-ancha-angosta-ancha,
+              con un borde dorado en la boca (como el aro de la baraja real). */}
           <polygon points={`${s * 0.22},${s * 0.08} ${s * 0.78},${s * 0.08} ${s * 0.6},${s * 0.48} ${s * 0.4},${s * 0.48}`} fill={color} />
           <polygon points={`${s * 0.44},${s * 0.48} ${s * 0.56},${s * 0.48} ${s * 0.56},${s * 0.78} ${s * 0.44},${s * 0.78}`} fill={color} />
           <polygon points={`${s * 0.34},${s * 0.78} ${s * 0.66},${s * 0.78} ${s * 0.74},${s * 0.92} ${s * 0.26},${s * 0.92}`} fill={color} />
+          <polygon points={`${s * 0.22},${s * 0.08} ${s * 0.78},${s * 0.08} ${s * 0.76},${s * 0.14} ${s * 0.24},${s * 0.14}`} fill={SUIT_ACCENT} />
         </>
       )}
       {suit === 'espada' && (
         <>
-          {/* Espada: hoja en punta + guarda + puño + pomo. */}
+          {/* Espada: hoja azul en punta + guarda/puño/pomo dorados, como el
+              acero y la empuñadura de la baraja real. */}
           <polygon
             points={`${s * 0.5},${s * 0.05} ${s * 0.58},${s * 0.24} ${s * 0.58},${s * 0.66} ${s * 0.42},${s * 0.66} ${s * 0.42},${s * 0.24}`}
             fill={color}
           />
-          <polygon points={`${s * 0.2},${s * 0.66} ${s * 0.8},${s * 0.66} ${s * 0.8},${s * 0.75} ${s * 0.2},${s * 0.75}`} fill={color} />
-          <polygon points={`${s * 0.44},${s * 0.75} ${s * 0.56},${s * 0.75} ${s * 0.56},${s * 0.9} ${s * 0.44},${s * 0.9}`} fill={color} />
-          <circle cx={s * 0.5} cy={s * 0.93} r={s * 0.055} fill={color} />
+          <polygon points={`${s * 0.2},${s * 0.66} ${s * 0.8},${s * 0.66} ${s * 0.8},${s * 0.75} ${s * 0.2},${s * 0.75}`} fill={SUIT_ACCENT} />
+          <polygon points={`${s * 0.44},${s * 0.75} ${s * 0.56},${s * 0.75} ${s * 0.56},${s * 0.9} ${s * 0.44},${s * 0.9}`} fill={SUIT_ACCENT} />
+          <circle cx={s * 0.5} cy={s * 0.93} r={s * 0.055} fill={SUIT_ACCENT} />
         </>
       )}
       {suit === 'basto' && (
         <>
-          {/* Basto: garrote grueso, cuerpo levemente cónico con puntas redondeadas. */}
+          {/* Basto: garrote verde, cuerpo levemente cónico con puntas
+              redondeadas y la punta superior dorada, como en la baraja real. */}
           <polygon points={`${s * 0.38},${s * 0.1} ${s * 0.62},${s * 0.1} ${s * 0.66},${s * 0.86} ${s * 0.34},${s * 0.86}`} fill={color} />
-          <circle cx={s * 0.5} cy={s * 0.1} r={s * 0.15} fill={color} />
+          <circle cx={s * 0.5} cy={s * 0.1} r={s * 0.15} fill={SUIT_ACCENT} />
           <circle cx={s * 0.5} cy={s * 0.86} r={s * 0.18} fill={color} />
         </>
       )}
@@ -293,21 +313,22 @@ function SuitGlyph({ suit, size, color }: { suit: Suit; size: number; color: str
 }
 
 function PlayingCard({ card, width }: { card: CardData; width: number }) {
-  const color = CARD_INK
   const height = Math.round(width * 1.42)
+  // El número de rango queda en tinta neutra (como el índice de esquina de
+  // una baraja real); el color va en el glyph del palo, no en el número.
   const corner = (
-    <div className="flex flex-col items-center leading-none" style={{ color }}>
+    <div className="flex flex-col items-center leading-none" style={{ color: CARD_INK }}>
       <span className="font-extrabold" style={{ fontSize: width * 0.26 }}>
         {card.rank}
       </span>
-      <SuitGlyph suit={card.suit} size={width * 0.18} color={color} />
+      <SuitGlyph suit={card.suit} size={width * 0.18} />
     </div>
   )
   return (
     <div className="relative shrink-0 rounded-md border border-slate-200 bg-white shadow-sm" style={{ width, height }}>
       <div className="absolute left-1 top-0.5">{corner}</div>
       <div className="absolute inset-0 flex items-center justify-center">
-        <SuitGlyph suit={card.suit} size={width * 0.42} color={color} />
+        <SuitGlyph suit={card.suit} size={width * 0.42} />
       </div>
       <div className="absolute bottom-0.5 right-1 rotate-180">{corner}</div>
     </div>
