@@ -248,6 +248,7 @@ function pickOne<T>(arr: T[]): T {
 }
 
 export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -275,6 +276,11 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
 
   const isCorrect = bank.length === 0 && placed.every((item, i) => item.id === i)
   const readyToCheck = bank.length === 0
+  // nivel 3 tiene rutinas de 6 pasos (vs. 4-5 en niveles 1-2) — con las 6
+  // oraciones completas ya colocadas (banco vacío, justo antes de tocar
+  // "Revisar") esto desbordaba 375×812 por 48px (medido en vivo). Achica
+  // el padding/gap de las filas sólo en ese nivel.
+  const tight = level.n === 3
 
   // True recién cuando se revisó la ÚLTIMA ronda del nivel — habilita la
   // pantalla de nivel completo (advanceLevel / restartSame / restartDifferent)
@@ -352,7 +358,6 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
         {!done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Ordená los pasos: {routine.title}</h2>
-            <p className="mt-2 text-base text-slate-500">Tocalos en el orden que creas correcto.</p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>
@@ -366,7 +371,33 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: única vez al principio del día, no por ronda —
+          saca la instrucción fija del header persistente (antes se repetía
+          en cada ronda) para recuperar espacio vertical; nivel 3 apila hasta
+          6 pasos a 375px de ancho. `phase` nunca vuelve a 'ready' — mismo
+          patrón que Encaminada.tsx. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Footprints className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Vas a ver los pasos de una rutina cotidiana, desordenados. Tocalos en el orden que creas correcto para
+            armar la secuencia.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Secuencia en construcción — se oculta al revisar para que la
               tarjeta de Resultado no tenga que competir por espacio (acá los
@@ -374,11 +405,17 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
               hacia abajo). El listado "El orden correcto era" de esa tarjeta
               ya repite el orden completo cuando la respuesta está mal. */}
           {!checked && (
-            <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+            <div
+              className={
+                tight
+                  ? 'mt-3 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-2'
+                  : 'mt-4 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-2.5'
+              }
+            >
               {placed.length === 0 && (
                 <p className="text-center text-base text-slate-400">Tocá los pasos de abajo para empezar</p>
               )}
-              <div className="flex flex-col gap-2">
+              <div className={tight ? 'flex flex-col gap-1' : 'flex flex-col gap-1.5'}>
                 {placed.map((item, i) => {
                   const StepIcon = item.value.Icon
                   return (
@@ -386,7 +423,11 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
                       key={item.id}
                       type="button"
                       onClick={() => unplace(item)}
-                      className="flex items-start gap-2.5 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-2.5 text-left text-base text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                      className={
+                        tight
+                          ? 'flex items-start gap-2.5 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-1.5 text-left text-base text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40'
+                          : 'flex items-start gap-2.5 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-2 text-left text-base text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40'
+                      }
                     >
                       <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
                       <StepIcon className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" />
@@ -398,9 +439,12 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
             </div>
           )}
 
-          {/* Banco de pasos */}
-          {!checked && (
-            <div className="mt-4 flex flex-col gap-2">
+          {/* Banco de pasos — no renderiza el wrapper (ni su mt) una vez
+              vacío: con nivel 3 ya al límite del alto disponible, un margen
+              "flotando" sobre 0 elementos era espacio desperdiciado justo
+              antes del botón Revisar. */}
+          {!checked && bank.length > 0 && (
+            <div className={tight ? 'mt-3 flex flex-col gap-1' : 'mt-4 flex flex-col gap-1.5'}>
               {bank.map((item) => {
                 const StepIcon = item.value.Icon
                 return (
@@ -408,7 +452,11 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
                     key={item.id}
                     type="button"
                     onClick={() => place(item)}
-                    className="flex items-start gap-2.5 rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                    className={
+                      tight
+                        ? 'flex items-start gap-2.5 rounded-xl border-2 border-slate-200 bg-white px-4 py-1.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0'
+                        : 'flex items-start gap-2.5 rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0'
+                    }
                   >
                     <StepIcon className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                     <span>{item.value.label}</span>
@@ -420,7 +468,7 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
 
           {/* Botón Revisar */}
           {readyToCheck && !checked && (
-            <div className="mt-6 text-center">
+            <div className={tight ? 'mt-3 text-center' : 'mt-4 text-center'}>
               <button
                 type="button"
                 onClick={check}
