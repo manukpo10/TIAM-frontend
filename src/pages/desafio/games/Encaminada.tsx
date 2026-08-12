@@ -38,6 +38,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Wrong guesses eliminate that option (greyed out, never removed-forever-
  * red) and show a rotating muted hint — the same "eliminate wrong, keep
  * trying" pattern as DondeEsta/CadaCosaEnSuGrupo. No timer, ever.
+ *
+ * A one-time "¿Listo?" ready screen gates the START of the day (not every
+ * round — unlike RepetiLaSerie's per-round gate, there's no auto-play to
+ * hold back here, the grid is static). Its real job is layout: moving the
+ * "how to play" sentence out of the persistent header reclaims the ~45px
+ * that made nivel 3's 5×5 grid + 4 arrows + 4 options overflow a 375×812
+ * viewport (professional feedback from the mes 2 catalog review). `phase`
+ * flips to 'playing' once and never resets — not on level-advance, not on
+ * "Repetir"/"Hacer otro" — those are a replay by someone who already knows
+ * the rules, re-showing the splash would be pure friction.
  */
 
 type Dir = 'up' | 'down' | 'left' | 'right'
@@ -194,6 +204,7 @@ const LEVEL_PRAISE_GOOD = ['¡Muy bien!', '¡Excelente orientación!', '¡Así s
 const LEVEL_PRAISE_OK = ['¡Buen intento! Con la práctica el camino se hace más fácil.', '¡Bien ahí! Seguí practicando.']
 
 export function Encaminada({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` path-words drawn at random from level i's own pool,
@@ -333,33 +344,61 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
         >
           {levelName}
         </span>
-        {!done && (
-          <>
-            <p className="mt-2 text-base font-medium text-slate-500">
-              Seguí las flechas desde la celda marcada y elegí la palabra que se forma.
+        {phase === 'playing' && !done && (
+          <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+            <p className="shrink-0 text-base font-semibold text-slate-500">
+              Ronda {roundIdx + 1} de {roundsForLevel}
             </p>
-            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
-              <p className="shrink-0 text-base font-semibold text-slate-500">
-                Ronda {roundIdx + 1} de {roundsForLevel}
-              </p>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-tiam-blue transition-[width] duration-300"
-                  style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
-                />
-              </div>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-blue transition-[width] duration-300"
+                style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
+              />
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {!done && current && (
+      {/* Pantalla previa: única vez, al principio del día — ver el comentario
+          del encabezado del archivo sobre por qué acá (a diferencia de
+          RepetiLaSerie) no se repite en cada ronda. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <MapPin className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Seguí las flechas desde la celda marcada y elegí, entre las opciones, la palabra que se forma en el
+            camino.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && current && (
         <>
           {/* Grid — only the start cell is ever marked; every other cell,
               including the ones the real path lands on, looks identical to a
-              filler cell (see file header). */}
+              filler cell (see file header). Nivel 3's 5×5 grid gets a
+              smaller mobile cap than nivel 1-2's 3×3/4×4 — cells here are
+              purely visual (never tappable, see below), so shrinking them
+              costs nothing accessibility-wise and is what actually closes
+              the ~51px nivel 3 still overflowed by after the ready-screen
+              change alone (measured live at 375×812). */}
           <div
-            className="mx-auto mt-5 grid aspect-square w-full max-w-[320px] gap-1.5 sm:max-w-[360px] sm:gap-2"
+            className={
+              level.cols >= 5
+                ? 'mx-auto mt-4 grid aspect-square w-full max-w-[280px] gap-1.5 sm:max-w-[360px] sm:gap-2'
+                : 'mx-auto mt-4 grid aspect-square w-full max-w-[320px] gap-1.5 sm:max-w-[360px] sm:gap-2'
+            }
             style={{ gridTemplateColumns: `repeat(${level.cols}, minmax(0, 1fr))` }}
           >
             {board.map((rowArr, r) =>
@@ -388,7 +427,7 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Arrow sequence */}
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             {dirs.map((d, i) => {
               const Icon = DIR_ICON[d]
               return (
@@ -403,7 +442,7 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Options */}
-          <div className="mx-auto mt-6 flex max-w-sm flex-col gap-2.5">
+          <div className="mx-auto mt-4 flex max-w-sm flex-col gap-2">
             {options.map((word) => {
               const isEliminated = eliminated.has(word)
               const showAsCorrect = solved && word === current.word
@@ -414,7 +453,7 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
                   disabled={isEliminated || solved}
                   onClick={() => guess(word)}
                   className={[
-                    'min-h-[52px] rounded-2xl border-2 text-lg font-bold transition',
+                    'min-h-[48px] rounded-2xl border-2 text-lg font-bold transition',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                     showAsCorrect
                       ? 'border-tiam-green bg-tiam-green/5 text-slate-700 ring-2 ring-tiam-green/30'
