@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { Check, Grid3x3, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -42,6 +42,18 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Puzzle data (in-bounds, no duplicate coordinate within a word) was verified
  * with a throwaway Node script before writing this component, same
  * discipline as Encaminada/DondeEsta/LaPiramide's hand-authored pools.
+ *
+ * A one-time "¿Listo?" ready screen (same pattern as Encaminada) gates the
+ * START of the day, not every round — moving the "how to play" sentence out
+ * of the persistent header reclaims the space nivel 3 needs: a 6×6 board
+ * PLUS a target-coordinate box AND a found-words strip, all stacked, pushed
+ * mobile height at or over a 375×812 budget. `phase` flips to 'playing' once
+ * and never resets — not on level-advance, not on "Repetir" — a replayer
+ * already knows the rules. Unlike Encaminada's board, every cell here is a
+ * real tap target (handleTap), so nivel 3's mobile grid cap is more
+ * conservative than Encaminada's: only max-width shrinks (340px → 320px),
+ * not the gap, keeping cells close to their un-shrunk ~44px instead of
+ * trading away tap-target size for vertical space.
  */
 
 interface Coord {
@@ -150,6 +162,7 @@ const HINTS = [
 const PRAISE = ['¡Muy bien!', '¡Excelente ubicación!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena orientación!']
 
 export function Coordenadas({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which words (and in what order) are playing for level i THIS "epoch" (a
@@ -301,41 +314,60 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
         >
           {levelName}
         </span>
-        {!done && (
-          <>
-            <p className="mt-2 text-base font-medium text-slate-500">
-              Tocá la celda que corresponde a cada coordenada, en orden.
+        {phase === 'playing' && !done && (
+          <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+            <p className="shrink-0 text-base font-semibold text-slate-500">
+              Ronda {roundIdx + 1} de {roundsForLevel}
             </p>
-            <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
-              <p className="shrink-0 text-base font-semibold text-slate-500">
-                Ronda {roundIdx + 1} de {roundsForLevel}
-              </p>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-tiam-blue transition-[width] duration-300"
-                  style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
-                />
-              </div>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-blue transition-[width] duration-300"
+                style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
+              />
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {!done && current && (
+      {/* Pantalla previa: única vez, al principio del día — mismo patrón que
+          Encaminada, no se repite en cada ronda (a diferencia del gate
+          por-ronda de RepetiLaSerie). Ver el comentario del encabezado del
+          archivo: esto es lo que libera el alto que nivel 3 necesita. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Grid3x3 className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Tocá la celda que corresponde a cada coordenada, en orden.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && current && (
         <>
           {/* Target coordinate */}
           {targetCell && (
-            <div className="mx-auto mt-4 flex flex-col items-center">
+            <div className="mx-auto mt-3 flex flex-col items-center">
               <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">Tocá la celda</p>
               <div className="mt-1 flex h-14 w-20 items-center justify-center rounded-2xl border-2 border-tiam-blue bg-tiam-blue/5 text-2xl font-black text-tiam-blue">
                 {coordLabel(targetCell)}
               </div>
             </div>
           )}
-          {wordComplete && <p className="mt-4 text-center text-lg font-bold text-tiam-green">¡Formaste {current.word}!</p>}
+          {wordComplete && <p className="mt-3 text-center text-lg font-bold text-tiam-green">¡Formaste {current.word}!</p>}
 
           {/* Found-so-far word strip */}
-          <div className="mx-auto mt-4 flex justify-center gap-1.5">
+          <div className="mx-auto mt-3 flex justify-center gap-1.5">
             {current.word.split('').map((letter, i) => (
               <div
                 key={i}
@@ -350,9 +382,18 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Coordinate board — header row (column letters) + header column
-              (row numbers) + body cells, all in one CSS grid. */}
+              (row numbers) + body cells, all in one CSS grid. Unlike
+              Encaminada's board, every body cell here is a real tap target
+              (handleTap) — same technique as Encaminada (level-aware mobile
+              cap), but more conservative: only max-width shrinks for nivel
+              3's 6×6 grid (340px → 320px), the gap stays put, so cells go
+              from ~44px to ~42px instead of being squeezed further. */}
           <div
-            className="mx-auto mt-4 grid aspect-square w-full max-w-[340px] gap-1 sm:gap-1.5"
+            className={
+              level.cols >= 6
+                ? 'mx-auto mt-3 grid aspect-square w-full max-w-[320px] gap-1 sm:max-w-[340px] sm:gap-1.5'
+                : 'mx-auto mt-3 grid aspect-square w-full max-w-[340px] gap-1 sm:max-w-[340px] sm:gap-1.5'
+            }
             style={{ gridTemplateColumns: `repeat(${level.cols + 1}, minmax(0, 1fr))` }}
           >
             {rowIdxs.flatMap((r) =>
