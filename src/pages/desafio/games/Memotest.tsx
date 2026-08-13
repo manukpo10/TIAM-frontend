@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Brain, Check, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -19,6 +19,17 @@ import type { GameProps } from '@/lib/challengeProgress'
  * A mismatch is never penalized: both cards just hold visible long enough to
  * study, then quietly flip back — no red, no wiggle, no error tally, no
  * submit/grade moment. The round only ever ends at 100%.
+ *
+ * A one-time "¿Listo?" ready screen gates the start of the day — never
+ * shown again after mount, not on level-advance, not on "Repetir"/"Hacer
+ * otro" (same one-shot contract as Encaminada.tsx). It replaces an earlier
+ * version where the title + hint stayed permanently mounted and
+ * auto-collapsed on a 6s timer to free up room for nivel 3's board: a
+ * timer-driven surprise collapse is exactly the "no explicit consent"
+ * pattern this app avoids elsewhere (see Encaminada's header comment — no
+ * timer, ever). Nivel 3 also renders a narrower, tighter-gapped board on
+ * mobile (see the board's className below) since 14 cards at grid-cols-3
+ * is already 5 rows there, more than double nivel 1's 2.
  */
 
 interface Animal {
@@ -80,10 +91,12 @@ const LEVELS: Level[] = [
   {
     n: 3,
     name: 'Nivel 3',
-    // 7, no 12: en mobile el tablero no entra en pantalla sin deslizar más
-    // allá de 5 filas (14 cartas) aunque el título y la pista se contraigan
-    // (ver COLLAPSE_HINT_MS más abajo) — medido en vivo contra el alto real
-    // del modal, no a ojo.
+    // 7, no 12: en mobile (grid-cols-3) 14 cartas ya son 5 filas — más del
+    // doble que nivel 1. El gate de 'ready' saca el título y la pista del
+    // header de forma permanente (ver comentario de arriba del componente)
+    // y nivel 3 usa un tablero más angosto (ver el grid del tablero) para
+    // que esas 5 filas entren en 375×812 sin deslizar — cuenta de
+    // padding/gap, a confirmar en dispositivo real.
     pairs: 7,
     pool: ANIMALS,
     asymmetric: true,
@@ -141,15 +154,11 @@ const PRAISE = ['¡Muy bien!', '¡Excelente memoria!', '¡Así se hace!', '¡Per
 // so this is a derivable constant rather than a piece of state to track.
 const TOTAL_PAIRS = LEVELS.reduce((sum, l) => sum + l.pairs, 0)
 
-// How long the title + hint stay expanded before collapsing to free up board
-// space (measured live against the real modal height: nivel 3's 7 pairs need
-// that extra room on a mobile viewport, or the board doesn't fit without
-// scrolling). Generous enough for an unhurried first read — this is cosmetic
-// space-reclaiming, never a gameplay timer, so it stays purely one-way with
-// no rush implied.
-const COLLAPSE_HINT_MS = 6000
-
 export function Memotest({ day: _day, onComplete }: GameProps) {
+  // One-time ready gate — never resets after mount (not on level-advance,
+  // not on "Repetir"/"Hacer otro"). See file header for why this replaced
+  // the old timer-based auto-collapse.
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // The built board (drawn animals AND their shuffled card positions, as one
@@ -170,19 +179,8 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
   // Mismatch count, accumulated across levels 1→2→3 and only zeroed on a true
   // day restart (see restartEpoch below) — same policy as ElVuelto.
   const [mistakes, setMistakes] = useState(0)
-  // Title + hint start expanded on every level so the mechanic is explained
-  // up front, then collapse on their own after COLLAPSE_HINT_MS to free up
-  // room for the board (nivel 3's 7 pairs need it). Resets on every level
-  // change and on a full restart, never on a mismatch or a match.
-  const [instructionsCollapsed, setInstructionsCollapsed] = useState(false)
 
   const done = matchedIds.size >= level.pairs
-
-  useEffect(() => {
-    setInstructionsCollapsed(false)
-    const t = window.setTimeout(() => setInstructionsCollapsed(true), COLLAPSE_HINT_MS)
-    return () => window.clearTimeout(t)
-  }, [levelIdx, roundKey])
 
   useEffect(() => {
     if (done) setPraise(pickOne(PRAISE))
@@ -288,42 +286,63 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
           {level.name}
         </span>
-        {/* Título + pista: se leen una vez y se contraen solos para dejarle
-            lugar al tablero (nivel 3 necesita esa fila extra en mobile). El
-            overflow-hidden es lo que hace que max-h-0 valga como "ocupa cero
-            espacio" en vez de solo recortar la vista. */}
-        <div
-          className={[
-            'overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out',
-            instructionsCollapsed ? 'max-h-0 opacity-0' : 'max-h-40 opacity-100',
-          ].join(' ')}
-        >
-          <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-            {level.asymmetric ? 'Encontrá cada dibujo con su palabra' : 'Encontrá las parejas'}
-          </h2>
-          {!done && (
-            <p className="mt-2 text-base text-slate-500">
-              {level.hint ??
-                'Tocá dos cartas. Si son iguales, quedan destapadas. Si no, se vuelven a tapar y las volvés a intentar.'}
+        {phase === 'playing' && (
+          <>
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Encontraste {matchedIds.size} de {level.pairs} parejas
             </p>
-          )}
-        </div>
-        <p className="mt-2 text-base font-semibold text-slate-500">
-          Encontraste {matchedIds.size} de {level.pairs} parejas
-        </p>
-        <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-            style={{ width: `${(matchedIds.size / level.pairs) * 100}%` }}
-          />
-        </div>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(matchedIds.size / level.pairs) * 100}%` }}
+              />
+            </div>
+          </>
+        )}
       </div>
+
+      {/* Pantalla previa: única vez, al principio del día — reemplaza el
+          título + pista que antes vivían siempre montados (ver el comentario
+          del encabezado del archivo sobre por qué). No vuelve a aparecer al
+          subir de nivel ni en "Repetir"/"Hacer otro". */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Brain className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Tocá dos cartas. Si son iguales, quedan destapadas; si no, se vuelven a tapar y las volvés a intentar.
+            Más adelante las parejas cambian: una carta va a tener el dibujo y la otra el nombre — ¡fijate bien!
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Board — oculto una vez completado el nivel: antes quedaba debajo del
           tablero entero (hasta 24 cartas en nivel 3) y había que deslizar para
-          ver el cartel de "completaste el nivel", así que a veces no se veía. */}
-      {!done && (
-        <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5">
+          ver el cartel de "completaste el nivel", así que a veces no se veía.
+          Nivel 3 además arma 14 cartas en grid-cols-3 (5 filas en mobile, más
+          del doble de las 2 filas de nivel 1): ese nivel usa un tablero más
+          angosto y con menos separación entre cartas para que esas 5 filas
+          entren en 375×812 sin deslizar (cuenta de padding/gap, a confirmar
+          en dispositivo real — las cartas quedan igual bien por encima del
+          mínimo táctil de 44px). */}
+      {phase === 'playing' && !done && (
+        <div
+          className={
+            level.pairs >= 7
+              ? 'mx-auto mt-6 grid w-full max-w-[260px] grid-cols-3 gap-2 sm:max-w-none sm:grid-cols-4 sm:gap-4 lg:grid-cols-5'
+              : 'mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-5'
+          }
+        >
           {board.map((card, index) => {
             const isMatched = matchedIds.has(card.pairId)
             const isFaceUp = isMatched || pending.includes(index)
