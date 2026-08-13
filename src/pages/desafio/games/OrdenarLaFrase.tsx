@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, ListOrdered } from 'lucide-react'
 import { useSequencingPuzzle } from './useSequencingPuzzle'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -21,6 +21,18 @@ import type { GameProps } from '@/lib/challengeProgress'
  * So advancing to the next round sits behind an explicit "Siguiente frase"
  * button instead of a timeout: auto-advancing on a clock here would rush
  * that reading, which conflicts with this app's "no timer" rule.
+ *
+ * A one-time "¿Listo?" ready screen gates the START of the day (component
+ * mount), not every round — same pattern as Encaminada.tsx. The header used
+ * to carry the "how to play" h2 + caption on EVERY round (bare `{!done &&
+ * (...)}`), which with nivel 3's 12-word sentence pushed the word tiles
+ * below the fold on a 375×812 screen. Moving that text out reclaims ~90px
+ * from the persistent header; wrapped word-tile rows cost ~44px/line, so
+ * nivel 3 fits with margin to spare here — no tile/font shrinking needed
+ * (unlike Encaminada's 5×5 grid, which is far more expensive per pixel of
+ * width — see that file for when shrinking IS actually necessary). `phase`
+ * flips to 'playing' once and never resets — not on level-advance, not on
+ * "Otra frase" — those are a replay by someone who already knows the rules.
  */
 
 interface SentenceEntry {
@@ -90,6 +102,7 @@ function pickOne<T>(arr: T[]): T {
 }
 
 export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -200,28 +213,46 @@ export function OrdenarLaFrase({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        {!done && (
-          <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-              {sentence.distractor
-                ? 'Ordená la frase — ¡una de estas palabras no pertenece!'
-                : 'Ordená las palabras para armar la frase'}
-            </h2>
-            <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
+        {phase === 'playing' && !done && (
+          <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
+            <p className="shrink-0 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
                 style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
               />
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: única vez, al principio del día — mismo patrón que
+          Encaminada.tsx. Saca el "cómo se juega" del header persistente (antes
+          se repetía en cada ronda) para que la frase de 12 palabras de nivel 3
+          no empuje las fichas fuera de la pantalla en 375×812. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <ListOrdered className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Vas a ver las palabras de una frase, desordenadas. Tocalas en el orden que creas correcto para armarla.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Sentence being built */}
           <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
