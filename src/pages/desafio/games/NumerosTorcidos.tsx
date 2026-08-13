@@ -26,8 +26,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  *     mano contra los otros 9 dígitos buscando un choque de forma bajo su
  *     transform asignado. No se encontró ninguno.
  *
- * Se suma una pequeña inclinación extra al azar (0° en nivel 1, hasta ±8° en
- * nivel 2, hasta ±15° en nivel 3) sobre el transform base, así un mismo
+ * Se suma una inclinación extra al azar (0° en nivel 1, hasta ±18° en
+ * nivel 2, hasta ±30° en nivel 3) sobre el transform base, así un mismo
  * dígito se ve distinto cada vez que sale y los niveles altos piden mirar
  * con más cuidado — sin que eso cambie nunca qué dígito es en realidad.
  *
@@ -64,8 +64,8 @@ interface Level {
 }
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', rounds: 2, jitter: 0, biasNeighbor: false },
-  { n: 2, name: 'Nivel 2', rounds: 2, jitter: 8, biasNeighbor: false },
-  { n: 3, name: 'Nivel 3', rounds: 2, jitter: 15, biasNeighbor: true },
+  { n: 2, name: 'Nivel 2', rounds: 2, jitter: 18, biasNeighbor: false },
+  { n: 3, name: 'Nivel 3', rounds: 2, jitter: 30, biasNeighbor: true },
 ]
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
 const ACCENT = '#0D9488' // teal
