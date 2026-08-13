@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, RotateCcw, Shuffle, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -43,6 +43,21 @@ import type { GameProps } from '@/lib/challengeProgress'
  * matching at runtime is by `pairId` (assigned once in buildBoard), never by
  * re-deriving anagram-equality from the word text, so this is a content note
  * for whoever edits LEVELS next, not a runtime concern.
+ *
+ * A one-time "¿Listo?" ready screen gates the START of the day, not every
+ * level — this file already has no inner round layer (see above), so every
+ * level already meant every round. Its job is layout: the title + hint that
+ * used to sit in the persistent header pushed nivel 3's 5-pair board (10
+ * tiles) past a 375×812 viewport whenever `buildBoard` rolled "rows"
+ * orientation, forcing a scroll mid-play (layout audit finding). `phase`
+ * flips to 'playing' once and never resets — not on `nextLevel`, not on
+ * `replay` — those are a replay by someone who already knows the rules.
+ * Trimming the header alone still left "rows" tight at nivel 3, so
+ * `buildBoard` also pins nivel 3 (5+ pairs) to "columns": "rows" stacks both
+ * groups into one ~536px-tall column, while "columns" spreads the same 10
+ * tiles into two ~260px side-by-side stacks. Levels 1-2 keep the randomized
+ * columns/rows split — the tap-pattern-unpredictability goal above only
+ * needs variety across the day's 3 rounds, not in every single one.
  */
 
 interface WordPair {
@@ -141,7 +156,12 @@ function buildBoard(level: Level): { left: WordTile[]; right: WordTile[]; orient
   while (shuffledLeft.some((tile, i) => tile.pairId === shuffledRight[i].pairId)) {
     shuffledRight = shuffle(right)
   }
-  return { left: shuffledLeft, right: shuffledRight, orientation: Math.random() < 0.5 ? 'columns' : 'rows' }
+  // Nivel 3 (5 pairs/10 tiles) always renders "columns" — "rows" stacks both
+  // groups into one ~536px-tall column, still overflowing 375×812 even after
+  // the ready-screen header trim (see file header). Levels 1-2 (3-4 pairs)
+  // keep the random 50/50 split.
+  const orientation: Orientation = level.pairs.length >= 5 || Math.random() < 0.5 ? 'columns' : 'rows'
+  return { left: shuffledLeft, right: shuffledRight, orientation }
 }
 
 const MISMATCH_LINES = [
@@ -151,15 +171,8 @@ const MISMATCH_LINES = [
 ]
 const PRAISE = ['¡Muy bien!', '¡Excelente ojo para las letras!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena observación!']
 
-// Default hint per orientation — a level's own `hint` (e.g. level 3's
-// same-length warning) always wins when set, since it doesn't reference
-// a layout direction at all.
-const DEFAULT_HINTS: Record<Orientation, string> = {
-  columns: 'Tocá una palabra de la izquierda y otra de la derecha. Si tienen las mismas letras, forman pareja.',
-  rows: 'Tocá una palabra de arriba y otra de abajo. Si tienen las mismas letras, forman pareja.',
-}
-
 export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -317,14 +330,8 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
         >
           {level.name}
         </span>
-        {!done && (
+        {phase === 'playing' && !done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-              Encontrá las palabras con las mismas letras
-            </h2>
-            <p className="mt-2 text-base text-slate-500">
-              {level.hint ?? DEFAULT_HINTS[board.orientation]}
-            </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Encontraste {matchedPairIds.size} de {level.pairs.length} parejas
             </p>
@@ -338,8 +345,32 @@ export function LasMismasLetras({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
+      {/* Pantalla previa: única vez, al principio del día — ver el comentario
+          del encabezado del archivo sobre el recorte del header y por qué
+          nivel 3 queda fijo en columnas. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Shuffle className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Vas a ver dos grupos de palabras. Tocá una de cada grupo: si tienen las mismas letras, aunque estén en
+            otro orden, forman pareja.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Board */}
-      {!done && (
+      {phase === 'playing' && !done && (
         <>
           <div
             className={
