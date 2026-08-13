@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Circle, Square, Triangle, Star, Diamond, Heart, Hexagon, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { Circle, Square, Triangle, Star, Diamond, Heart, Hexagon, KeyRound, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -19,6 +19,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * House style: no timer, a wrong tap only nudges (muted slate, never red), tap-
  * only. Difficulty climbs by key size and row length (5 → 6 → 7).
+ *
+ * A one-time "¿Listo?" ready screen gates the START of the day — same fix as
+ * Encaminada/RepetiLaSerie. The "how to play" line used to live in the
+ * persistent per-round header, repeating on every round and, at nivel 3
+ * (keySize/rowLen 7), stacking above three blocks in a row (key + decode row
+ * + keypad) that risked pushing the keypad below a 375×812 fold. `phase`
+ * flips to 'playing' once and never resets — not on level-advance, not on
+ * "Repetir"/"Hacer otro".
  */
 
 interface Sym {
@@ -79,6 +87,7 @@ function SymbolMark({ idx, size = 'h-7 w-7' }: { idx: number; size?: string }) {
 }
 
 export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -195,19 +204,36 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        {!done && (
-          <>
-            <p className="mt-2 text-base font-medium text-tiam-blue">
-              Para cada figura, tocá el número que le toca según la clave.
-            </p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Fila {roundIdx + 1} de {level.rounds}
-            </p>
-          </>
+        {phase === 'playing' && !done && (
+          <p className="mt-2 text-base font-semibold text-slate-500">
+            Fila {roundIdx + 1} de {level.rounds}
+          </p>
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa (única vez al inicio) — ver comentario del encabezado */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <KeyRound className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Vas a ver una clave que le asigna un número a cada figura, y una fila de figuras para decodificar. Tocá,
+            para cada una, el número que le corresponde según la clave.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Clave (siempre visible) */}
           <div className="mt-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3">
@@ -246,7 +272,7 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Teclado de números */}
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
             {Array.from({ length: level.keySize }, (_, i) => i + 1).map((num) => (
               <button
                 key={num}
