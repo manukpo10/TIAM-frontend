@@ -21,6 +21,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * nudges back to the clues — the deductive equivalent of re-reading. No timer.
  * Double-tap safe: the eliminated set is an idempotent Set add, and a resolved
  * round ignores further taps.
+ *
+ * A one-time "¿Listo?" ready screen gates the START of the game (not every
+ * round). The instructional sentence used to live in the persistent header;
+ * at nivel 3 (up to 5 clues, one long enough to wrap on mobile, plus 7
+ * options in a 2-col grid) that sentence was enough to push content past a
+ * 375×812 viewport. `phase` flips to 'playing' once and never resets — not
+ * on level-advance, not on "Repetir"/"Hacer otro" — a replay by someone who
+ * already knows the rules shouldn't see the splash again (same policy as
+ * Encaminada.tsx).
  */
 
 interface Puzzle {
@@ -95,6 +104,7 @@ const HINTS = [
 const PRAISE = ['¡Muy bien!', '¡Excelente deducción!', '¡Así se razona!', '¡Perfecto!']
 
 export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which puzzle order (drawn from the level's pool) is playing for level i
@@ -196,19 +206,37 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        {!done && (
-          <>
-            <p className="mt-2 text-base font-medium text-tiam-blue">
-              Una sola palabra cumple TODAS las pistas. Descartá y encontrala.
-            </p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {currentIndex} de {order.length}
-            </p>
-          </>
+        {phase === 'playing' && !done && (
+          <p className="mt-2 text-base font-semibold text-slate-500">
+            Llevás {currentIndex} de {order.length}
+          </p>
         )}
       </div>
 
-      {!done && puzzle && (
+      {/* Pantalla previa: única vez, al principio del día — ver el
+          comentario del encabezado del archivo sobre por qué (a diferencia
+          de otras pantallas) no se repite en cada ronda. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Lightbulb className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Una sola palabra cumple TODAS las pistas. Descartá las demás opciones hasta encontrarla.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && puzzle && (
         <>
           {/* Pistas */}
           <div className="mt-4 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
@@ -227,7 +255,7 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Opciones */}
-          <div className="mt-4 grid grid-cols-2 gap-2.5">
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
             {options.map((word) => {
               const isEliminated = eliminated.has(word)
               const isSolved = solved === word
@@ -238,7 +266,7 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
                   disabled={solved !== null || isEliminated}
                   onClick={() => guess(word)}
                   className={[
-                    'min-h-[52px] rounded-2xl border-2 px-3 py-2 text-lg font-bold tracking-wide transition sm:text-xl',
+                    'min-h-[48px] rounded-2xl border-2 px-3 py-2 text-lg font-bold tracking-wide transition sm:text-xl',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                     isSolved
                       ? 'border-tiam-green bg-tiam-green/10 text-slate-900 ring-2 ring-tiam-green/30'
