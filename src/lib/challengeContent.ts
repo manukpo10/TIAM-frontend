@@ -227,6 +227,78 @@ const MONTH_2_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de reconocimiento: contá cuántas figuras hay de cada tipo entre las que se superponen y después reconocelas entre las opciones. ¡Un cierre a la altura del Mes 2! 🎉' },
 ]
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Month 3 — third independent 30-day catalog, sold separately at the same
+// price as months 1-2. Same shape as month 2: all 30 days are `type: 'game'`,
+// no `illustration` (each game carries its own in-game imagery), area never
+// repeats two days in a row, difficulty ramps by week within each game's own
+// 3 levels. Area distribution deliberately leans toward orientacion/agnosias/
+// calculo/praxias/memoria — the four areas months 1-2 under-served relative
+// to lenguaje/ejecutivas/atencion (see the mes3 planning conversation).
+// ─────────────────────────────────────────────────────────────────────────────
+const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
+  { day: 1, type: 'game', area: 'lenguaje', title: 'Cruce de letras',
+    instructions: 'Un juego de armar palabras: ordená las fichas para completar una grilla donde las filas y las columnas formen palabras válidas. Subís de dificultad a medida que avanzás.' },
+  { day: 2, type: 'game', area: 'memoria', title: 'Lista con parecidas',
+    instructions: 'Un juego de memoria: memorizá una lista de palabras y después reconocé cuáles eran, aunque las opciones se parezcan mucho entre sí. Subís de dificultad a medida que avanzás.' },
+  { day: 3, type: 'game', area: 'calculo', title: 'Triple y corrida',
+    instructions: 'Un juego de cálculo: a veces tocás el triple de un número, a veces la letra que sigue en el abecedario. Subís de dificultad a medida que avanzás.' },
+  { day: 4, type: 'game', area: 'praxias', title: 'Trazá el camino',
+    instructions: 'Un juego visoespacial: mirá el camino de modelo y recorrelo tocando los puntos en el mismo orden sobre la grilla vacía. Subís de dificultad a medida que avanzás.' },
+  { day: 5, type: 'game', area: 'orientacion', title: 'Rompecabezas de letras',
+    instructions: 'Un ejercicio de orientación: tocá los fragmentos de letras, en el orden correcto, para completar la frase escondida. Subís de dificultad a medida que avanzás.' },
+  { day: 6, type: 'game', area: 'agnosias', title: 'Números torcidos',
+    instructions: 'Un juego de reconocimiento: el número aparece dado vuelta o espejado, y vos tocás cuál es en realidad entre las opciones derechas. Subís de dificultad a medida que avanzás.' },
+  { day: 7, type: 'game', area: 'ejecutivas', title: 'Pistas convergentes',
+    instructions: 'Un juego de razonamiento: leé las 3 pistas y tocá cuál palabra las conecta a todas. Subís de dificultad a medida que avanzás.' },
+  { day: 8, type: 'game', area: 'lenguaje', title: 'El eslabón perdido',
+    instructions: 'Un juego de asociación: elegí la palabra que conecta a las otras dos y forma una expresión conocida. Subís de dificultad a medida que avanzás.' },
+  { day: 9, type: 'game', area: 'memoria', title: 'Recordá los detalles',
+    instructions: 'Un juego de memoria: memorizá una lista de objetos, cada uno con su detalle propio, y después reconocé cuáles viste con el detalle exacto. Subís de dificultad a medida que avanzás.' },
+  { day: 10, type: 'game', area: 'atencion', title: 'Sopa de letras',
+    instructions: 'Un juego de atención: buscá en la grilla las palabras escondidas de instrumentos musicales, tocando y arrastrando en horizontal, vertical o diagonal. Subís de dificultad a medida que avanzás.' },
+  { day: 11, type: 'game', area: 'calculo', title: 'Crucigrama de cifras',
+    instructions: 'Un juego de cálculo: tocá un número del banco y después la fila o columna donde encaja. Subís de dificultad a medida que avanzás.' },
+  { day: 12, type: 'game', area: 'praxias', title: 'La otra mitad',
+    instructions: 'Un juego visoespacial: mirá el medio dibujo y elegí, entre las opciones, cuál lo completa reflejado correctamente. Subís de dificultad a medida que avanzás.' },
+  { day: 13, type: 'game', area: 'orientacion', title: 'Radar de sílabas',
+    instructions: 'Un ejercicio de orientación: seguí la fórmula tocando, en orden, las celdas de sílabas que indica para armar la palabra completa. Subís de dificultad a medida que avanzás.' },
+  { day: 14, type: 'game', area: 'agnosias', title: 'Letras torcidas',
+    instructions: 'Un juego de reconocimiento: la letra aparece dada vuelta o espejada, y vos tocás cuál es en realidad entre las opciones derechas. Subís de dificultad a medida que avanzás.' },
+  { day: 15, type: 'game', area: 'ejecutivas', title: 'Puente de opuestos',
+    instructions: 'Un juego de razonamiento: mirá los dos conceptos opuestos y tocá cuál es el concepto del medio que los mide o regula. Subís de dificultad a medida que avanzás.' },
+  { day: 16, type: 'game', area: 'lenguaje', title: 'La que no encaja',
+    instructions: 'Un juego de lenguaje: mirá las 4 palabras y tocá la que no pertenece al grupo. Subís de dificultad a medida que avanzás.' },
+  { day: 17, type: 'game', area: 'memoria', title: 'Fluencia con recuerdo',
+    instructions: 'Un juego de memoria: leé una lista de combinaciones de palabras que siguen una regla de letras y después reconocé cuáles viste y cuáles cumplían la regla. Subís de dificultad a medida que avanzás.' },
+  { day: 18, type: 'game', area: 'atencion', title: 'Buscá la distinta',
+    instructions: 'Un juego de atención: entre muchas palabras iguales se esconde una diferente. Encontrala y tocala antes de que se te escape. Subís de dificultad a medida que avanzás.' },
+  { day: 19, type: 'game', area: 'calculo', title: 'Cálculo en cuadro',
+    instructions: 'Un juego de cálculo: tocá el casillero marcado en la tabla y elegí el resultado correcto entre las opciones. Subís de dificultad a medida que avanzás.' },
+  { day: 20, type: 'game', area: 'praxias', title: 'Continuá la serie',
+    instructions: 'Un juego visoespacial: mirá cómo se repiten las figuras en la fila y elegí cuál sigue. Subís de dificultad a medida que avanzás.' },
+  { day: 21, type: 'game', area: 'orientacion', title: 'Camino secreto',
+    instructions: 'Un ejercicio de orientación: seguí las flechas desde la sílaba marcada, sumalas en el camino y elegí qué palabra se formó. Subís de dificultad a medida que avanzás.' },
+  { day: 22, type: 'game', area: 'agnosias', title: '¿Qué falta en la esquina?',
+    instructions: 'Un juego de reconocimiento: la grilla sigue un patrón de figuras, pero a la esquina le falta una. Tocá, entre las opciones, cuál la completa. Subís de dificultad a medida que avanzás.' },
+  { day: 23, type: 'game', area: 'lenguaje', title: 'Sinónimo, antónimo o igual',
+    instructions: 'Un juego de lenguaje: mirá la marca de la palabra — subrayada pedí un sinónimo, de color un antónimo, sin marca la misma palabra. Subís de dificultad a medida que avanzás.' },
+  { day: 24, type: 'game', area: 'memoria', title: 'Qué falta en la lista',
+    instructions: 'Un juego de memoria: memorizá una lista corta y después reconocé, entre las opciones, cuál era la palabra que faltaba. Subís de dificultad a medida que avanzás.' },
+  { day: 25, type: 'game', area: 'calculo', title: 'Ordená las cifras',
+    instructions: 'Un juego de cálculo: tocá los números en el orden que pida cada ronda, de mayor a menor o de menor a mayor. Subís de dificultad a medida que avanzás.' },
+  { day: 26, type: 'game', area: 'praxias', title: 'Armá la escena',
+    instructions: 'Un juego de praxia construccional: tocá las partes de la escena en orden, de las más grandes o de fondo a las más chicas o de arriba, para armarla completa. Subís de dificultad a medida que avanzás.' },
+  { day: 27, type: 'game', area: 'orientacion', title: 'El mapa de letras',
+    instructions: 'Un ejercicio de orientación: tocá, en el orden en que aparecen, la celda que corresponde a cada coordenada del mapa para descubrir la palabra escondida. Subís de dificultad a medida que avanzás.' },
+  { day: 28, type: 'game', area: 'agnosias', title: 'Objetos y letras',
+    instructions: 'Un juego de reconocimiento: mirá cada dibujo, date cuenta qué objeto es y sacale una letra según la regla que tiene abajo. Todas juntas, en orden, arman una palabra escondida. Subís de dificultad a medida que avanzás.' },
+  { day: 29, type: 'game', area: 'ejecutivas', title: 'El grupo correcto',
+    instructions: 'Un juego de razonamiento: tocá el grupo correcto para cada palabra que aparezca. Subís de dificultad a medida que avanzás.' },
+  { day: 30, type: 'game', area: 'calculo', title: 'Cierre de cuentas',
+    instructions: 'El último día de cálculo repasa vueltos, precios y horarios de todos los días. ¡Un cierre a la altura de todo lo que practicaste este mes! 🎉' },
+]
+
 /** Content joined with its per-day illustration (matched by day number). */
 export const CHALLENGE_DAYS: ChallengeDayContent[] = MONTH_1_DAYS_CONTENT.map((d) => ({
   ...d,
@@ -242,6 +314,7 @@ export const CHALLENGE_DAYS: ChallengeDayContent[] = MONTH_1_DAYS_CONTENT.map((d
 export const CHALLENGE_CONTENT_BY_MONTH: Record<number, ChallengeDayContent[]> = {
   1: CHALLENGE_DAYS,
   2: MONTH_2_DAYS_CONTENT,
+  3: MONTH_3_DAYS_CONTENT,
 }
 
 /** Content catalog for a given challenge month, falling back to month 1 for an

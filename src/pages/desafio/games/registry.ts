@@ -60,6 +60,36 @@ import { Coordenadas } from './Coordenadas'
 import { NoEstaRepetida } from './NoEstaRepetida'
 import { MesaDeCartas } from './MesaDeCartas'
 import { FigurasSuperpuestas } from './FigurasSuperpuestas'
+import { CruceDeLetras } from './CruceDeLetras'
+import { ListaConParecidas } from './ListaConParecidas'
+import { TripleYCorrida } from './TripleYCorrida'
+import { TrazaElCamino } from './TrazaElCamino'
+import { RompecabezasDeLetras } from './RompecabezasDeLetras'
+import { NumerosTorcidos } from './NumerosTorcidos'
+import { PistasConvergentes } from './PistasConvergentes'
+import { ElEslabonPerdido } from './ElEslabonPerdido'
+import { RecordaLosDetalles } from './RecordaLosDetalles'
+import { SopaDeLetras } from './SopaDeLetras'
+import { CrucigramaDeCifras } from './CrucigramaDeCifras'
+import { LaOtraMitad } from './LaOtraMitad'
+import { RadarDeSilabas } from './RadarDeSilabas'
+import { LetrasTorcidas } from './LetrasTorcidas'
+import { PuenteDeOpuestos } from './PuenteDeOpuestos'
+import { LaQueNoEncaja } from './LaQueNoEncaja'
+import { FluenciaConRecuerdo } from './FluenciaConRecuerdo'
+import { BuscaLaDistinta } from './BuscaLaDistinta'
+import { CalculoEnCuadro } from './CalculoEnCuadro'
+import { ContinuaLaSerie } from './ContinuaLaSerie'
+import { CaminoSecreto } from './CaminoSecreto'
+import { QueFaltaEnLaEsquina } from './QueFaltaEnLaEsquina'
+import { SinonimoAntonimoOIgual } from './SinonimoAntonimoOIgual'
+import { QueFaltaEnLaLista } from './QueFaltaEnLaLista'
+import { OrdenaLasCifras } from './OrdenaLasCifras'
+import { ArmaLaEscena } from './ArmaLaEscena'
+import { ElMapaDeLetras } from './ElMapaDeLetras'
+import { ObjetosYLetras } from './ObjetosYLetras'
+import { ElGrupoCorrecto } from './ElGrupoCorrecto'
+import { CierreDeCuentas } from './CierreDeCuentas'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -142,6 +172,38 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     28: NoEstaRepetida,
     29: MesaDeCartas,
     30: FigurasSuperpuestas,
+  },
+  3: {
+    1: CruceDeLetras,
+    2: ListaConParecidas,
+    3: TripleYCorrida,
+    4: TrazaElCamino,
+    5: RompecabezasDeLetras,
+    6: NumerosTorcidos,
+    7: PistasConvergentes,
+    8: ElEslabonPerdido,
+    9: RecordaLosDetalles,
+    10: SopaDeLetras,
+    11: CrucigramaDeCifras,
+    12: LaOtraMitad,
+    13: RadarDeSilabas,
+    14: LetrasTorcidas,
+    15: PuenteDeOpuestos,
+    16: LaQueNoEncaja,
+    17: FluenciaConRecuerdo,
+    18: BuscaLaDistinta,
+    19: CalculoEnCuadro,
+    20: ContinuaLaSerie,
+    21: CaminoSecreto,
+    22: QueFaltaEnLaEsquina,
+    23: SinonimoAntonimoOIgual,
+    24: QueFaltaEnLaLista,
+    25: OrdenaLasCifras,
+    26: ArmaLaEscena,
+    27: ElMapaDeLetras,
+    28: ObjetosYLetras,
+    29: ElGrupoCorrecto,
+    30: CierreDeCuentas,
   },
 }
 
