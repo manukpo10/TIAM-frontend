@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Boxes } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -16,6 +16,19 @@ import type { GameProps } from '@/lib/challengeProgress'
  * L3 reuses the exact same animals from L1/L2 but re-partitions them into
  * finer categories — the same words that were just "Animales" now need a
  * genuine set-shift, not new vocabulary.
+ *
+ * A one-time "¿Listo?" ready screen (same pattern as Encaminada) gates the
+ * START of the day, not every round — `phase` flips to 'playing' once and
+ * never resets, not on level-advance, not on "Otra ronda". Its job is
+ * layout: the old per-round instructional h2 rendered unconditionally on
+ * every round, and below the `sm` breakpoint the category grid collapses
+ * to a single column, so nivel 3's 4 stacked 64px buttons plus a growing
+ * "sorted so far" recap (up to 20 words across 4 lines by round's end)
+ * could overflow a 375×812 viewport. That recap is also capped with its
+ * own max-height + internal scroll — unlike Encaminada's fixed board, it's
+ * an accumulator that only grows over a round, so bounding just that
+ * sub-list (not the whole game) keeps the buttons and current word always
+ * reachable without scrolling.
  */
 
 interface CategoryItem {
@@ -109,6 +122,7 @@ function shuffle<T>(arr: T[]): T[] {
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buen ojo!']
 
 export function CadaCosaEnSuGrupo({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -214,37 +228,64 @@ export function CadaCosaEnSuGrupo({ day: _day, onComplete }: GameProps) {
         >
           {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tocá el grupo correcto para cada palabra</h2>
-        {level.hint && !done && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
-        <p className="mt-2 text-base font-semibold text-slate-500">
-          Llevás {currentIndex} de {order.length}
-        </p>
-        <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-            style={{ width: `${(currentIndex / order.length) * 100}%` }}
-          />
-        </div>
+        {phase === 'playing' && !done && (
+          <>
+            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
+            <p className="mt-2 text-base font-semibold text-slate-500">
+              Llevás {currentIndex} de {order.length}
+            </p>
+            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                style={{ width: `${(currentIndex / order.length) * 100}%` }}
+              />
+            </div>
+          </>
+        )}
       </div>
 
-      {!done && current && (
+      {/* One-time ready screen — the "how to play" line used to live here as
+          an h2 rendered on every round; moving it here is what reclaims the
+          space nivel 3 needs at mobile width (see file header). */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Boxes className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">Tocá el grupo correcto para cada palabra que aparezca.</p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && current && (
         <>
           {/* Current word */}
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <span className="inline-block rounded-2xl border-2 border-slate-200 bg-white px-8 py-5 text-3xl font-extrabold text-slate-800 sm:text-4xl">
               {current.word}
             </span>
           </div>
 
-          {/* Category buttons */}
-          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Category buttons — 56px floor (not 64px): still well above the
+              44-48px touch-target minimum, but at mobile width the grid
+              collapses to one column (see below `sm`), so nivel 3's 4 stacked
+              rows need every pixel they can give back (see file header). */}
+          <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {level.categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => handleTapCategory(cat)}
                 className={[
-                  'min-h-[64px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition',
+                  'min-h-[56px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition',
                   'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                   wrongCategory === cat
                     ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-red-300 text-slate-700'
@@ -261,9 +302,14 @@ export function CadaCosaEnSuGrupo({ day: _day, onComplete }: GameProps) {
             ))}
           </div>
 
-          {/* Sorted so far */}
+          {/* Sorted so far — its own scroll, not open-ended growth: this is
+              the one block in the file that accumulates across an entire
+              round (up to 20 words / 4 lines by the end), unlike anything
+              fixed-size elsewhere in the game, so it gets a height cap
+              instead of pushing the buttons above it off-screen (see file
+              header). */}
           {level.categories.some((cat) => (sorted[cat]?.length ?? 0) > 0) && (
-            <div className="mt-6 flex flex-col gap-2">
+            <div className="mt-4 flex max-h-32 flex-col gap-2 overflow-y-auto pr-1">
               {level.categories.map(
                 (cat) =>
                   (sorted[cat]?.length ?? 0) > 0 && (
