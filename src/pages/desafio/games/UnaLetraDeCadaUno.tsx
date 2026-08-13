@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Puzzle } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -42,6 +42,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * fichas distintas pueden mostrar lo mismo. Mismo contrato que día 3/28.
  *
  * Nunca rojo, sin timer, siempre reintentable.
+ *
+ * Pantalla previa "¿Listo?" única vez al montar el componente — no por
+ * ronda ni por nivel, mismo criterio que Encaminada. El "cómo se juega"
+ * genérico vivía en el encabezado persistente y se repetía en cada ronda;
+ * sumado a los 6 objetos + 10 fichas de nivel 3, empujaba el juego fuera
+ * del viewport en 375×812. La regla de cada nivel (level.hint) sí cambia
+ * contenido real entre niveles, así que se mantiene — pero solo en la
+ * primera ronda de cada nivel, no en todas. `phase` nunca vuelve a 'ready'
+ * por ningún otro handler (avance de nivel, "Repetir", "Hacer otro").
  */
 
 // ── Objetos: id de asset -> nombre que hay que evocar ────────────────────
@@ -240,6 +249,7 @@ const NUDGE_MESSAGES = [
 ]
 
 export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which puzzle subset (drawn from the level's pool) is playing for level i
@@ -281,6 +291,14 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
   const [mistakes, setMistakes] = useState(0)
 
   const done = resolved && roundIdx >= roundsForLevel - 1
+
+  // nivel 3 muestra 6 objetos (contra 4-5 de los niveles previos) y sus
+  // etiquetas de regla son más largas ("consonante repetida"), lo que hace
+  // que solo entren 2 columnas por fila en vez de 3 — 3 filas de objetos
+  // más el hint de la primera ronda desbordó 375×812 por 64px (medido en
+  // vivo). Angosta las celdas lo justo para que vuelvan a entrar 3 por
+  // fila, sin tocar el tamaño de la imagen (estándar de accesibilidad).
+  const tight = level.n === 3
 
   function handlePlace(item: Tile) {
     if (resolved || placed.length >= answer.length) return
@@ -385,16 +403,28 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-orange">
           {level.name}
         </span>
-        {!done && (
+        {phase === 'playing' && !done && (
           <>
-            <p className="mt-2 text-base text-slate-500">
-              Sacá una letra de cada dibujo, como dice abajo de cada uno, y armá la palabra.
-            </p>
-            <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
+            {/* La regla de este nivel se explica una sola vez, al llegar —
+                nivel 2 y 3 suman reglas nuevas (vocales, letra repetida), a
+                diferencia del "cómo se juega" genérico que ahora vive solo
+                en la pantalla previa. Repetirla en cada ronda del mismo
+                nivel no aporta nada y es lo que desbordaba el viewport. */}
+            {roundIdx === 0 && (
+              <p className={tight ? 'mt-1 text-base font-medium text-tiam-blue' : 'mt-2 text-base font-medium text-tiam-blue'}>
+                {level.hint}
+              </p>
+            )}
+            <p className={tight ? 'mt-1 text-base font-semibold text-slate-500' : 'mt-2 text-base font-semibold text-slate-500'}>
               Llevás {roundIdx} de {roundsForLevel}
             </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+            <div
+              className={
+                tight
+                  ? 'mx-auto mt-1 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100'
+                  : 'mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100'
+              }
+            >
               <div
                 className="h-full rounded-full bg-tiam-orange transition-[width] duration-300"
                 style={{ width: `${(roundIdx / roundsForLevel) * 100}%` }}
@@ -404,17 +434,52 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: una sola vez al principio del día, nunca por
+          ronda ni por nivel — ver el comentario del encabezado del archivo. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Puzzle className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Sacá una letra de cada dibujo, como dice abajo de cada uno, y armá la palabra escondida con las fichas.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Fila de objetos. Cada celda va numerada porque en pantallas chicas
               la fila envuelve, y el ORDEN de las letras es parte del ejercicio:
               sin el número no se sabría por dónde sigue. */}
           {!resolved && (
-            <div className="mt-5 flex flex-wrap items-start justify-center gap-2 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3">
+            <div
+              className={
+                tight
+                  ? 'mt-2 flex flex-wrap items-start justify-center gap-1.5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-2'
+                  : 'mt-4 flex flex-wrap items-start justify-center gap-2 rounded-2xl border-2 border-slate-100 bg-slate-50 p-3'
+              }
+            >
               {pasos.map((paso, i) => {
                 const img = imgFor(paso.obj)
                 return (
-                  <div key={i} className="flex w-[96px] shrink-0 flex-col items-center sm:w-[116px]">
+                  <div
+                    key={i}
+                    className={
+                      tight
+                        ? 'flex w-[88px] shrink-0 flex-col items-center sm:w-[116px]'
+                        : 'flex w-[96px] shrink-0 flex-col items-center sm:w-[116px]'
+                    }
+                  >
                     <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-1 sm:h-24 sm:w-24">
                       {img && <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />}
                       <span className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-orange text-xs font-bold text-white">
@@ -436,7 +501,13 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
           )}
 
           {/* Palabra que se está armando */}
-          <div className="mt-4 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+          <div
+            className={
+              tight
+                ? 'mt-2 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3'
+                : 'mt-3 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3'
+            }
+          >
             {placed.length === 0 && (
               <span className="text-base text-slate-400">Tocá las letras de abajo para empezar</span>
             )}
@@ -462,7 +533,7 @@ export function UnaLetraDeCadaUno({ day: _day, onComplete }: GameProps) {
 
           {/* Montón de letras */}
           {!resolved && (
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <div className={tight ? 'mt-2 flex flex-wrap items-center justify-center gap-2' : 'mt-3 flex flex-wrap items-center justify-center gap-2'}>
               {bank.map((item) => (
                 <button
                   key={item.id}
