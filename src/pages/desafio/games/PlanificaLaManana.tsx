@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Sunrise } from 'lucide-react'
 import { useSequencingPuzzle } from './useSequencingPuzzle'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -26,6 +26,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * out). So advancing to the next round sits behind an explicit "Siguiente
  * mañana" button instead of a timeout: auto-advancing on a clock here
  * would rush that reading, which conflicts with this app's "no timer" rule.
+ *
+ * A one-time "¿Listo?" ready screen (see `phase` below) gates the START of
+ * the day, not every round — moving the "how to play" line out of the
+ * per-round header is what actually buys nivel 3 the room it needs for its
+ * stacked full-sentence tasks. Same one-shot gate as Encaminada: `phase`
+ * never resets back to 'ready' once the day is underway.
  */
 
 interface MorningSet {
@@ -188,6 +194,7 @@ function pickOne<T>(arr: T[]): T {
 }
 
 export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -198,7 +205,9 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   // epoch. Plain lookup (NOT useMemo): a useMemo here would get invalidated
   // anyway since levelIdx cycles 0→1→2→0 on every restart, regardless of
   // roundKey.
-  const [morningSetChoices, setMorningSetChoices] = useState(() => LEVELS.map((lvl) => shuffle(lvl.sets).slice(0, lvl.rounds)))
+  const [morningSetChoices, setMorningSetChoices] = useState(() =>
+    LEVELS.map((lvl) => shuffle(lvl.sets).slice(0, lvl.rounds)),
+  )
   const roundSets = morningSetChoices[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const plan = roundSets[roundIdx]
@@ -219,6 +228,13 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
 
   const readyToCheck =
     bank.length === 0 || (distractorId !== null && bank.length === 1 && bank[0].id === distractorId)
+
+  // nivel 3 stacks 5 full-sentence tasks (up to ~96 chars each) plus an
+  // optional distractor — unlike ElPasoAPaso's bank, the distractor means
+  // the bank never fully empties, so even the STARTING mount (before any
+  // task is placed, all 6 sentences visible in the bank alone) overflowed
+  // 375×812 by 56px (measured live). Tightens row padding/gaps only here.
+  const tight = level.n === 3
 
   const includedDistractor = distractorId !== null && placed.some((item) => item.id === distractorId)
   const placedReal = placed.filter((item) => item.id !== distractorId)
@@ -313,18 +329,18 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
         >
           {level.name}
         </span>
-        {!done && (
+        {phase === 'playing' && !done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-              {plan.distractor
-                ? 'Ordená la mañana — ¡una de estas tareas no es para hoy!'
-                : 'Ordená estas tareas de la mañana'}
-            </h2>
-            <p className="mt-2 text-base text-slate-500">Tocalas en el orden que creas correcto.</p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
+            <p className={level.n === 3 ? 'mt-1 text-base font-semibold text-slate-500' : 'mt-2 text-base font-semibold text-slate-500'}>
               Llevás {roundIdx} de {level.rounds}
             </p>
-            <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+            <div
+              className={
+                level.n === 3
+                  ? 'mx-auto mt-1 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100'
+                  : 'mx-auto mt-2 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100'
+              }
+            >
               <div
                 className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
                 style={{ width: `${(roundIdx / level.rounds) * 100}%` }}
@@ -334,7 +350,34 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: única vez, al principio del día — saca las
+          instrucciones del header persistente (antes se repetían en cada
+          ronda) para ganar espacio vertical; el nivel 3 llega a apilar 5
+          tareas de una oración completa cada una, más el distractor
+          opcional. Igual que en Encaminada, `phase` no vuelve a 'ready'
+          nunca — ni al subir de nivel ni en "Repetir"/"Hacer otro". */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Sunrise className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Tocá las tareas en el orden que te parezca correcto para organizar la mañana. Ojo: a veces alguna
+            no es para hoy.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Sequence being built — hidden once checked so the result card
               below doesn't have to compete with it for space (the tasks
@@ -342,17 +385,27 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
               down). The result card's own "El orden ideal era" listing
               already restates the correct order in full when wrong. */}
           {!checked && (
-            <div className="mt-6 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+            <div
+              className={
+                tight
+                  ? 'mt-2 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-1.5'
+                  : 'mt-4 min-h-[64px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3'
+              }
+            >
               {placed.length === 0 && (
                 <p className="text-center text-base text-slate-400">Tocá las tareas de abajo para empezar</p>
               )}
-              <div className="flex flex-col gap-2">
+              <div className={tight ? 'flex flex-col gap-0.5' : 'flex flex-col gap-1.5'}>
                 {placed.map((item, i) => (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => unplace(item)}
-                    className="flex items-start gap-2 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-2.5 text-left text-base text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                    className={
+                      tight
+                        ? 'flex items-start gap-1.5 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-3 py-1 text-left text-base leading-tight text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40'
+                        : 'flex items-start gap-2 rounded-xl border-2 border-tiam-blue bg-tiam-blue/5 px-4 py-2.5 text-left text-base text-slate-900 transition hover:bg-tiam-blue/10 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40'
+                    }
                   >
                     <span className="mt-0.5 shrink-0 font-bold text-slate-400">{i + 1}.</span>
                     <span>{item.value}</span>
@@ -364,13 +417,17 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
 
           {/* Bank */}
           {!checked && (
-            <div className="mt-4 flex flex-col gap-2">
+            <div className={tight ? 'mt-1 flex flex-col gap-0.5' : 'mt-3 flex flex-col gap-1.5'}>
               {bank.map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => place(item)}
-                  className="rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                  className={
+                    tight
+                      ? 'rounded-xl border-2 border-slate-200 bg-white px-3 py-1 text-left text-base leading-tight text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0'
+                      : 'rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-left text-base text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0'
+                  }
                 >
                   {item.value}
                 </button>
@@ -380,7 +437,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
 
           {/* Check button */}
           {readyToCheck && !checked && (
-            <div className="mt-6 text-center">
+            <div className={tight ? 'mt-2 text-center' : 'mt-4 text-center'}>
               <button
                 type="button"
                 onClick={check}
@@ -395,13 +452,13 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
 
       {/* Result */}
       {checked && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+        <div className="mt-4 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
           {!isCorrect && (
-            <div className="mt-3 text-left text-base text-slate-600">
+            <div className="mt-2 text-left text-base text-slate-600">
               <p className="font-semibold text-slate-700">El orden ideal era:</p>
               <ol className="mt-1 list-inside list-decimal space-y-1">
                 {plan.tasks.map((task) => (
@@ -414,7 +471,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
             </div>
           )}
           {!done ? (
-            <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+            <div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row">
               <button
                 type="button"
                 onClick={nextRound}
@@ -425,7 +482,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : levelIdx < LEVELS.length - 1 ? (
-            <div className="mt-5 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <button
                 type="button"
                 onClick={advanceLevel}
@@ -436,7 +493,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={restartSame}
