@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Shuffle, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -56,6 +56,20 @@ import type { GameProps } from '@/lib/challengeProgress'
  * games too tiring for the 10-15 min/day this product promises (see
  * ElVuelto.tsx's note). Word pools are 6/6/5 per level, so every round is a
  * genuinely random, non-repeating subset — no extra content needed.
+ *
+ * A one-time "¿Listo?" ready screen gates the START of the day, not every
+ * round — same pattern as Encaminada.tsx. Its real job is layout: the "how
+ * to play" sentence used to live in the persistent per-round header, which
+ * combined with nivel 3's longer answers (CORTINAS/BOTELLA run 7-8 letters
+ * vs nivel 1's 4-5) wrapped the tile tray onto a second row and pushed the
+ * letter pool below the fold at 375×812. Moving that sentence into the
+ * ready screen, trimming the clue card's margins, and capping the clue
+ * image at h-20/sm:h-24 (matching DondeLoDeje/QueOficioEs/QuienEsQuien's
+ * existing convention instead of this file's old one-off h-28) together
+ * reclaim the height nivel 3 needs to fit without scrolling. `phase` flips
+ * to 'playing' once and never resets — not on level-advance, not on
+ * "Repetir"/"Hacer otro" — those are a replay by someone who already knows
+ * the rules, re-showing the splash would be pure friction.
  */
 
 interface AnagramEntry {
@@ -177,6 +191,7 @@ const NUDGE_MESSAGES = [
 ]
 
 export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` distinct entries drawn at random from level i's own
@@ -358,11 +373,8 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        {!done && (
+        {phase === 'playing' && !done && (
           <>
-            <p className="mt-2 text-lg text-slate-500">
-              Tocá las letras en el orden correcto para armar la otra palabra.
-            </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {roundsForLevel}
             </p>
@@ -376,12 +388,44 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: única vez, al principio del día — mismo motivo que
+          Encaminada.tsx: sacar la instrucción del header persistente (se
+          repetía en cada ronda) es lo que le devuelve a nivel 3 el aire que
+          necesita para entrar en 375×812 sin scroll. Nunca vuelve a 'ready'
+          desde ningún handler de abajo (avanzar nivel, Repetir, Hacer otro):
+          es un gate de una sola vez por día, no por ronda. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Shuffle className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Cada ronda te va a mostrar una palabra. Tocá sus letras en el orden correcto para armar, con esas mismas
+            letras, la palabra que se esconde.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Clue card: source word + image (L1) or text (L2/L3) clue.
-              Hidden once resolved — the clue is moot once the word's found. */}
+              Hidden once resolved — the clue is moot once the word's found.
+              Image capped at h-20/sm:h-24 (was h-28, an outlier — every other
+              single-clue-photo in this folder already uses h-20/sm:h-24, see
+              DondeLoDeje/QueOficioEs/QuienEsQuien) — also reclaims the
+              vertical space nivel 3's longer answers (CORTINAS/BOTELLA, the
+              only two that wrap the letter tray to 2 rows) need at 375×812. */}
           {!resolved && (
-            <div className="mt-5 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+            <div className="mt-4 rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
               <p className="text-center text-base font-semibold text-slate-500">Con las letras de</p>
               <p className="mt-1 text-center text-3xl font-extrabold tracking-widest text-slate-800">
                 {entry.source}
@@ -389,7 +433,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
               {level.clueType === 'image' ? (
                 <div className="mt-3 flex items-center justify-center">
                   {clueImg && (
-                    <img src={clueImg} alt="" className="h-28 w-28 object-contain" draggable={false} />
+                    <img src={clueImg} alt="" className="h-20 w-20 object-contain sm:h-24 sm:w-24" draggable={false} />
                   )}
                 </div>
               ) : (
@@ -403,7 +447,7 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
           {/* Word being built — stays visible (now green) through a
               resolved-but-not-done round, same as OrdenarLaFrase's sentence
               box; disappears only once the whole level is done. */}
-          <div className="mt-6 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
+          <div className="mt-4 flex min-h-[56px] flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-3">
             {placed.length === 0 && (
               <span className="text-base text-slate-400">Tocá las letras de abajo para empezar</span>
             )}
