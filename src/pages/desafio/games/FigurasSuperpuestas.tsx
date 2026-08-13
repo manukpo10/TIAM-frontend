@@ -30,6 +30,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * 3-independent-levels shape. Levels pick one of 2 pre-authored lámina
  * variants at random once per epoch (a full 3-level day attempt), for
  * replay variety without runtime layout — see epochChoices below.
+ *
+ * A one-time "¿Listo?" ready screen (`dayPhase`, named to avoid colliding
+ * with the play/results/recognize `phase` below) gates the START of the
+ * day only — same lifecycle as Encaminada.tsx's `phase`: flips once on
+ * mount, never resets on level-advance or "Repetir"/"Hacer otro". Moves the
+ * contar/reconocer instructions out of the persistent header. Nivel 3's
+ * recognize grid (11 options vs 7-9 for nivel 1-2, 4 wrapped rows of
+ * ~132px cards) was the remaining overflow driver at 375px, so it also
+ * gets a smaller mobile image cap (recognizeCompact) — sized from layout
+ * math, not a live measurement; flag for live verification.
  */
 
 interface CompositionItem {
@@ -224,6 +234,10 @@ const ACCENT = '#92400E' // amber-800
 type Phase = 'play' | 'results' | 'recognize'
 
 export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
+  // One-time ready gate for the whole day (see file header) — named
+  // `dayPhase`, not `phase`, because `phase` below already covers the
+  // play/results/recognize cycle within a level. Never set back to 'ready'.
+  const [dayPhase, setDayPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which composition (index into LEVELS[i].compositions) is playing for
@@ -358,6 +372,10 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey, mistakes, attempts])
 
   const chipCols = types.length <= 3 ? 'grid-cols-3' : types.length === 4 ? 'grid-cols-2' : 'grid-cols-3'
+  // Level-aware size cap for the recognize grid, same lever as Encaminada's
+  // `level.cols >= 5` ternary — only nivel 3 needs a smaller mobile card
+  // (see comment above the recognize grid below).
+  const recognizeCompact = level.n === 3
 
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
@@ -369,16 +387,12 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
         >
           {level.name}
         </span>
-        {phase === 'play' && <p className="mt-2 text-base text-slate-500">Contá cuántos hay de cada uno.</p>}
         {phase === 'results' && (
           <p className="mt-2 text-base font-semibold text-slate-500">
             Acertaste {correctCount} de {types.length} — {praise}
           </p>
         )}
-        {phase === 'recognize' && (
-          <p className="mt-2 text-base text-slate-500">Ahora tocá solo los que estaban en la lámina de recién.</p>
-        )}
-        {!done && (
+        {dayPhase === 'playing' && !done && (
           <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
             <p className="shrink-0 text-base font-semibold text-slate-500">
               Lámina {levelIdx + 1} de {LEVELS.length}
@@ -393,8 +407,40 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
+      {/* Pantalla previa: única vez al principio del día — saca las
+          instrucciones de "contar" y "reconocer" del header persistente
+          (ver comentario de cabecera del archivo). dayPhase nunca vuelve a
+          'ready' después de este botón. */}
+      {dayPhase === 'ready' && (
+        <div
+          className="mt-6 rounded-3xl border p-6 text-center"
+          style={{ borderColor: 'rgba(146,64,14,0.2)', backgroundColor: 'rgba(146,64,14,0.05)' }}
+        >
+          <div
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
+            style={{ backgroundColor: 'rgba(146,64,14,0.15)' }}
+          >
+            <Eye className="h-6 w-6" style={{ color: ACCENT }} />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Contá cuántas figuras hay de cada tipo en la lámina. Después vas a reconocer cuáles estaban, entre
+            otras que nunca aparecieron.
+          </p>
+          <button
+            type="button"
+            onClick={() => setDayPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-6 font-semibold text-white transition"
+            style={{ backgroundColor: ACCENT }}
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Fase 1: contar (misma lámina se sigue mostrando durante 'results') */}
-      {(phase === 'play' || phase === 'results') && (
+      {dayPhase === 'playing' && (phase === 'play' || phase === 'results') && (
         <>
           <div className="relative isolate mx-auto mt-3 aspect-[5/3] w-full overflow-hidden rounded-3xl border-2 border-slate-100 bg-white sm:mt-5">
             {composition.items.map((it, i) => {
@@ -511,10 +557,16 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {/* Fase 2: repaso / reconocimiento */}
-      {phase === 'recognize' && !graded && (
+      {/* Fase 2: repaso / reconocimiento. Nivel 3 tiene 11 opciones (6 tipos
+          + 5 foils) contra 7-9 en nivel 1-2, lo que arma 4 filas de estas
+          cards — el driver real del overflow a 375px (el gate de dayPhase
+          por sí solo no lo cierra). A diferencia de Encaminada, estas cards
+          SÍ son el tap target (tocar la card selecciona/deselecciona), así
+          que en nivel 3 se achica la ilustración, no el piso de min-height:
+          116px sigue muy por encima del mínimo táctil de 44-48px. */}
+      {dayPhase === 'playing' && phase === 'recognize' && !graded && (
         <>
-          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3">
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:mt-5 sm:grid-cols-4 sm:gap-3">
             {recognitionOptions.map((id) => {
               const img = imgFor(id)
               const isSelected = selected.has(id)
@@ -534,7 +586,9 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                   aria-pressed={isSelected}
                   aria-label={LABELS[id] ?? id}
                   className={[
-                    'relative flex min-h-[132px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white p-2 transition',
+                    recognizeCompact
+                      ? 'relative flex min-h-[116px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white p-2 transition'
+                      : 'relative flex min-h-[132px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white p-2 transition',
                     'focus:outline-none focus:ring-2 focus:ring-offset-1',
                     badge === 'hit' ? 'border-tiam-green bg-tiam-green/5' : '',
                     badge === 'missed' ? 'border-tiam-blue bg-tiam-blue/5' : '',
@@ -543,7 +597,14 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
                   ].join(' ')}
                   style={!badge && isSelected ? { borderColor: ACCENT, backgroundColor: 'rgba(146,64,14,0.06)' } : undefined}
                 >
-                  {img && <img src={img} alt="" className="h-20 w-20 object-contain sm:h-24 sm:w-24" draggable={false} />}
+                  {img && (
+                    <img
+                      src={img}
+                      alt=""
+                      className={recognizeCompact ? 'h-16 w-16 object-contain sm:h-24 sm:w-24' : 'h-20 w-20 object-contain sm:h-24 sm:w-24'}
+                      draggable={false}
+                    />
+                  )}
                   <span className="text-center text-xs font-medium leading-tight text-slate-600">{LABELS[id] ?? id}</span>
                   {badge === 'hit' && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow">
@@ -566,7 +627,7 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
           </div>
 
           {!graded && (
-            <div className="mt-5 text-center">
+            <div className="mt-3 text-center sm:mt-4">
               <button
                 type="button"
                 onClick={gradeRecognition}
