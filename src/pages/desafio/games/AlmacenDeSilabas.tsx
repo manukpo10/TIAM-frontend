@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Check, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, CheckCircle2, Package, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -52,6 +52,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * chequeo de completado sigue comparando el string armado contra la lista
  * de palabras, nunca la identidad de la ficha, así que un señuelo nunca
  * bloquea una respuesta correcta.
+ *
+ * Pantalla previa "¿Listo?" única al inicio del día (mismo patrón que
+ * Encaminada.tsx, día 13): saca la oración de instrucciones del header
+ * persistente — se repetía en cada ronda, de los 3 niveles — y la muestra
+ * una sola vez, al montar. Nivel 3 vuelca 19 fichas al banco (16 reales +
+ * 3 señuelos) contra las 8 de nivel 1 (0 señuelos, ver DECOYS_PER_LEVEL):
+ * bastante más contenido que tiene que entrar en 375×812. `phase` nunca
+ * vuelve a 'ready' — ni al avanzar de nivel ni al reiniciar el día.
  */
 
 interface AnimalEntry {
@@ -156,6 +164,7 @@ interface Tile {
 }
 
 export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -278,19 +287,38 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        {!done && (
-          <>
-            <p className="mt-2 text-base font-medium text-tiam-blue">
-              Uní {level.syllablesPerWord} sílabas para formar el nombre de un animal. Hay {words.length} escondidos.
-            </p>
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {found.length} de {words.length}
-            </p>
-          </>
+        {phase === 'playing' && !done && (
+          <p className="mt-2 text-base font-semibold text-slate-500">
+            Llevás {found.length} de {words.length}
+          </p>
         )}
       </div>
 
-      {!done && (
+      {/* Pantalla previa: única vez, al principio del día — ver el comentario
+          del encabezado del archivo sobre por qué (a diferencia de un gate
+          por ronda) esto no se repite al avanzar de nivel. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Package className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Tocá las sílabas del banco, en orden, para armar el nombre de un animal escondido. Cada nivel
+            tiene 4 para encontrar.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !done && (
         <>
           {/* Animales encontrados */}
           {found.length > 0 && (
@@ -341,22 +369,28 @@ export function AlmacenDeSilabas({ day: _day, onComplete }: GameProps) {
                 })}
               </div>
 
-              {/* Tarjeta "todavía no" — tan visible como la de "¡Correcto!",
-                  nunca roja: naranja suave + ícono de reintentar. Se queda
-                  hasta que el jugador toca una ficha (place/unplace ya
-                  limpian el hint). */}
+              {/* Nota "todavía no" — a diferencia de la tarjeta "¡Correcto!"
+                  (que reemplaza ranura+banco), esta se suma ARRIBA del banco
+                  que sigue visible debajo, así que es deliberadamente
+                  compacta (nota en línea, no tarjeta con ícono en círculo):
+                  no puede sumar altura justo cuando nivel 3 (19 fichas en el
+                  banco) más la necesita. Nunca roja: naranja suave + ícono.
+                  Se queda hasta que el jugador toca una ficha (place/unplace
+                  ya limpian el hint). */}
               {hint && (
-                <div className="mt-4 rounded-2xl border border-tiam-orange/25 bg-tiam-orange/5 p-5 text-center">
-                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-tiam-orange/15">
-                    <RotateCcw className="h-6 w-6 text-tiam-orange" />
-                  </div>
-                  <p className="mt-2 text-lg font-bold text-slate-900">Todavía no es ese</p>
-                  <p className="mt-1 text-slate-600">{hint}</p>
+                <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-tiam-orange/25 bg-tiam-orange/5 px-4 py-3 text-left">
+                  <RotateCcw className="mt-0.5 h-5 w-5 shrink-0 text-tiam-orange" />
+                  <p className="text-base text-slate-700">
+                    <span className="font-bold text-slate-900">Todavía no es ese. </span>
+                    {hint}
+                  </p>
                 </div>
               )}
 
-              {/* Banco de sílabas */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {/* Banco de sílabas — gap achicado en mobile (mismo criterio
+                  que la grilla de Encaminada.tsx) para ganar algo de aire
+                  vertical en nivel 3, sin tocar el tamaño de ficha. */}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:mt-4 sm:gap-2">
                 {bank.map((id) => {
                   const t = tiles.find((tl) => tl.id === id)!
                   return (
