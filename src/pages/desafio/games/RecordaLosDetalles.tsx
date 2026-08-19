@@ -32,35 +32,55 @@ interface DetailItem {
   object: string
   detail: string
   label: string
+  imgSlug: string
 }
 
 // 15 objetos, cada uno con 3 variantes de detalle posibles. Sólo UNA variante
 // por objeto se estudia por ronda — las otras dos quedan disponibles como
 // señuelos "mismo objeto, detalle cambiado" (ver buildL3).
-const OBJECT_DETAILS: Record<string, string[]> = {
-  paraguas: ['rojo', 'azul', 'a lunares'],
-  bufanda: ['a rayas', 'celeste', 'tejida'],
-  reloj: ['dorado', 'plateado', 'digital'],
-  cartera: ['de cuero', 'de tela', 'marrón'],
-  taza: ['celeste', 'floreada', 'verde'],
-  pañuelo: ['bordado', 'de seda', 'a cuadros'],
-  boina: ['gris', 'negra', 'marrón'],
-  anteojos: ['de sol', 'de lectura', 'negros'],
-  billetera: ['marrón', 'negra', 'trenzada'],
-  gorro: ['de lana', 'de algodón', 'con borla'],
-  cinturón: ['negro', 'marrón', 'ancho'],
-  guantes: ['de lana', 'de cuero', 'negros'],
-  collar: ['de perlas', 'dorado', 'de piedras'],
-  pulsera: ['plateada', 'de cuentas', 'dorada'],
-  bastón: ['de madera', 'plegable', 'con mango curvo'],
+// Cada detalle es [texto a mostrar, sufijo de slug de imagen] — el slug es
+// ASCII/sin tildes porque nombra el archivo .webp generado con Flux.
+const OBJECT_DETAILS: Record<string, [string, string][]> = {
+  paraguas: [['rojo', 'rojo'], ['azul', 'azul'], ['a lunares', 'lunares']],
+  bufanda: [['a rayas', 'rayas'], ['celeste', 'celeste'], ['tejida', 'tejida']],
+  reloj: [['dorado', 'dorado'], ['plateado', 'plateado'], ['digital', 'digital']],
+  cartera: [['de cuero', 'cuero'], ['de tela', 'tela'], ['marrón', 'marron']],
+  taza: [['celeste', 'celeste'], ['floreada', 'floreada'], ['verde', 'verde']],
+  pañuelo: [['bordado', 'bordado'], ['de seda', 'seda'], ['a cuadros', 'cuadros']],
+  boina: [['gris', 'gris'], ['negra', 'negra'], ['marrón', 'marron']],
+  anteojos: [['de sol', 'sol'], ['de lectura', 'lectura'], ['negros', 'negros']],
+  billetera: [['marrón', 'marron'], ['negra', 'negra'], ['trenzada', 'trenzada']],
+  gorro: [['de lana', 'lana'], ['de algodón', 'algodon'], ['con borla', 'borla']],
+  cinturón: [['negro', 'negro'], ['marrón', 'marron'], ['ancho', 'ancho']],
+  guantes: [['de lana', 'lana'], ['de cuero', 'cuero'], ['negros', 'negros']],
+  collar: [['de perlas', 'perlas'], ['dorado', 'dorado'], ['de piedras', 'piedras']],
+  pulsera: [['plateada', 'plateada'], ['de cuentas', 'cuentas'], ['dorada', 'dorada']],
+  bastón: [['de madera', 'madera'], ['plegable', 'plegable'], ['con mango curvo', 'curvo']],
 }
+// Los 3 objetos con tilde necesitan su propio slug ASCII para el nombre de archivo.
+const OBJECT_SLUG: Record<string, string> = { pañuelo: 'panuelo', cinturón: 'cinturon', bastón: 'baston' }
+const slugOfObject = (object: string) => OBJECT_SLUG[object] ?? object
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 const ITEMS: DetailItem[] = Object.entries(OBJECT_DETAILS).flatMap(([object, details]) =>
-  details.map((detail) => ({ id: `${object}-${detail}`, object, detail, label: `${capitalize(object)} ${detail}` })),
+  details.map(([detail, slug]) => ({
+    id: `${object}-${detail}`,
+    object,
+    detail,
+    label: `${capitalize(object)} ${detail}`,
+    imgSlug: `${slugOfObject(object)}-${slug}`,
+  })),
 )
 const OBJECTS = Object.keys(OBJECT_DETAILS)
+
+const IMAGES = import.meta.glob('../../../assets/desafio/games/recorda-los-detalles/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function imgFor(slug: string): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}.webp`))?.[1]
+}
 const byObject = (object: string) => ITEMS.filter((it) => it.object === object)
 
 function shuffle<T>(arr: T[]): T[] {
@@ -299,7 +319,7 @@ export function RecordaLosDetalles({ day: _day, onComplete }: GameProps) {
       {/* Tablero — chips de texto, sigue visible durante 'results' hasta
           resultsSeen. */}
       {phase !== 'ready' && (phase !== 'results' || !resultsSeen) && (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {(phase === 'study' ? round.studied : testBoard).map((it) => {
             const isSelected = selected.has(it.id)
             const isTarget = targetIds.has(it.id)
@@ -310,6 +330,7 @@ export function RecordaLosDetalles({ day: _day, onComplete }: GameProps) {
               else if (isTarget && !isSelected) badge = 'missed'
               else if (!isTarget && isSelected) badge = 'false-positive'
             }
+            const img = imgFor(it.imgSlug)
 
             return (
               <button
@@ -320,7 +341,7 @@ export function RecordaLosDetalles({ day: _day, onComplete }: GameProps) {
                 aria-label={it.label}
                 aria-pressed={phase === 'test' ? isSelected : undefined}
                 className={[
-                  'relative flex min-h-[48px] items-center justify-center rounded-2xl border-2 bg-white px-3 py-2.5 text-center transition',
+                  'relative flex min-h-[48px] items-center justify-start gap-2 rounded-2xl border-2 bg-white px-2.5 py-1.5 text-left transition',
                   'focus:outline-none focus:ring-2 focus:ring-tiam-green/40 focus:ring-offset-1',
                   phase === 'test' ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md active:translate-y-0' : '',
                   badge === 'hit' ? 'border-tiam-green ring-2 ring-tiam-green/30' : '',
@@ -331,7 +352,15 @@ export function RecordaLosDetalles({ day: _day, onComplete }: GameProps) {
                   !badge && phase !== 'results' && !isSelected ? 'border-slate-200' : '',
                 ].join(' ')}
               >
-                <span className="text-base font-semibold leading-tight text-slate-700 sm:text-lg">{it.label}</span>
+                {img && (
+                  <img
+                    src={img}
+                    alt=""
+                    className="h-12 w-12 shrink-0 rounded-lg object-cover sm:h-14 sm:w-14"
+                    draggable={false}
+                  />
+                )}
+                <span className="text-sm font-semibold leading-tight text-slate-700 sm:text-base">{it.label}</span>
 
                 {badge === 'hit' && (
                   <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">

@@ -1,63 +1,86 @@
 import { useEffect, useRef, useState } from 'react'
-import { Circle, Square, Triangle, Diamond, Grid3x3, RotateCcw, ArrowRight, Sparkles, Check, type LucideIcon } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Check, Puzzle } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Qué falta en la esquina?" — día 22, agnosias.
  *
  * La referencia original (papel/foto) mostraba una imagen real con un hueco
- * en una esquina. Para este lote, sin depender de fotos, se adapta a un
- * PATRÓN GEOMÉTRICO repetitivo dibujado con iconos lucide-react: una grilla
- * de figuras de colores sigue una regla (alternancia tipo tablero de
- * ajedrez en nivel 1/2, franjas diagonales de 3 figuras en nivel 3), la
- * esquina inferior derecha queda en blanco, y el jugador toca — entre 3
- * opciones también dibujadas — cuál figura completa correctamente el
- * patrón. Mismo espíritu que el original: reconocimiento visual + completar
- * lo que falta, sin ningún asset fotográfico.
+ * en una esquina. Esta versión lo hace literal: una foto realista (Flux) de
+ * un objeto cotidiano, con la esquina inferior derecha tapada, y 3 recortes
+ * de esquina como opciones — sólo uno es el recorte REAL de esa foto, los
+ * otros dos son esquinas de OTRAS fotos. Los recortes se generan una sola
+ * vez con Pillow (42% del cuadro inferior derecho) al crear cada imagen —
+ * no hay recorte en tiempo de ejecución, así el pixel-a-pixel siempre calza
+ * exacto con la opción correcta.
  *
- * El color es fijo por figura (nunca por instancia individual) — es una
- * pista de identidad, no una trampa — mismo criterio que NoEstaRepetida.tsx.
- *
- * Nivel 1: grilla 2×2, 2 figuras alternadas (tablero), celda vecina a la
- *   esquina ya muestra la figura "hermana" — alcanza con mirar una celda.
- * Nivel 2: mismo tablero de 2 figuras pero en grilla 3×3 — hay que
- *   confirmar la regla mirando más de una celda.
- * Nivel 3: grilla 3×3 con TRES figuras en franjas diagonales
- *   (figura = (fila+columna) % 3) — la figura que falta también aparece en
- *   otras dos celdas de la grilla, pero hay que encontrarlas; las 3
- *   opciones son las 3 figuras del patrón, así que un vistazo rápido no
- *   alcanza, hace falta rastrear la diagonal.
+ * La dificultad no viene de una grilla, viene de cuán parecidos son los
+ * señuelos al objetivo. 20 objetos agrupados en 5 familias de color (rojo/
+ * verde/amarillo/naranja/marrón, 4 objetos cada una):
+ *   Nivel 1: los 2 señuelos son de una familia de color DISTINTA — la
+ *     esquina correcta salta a la vista por el color solo.
+ *   Nivel 2: un señuelo de la misma familia, uno de otra — hay que mirar
+ *     dos veces.
+ *   Nivel 3: los 2 señuelos son de la MISMA familia que el objetivo — el
+ *     color no alcanza, hace falta atender a la textura/forma real.
  *
  * Nunca rojo, sin timer, siempre reintentable, pantalla "¿Listo?" única vez.
  */
 
-interface ShapeDef {
-  id: string
-  label: string
-  Icon: LucideIcon
-  color: string
+interface ImgObject {
+  slug: string
+  category: 'rojo' | 'verde' | 'amarillo' | 'naranja' | 'marron'
 }
-const SHAPE_PALETTE: ShapeDef[] = [
-  { id: 'circle', label: 'círculo', Icon: Circle, color: '#1B6FC4' },
-  { id: 'square', label: 'cuadrado', Icon: Square, color: '#E8531E' },
-  { id: 'triangle', label: 'triángulo', Icon: Triangle, color: '#4CA52E' },
-  { id: 'diamond', label: 'rombo', Icon: Diamond, color: '#9333EA' },
+
+const OBJECTS: ImgObject[] = [
+  { slug: 'manzana-roja', category: 'rojo' },
+  { slug: 'tomate', category: 'rojo' },
+  { slug: 'frutilla', category: 'rojo' },
+  { slug: 'pimiento-rojo', category: 'rojo' },
+
+  { slug: 'manzana-verde', category: 'verde' },
+  { slug: 'pepino', category: 'verde' },
+  { slug: 'pimiento-verde', category: 'verde' },
+  { slug: 'lima', category: 'verde' },
+
+  { slug: 'banana', category: 'amarillo' },
+  { slug: 'limon', category: 'amarillo' },
+  { slug: 'pimiento-amarillo', category: 'amarillo' },
+  { slug: 'maiz', category: 'amarillo' },
+
+  { slug: 'naranja', category: 'naranja' },
+  { slug: 'zanahoria', category: 'naranja' },
+  { slug: 'calabaza', category: 'naranja' },
+  { slug: 'damasco', category: 'naranja' },
+
+  { slug: 'nuez', category: 'marron' },
+  { slug: 'castana', category: 'marron' },
+  { slug: 'papa', category: 'marron' },
+  { slug: 'pan', category: 'marron' },
 ]
 
-type Mode = 'checker' | 'stripe3'
+const IMAGES = import.meta.glob('../../../assets/desafio/games/que-falta-en-la-esquina/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function imgFor(slug: string): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}.webp`))?.[1]
+}
+function cornerFor(slug: string): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}-corner.webp`))?.[1]
+}
+
+type Difficulty = 'easy' | 'mixed' | 'hard'
 interface Level {
   n: number
   name: string
   rounds: number
-  gridSize: number
-  mode: Mode
-  cellClass: string
-  iconClass: string
+  difficulty: Difficulty
 }
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', rounds: 2, gridSize: 2, mode: 'checker', cellClass: 'h-20 w-20 sm:h-24 sm:w-24', iconClass: 'h-9 w-9 sm:h-11 sm:w-11' },
-  { n: 2, name: 'Nivel 2', rounds: 2, gridSize: 3, mode: 'checker', cellClass: 'h-16 w-16 sm:h-20 sm:w-20', iconClass: 'h-7 w-7 sm:h-9 sm:w-9' },
-  { n: 3, name: 'Nivel 3', rounds: 2, gridSize: 3, mode: 'stripe3', cellClass: 'h-16 w-16 sm:h-20 sm:w-20', iconClass: 'h-7 w-7 sm:h-9 sm:w-9' },
+  { n: 1, name: 'Nivel 1', rounds: 2, difficulty: 'easy' },
+  { n: 2, name: 'Nivel 2', rounds: 2, difficulty: 'mixed' },
+  { n: 3, name: 'Nivel 3', rounds: 2, difficulty: 'hard' },
 ]
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
 const ACCENT = '#D97706' // ámbar
@@ -70,46 +93,32 @@ function shuffle<T>(arr: T[]): T[] {
   }
   return a
 }
+function pick<T>(arr: T[], n: number): T[] {
+  return shuffle(arr).slice(0, n)
+}
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
 interface Round {
-  size: number
-  cells: (ShapeDef | null)[][] // null = la esquina en blanco
-  correctId: string
-  options: ShapeDef[]
+  target: ImgObject
+  options: ImgObject[]
   key: string
 }
+// Nivel 1: señuelos de otra familia de color (fácil, salta a la vista).
+// Nivel 3: señuelos de la MISMA familia (difícil, el color no alcanza).
+function pickDecoys(target: ImgObject, difficulty: Difficulty): ImgObject[] {
+  const others = OBJECTS.filter((o) => o.slug !== target.slug)
+  const same = others.filter((o) => o.category === target.category)
+  const diff = others.filter((o) => o.category !== target.category)
+  if (difficulty === 'easy') return pick(diff, 2)
+  if (difficulty === 'hard') return pick(same, 2)
+  return [pick(same, 1)[0], pick(diff, 1)[0]]
+}
 function buildOnce(level: Level): Round {
-  const size = level.gridSize
-  const last = size - 1
-  if (level.mode === 'checker') {
-    const [a, b] = shuffle(SHAPE_PALETTE).slice(0, 2)
-    const unrelated = SHAPE_PALETTE.find((s) => s.id !== a.id && s.id !== b.id)!
-    const cells: (ShapeDef | null)[][] = []
-    for (let r = 0; r < size; r++) {
-      const row: (ShapeDef | null)[] = []
-      for (let c = 0; c < size; c++) {
-        row.push(r === last && c === last ? null : (r + c) % 2 === 0 ? a : b)
-      }
-      cells.push(row)
-    }
-    // La esquina (last,last) siempre tiene paridad par → misma figura que
-    // (0,0): es "a" por construcción.
-    return { size, cells, correctId: a.id, options: shuffle([a, b, unrelated]), key: [a.id, b.id].sort().join('-') }
-  }
-  const shapes = shuffle(SHAPE_PALETTE).slice(0, 3)
-  const cells: (ShapeDef | null)[][] = []
-  for (let r = 0; r < size; r++) {
-    const row: (ShapeDef | null)[] = []
-    for (let c = 0; c < size; c++) {
-      row.push(r === last && c === last ? null : shapes[(r + c) % 3])
-    }
-    cells.push(row)
-  }
-  const correct = shapes[(last + last) % 3]
-  return { size, cells, correctId: correct.id, options: shuffle(shapes), key: shapes.map((s) => s.id).sort().join('-') }
+  const target = pickOne(OBJECTS)
+  const decoys = pickDecoys(target, level.difficulty)
+  return { target, options: shuffle([target, ...decoys]), key: target.slug }
 }
 function makeRound(level: Level, avoidKey?: string): Round {
   let round = buildOnce(level)
@@ -129,7 +138,11 @@ function makeLevelRounds(level: Level): Round[] {
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen ojo!']
-const HINTS = ['Esa no completa el patrón — fijate cómo se repiten las figuras.', 'Casi. Mirá otra celda con la misma posición en el patrón.', 'No es esa — seguí la fila y la columna con calma.']
+const HINTS = [
+  'Esa esquina no es de esta foto — fijate bien en el color y la textura.',
+  'Casi. Mirá el borde: ¿el color sigue igual ahí?',
+  'No es esa — pensá qué objeto es el de la foto completa.',
+]
 
 export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
@@ -152,19 +165,21 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
     if (done) setLevelPraise(pickOne(PRAISE))
   }, [done])
 
-  function guess(shapeId: string) {
-    if (!round || resolved || eliminated.has(shapeId)) return
-    if (shapeId === round.correctId) {
+  function guess(slug: string) {
+    if (!round || resolved || eliminated.has(slug)) return
+    if (slug === round.target.slug) {
       setResolved(true)
       setHint(null)
+      // Un poco más que el resto del catálogo: da tiempo a ver la foto
+      // completa revelada (se saca la tapa de la esquina al resolver).
       window.setTimeout(() => {
         setRoundIdx((i) => i + 1)
         setEliminated(new Set())
         setResolved(false)
-      }, 700)
+      }, 900)
       return
     }
-    setEliminated((prev) => new Set(prev).add(shapeId))
+    setEliminated((prev) => new Set(prev).add(slug))
     setMistakes((m) => m + 1)
     setHint(pickOne(HINTS))
   }
@@ -214,7 +229,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
         </span>
         {phase === 'playing' && !done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué figura falta en la esquina?</h2>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¿Qué pedacito falta en la esquina?</h2>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>
@@ -232,11 +247,12 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
       {phase === 'ready' && (
         <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
-            <Grid3x3 className="h-6 w-6 text-tiam-blue" />
+            <Puzzle className="h-6 w-6 text-tiam-blue" />
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            La grilla sigue un patrón de figuras, pero la esquina de abajo a la derecha está vacía. Tocá la opción que la completa.
+            La foto tiene un pedacito tapado en la esquina de abajo a la derecha. Tocá la opción que completa la
+            imagen.
           </p>
           <button
             type="button"
@@ -251,41 +267,36 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
 
       {phase === 'playing' && !done && round && (
         <>
-          {/* Grilla del patrón */}
-          <div className="mx-auto mt-4 inline-grid gap-2 sm:mt-6" style={{ gridTemplateColumns: `repeat(${round.size}, minmax(0, 1fr))` }}>
-            {round.cells.flatMap((row, r) =>
-              row.map((cell, c) => {
-                const isBlank = cell === null
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    className={[
-                      'flex items-center justify-center rounded-2xl border-2 bg-white',
-                      level.cellClass,
-                      isBlank ? 'border-dashed border-slate-300 bg-slate-50' : 'border-slate-100',
-                    ].join(' ')}
-                  >
-                    {cell && <cell.Icon className={level.iconClass} style={{ color: cell.color }} strokeWidth={2} />}
-                  </div>
-                )
-              }),
+          {/* Foto con la esquina tapada */}
+          <div className="relative mx-auto mt-4 h-48 w-48 overflow-hidden rounded-2xl border-2 border-slate-100 bg-white sm:mt-6 sm:h-56 sm:w-56">
+            <img
+              src={imgFor(round.target.slug)}
+              alt="Foto con la esquina tapada"
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
+            {!resolved && (
+              <div
+                className="absolute bottom-0 right-0 border-2 border-dashed border-slate-400 bg-slate-100/95"
+                style={{ width: '42%', height: '42%' }}
+              />
             )}
           </div>
 
-          {/* Opciones */}
+          {/* Opciones: 3 recortes de esquina */}
           <div className="mx-auto mt-5 flex max-w-xs justify-center gap-3 sm:mt-6">
-            {round.options.map((shape) => {
-              const isEliminated = eliminated.has(shape.id)
-              const isCorrectShown = resolved && shape.id === round.correctId
+            {round.options.map((opt, i) => {
+              const isEliminated = eliminated.has(opt.slug)
+              const isCorrectShown = resolved && opt.slug === round.target.slug
               return (
                 <button
-                  key={shape.id}
+                  key={opt.slug}
                   type="button"
                   disabled={resolved || isEliminated}
-                  onClick={() => guess(shape.id)}
-                  aria-label={shape.label}
+                  onClick={() => guess(opt.slug)}
+                  aria-label={`Opción ${i + 1}`}
                   className={[
-                    'relative flex h-20 w-20 items-center justify-center rounded-2xl border-2 bg-white transition sm:h-24 sm:w-24',
+                    'relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 bg-white transition sm:h-24 sm:w-24',
                     'focus:outline-none focus:ring-2 focus:ring-offset-1',
                     isCorrectShown
                       ? 'border-tiam-green bg-tiam-green/5 ring-2 ring-tiam-green/30'
@@ -294,7 +305,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
                         : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
                   ].join(' ')}
                 >
-                  <shape.Icon className="h-9 w-9 sm:h-11 sm:w-11" style={{ color: shape.color }} strokeWidth={2} />
+                  <img src={cornerFor(opt.slug)} alt="" className="h-full w-full object-cover" draggable={false} />
                   {isCorrectShown && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
                       <Check className="h-3.5 w-3.5" strokeWidth={3} />
@@ -317,7 +328,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
           <p className="mt-1 text-slate-600">
-            ¡Completaste los {level.rounds} patrones — terminaste el {level.name.toLowerCase()}!
+            ¡Completaste las {level.rounds} fotos — terminaste el {level.name.toLowerCase()}!
           </p>
           {levelIdx < LEVELS.length - 1 ? (
             <div className="mt-5 flex justify-center">

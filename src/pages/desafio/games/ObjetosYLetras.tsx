@@ -64,6 +64,14 @@ const OBJETOS: Record<string, { name: string; Icon: LucideIcon; color: string }>
 }
 type ObjetoId = keyof typeof OBJETOS
 
+const IMAGES = import.meta.glob('../../../assets/desafio/games/objetos-y-letras/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function imgFor(id: string): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${id}.webp`))?.[1]
+}
+
 // ── Reglas de extracción (mismo motor que el día 23) ─────────────────────
 type Regla = 'primera' | 'segunda' | 'tercera' | 'cuarta' | 'ultima' | 'segundaVocal' | 'consonanteRepetida' | 'vocalRepetida'
 
@@ -372,6 +380,7 @@ export function ObjetosYLetras({ day: _day, onComplete }: GameProps) {
             >
               {pasos.map((paso, i) => {
                 const obj = OBJETOS[paso.obj]
+                const img = imgFor(paso.obj)
                 return (
                   <div
                     key={i}
@@ -382,7 +391,11 @@ export function ObjetosYLetras({ day: _day, onComplete }: GameProps) {
                     }
                   >
                     <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-2 sm:h-24 sm:w-24">
-                      <obj.Icon className="h-full w-full" style={{ color: obj.color }} strokeWidth={1.75} />
+                      {img ? (
+                        <img src={img} alt="" className="h-full w-full object-contain" draggable={false} />
+                      ) : (
+                        <obj.Icon className="h-full w-full" style={{ color: obj.color }} strokeWidth={1.75} />
+                      )}
                       <span className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-orange text-xs font-bold text-white">
                         {i + 1}
                       </span>
