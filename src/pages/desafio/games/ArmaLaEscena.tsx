@@ -226,6 +226,22 @@ function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+// Posición de cada ícono dentro del lienzo — esto es lo que faltaba: antes
+// las partes colocadas eran chips de texto todos del mismo tamaño en una
+// fila, sin ninguna noción real de "escena". `iconIdx` es la posición
+// CANÓNICA del ícono entre los íconos (0 = el más grande/de fondo, el
+// último = el más chico/de arriba) — se calcula a partir de `item.id`
+// (la posición original en `scene.parts`, no el orden en que se tocó), así
+// que la altura de cada parte en el lienzo depende de CUÁL parte es, no de
+// cuándo se colocó. Si el jugador la puso en el orden equivocado, el
+// lienzo se ve "raro" (algo chico apoyado abajo, algo grande flotando
+// arriba) — esa es la pista visual, sin necesitar texto extra.
+const ICON_LEFT_PERCENT = [50, 25, 75, 38, 62]
+function iconBottomPercent(iconIdx: number, totalIcons: number): number {
+  if (totalIcons <= 1) return 45
+  return 12 + iconIdx * (64 / (totalIcons - 1))
+}
+
 export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
@@ -351,14 +367,17 @@ export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
 
       {phase === 'playing' && !done && (
         <>
-          {/* Escena en construcción — a medida que se coloca la parte de
-              fondo, tiñe el fondo de la tarjeta; el resto de las partes
-              colocadas quedan como chips con ícono, en el orden en que se
-              tocaron. Se oculta al revisar para que la tarjeta de
-              Resultado no compita por espacio. */}
+          {/* Escena en construcción — lienzo real, no una lista de chips.
+              A medida que se coloca la parte de fondo, tiñe el piso del
+              lienzo; cada parte colocada aparece como ícono a SU tamaño
+              real (`part.size`) y a SU altura correcta dentro del lienzo
+              (grande/fondo = abajo, chico/arriba = arriba) — así se ve la
+              escena tomar forma de verdad, no una fila pareja de texto. Se
+              oculta al revisar para que la tarjeta de Resultado no compita
+              por espacio. */}
           {!checked && (
             <div
-              className="mt-4 min-h-[76px] rounded-2xl border-2 border-dashed border-slate-200 p-2.5 transition-colors"
+              className="relative mt-4 h-48 overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 transition-colors sm:h-56"
               style={
                 groundPlaced
                   ? {
@@ -368,21 +387,35 @@ export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
               }
             >
               {placed.length === 0 && (
-                <p className="text-center text-base text-slate-400">Tocá las partes de abajo para empezar</p>
+                <p className="absolute inset-0 flex items-center justify-center px-4 text-center text-base text-slate-400">
+                  Tocá las partes de abajo para empezar
+                </p>
               )}
-              <div className="flex flex-wrap items-center justify-center gap-1.5">
-                {placed.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => unplace(item)}
-                    className="inline-flex items-center gap-1.5 rounded-full border-2 border-tiam-blue bg-white px-3 py-1.5 text-base font-semibold text-slate-900 transition hover:bg-tiam-blue/5 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
-                  >
-                    {item.value.kind === 'icon' && <item.value.Icon className="h-4 w-4" style={{ color: item.value.color }} />}
-                    {item.value.label}
-                  </button>
-                ))}
-              </div>
+              {placed
+                .filter((item) => item.value.kind === 'icon')
+                .map((item) => {
+                  const iconIdx = item.id - 1 // id 0 es el piso; los íconos arrancan en 1
+                  const totalIcons = pool.length - 1
+                  const left = ICON_LEFT_PERCENT[iconIdx % ICON_LEFT_PERCENT.length]
+                  const bottom = iconBottomPercent(iconIdx, totalIcons)
+                  const ItemIcon = item.value.kind === 'icon' ? item.value.Icon : null
+                  const size = item.value.kind === 'icon' ? item.value.size : 24
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => unplace(item)}
+                      aria-label={`Quitar ${item.value.label}`}
+                      className="absolute flex min-h-[44px] min-w-[44px] -translate-x-1/2 translate-y-1/2 flex-col items-center gap-0.5 rounded-xl transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                      style={{ left: `${left}%`, bottom: `${bottom}%` }}
+                    >
+                      {ItemIcon && <ItemIcon style={{ width: size, height: size, color: item.value.color }} />}
+                      <span className="rounded-full bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-slate-700 shadow-sm">
+                        {item.value.label}
+                      </span>
+                    </button>
+                  )
+                })}
             </div>
           )}
 
