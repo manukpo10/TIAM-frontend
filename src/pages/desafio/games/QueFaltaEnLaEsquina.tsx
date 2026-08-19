@@ -7,12 +7,21 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * La referencia original (papel/foto) mostraba una imagen real con un hueco
  * en una esquina. Esta versión lo hace literal: una foto realista (Flux) de
- * un objeto cotidiano, con la esquina inferior derecha tapada, y 3 recortes
- * de esquina como opciones — sólo uno es el recorte REAL de esa foto, los
- * otros dos son esquinas de OTRAS fotos. Los recortes se generan una sola
- * vez con Pillow (42% del cuadro inferior derecho) al crear cada imagen —
- * no hay recorte en tiempo de ejecución, así el pixel-a-pixel siempre calza
- * exacto con la opción correcta.
+ * un objeto cotidiano, con UNA de las 4 esquinas tapada (elegida al azar por
+ * ronda, no siempre la misma), y 3 recortes de esa esquina como opciones —
+ * sólo uno es el recorte REAL de esa foto, los otros dos son la misma
+ * esquina de OTRAS fotos. Los recortes se generan una sola vez con Pillow
+ * (58% del cuadro, las 4 esquinas) al crear cada imagen — no hay recorte en
+ * tiempo de ejecución, así el pixel-a-pixel siempre calza exacto con la
+ * opción correcta.
+ *
+ * El 58% no es arbitrario: a 42% varios objetos redondos/chicos y
+ * centrados (frutilla, pepino, calabaza, zanahoria) dejaban CUALQUIER
+ * esquina casi entera de fondo blanco — un hueco "vacío" imposible de
+ * distinguir de otro. Medido con un script (fracción de píxeles casi-blancos
+ * por esquina, ver Engram) 58% es el primer tamaño donde las 4 esquinas de
+ * los 20 objetos tienen contenido real, así que CUALQUIER esquina sirve
+ * para cualquier objeto — no hace falta filtrar por objeto.
  *
  * La dificultad no viene de una grilla, viene de cuán parecidos son los
  * señuelos al objetivo. 20 objetos agrupados en 5 familias de color (rojo/
@@ -66,8 +75,18 @@ const IMAGES = import.meta.glob('../../../assets/desafio/games/que-falta-en-la-e
 function imgFor(slug: string): string | undefined {
   return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}.webp`))?.[1]
 }
-function cornerFor(slug: string): string | undefined {
-  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}-corner.webp`))?.[1]
+function cornerFor(slug: string, corner: Corner): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}-corner-${corner}.webp`))?.[1]
+}
+
+type Corner = 'tl' | 'tr' | 'bl' | 'br'
+const CORNERS: Corner[] = ['tl', 'tr', 'bl', 'br']
+const CORNER_FRAC = 58 // % del cuadro — ver comentario del archivo, medido para que ninguna esquina caiga en fondo vacío
+const CORNER_POSITION_CLASS: Record<Corner, string> = {
+  tl: 'top-0 left-0',
+  tr: 'top-0 right-0',
+  bl: 'bottom-0 left-0',
+  br: 'bottom-0 right-0',
 }
 
 type Difficulty = 'easy' | 'mixed' | 'hard'
@@ -103,6 +122,7 @@ function pickOne<T>(arr: T[]): T {
 interface Round {
   target: ImgObject
   options: ImgObject[]
+  corner: Corner
   key: string
 }
 // Nivel 1: señuelos de otra familia de color (fácil, salta a la vista).
@@ -118,7 +138,8 @@ function pickDecoys(target: ImgObject, difficulty: Difficulty): ImgObject[] {
 function buildOnce(level: Level): Round {
   const target = pickOne(OBJECTS)
   const decoys = pickDecoys(target, level.difficulty)
-  return { target, options: shuffle([target, ...decoys]), key: target.slug }
+  const corner = pickOne(CORNERS)
+  return { target, options: shuffle([target, ...decoys]), corner, key: target.slug }
 }
 function makeRound(level: Level, avoidKey?: string): Round {
   let round = buildOnce(level)
@@ -277,8 +298,8 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
             />
             {!resolved && (
               <div
-                className="absolute bottom-0 right-0 border-2 border-dashed border-slate-400 bg-slate-100/95"
-                style={{ width: '42%', height: '42%' }}
+                className={`absolute border-2 border-dashed border-slate-400 bg-slate-100/95 ${CORNER_POSITION_CLASS[round.corner]}`}
+                style={{ width: `${CORNER_FRAC}%`, height: `${CORNER_FRAC}%` }}
               />
             )}
           </div>
@@ -305,7 +326,12 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
                         : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
                   ].join(' ')}
                 >
-                  <img src={cornerFor(opt.slug)} alt="" className="h-full w-full object-cover" draggable={false} />
+                  <img
+                    src={cornerFor(opt.slug, round.corner)}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    draggable={false}
+                  />
                   {isCorrectShown && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
                       <Check className="h-3.5 w-3.5" strokeWidth={3} />
