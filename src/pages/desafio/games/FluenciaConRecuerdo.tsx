@@ -3,12 +3,17 @@ import { ArrowRight, Lightbulb, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Fluencia con recuerdo" — memoria + atención. Fase de estudio: una lista de
- * 9 combinaciones sustantivo+adjetivo, algunas cumplen la regla de letras del
- * nivel (p. ej. "sustantivo con P + adjetivo con C") y otras no — mezcladas a
- * propósito para que leer la lista exija atención real, no sólo memorizar
- * texto. Fase de reconocimiento: DOS preguntas cortas, ambas de opción
- * múltiple por toque (nunca texto libre, como pide el brief):
+ * "Fluencia con recuerdo" — memoria + atención. Fase de estudio: una lista
+ * CORTA (4 a 6 combos según el nivel — ver `Level.validCount` y afines) de
+ * sustantivo+adjetivo, algunas cumplen la regla de letras del nivel (p. ej.
+ * "sustantivo con P + adjetivo con C") y otras no — mezcladas a propósito
+ * para que leer la lista exija atención real, no sólo memorizar texto. La
+ * lista arranca corta en nivel 1 y sube de a poco — el diseño original pedía
+ * recordar 9 combos parejo en los 3 niveles, demasiado para el público adulto
+ * mayor del Desafío: dos preguntas de memoria distintas sobre el mismo set
+ * grande, bajo cronómetro, sin ninguna rampa de dificultad real. Fase de
+ * reconocimiento: DOS preguntas cortas, ambas de opción múltiple por toque
+ * (nunca texto libre, como pide el brief):
  *   P1 — ¿cuáles combinaciones viste? (reconocimiento puro, con señuelos
  *        nuevos que nunca estuvieron en la lista)
  *   P2 — ¿cuáles cumplían la regla? (vuelve a mostrar SÓLO las 9 estudiadas,
@@ -31,9 +36,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * temporizador de estudio queda gateado a `phase === 'study'` (mismo motivo
  * que ListaConParecidas.tsx).
  *
- * Tablero tope: P1 muestra 12 chips (9 estudiadas + 3 señuelos, ≤ el techo
- * probado de 12 de ListaConParecidas), P2 sólo 9 — ambos livianos de sobra
- * para 375×812 sin scroll.
+ * Tablero tope: P1 muestra a lo sumo 10 chips (nivel 3: 7 estudiadas + 3
+ * señuelos — bien por debajo del techo probado de 12 de ListaConParecidas),
+ * P2 a lo sumo 7 — ambos livianos de sobra para 375×812 sin scroll.
  */
 
 interface LetterRule {
@@ -100,6 +105,14 @@ interface Level {
   bank: WordBank
   studySeconds: number
   minEarlySeconds: number
+  // Cuántas combos estudiar y cuántos señuelos en P1 — sube gradual de nivel
+  // a nivel (antes los 3 niveles pedían recordar 9 fijas, parejo, sin
+  // rampa real; para gente grande, empezar liviano y subir de a poco).
+  validCount: number
+  invalidACount: number // sustantivo correcto, adjetivo cambiado
+  invalidBCount: number // adjetivo correcto, sustantivo cambiado
+  invalidCCount: number // ninguno de los dos
+  foilCount: number
 }
 
 const LEVELS: Level[] = [
@@ -113,8 +126,13 @@ const LEVELS: Level[] = [
       ruleAdjs: ['claro', 'cómodo', 'curioso', 'caro', 'cuadrado', 'colorido', 'cansado', 'corto'],
       otherAdjs: ['grande', 'roto', 'rojo', 'azul', 'viejo', 'nuevo', 'largo', 'suave'],
     },
-    studySeconds: 30,
-    minEarlySeconds: 12,
+    studySeconds: 24,
+    minEarlySeconds: 10,
+    validCount: 3,
+    invalidACount: 1,
+    invalidBCount: 1,
+    invalidCCount: 0,
+    foilCount: 2,
   },
   {
     n: 2,
@@ -126,8 +144,13 @@ const LEVELS: Level[] = [
       ruleAdjs: ['amarillo', 'alto', 'ancho', 'amable', 'antiguo', 'alegre', 'apretado', 'agotado'],
       otherAdjs: ['verde', 'bajo', 'oscuro', 'tibio', 'suave', 'fuerte', 'liviano', 'pesado'],
     },
-    studySeconds: 34,
-    minEarlySeconds: 14,
+    studySeconds: 28,
+    minEarlySeconds: 12,
+    validCount: 4,
+    invalidACount: 1,
+    invalidBCount: 1,
+    invalidCCount: 0,
+    foilCount: 2,
   },
   {
     n: 3,
@@ -139,8 +162,13 @@ const LEVELS: Level[] = [
       ruleAdjs: ['suave', 'seco', 'salado', 'sucio', 'sabroso', 'silencioso', 'simpático', 'sólido'],
       otherAdjs: ['dulce', 'húmedo', 'ruidoso', 'tierno', 'brillante', 'pesado', 'veloz', 'frágil'],
     },
-    studySeconds: 38,
-    minEarlySeconds: 16,
+    studySeconds: 32,
+    minEarlySeconds: 14,
+    validCount: 4,
+    invalidACount: 1,
+    invalidBCount: 1,
+    invalidCCount: 1,
+    foilCount: 3,
   },
 ]
 
@@ -150,23 +178,25 @@ interface RoundData {
   q2Targets: Set<string>
 }
 
-// 9 combos estudiadas: 5 que cumplen la regla + 4 que no (2 con el sustantivo
-// correcto y el adjetivo cambiado, 1 al revés, 1 con ninguno de los dos) —
-// la mezcla de "casi cumple" es la que de verdad exige atención a las DOS
-// palabras. P1 agrega 3 señuelos nuevos armados con el mismo banco, nunca
-// mostrados, para que el reconocimiento tenga interferencia real.
+// Combos estudiadas: la mayoría cumple la regla, unas pocas "casi cumplen"
+// (sustantivo correcto con adjetivo cambiado, o al revés, o ninguno de los
+// dos) — esa mezcla es la que exige atención real a las DOS palabras, no
+// sólo memorizar texto. Los conteos vienen del nivel (ver comentario en
+// `Level`): suben gradual de nivel a nivel en vez de partir ya exigentes.
+// P1 agrega señuelos nuevos armados con el mismo banco, nunca mostrados,
+// para que el reconocimiento tenga interferencia real.
 function buildRound(level: Level): RoundData {
-  const { bank, rule } = level
-  const valid = buildUniqueCombos(5, () => randomCombo(bank.ruleNouns, bank.ruleAdjs, rule))
+  const { bank, rule, validCount, invalidACount, invalidBCount, invalidCCount, foilCount } = level
+  const valid = buildUniqueCombos(validCount, () => randomCombo(bank.ruleNouns, bank.ruleAdjs, rule))
   const validIds = new Set(valid.map((c) => c.id))
-  const invalidA = buildUniqueCombos(2, () => randomCombo(bank.ruleNouns, bank.otherAdjs, rule), validIds)
+  const invalidA = buildUniqueCombos(invalidACount, () => randomCombo(bank.ruleNouns, bank.otherAdjs, rule), validIds)
   const invalidB = buildUniqueCombos(
-    1,
+    invalidBCount,
     () => randomCombo(bank.otherNouns, bank.ruleAdjs, rule),
     new Set([...validIds, ...invalidA.map((c) => c.id)]),
   )
   const invalidC = buildUniqueCombos(
-    1,
+    invalidCCount,
     () => randomCombo(bank.otherNouns, bank.otherAdjs, rule),
     new Set([...validIds, ...invalidA.map((c) => c.id), ...invalidB.map((c) => c.id)]),
   )
@@ -174,7 +204,7 @@ function buildRound(level: Level): RoundData {
   const studiedIds = new Set(studied.map((c) => c.id))
 
   const foils = buildUniqueCombos(
-    3,
+    foilCount,
     () => {
       const nounPool = Math.random() < 0.5 ? bank.ruleNouns : bank.otherNouns
       const adjPool = Math.random() < 0.5 ? bank.ruleAdjs : bank.otherAdjs
