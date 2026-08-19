@@ -13,12 +13,21 @@ import type { GameProps } from '@/lib/challengeProgress'
  *      medio (más difícil de notar — el ojo capta primero el principio y
  *      el final de una palabra)
  *
- * A diferencia de LaIntrusa, acá son 2 rondas por nivel (el default de las
- * reglas del batch) y un solo intruso por ronda siempre — sin la ronda
- * final de doble intruso que tiene LaIntrusa. Un toque incorrecto solo hace
- * un wiggle suave (nunca gris permanente, nunca rojo) — apagar celdas de a
- * una mientras el jugador escanea se vería desprolijo y le achicaría el
+ * A diferencia de LaIntrusa, un solo intruso por ronda siempre — sin la
+ * ronda final de doble intruso que tiene LaIntrusa. Un toque incorrecto solo
+ * hace un wiggle suave (nunca gris permanente, nunca rojo) — apagar celdas
+ * de a una mientras el jugador escanea se vería desprolijo y le achicaría el
  * área de búsqueda de arriba.
+ *
+ * Nivel 1 se queda liviano a propósito (16→20 celdas, 2 rondas) — es la
+ * rampa de entrada, misma convención que el resto del catálogo. Nivel 2 y 3
+ * eran DEMASIADO livianos (30 celdas, 2 rondas cada uno) — encontrar una
+ * palabra distinta entre sólo 30 no exige un escaneo real. Subidos a 45
+ * celdas (mismo ancho de columna, más filas — el ancho de celda lo define
+ * `grid-cols-N`, no el total de celdas) y 3 rondas, preservando la decisión
+ * original de que nivel 2 y 3 compartan densidad de grilla y que la
+ * dificultad de nivel 3 salga del PAR de palabras (más larga, letra
+ * escondida en el medio), no de la grilla.
  */
 
 interface WordPair {
@@ -31,18 +40,24 @@ const L1_PAIRS: WordPair[] = [
   { base: 'LUNA', intruder: 'JARDIN' },
   { base: 'RELOJ', intruder: 'ALMOHADA' },
   { base: 'TIJERA', intruder: 'BOTELLA' },
+  { base: 'SILLA', intruder: 'PARAGUAS' },
+  { base: 'TAZA', intruder: 'ESCALERA' },
 ]
 const L2_PAIRS: WordPair[] = [
   { base: 'PERA', intruder: 'PENA' },
   { base: 'LOBO', intruder: 'LOMO' },
   { base: 'GATO', intruder: 'GAJO' },
   { base: 'DEDO', intruder: 'DADO' },
+  { base: 'MESA', intruder: 'MASA' },
+  { base: 'CASA', intruder: 'CAJA' },
 ]
 const L3_PAIRS: WordPair[] = [
   { base: 'CORTINA', intruder: 'CORTENA' },
   { base: 'SOMBRERO', intruder: 'SOMBRARO' },
   { base: 'ESCALERA', intruder: 'ESCARERA' },
   { base: 'MARIPOSA', intruder: 'MARIBOSA' },
+  { base: 'VENTANA', intruder: 'VENTONA' },
+  { base: 'ALMOHADA', intruder: 'ALMEHADA' },
 ]
 
 interface Level {
@@ -63,7 +78,7 @@ const LEVELS: Level[] = [
     instruction: 'Una palabra es distinta a todas las demás.',
     rounds: 2,
     pool: L1_PAIRS,
-    cells: 16,
+    cells: 20,
     boardClass: 'grid-cols-4 gap-2 sm:gap-3',
     textClass: 'text-base sm:text-lg',
   },
@@ -71,9 +86,9 @@ const LEVELS: Level[] = [
     n: 2,
     name: 'Nivel 2',
     instruction: 'Esta vez las palabras se parecen mucho — ¡prestá atención!',
-    rounds: 2,
+    rounds: 3,
     pool: L2_PAIRS,
-    cells: 30,
+    cells: 45,
     boardClass: 'grid-cols-5 gap-1.5 sm:gap-2.5',
     textClass: 'text-sm sm:text-base',
   },
@@ -81,13 +96,13 @@ const LEVELS: Level[] = [
     n: 3,
     name: 'Nivel 3',
     instruction: 'La diferencia puede estar escondida en el medio de la palabra.',
-    rounds: 2,
+    rounds: 3,
     pool: L3_PAIRS,
     // Mismas celdas/columnas que nivel 2 a propósito — el ANCHO de celda lo
     // define la cantidad de columnas, no la cantidad total de celdas, así
     // que una grilla más densa se vería apretada aunque tenga menos celdas.
     // La dificultad del nivel 3 sale del par de palabras, no de la grilla.
-    cells: 30,
+    cells: 45,
     boardClass: 'grid-cols-5 gap-1.5 sm:gap-2.5',
     textClass: 'text-sm sm:text-base',
   },
