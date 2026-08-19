@@ -80,7 +80,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 type ScenePart =
   | { kind: 'ground'; label: string; color: string }
-  | { kind: 'icon'; label: string; color: string; Icon: LucideIcon; size: number }
+  | { kind: 'icon'; label: string; color: string; Icon: LucideIcon; size: number; slug: string }
 
 interface Scene {
   title: string
@@ -104,27 +104,27 @@ const LEVELS: Level[] = [
         title: 'Armá el jardín',
         parts: [
           { kind: 'ground', label: 'El pasto', color: '#86EFAC' },
-          { kind: 'icon', label: 'El árbol', color: '#16A34A', Icon: Trees, size: 42 },
-          { kind: 'icon', label: 'La flor', color: '#F472B6', Icon: Flower2, size: 32 },
-          { kind: 'icon', label: 'El sol', color: '#FBBF24', Icon: Sun, size: 26 },
+          { kind: 'icon', label: 'El árbol', color: '#16A34A', Icon: Trees, size: 42, slug: 'arbol-hoja' },
+          { kind: 'icon', label: 'La flor', color: '#F472B6', Icon: Flower2, size: 32, slug: 'flor' },
+          { kind: 'icon', label: 'El sol', color: '#FBBF24', Icon: Sun, size: 26, slug: 'sol' },
         ],
       },
       {
         title: 'Armá la plaza',
         parts: [
           { kind: 'ground', label: 'El pasto', color: '#86EFAC' },
-          { kind: 'icon', label: 'El farol', color: '#64748B', Icon: Lamp, size: 42 },
-          { kind: 'icon', label: 'El banco', color: '#B45309', Icon: Armchair, size: 32 },
-          { kind: 'icon', label: 'El sol', color: '#FBBF24', Icon: Sun, size: 26 },
+          { kind: 'icon', label: 'El farol', color: '#64748B', Icon: Lamp, size: 42, slug: 'farol' },
+          { kind: 'icon', label: 'El banco', color: '#B45309', Icon: Armchair, size: 32, slug: 'banco' },
+          { kind: 'icon', label: 'El sol', color: '#FBBF24', Icon: Sun, size: 26, slug: 'sol' },
         ],
       },
       {
         title: 'Armá el patio',
         parts: [
           { kind: 'ground', label: 'El pasto', color: '#86EFAC' },
-          { kind: 'icon', label: 'El árbol', color: '#15803D', Icon: TreePine, size: 42 },
-          { kind: 'icon', label: 'La flor', color: '#EC4899', Icon: Flower, size: 32 },
-          { kind: 'icon', label: 'La nube', color: '#94A3B8', Icon: Cloud, size: 26 },
+          { kind: 'icon', label: 'El árbol', color: '#15803D', Icon: TreePine, size: 42, slug: 'arbol-pino' },
+          { kind: 'icon', label: 'La flor', color: '#EC4899', Icon: Flower, size: 32, slug: 'flor' },
+          { kind: 'icon', label: 'La nube', color: '#94A3B8', Icon: Cloud, size: 26, slug: 'nube' },
         ],
       },
     ],
@@ -138,30 +138,30 @@ const LEVELS: Level[] = [
         title: 'Armá la mesa',
         parts: [
           { kind: 'ground', label: 'El mantel', color: '#FDE68A' },
-          { kind: 'icon', label: 'La mesa', color: '#92400E', Icon: Table, size: 42 },
-          { kind: 'icon', label: 'La olla', color: '#475569', Icon: CookingPot, size: 36 },
-          { kind: 'icon', label: 'Los cubiertos', color: '#64748B', Icon: UtensilsCrossed, size: 30 },
-          { kind: 'icon', label: 'El café', color: '#78350F', Icon: Coffee, size: 24 },
+          { kind: 'icon', label: 'La mesa', color: '#92400E', Icon: Table, size: 42, slug: 'mesa' },
+          { kind: 'icon', label: 'La olla', color: '#475569', Icon: CookingPot, size: 36, slug: 'olla' },
+          { kind: 'icon', label: 'Los cubiertos', color: '#64748B', Icon: UtensilsCrossed, size: 30, slug: 'cubiertos' },
+          { kind: 'icon', label: 'El café', color: '#78350F', Icon: Coffee, size: 24, slug: 'cafe' },
         ],
       },
       {
         title: 'Armá el barco',
         parts: [
           { kind: 'ground', label: 'El mar', color: '#7DD3FC' },
-          { kind: 'icon', label: 'El barco', color: '#1E3A8A', Icon: Sailboat, size: 42 },
-          { kind: 'icon', label: 'El ancla', color: '#475569', Icon: Anchor, size: 36 },
-          { kind: 'icon', label: 'El pájaro', color: '#0EA5E9', Icon: Bird, size: 30 },
-          { kind: 'icon', label: 'La nube', color: '#CBD5E1', Icon: Cloud, size: 24 },
+          { kind: 'icon', label: 'El barco', color: '#1E3A8A', Icon: Sailboat, size: 42, slug: 'barco' },
+          { kind: 'icon', label: 'El ancla', color: '#475569', Icon: Anchor, size: 36, slug: 'ancla' },
+          { kind: 'icon', label: 'El pájaro', color: '#0EA5E9', Icon: Bird, size: 30, slug: 'pajaro' },
+          { kind: 'icon', label: 'La nube', color: '#CBD5E1', Icon: Cloud, size: 24, slug: 'nube' },
         ],
       },
       {
         title: 'Armá el living',
         parts: [
           { kind: 'ground', label: 'La alfombra', color: '#FDBA74' },
-          { kind: 'icon', label: 'El sillón', color: '#7C2D12', Icon: Sofa, size: 42 },
-          { kind: 'icon', label: 'La mesa ratona', color: '#78350F', Icon: Table2, size: 36 },
-          { kind: 'icon', label: 'La lámpara', color: '#CA8A04', Icon: Lamp, size: 30 },
-          { kind: 'icon', label: 'El libro', color: '#1D4ED8', Icon: BookOpen, size: 24 },
+          { kind: 'icon', label: 'El sillón', color: '#7C2D12', Icon: Sofa, size: 42, slug: 'sillon' },
+          { kind: 'icon', label: 'La mesa ratona', color: '#78350F', Icon: Table2, size: 36, slug: 'mesa-ratona' },
+          { kind: 'icon', label: 'La lámpara', color: '#CA8A04', Icon: Lamp, size: 30, slug: 'lampara' },
+          { kind: 'icon', label: 'El libro', color: '#1D4ED8', Icon: BookOpen, size: 24, slug: 'libro' },
         ],
       },
     ],
@@ -175,33 +175,33 @@ const LEVELS: Level[] = [
         title: 'Armá la fiesta',
         parts: [
           { kind: 'ground', label: 'La mesa de fiesta', color: '#FBCFE8' },
-          { kind: 'icon', label: 'La torta', color: '#F472B6', Icon: Cake, size: 42 },
-          { kind: 'icon', label: 'El regalo', color: '#7C3AED', Icon: Gift, size: 36 },
-          { kind: 'icon', label: 'Los cotillones', color: '#F59E0B', Icon: PartyPopper, size: 31 },
-          { kind: 'icon', label: 'Los caramelos', color: '#EC4899', Icon: Candy, size: 26 },
-          { kind: 'icon', label: 'La música', color: '#0EA5E9', Icon: Music, size: 22 },
+          { kind: 'icon', label: 'La torta', color: '#F472B6', Icon: Cake, size: 42, slug: 'torta' },
+          { kind: 'icon', label: 'El regalo', color: '#7C3AED', Icon: Gift, size: 36, slug: 'regalo' },
+          { kind: 'icon', label: 'Los cotillones', color: '#F59E0B', Icon: PartyPopper, size: 31, slug: 'cotillones' },
+          { kind: 'icon', label: 'Los caramelos', color: '#EC4899', Icon: Candy, size: 26, slug: 'caramelos' },
+          { kind: 'icon', label: 'La música', color: '#0EA5E9', Icon: Music, size: 22, slug: 'musica' },
         ],
       },
       {
         title: 'Armá la granja',
         parts: [
           { kind: 'ground', label: 'El campo', color: '#FDE68A' },
-          { kind: 'icon', label: 'El cerco', color: '#78350F', Icon: Fence, size: 42 },
-          { kind: 'icon', label: 'El tractor', color: '#EA580C', Icon: Tractor, size: 36 },
-          { kind: 'icon', label: 'El trigo', color: '#CA8A04', Icon: Wheat, size: 31 },
-          { kind: 'icon', label: 'El conejo', color: '#A8A29E', Icon: Rabbit, size: 26 },
-          { kind: 'icon', label: 'El sol', color: '#FBBF24', Icon: Sun, size: 22 },
+          { kind: 'icon', label: 'El cerco', color: '#78350F', Icon: Fence, size: 42, slug: 'cerco' },
+          { kind: 'icon', label: 'El tractor', color: '#EA580C', Icon: Tractor, size: 36, slug: 'tractor' },
+          { kind: 'icon', label: 'El trigo', color: '#CA8A04', Icon: Wheat, size: 31, slug: 'trigo' },
+          { kind: 'icon', label: 'El conejo', color: '#A8A29E', Icon: Rabbit, size: 26, slug: 'conejo' },
+          { kind: 'icon', label: 'El sol', color: '#FBBF24', Icon: Sun, size: 22, slug: 'sol' },
         ],
       },
       {
         title: 'Armá el bosque',
         parts: [
           { kind: 'ground', label: 'El pasto', color: '#86EFAC' },
-          { kind: 'icon', label: 'El árbol', color: '#15803D', Icon: TreePine, size: 42 },
-          { kind: 'icon', label: 'La ardilla', color: '#92400E', Icon: Squirrel, size: 36 },
-          { kind: 'icon', label: 'El pájaro', color: '#0EA5E9', Icon: Bird, size: 31 },
-          { kind: 'icon', label: 'El caracol', color: '#65A30D', Icon: Snail, size: 26 },
-          { kind: 'icon', label: 'La nube', color: '#94A3B8', Icon: Cloud, size: 22 },
+          { kind: 'icon', label: 'El árbol', color: '#15803D', Icon: TreePine, size: 42, slug: 'arbol-pino' },
+          { kind: 'icon', label: 'La ardilla', color: '#92400E', Icon: Squirrel, size: 36, slug: 'ardilla' },
+          { kind: 'icon', label: 'El pájaro', color: '#0EA5E9', Icon: Bird, size: 31, slug: 'pajaro' },
+          { kind: 'icon', label: 'El caracol', color: '#65A30D', Icon: Snail, size: 26, slug: 'caracol' },
+          { kind: 'icon', label: 'La nube', color: '#94A3B8', Icon: Cloud, size: 22, slug: 'nube' },
         ],
       },
     ],
@@ -224,6 +224,14 @@ function shuffle<T>(arr: T[]): T[] {
 }
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+const IMAGES = import.meta.glob('../../../assets/desafio/games/arma-la-escena/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function imgFor(slug: string): string | undefined {
+  return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}.webp`))?.[1]
 }
 
 // Posición de cada ícono dentro del lienzo — esto es lo que faltaba: antes
@@ -400,6 +408,7 @@ export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
                   const bottom = iconBottomPercent(iconIdx, totalIcons)
                   const ItemIcon = item.value.kind === 'icon' ? item.value.Icon : null
                   const size = item.value.kind === 'icon' ? item.value.size : 24
+                  const img = item.value.kind === 'icon' ? imgFor(item.value.slug) : undefined
                   return (
                     <button
                       key={item.id}
@@ -409,7 +418,11 @@ export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
                       className="absolute flex min-h-[44px] min-w-[44px] -translate-x-1/2 translate-y-1/2 flex-col items-center gap-0.5 rounded-xl transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
                       style={{ left: `${left}%`, bottom: `${bottom}%` }}
                     >
-                      {ItemIcon && <ItemIcon style={{ width: size, height: size, color: item.value.color }} />}
+                      {img ? (
+                        <img src={img} alt="" style={{ width: size, height: size }} draggable={false} />
+                      ) : (
+                        ItemIcon && <ItemIcon style={{ width: size, height: size, color: item.value.color }} />
+                      )}
                       <span className="rounded-full bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-slate-700 shadow-sm">
                         {item.value.label}
                       </span>
@@ -422,17 +435,24 @@ export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
           {/* Banco de partes */}
           {!checked && bank.length > 0 && (
             <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-              {bank.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => place(item)}
-                  className="inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 bg-white px-3 py-1.5 text-base font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-                >
-                  {item.value.kind === 'icon' && <item.value.Icon className="h-4 w-4 text-slate-400" />}
-                  {item.value.label}
-                </button>
-              ))}
+              {bank.map((item) => {
+                const bankImg = item.value.kind === 'icon' ? imgFor(item.value.slug) : undefined
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => place(item)}
+                    className="inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 bg-white px-3 py-1.5 text-base font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
+                  >
+                    {bankImg ? (
+                      <img src={bankImg} alt="" className="h-4 w-4" draggable={false} />
+                    ) : (
+                      item.value.kind === 'icon' && <item.value.Icon className="h-4 w-4 text-slate-400" />
+                    )}
+                    {item.value.label}
+                  </button>
+                )
+              })}
             </div>
           )}
 
