@@ -234,16 +234,17 @@ function imgFor(slug: string): string | undefined {
   return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}.webp`))?.[1]
 }
 
-// Posición de cada ícono dentro del lienzo — esto es lo que faltaba: antes
-// las partes colocadas eran chips de texto todos del mismo tamaño en una
-// fila, sin ninguna noción real de "escena". `iconIdx` es la posición
-// CANÓNICA del ícono entre los íconos (0 = el más grande/de fondo, el
-// último = el más chico/de arriba) — se calcula a partir de `item.id`
-// (la posición original en `scene.parts`, no el orden en que se tocó), así
-// que la altura de cada parte en el lienzo depende de CUÁL parte es, no de
-// cuándo se colocó. Si el jugador la puso en el orden equivocado, el
-// lienzo se ve "raro" (algo chico apoyado abajo, algo grande flotando
-// arriba) — esa es la pista visual, sin necesitar texto extra.
+// Posición de cada ícono dentro del lienzo. `iconIdx` es el índice de
+// COLOCACIÓN (0 = el primer ícono que se tocó → slot de más abajo/fondo,
+// el último tocado → slot de más arriba), no la posición canónica del
+// ícono en `scene.parts`. Así el tamaño real de cada ícono (`part.size`,
+// fijo por objeto) queda compitiendo con el tamaño que "se espera" en ese
+// slot: si el jugador toca en el orden correcto (grande/fondo →
+// chico/arriba), cada ícono cae en el slot de su propio tamaño y la
+// escena se ve prolija; si toca en el orden equivocado, un ícono chico
+// queda en el slot de fondo (se ve perdido) o uno grande en el de arriba
+// (se ve apretado) — esa es la pista visual en tiempo real, sin esperar a
+// "Revisar".
 const ICON_LEFT_PERCENT = [50, 25, 75, 38, 62]
 function iconBottomPercent(iconIdx: number, totalIcons: number): number {
   if (totalIcons <= 1) return 45
@@ -401,8 +402,7 @@ export function ArmaLaEscena({ day: _day, onComplete }: GameProps) {
               )}
               {placed
                 .filter((item) => item.value.kind === 'icon')
-                .map((item) => {
-                  const iconIdx = item.id - 1 // id 0 es el piso; los íconos arrancan en 1
+                .map((item, iconIdx) => {
                   const totalIcons = pool.length - 1
                   const left = ICON_LEFT_PERCENT[iconIdx % ICON_LEFT_PERCENT.length]
                   const bottom = iconBottomPercent(iconIdx, totalIcons)
