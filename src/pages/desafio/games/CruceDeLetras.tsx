@@ -11,15 +11,24 @@ import type { GameProps } from '@/lib/challengeProgress'
  * that symmetry is what guarantees the columns spell real words too, since
  * column i is then identical to row i.
  *
- * Placement is tap-to-append (tap a ficha from the bank → it fills the next
- * empty slot in reading order; tap a placed ficha → it returns to the bank),
- * same discipline as QuePalabraSeEsconde/DosPistas just generalized from
- * single letters to whole-word or 2-letter fichas. The puzzle is really "tap
- * these in the right ORDER" — the grid renders top-to-bottom, left-to-right,
- * so the right order reads as the right placement. Auto-checks the instant
- * every slot is full, same checkedRef guard as the sibling games. A wrong
- * attempt gets a soft nudge and the fichas stay exactly where they were
- * (never swept back), so the player can undo just the one that looks off.
+ * FILA 0 VIENE DADA (pre-llena, no interactiva) — no es sólo un adorno, es lo
+ * que hace el rompecabezas resoluble de verdad. Antes la fila 0 era una ficha
+ * más para ordenar y el jugador no tenía NINGUNA forma de deducir el orden
+ * correcto sin probar a ciegas las N! combinaciones (imposible en nivel 3,
+ * con 8 fragmentos). Por la simetría grid[i][j] === grid[j][i], la columna 0
+ * es idéntica a la fila 0 — así que la letra i de la fila 0 dice, siempre,
+ * con qué letra tiene que EMPEZAR la fila i. Mostrar la fila 0 convierte "ir
+ * probando a ciegas" en una estrategia real y enseñable (ver `pistaTexto`),
+ * y reduce el espacio de búsqueda de N! a (N-1)!.
+ *
+ * Placement es tap-to-append sólo para las filas 1..N-1 (tap una ficha del
+ * banco → llena el próximo casillero vacío en orden de lectura; tap una
+ * ficha puesta → vuelve al banco), misma disciplina que QuePalabraSeEsconde/
+ * DosPistas generalizada de letras sueltas a fichas de palabra o de 2 letras.
+ * Auto-checks el instante en que se llena el último casillero jugable, mismo
+ * checkedRef guard que los juegos hermanos. Un intento incorrecto da un aviso
+ * suave y las fichas quedan donde estaban (nunca se barren), así el jugador
+ * puede deshacer sólo la que ve mal.
  *
  * Nivel 1 (3×3, mode 'word'): each row IS one ficha — a 3-letter word can't
  * split into two >=2-letter fragments, so the whole-word ficha is the only
@@ -97,6 +106,9 @@ function fragmentsFor(grid: SquareGrid, mode: 'word' | 'fragment'): string[] {
   if (mode === 'word') return grid.rows
   return grid.rows.flatMap((r) => [r.slice(0, 2), r.slice(2)])
 }
+function slotsPerRowFor(mode: 'word' | 'fragment'): number {
+  return mode === 'word' ? 1 : 2
+}
 
 interface Tile {
   id: number
@@ -109,9 +121,9 @@ function buildTiles(sequence: string[]): Tile[] {
 const PRAISE_GOOD = ['¡Grilla completa!', '¡Así se arma!', '¡Muy bien resuelto!', '¡Perfecto, encajó todo!']
 // Nunca roja: un intento incorrecto siempre es reintentable.
 const NUDGE_MESSAGES = [
-  'Todavía no encajan. Fijate qué ficha sobra en cada fila y probá otro orden.',
+  'Todavía no encajan. Mirá la primera fila: te dice con qué letra tiene que empezar cada una de las otras.',
   'Casi. Alguna ficha no fue al lugar correcto — tocala para sacarla y probá de nuevo.',
-  'Esa combinación no arma las palabras. Mirá la grilla y volvé a intentar.',
+  'Esa combinación no arma las palabras. Fijate la letra de la primera fila que está en esa misma columna.',
 ]
 
 export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
@@ -131,18 +143,23 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
   const entry = roundEntries[roundIdx]
 
   const canonicalSequence = useMemo(() => fragmentsFor(entry, level.mode), [entry, level.mode])
+  const slotsPerRow = slotsPerRowFor(level.mode)
+  // Fila 0 viene dada (ver comentario de cabecera) — sólo las filas 1..N-1
+  // son fichas para tocar.
+  const givenSequence = useMemo(() => canonicalSequence.slice(0, slotsPerRow), [canonicalSequence, slotsPerRow])
+  const playableSequence = useMemo(() => canonicalSequence.slice(slotsPerRow), [canonicalSequence, slotsPerRow])
   // Fichas de la ronda, estables dentro de ella; se rearman al cambiar de
   // ronda/nivel. `placedIds` se resetea SINCRÓNICAMENTE en los handlers de
   // abajo, nunca en un efecto — misma disciplina que QuePalabraSeEsconde.tsx.
   const tiles = useMemo(
-    () => buildTiles(canonicalSequence),
+    () => buildTiles(playableSequence),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey, roundIdx],
   )
   const [placedIds, setPlacedIds] = useState<number[]>([])
   const placed = placedIds.map((id) => tiles.find((t) => t.id === id)).filter((t): t is Tile => !!t)
   const bank = tiles.filter((t) => !placedIds.includes(t.id))
-  const readyToCheck = placed.length === canonicalSequence.length
+  const readyToCheck = placed.length === playableSequence.length
 
   const [resolved, setResolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
@@ -152,7 +169,7 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
   const done = resolved && roundIdx >= roundsForLevel - 1
 
   function handlePlace(item: Tile) {
-    if (resolved || placed.length >= canonicalSequence.length) return
+    if (resolved || placed.length >= playableSequence.length) return
     setHint(null)
     setPlacedIds((ids) => [...ids, item.id])
   }
@@ -164,7 +181,7 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
 
   function check() {
     if (!readyToCheck) return
-    const ok = placed.every((item, i) => item.value === canonicalSequence[i])
+    const ok = placed.every((item, i) => item.value === playableSequence[i])
     if (ok) {
       setPraise(pickOne(PRAISE_GOOD))
       setResolved(true)
@@ -228,7 +245,6 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, levelIdx, roundKey, mistakes])
 
-  const slotsPerRow = level.mode === 'word' ? 1 : 2
   const lettersPerSlot = level.mode === 'word' ? level.size : 2
 
   return (
@@ -264,9 +280,10 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a armar una grilla de letras. Tocá las fichas en el orden correcto para que, al completarla, tanto
-            las filas como las columnas formen palabras. Si te equivocás no pasa nada: tocá una ficha puesta para
-            sacarla y probá otro orden.
+            Vas a armar una grilla de letras. La primera fila ya está puesta, de pista. Tocá las fichas para que las
+            demás filas, leídas hacia abajo en cada columna, formen la MISMA palabra que esa primera fila — por eso
+            cada letra de la primera fila te dice con qué letra tiene que empezar la fila de esa columna. Si te
+            equivocás no pasa nada: tocá una ficha puesta para sacarla y probá otro orden.
           </p>
           <button
             type="button"
@@ -283,12 +300,32 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
         <>
           {/* Grilla: se queda visible (y en verde) cuando resolved, igual que
               el renglón de palabra de QuePalabraSeEsconde/DosPistas — sólo
-              desaparece al completar el nivel entero. */}
+              desaparece al completar el nivel entero. Fila 0 viene dada
+              (ver comentario de cabecera) — no es una ficha para tocar, es
+              la pista que hace el resto deducible. */}
+          <p className="mt-3 text-center text-sm font-semibold uppercase tracking-wide text-slate-400">
+            Primera fila — pista
+          </p>
           <div className="mt-4 flex flex-col items-center gap-1.5">
             {Array.from({ length: level.size }).map((_, r) => (
               <div key={r} className="flex gap-2">
                 {Array.from({ length: slotsPerRow }).map((_, h) => {
-                  const slotIdx = r * slotsPerRow + h
+                  if (r === 0) {
+                    const value = givenSequence[h]
+                    return (
+                      <span key={h} className="flex gap-1">
+                        {value.split('').map((ch, k) => (
+                          <span
+                            key={k}
+                            className="flex h-11 w-11 items-center justify-center rounded-lg border-2 border-slate-300 bg-slate-100 text-lg font-extrabold uppercase text-slate-500"
+                          >
+                            {ch}
+                          </span>
+                        ))}
+                      </span>
+                    )
+                  }
+                  const slotIdx = (r - 1) * slotsPerRow + h
                   const tile = placed[slotIdx]
                   if (!tile) {
                     return (
