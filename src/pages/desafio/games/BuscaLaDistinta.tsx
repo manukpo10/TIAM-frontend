@@ -69,6 +69,7 @@ interface Level {
   cells: number
   boardClass: string
   textClass: string
+  cellPaddingClass: string
 }
 
 const LEVELS: Level[] = [
@@ -81,6 +82,7 @@ const LEVELS: Level[] = [
     cells: 20,
     boardClass: 'grid-cols-4 gap-2 sm:gap-3',
     textClass: 'text-base sm:text-lg',
+    cellPaddingClass: 'px-1',
   },
   {
     n: 2,
@@ -91,6 +93,7 @@ const LEVELS: Level[] = [
     cells: 45,
     boardClass: 'grid-cols-5 gap-1.5 sm:gap-2.5',
     textClass: 'text-sm sm:text-base',
+    cellPaddingClass: 'px-1',
   },
   {
     n: 3,
@@ -98,13 +101,19 @@ const LEVELS: Level[] = [
     instruction: 'La diferencia puede estar escondida en el medio de la palabra.',
     rounds: 3,
     pool: L3_PAIRS,
-    // Mismas celdas/columnas que nivel 2 a propósito — el ANCHO de celda lo
-    // define la cantidad de columnas, no la cantidad total de celdas, así
-    // que una grilla más densa se vería apretada aunque tenga menos celdas.
-    // La dificultad del nivel 3 sale del par de palabras, no de la grilla.
-    cells: 45,
-    boardClass: 'grid-cols-5 gap-1.5 sm:gap-2.5',
+    // MENOS columnas que nivel 2, no las mismas — nivel 3 usa palabras de
+    // 7-8 letras (SOMBRERO, ALMOHADA...). Medido directo (ancho real del
+    // texto vs ancho real del contenido de la celda, no scrollWidth — en un
+    // contenedor flex centrado scrollWidth no refleja bien cuánto se pasa el
+    // texto): a 5 columnas el texto de "MARIBOSA" (79px) se pasaba 22px de
+    // la celda (57px); a 4 columnas con menos padding, todavía 14px. Recién
+    // a 3 columnas el contenido de la celda (~100px con padding estándar)
+    // le sobra margen de verdad. Menos celdas que nivel 2 para compensar:
+    // 3 columnas necesitan más filas para la misma cantidad total.
+    cells: 27,
+    boardClass: 'grid-cols-3 gap-1.5 sm:gap-2.5',
     textClass: 'text-sm sm:text-base',
+    cellPaddingClass: 'px-1',
   },
 ]
 
@@ -282,9 +291,10 @@ export function BuscaLaDistinta({ day: _day, onComplete }: GameProps) {
                 disabled={solved}
                 aria-label={`palabra ${word}`}
                 className={[
-                  'relative flex min-h-[44px] items-center justify-center rounded-xl border-2 bg-white px-1 py-2 font-bold uppercase tracking-wide text-slate-700 transition sm:min-h-[48px]',
+                  'relative flex min-h-[44px] items-center justify-center rounded-xl border-2 bg-white py-2 font-bold uppercase tracking-wide text-slate-700 transition sm:min-h-[48px]',
                   'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                   level.textClass,
+                  level.cellPaddingClass,
                   isFoundCell
                     ? 'border-tiam-green bg-tiam-green/5 ring-2 ring-tiam-green/30'
                     : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
