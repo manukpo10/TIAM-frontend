@@ -223,8 +223,8 @@ const MONTH_2_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de atención: entre todas las figuras que tienen su pareja, encontrá y tocá la única que no se repite. Subís de dificultad a medida que avanzás.' },
   { day: 29, type: 'game', area: 'calculo', title: 'Mesa de cartas',
     instructions: 'Un juego de cálculo: mirá la mesa de cartas y tocá la respuesta correcta a la pregunta de cada ronda. Subís de dificultad a medida que avanzás.' },
-  { day: 30, type: 'game', area: 'agnosias', title: 'Figuras superpuestas +',
-    instructions: 'Un juego de reconocimiento: contá cuántas figuras hay de cada tipo entre las que se superponen y después reconocelas entre las opciones. ¡Un cierre a la altura del Mes 2! 🎉' },
+  { day: 30, type: 'game', area: 'calculo', title: 'Antes y después',
+    instructions: 'Un juego de cálculo: con el número que te mostramos en el medio, completá los que van justo antes y justo después. ¡Un cierre a la altura del Mes 2! 🎉' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────

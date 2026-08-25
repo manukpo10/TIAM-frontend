@@ -59,7 +59,7 @@ import { Sudoku4x4 } from './Sudoku4x4'
 import { Coordenadas } from './Coordenadas'
 import { NoEstaRepetida } from './NoEstaRepetida'
 import { MesaDeCartas } from './MesaDeCartas'
-import { FigurasSuperpuestas } from './FigurasSuperpuestas'
+import { AntesYDespues } from './AntesYDespues'
 import { CruceDeLetras } from './CruceDeLetras'
 import { ListaConParecidas } from './ListaConParecidas'
 import { TripleYCorrida } from './TripleYCorrida'
@@ -171,7 +171,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     27: Coordenadas,
     28: NoEstaRepetida,
     29: MesaDeCartas,
-    30: FigurasSuperpuestas,
+    30: AntesYDespues,
   },
   3: {
     1: CruceDeLetras,
