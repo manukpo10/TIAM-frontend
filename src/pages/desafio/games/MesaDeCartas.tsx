@@ -46,7 +46,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 type Suit = 'oro' | 'copa' | 'espada' | 'basto'
 const SUITS: Suit[] = ['oro', 'copa', 'espada', 'basto']
-const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] as const
+const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] as const
 type Rank = (typeof RANKS)[number]
 
 interface CardData {
@@ -55,21 +55,19 @@ interface CardData {
 }
 
 const SUIT_PLURAL: Record<Suit, string> = { oro: 'oros', copa: 'copas', espada: 'espadas', basto: 'bastos' }
+// Figuras de la baraja española real: Sota (10), Caballo (11), Rey (12) —
+// no hay "Jota"/"Reina"/13, esas son de la baraja francesa y no existen acá.
 const RANK_SIMPLE: Record<Rank, string> = {
-  A: 'As', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10',
-  J: 'Jota', Q: 'Reina', K: 'Rey',
+  A: 'As', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
+  '10': 'Sota', '11': 'Caballo', '12': 'Rey',
 }
 const RANK_ARTICLE: Record<Rank, string> = {
-  A: 'el', '2': 'el', '3': 'el', '4': 'el', '5': 'el', '6': 'el', '7': 'el', '8': 'el', '9': 'el', '10': 'el',
-  J: 'la', Q: 'la', K: 'el',
+  A: 'el', '2': 'el', '3': 'el', '4': 'el', '5': 'el', '6': 'el', '7': 'el', '8': 'el', '9': 'el',
+  '10': 'la', '11': 'el', '12': 'el',
 }
 
 function cardValue(rank: Rank): number {
-  if (rank === 'A') return 1
-  if (rank === 'J') return 11
-  if (rank === 'Q') return 12
-  if (rank === 'K') return 13
-  return Number(rank)
+  return rank === 'A' ? 1 : Number(rank)
 }
 // Tinta neutra para el índice de rango (esquinas) — el palo se distingue
 // por color propio (ver SUIT_COLOR), como en una baraja española real
