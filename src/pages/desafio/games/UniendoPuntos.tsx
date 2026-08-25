@@ -73,7 +73,7 @@ function pickOne<T>(arr: T[]): T {
 function starPolygonPoints(n: number, k: number, jitter: number): Point[] {
   const cx = 50
   const cy = 50
-  const radius = 33
+  const radius = 40
   const rotation = Math.random() * 360
   const verts: Point[] = []
   for (let i = 0; i < n; i++) {
@@ -251,8 +251,8 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
                 aria-label={`Punto ${labelFor(level, i)}`}
                 style={{ left: `${p.x}%`, top: `${p.y}%` }}
                 className={[
-                  'absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center',
-                  'rounded-full border-2 text-base font-bold transition',
+                  'absolute flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center',
+                  'rounded-full border-2 text-lg font-bold transition',
                   'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                   isFound
                     ? 'border-tiam-green bg-white text-slate-700 ring-2 ring-tiam-green/30'
