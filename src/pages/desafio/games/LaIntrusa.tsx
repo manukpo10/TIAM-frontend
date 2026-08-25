@@ -278,6 +278,17 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
             <p className="mt-2 text-base font-semibold text-slate-500">
               Ronda {roundIdx + 1} de {level.rounds}
             </p>
+            {/* Sin esto, la única ronda del juego que pide más de un toque
+                (la última de nivel 3) no le da ninguna señal al jugador de
+                que encontrar la primera intrusa fue un progreso parcial, no
+                el final de la ronda — se siente "trabado" en vez de "falta
+                una más". Sólo se muestra cuando hace falta (rondas de 1 sola
+                intrusa no la necesitan). */}
+            {round && round.intruderIdxs.length > 1 && (
+              <p className="mt-1 text-sm font-semibold text-tiam-green">
+                Encontraste {foundIdxs.length} de {round.intruderIdxs.length} intrusas
+              </p>
+            )}
             <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
