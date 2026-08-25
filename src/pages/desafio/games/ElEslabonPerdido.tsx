@@ -12,16 +12,28 @@ import type { GameProps } from '@/lib/challengeProgress'
  * readyToCheck/checkedRef dance: each tap IS a complete, standalone attempt,
  * checked synchronously in handlePick.
  *
- * Every `answer` is a short connector (de/y/o/en/sin — always lowercase,
- * `uppercase` applied via Tailwind for display) drawn from CONNECTOR_POOL.
- * Decoys are 3 OTHER pool words picked at random per round — always real
- * Spanish words, just wrong for that specific pair, so a wrong tap is never
- * a nonsense option, only a plausible-but-incorrect one. All 30 expressions
- * (10/level, well above the 2-per-level actually played) are genuine,
- * verified Spanish expressions/idioms; nivel 1 uses very common ones
- * (dolor de cabeza, punto de vista), nivel 3 leans on figurative/less literal
- * ones (talón de Aquiles, caja de Pandora) for the requested subtlety. No
- * word is reused within the same nivel's pool.
+ * Every `answer` is a short connector (de/y/o/en/con/sin/a/por — always
+ * lowercase, `uppercase` applied via Tailwind for display) drawn from
+ * CONNECTOR_POOL. Decoys are 3 OTHER pool words picked at random per round —
+ * always real Spanish words, just wrong for that specific pair, so a wrong
+ * tap is never a nonsense option, only a plausible-but-incorrect one. All 30
+ * expressions (10/level, well above the 2-per-level actually played) are
+ * genuine, verified Spanish expressions/idioms; nivel 1 uses very common
+ * ones (dolor de cabeza, punto de vista), nivel 3 leans on figurative/less
+ * literal ones (talón de Aquiles, caja de Pandora) for the requested
+ * subtlety. No word is reused within the same nivel's pool (self-pairs like
+ * CARA/CARA or CODO/CODO are the one deliberate exception — real Spanish
+ * reduplicative idioms, cara a cara / codo con codo).
+ *
+ * Connector distribution is deliberately capped, not naturalistic: "de" is
+ * the default Spanish preposition, so a pool of real expressions picked
+ * without care skews ~70% "de" (an earlier version of this file did exactly
+ * that) — which let players win most rounds by blind-tapping "de" without
+ * reading either word, defeating the actual task (semantic recall, not
+ * button-mashing). Capped "de" at 4/10 per nivel and spread the rest evenly
+ * across y/o/en/con/sin/a/por, all still genuine expressions — "de" stays
+ * the single most common connector (realistic to the language) without
+ * being an exploitable default.
  *
  * Never a hard fail: a wrong tap gets a muted nudge, dims just that option
  * (`wrongIds`, cleared every round) so it's not tapped again by habit, and
@@ -51,13 +63,13 @@ const LEVELS: LinkLevel[] = [
       { wordA: 'OJO', wordB: 'AGUJA', answer: 'de' },
       { wordA: 'DOLOR', wordB: 'CABEZA', answer: 'de' },
       { wordA: 'PUNTO', wordB: 'VISTA', answer: 'de' },
-      { wordA: 'AGUA', wordB: 'MAR', answer: 'de' },
-      { wordA: 'PAN', wordB: 'AJO', answer: 'de' },
-      { wordA: 'TELA', wordB: 'ARAÑA', answer: 'de' },
       { wordA: 'SALA', wordB: 'ESPERA', answer: 'de' },
+      { wordA: 'CAFÉ', wordB: 'LECHE', answer: 'con' },
+      { wordA: 'CARA', wordB: 'CARA', answer: 'a' },
       { wordA: 'IDA', wordB: 'VUELTA', answer: 'y' },
       { wordA: 'SANO', wordB: 'SALVO', answer: 'y' },
       { wordA: 'TARDE', wordB: 'TEMPRANO', answer: 'o' },
+      { wordA: 'TODO', wordB: 'NADA', answer: 'o' },
     ],
   },
   {
@@ -65,11 +77,11 @@ const LEVELS: LinkLevel[] = [
     name: 'Nivel 2',
     entries: [
       { wordA: 'PUNTA', wordB: 'LANZA', answer: 'de' },
-      { wordA: 'CASA', wordB: 'CAMBIO', answer: 'de' },
-      { wordA: 'PIE', wordB: 'PÁGINA', answer: 'de' },
       { wordA: 'CUELLO', wordB: 'BOTELLA', answer: 'de' },
       { wordA: 'GOLPE', wordB: 'ESTADO', answer: 'de' },
       { wordA: 'AIRE', wordB: 'FAMILIA', answer: 'de' },
+      { wordA: 'PASO', wordB: 'FALSO', answer: 'en' },
+      { wordA: 'CODO', wordB: 'CODO', answer: 'con' },
       { wordA: 'PUNTO', wordB: 'APARTE', answer: 'y' },
       { wordA: 'CUERPO', wordB: 'ALMA', answer: 'y' },
       { wordA: 'ENTRADA', wordB: 'SALIDA', answer: 'y' },
@@ -80,16 +92,16 @@ const LEVELS: LinkLevel[] = [
     n: 3,
     name: 'Nivel 3',
     entries: [
-      { wordA: 'ARMA', wordB: 'FUEGO', answer: 'de' },
       { wordA: 'TALÓN', wordB: 'AQUILES', answer: 'de' },
       { wordA: 'CAJA', wordB: 'PANDORA', answer: 'de' },
-      { wordA: 'PUNTO', wordB: 'QUIEBRE', answer: 'de' },
-      { wordA: 'RUEDA', wordB: 'AUXILIO', answer: 'de' },
       { wordA: 'CABEZA', wordB: 'TURCO', answer: 'de' },
       { wordA: 'CUENTO', wordB: 'HADAS', answer: 'de' },
       { wordA: 'PAN', wordB: 'LEVADURA', answer: 'sin' },
-      { wordA: 'CARTA', wordB: 'PRESENTACIÓN', answer: 'de' },
       { wordA: 'VIVO', wordB: 'MUERTO', answer: 'o' },
+      { wordA: 'AHORA', wordB: 'NUNCA', answer: 'o' },
+      { wordA: 'TIRA', wordB: 'AFLOJA', answer: 'y' },
+      { wordA: 'UNO', wordB: 'UNO', answer: 'por' },
+      { wordA: 'OJO', wordB: 'OJO', answer: 'por' },
     ],
   },
 ]
