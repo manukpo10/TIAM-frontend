@@ -1,6 +1,6 @@
 import type { Exercise, PagedResponse, User, Subscription, Patient, PatientSession, PatientPlaySession, HomeExerciseResult } from '@/types'
 import { COGNITIVE_AREAS } from '@/lib/utils'
-import { CHALLENGE_DAYS, CHALLENGE_TOTAL_DAYS, type ChallengeArea } from '@/lib/challengeContent'
+import { CHALLENGE_DAYS, CHALLENGE_TOTAL_DAYS, getChallengeDays, type ChallengeArea } from '@/lib/challengeContent'
 import {
   computeStars,
   type AreaScore,
@@ -260,6 +260,20 @@ let mockChallengeDayResults: Record<string, DayResult[]> = {}
  * about how many days are actually reachable.
  */
 const MOCK_CHALLENGE_CURRENT_DAY = 30
+
+/**
+ * Mocked "which month's catalog" for the Desafío preview — every mock
+ * endpoint that needs to resolve a day to its area (completion, progress)
+ * must read from `getChallengeDays(MOCK_CHALLENGE_MONTH)`, never from the
+ * bare `CHALLENGE_DAYS` import (that's always month 1's catalog specifically).
+ * Change this one constant to preview month 2/3, instead of hand-editing the
+ * access handler's response below — keeps the access response and the
+ * completion/progress handlers from silently disagreeing about which
+ * month's areas apply, which is exactly the bug this constant replaces (see
+ * the real backend's identical `challengeMonth`-threading in
+ * ChallengeDayResultService for the production-side fix this mirrors).
+ */
+const MOCK_CHALLENGE_MONTH = 1
 
 /** Days 1-30 minus the 5 static reflection cards — the denominator for badges. */
 const PLAYABLE_CHALLENGE_DAYS = CHALLENGE_DAYS.filter((d) => d.type === 'game').length
@@ -706,6 +720,7 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
       buyerFirstName: 'Manuel',
       currentDay: MOCK_CHALLENGE_CURRENT_DAY,
       totalDays: CHALLENGE_TOTAL_DAYS,
+      challengeMonth: MOCK_CHALLENGE_MONTH,
     } as T)
   }
 
@@ -715,7 +730,7 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
     const token = challengeCompleteMatch[1]
     const day = Number(challengeCompleteMatch[2])
     const { mistakes, totalAttempts } = body as GameResult
-    const area: ChallengeArea = CHALLENGE_DAYS.find((d) => d.day === day)?.area ?? 'memoria'
+    const area: ChallengeArea = getChallengeDays(MOCK_CHALLENGE_MONTH).find((d) => d.day === day)?.area ?? 'memoria'
     const stars = computeStars(mistakes, totalAttempts)
 
     const existingForToken = mockChallengeDayResults[token] ?? []
@@ -818,17 +833,25 @@ function computeChallengeBadges(results: DayResult[], streak: StreakInfo): Badge
  * ({area, played, averageStars} — no daysTotal from the API; the panel derives
  * that client-side from CHALLENGE_DAYS, same as this mock does).
  *
- * Re-derives each result's area from the CURRENT CHALLENGE_DAYS catalog (by
- * day number) rather than trusting the `area` stored on the result — that
- * value was captured at complete-time and goes stale the moment a day's área
- * is reassigned afterward (this app has done that repeatedly while iterating
- * on content). Trusting it let a played-count exceed an área's current total
- * on the progress panel — a real bug caught in a screenshot, not hypothetical.
- * Mirrors the identical fix in the real backend's computeAreaBreakdown. */
+ * Re-derives each result's area from the CURRENT month's catalog (by day
+ * number, via `getChallengeDays(MOCK_CHALLENGE_MONTH)`) rather than trusting
+ * the `area` stored on the result — that value was captured at complete-time
+ * and goes stale the moment a day's área is reassigned afterward (this app
+ * has done that repeatedly while iterating on content). Trusting it let a
+ * played-count exceed an área's current total on the progress panel — a real
+ * bug caught in a screenshot, not hypothetical. Must read the SAME month the
+ * access handler's `challengeMonth` response used — this and the complete-day
+ * handler both switched from the bare `CHALLENGE_DAYS` (always month 1) to
+ * `getChallengeDays(MOCK_CHALLENGE_MONTH)` for exactly this reason: día 17
+ * and día 30 of month 2 got reassigned to new areas (lenguaje, calculo) and
+ * silently kept counting under month 1's agnosias mapping until this was
+ * fixed. Mirrors the identical fix in the real backend's computeAreaBreakdown
+ * (see ChallengeDayResultService, which threads `challengeMonth` through the
+ * same way). */
 function computeChallengeAreaBreakdown(results: DayResult[]): AreaScore[] {
   const areas: ChallengeArea[] = ['memoria', 'atencion', 'lenguaje', 'praxias', 'agnosias', 'calculo', 'orientacion', 'ejecutivas']
   const currentAreaFor = (day: number): ChallengeArea =>
-    CHALLENGE_DAYS.find((d) => d.day === day)?.area ?? 'memoria'
+    getChallengeDays(MOCK_CHALLENGE_MONTH).find((d) => d.day === day)?.area ?? 'memoria'
   return areas.map((area) => {
     const playedForArea = results.filter((r) => currentAreaFor(r.day) === area)
     const averageStars = playedForArea.length
