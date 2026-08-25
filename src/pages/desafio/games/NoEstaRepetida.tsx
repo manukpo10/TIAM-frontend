@@ -183,10 +183,10 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Rounds for the WHOLE epoch (all 3 levels), generated once — at mount,
-  // and again only inside restartDifferent() — never re-rolled just by
-  // revisiting a level, so "Repetir" hands back the exact same boards.
-  const [epochRounds, setEpochRounds] = useState(() =>
+  // Rounds for the WHOLE epoch (all 3 levels), generated once — at mount —
+  // never re-rolled just by revisiting a level, so "Repetir" hands back the
+  // exact same boards.
+  const [epochRounds] = useState(() =>
     LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => buildRound(lvl))),
   )
   const rounds = epochRounds[levelIdx]
@@ -234,8 +234,8 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
     setWrongKey(null)
   }
 
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // Called by restartSame on the final level's complete card (only ever
+  // shown once level 3 is done, so always a genuine day restart — zero
   // the mistake accumulator either way). roundKey always bumps here: it's
   // the "which attempt is this" generation counter the onComplete effect
   // uses to fire again on a replay, independent of whether the boards
@@ -251,12 +251,6 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same boards as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — fresh random boards per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => buildRound(lvl))))
   }
 
   const totalRoundsAllLevels = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
@@ -352,22 +346,14 @@ export function NoEstaRepetida({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

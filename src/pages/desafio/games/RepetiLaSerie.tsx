@@ -74,12 +74,10 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // Which digit-sequence is playing for each round of each level THIS
   // "epoch" (a full 3-level pass) — one array of sequences per level, one
-  // sequence per round. Decided once per epoch — at mount, and again on
-  // "Hacer otro" — never re-rolled just because the player re-visits a
-  // round, so "Repetir" can hand back the exact same sequences
-  // deterministically instead of re-generating and accidentally landing on
-  // something new.
-  const [epochSequences, setEpochSequences] = useState(() =>
+  // sequence per round. Decided once, at mount, and never re-rolled
+  // afterward, so "Repetir" always hands back the exact same sequences
+  // deterministically.
+  const [epochSequences] = useState(() =>
     LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomSequence(lvl.digits))),
   )
   const level = LEVELS[levelIdx]
@@ -174,10 +172,9 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
     setEntered([])
     setLastCorrect(null)
   }
-  // Shared by both restart buttons on the final level's complete card.
+  // Backs the "Repetir" restart button on the final level's complete card.
   // roundKey always bumps here: it's the "which attempt is this" generation
-  // counter the onComplete effect uses to fire again on a replay,
-  // independent of whether the digits themselves changed.
+  // counter the onComplete effect uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
@@ -191,11 +188,6 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same sequences as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random sequence per round/level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochSequences(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomSequence(lvl.digits))))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -412,22 +404,14 @@ export function RepetiLaSerie({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

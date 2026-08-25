@@ -133,11 +133,10 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which entries (drawn from the level's word-pair pool) are playing for
-  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
-  // mount, and again on "Hacer otro" — never re-rolled just because the
-  // player re-visits a level, so "Repetir" can hand back the exact same
-  // entries deterministically instead of re-randomizing.
-  const [epochEntries, setEpochEntries] = useState(() =>
+  // level i THIS "epoch" (a full 3-level pass). Decided once — at mount —
+  // never re-rolled just because the player re-visits a level, so "Repetir"
+  // can hand back the exact same entries deterministically.
+  const [epochEntries] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.entries).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -242,12 +241,12 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
     setRoundIdx(0)
   }
 
-  // Shared by both restart buttons on level 3's complete card (only ever
-  // shown once the final level is done, so always a genuine day restart —
-  // zero the mistake accumulator either way). roundKey always bumps here:
-  // it's the "which attempt is this" generation counter the onComplete
-  // effect uses to fire again on a replay, independent of whether the
-  // entries themselves changed.
+  // Called by restartSame on level 3's complete card (only ever shown once
+  // the final level is done, so always a genuine day restart — zero the
+  // mistake accumulator either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses
+  // to fire again on a replay, independent of whether the entries
+  // themselves changed.
   function restartEpoch() {
     setLevelIdx(0)
     setResolved(false)
@@ -261,11 +260,6 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same entries as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random entry subset per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochEntries(LEVELS.map((lvl, i) => shuffle(lvl.entries).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -433,25 +427,14 @@ export function DosPistas({ day: _day, onComplete }: GameProps) {
                 </button>
               </div>
             ) : (
-              // Two ways to go again: "Repetir" replays the identical
-              // entries, "Hacer otro" draws a fresh set per level — same
-              // choice ArmaLasPalabras.tsx (día 1) offers at epoch's end.
-              <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+              <div className="mt-5 flex justify-center">
                 <button
                   type="button"
                   onClick={restartSame}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
                 >
                   <RotateCcw className="h-4 w-4" />
                   Repetir
-                </button>
-                <button
-                  type="button"
-                  onClick={restartDifferent}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  Hacer otro
-                  <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
             )

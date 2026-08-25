@@ -113,9 +113,9 @@ export function CierreDeCuentas({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` escenarios elegidos al azar del pool propio de
   // cada nivel, para LOS 3 niveles a la vez — decidido una sola vez por
-  // época (al montar y de nuevo en "Hacer otro"), nunca vuelto a tirar por
-  // re-visitar un nivel, así "Repetir" devuelve exactamente el mismo intento.
-  const [epochScenarios, setEpochScenarios] = useState(() =>
+  // época, al montar, nunca vuelto a tirar por re-visitar un nivel, así
+  // "Repetir" devuelve exactamente el mismo intento.
+  const [epochScenarios] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -165,11 +165,10 @@ export function CierreDeCuentas({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Compartida por los dos botones de reinicio en la tarjeta final del
-  // último nivel (sólo se muestra ahí, así que siempre es un reinicio real
-  // del día). roundKey siempre avanza: es el contador de "qué intento es
-  // este" que usa el efecto de onComplete para dispararse otra vez en una
-  // repetición.
+  // Llamada por "Repetir" en la tarjeta final del último nivel (sólo se
+  // muestra ahí, así que siempre es un reinicio real del día). roundKey
+  // siempre avanza: es el contador de "qué intento es este" que usa el
+  // efecto de onComplete para dispararse otra vez en una repetición.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -182,11 +181,6 @@ export function CierreDeCuentas({ day: _day, onComplete }: GameProps) {
   // "Repetir" — mismos escenarios del intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — escenarios nuevos por nivel.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochScenarios(LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -311,22 +305,14 @@ export function CierreDeCuentas({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

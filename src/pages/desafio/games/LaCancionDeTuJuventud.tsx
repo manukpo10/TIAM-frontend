@@ -81,12 +81,12 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // Géneros objetivo de cada nivel para ESTA "epoch" (una pasada completa de
-  // 3 niveles): un subconjunto shuffleado por nivel, decidido una sola vez
-  // por epoch (al montar y en "Hacer otro"), nunca vuelto a tirar por
-  // "Repetir" ni por re-visitar un nivel a mitad de epoch. Look-up plano (NO
-  // useMemo): un useMemo acá quedaría invalidado igual porque levelIdx cicla
-  // 0→1→2→0 en cada restart, sin importar roundKey.
-  const [genreChoices, setGenreChoices] = useState(() => LEVELS.map((lvl) => shuffle(GENRES).slice(0, lvl.rounds)))
+  // 3 niveles): un subconjunto shuffleado por nivel, decidido una sola vez,
+  // al montar, nunca vuelto a tirar por "Repetir" ni por re-visitar un nivel
+  // a mitad de epoch. Look-up plano (NO useMemo): un useMemo acá quedaría
+  // invalidado igual porque levelIdx cicla 0→1→2→0 en cada restart, sin
+  // importar roundKey.
+  const [genreChoices] = useState(() => LEVELS.map((lvl) => shuffle(GENRES).slice(0, lvl.rounds)))
   const roundTargets = genreChoices[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
@@ -181,12 +181,11 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
     setIsPlaying(false)
     setHasListened(false)
   }
-  // Compartida por los dos botones de reinicio en la tarjeta final de nivel
-  // (sólo se muestra al completar el nivel 3, siempre un reinicio real del
-  // día — el acumulador de errores se pone en cero en ambos casos). roundKey
-  // siempre avanza acá: es el contador de "qué intento es este" que usa el
-  // efecto de onComplete para dispararse otra vez en una repetición, sin
-  // importar si los géneros cambiaron.
+  // Se muestra al completar el nivel 3, siempre un reinicio real del día —
+  // el acumulador de errores se pone en cero. roundKey siempre avanza acá:
+  // es el contador de "qué intento es este" que usa el efecto de onComplete
+  // para dispararse otra vez en una repetición, sin importar si los géneros
+  // cambiaron.
   function restartEpoch() {
     audioRef.current?.pause()
     setLevelIdx(0)
@@ -201,11 +200,6 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
   // "Repetir" — mismos subconjuntos de género (y mismo orden) que el intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — un subconjunto de género al azar por nivel, el único comportamiento que existía antes de esta feature.
-  function restartDifferent() {
-    restartEpoch()
-    setGenreChoices(LEVELS.map((lvl) => shuffle(GENRES).slice(0, lvl.rounds)))
   }
 
   // Dispara una vez por roundKey cuando la última ronda del nivel 3 se
@@ -338,22 +332,14 @@ export function LaCancionDeTuJuventud({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

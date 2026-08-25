@@ -80,9 +80,9 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // 6 objetivo + 6 señuelos por nivel, sorteados de los pools de 8, para la
-  // ÉPOCA completa — generados una sola vez al montar, y de nuevo sólo
-  // dentro de restartDifferent(). Nunca se vuelven a sortear sólo por
-  // revisitar un nivel, así "Repetir" devuelve exactamente el mismo tablero.
+  // ÉPOCA completa — generados una sola vez al montar. Nunca se vuelven a
+  // sortear sólo por revisitar un nivel, así "Repetir" devuelve exactamente
+  // el mismo tablero.
   const [epochBoard] = useState(() =>
     LEVELS.map((lvl) => shuffle([...pick(lvl.targetPool, 6), ...pick(lvl.distractorPool, 6)])),
   )
@@ -142,9 +142,9 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
     setLevelIdx((i) => i + 1)
   }
 
-  // Compartida por los dos botones de reinicio en la tarjeta final del
-  // último nivel (sólo se muestra ahí, así que siempre es un reinicio real
-  // del día — se ponen ambos acumuladores en cero siempre). roundKey
+  // Llamada desde "Repetir" en la tarjeta final del último nivel (sólo se
+  // muestra ahí, así que siempre es un reinicio real del día — se ponen
+  // ambos acumuladores en cero siempre). roundKey
   // siempre avanza acá: es el contador de "qué intento es este" que usa el
   // efecto de onComplete para volver a dispararse en una repetición.
   function restartEpoch() {
@@ -254,11 +254,11 @@ export function FluenciaCerrada({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir

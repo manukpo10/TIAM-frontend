@@ -106,7 +106,7 @@ export function PuenteDeOpuestos({ day: _day, onComplete }: GameProps) {
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const [epochOrder, setEpochOrder] = useState(() => LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)))
+  const [epochOrder] = useState(() => LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)))
   const level = LEVELS[levelIdx]
   const order = epochOrder[levelIdx]
 
@@ -163,10 +163,6 @@ export function PuenteDeOpuestos({ day: _day, onComplete }: GameProps) {
   }
   function restartSame() {
     restartEpoch()
-  }
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -278,22 +274,14 @@ export function PuenteDeOpuestos({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

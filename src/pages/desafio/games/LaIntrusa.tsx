@@ -167,11 +167,10 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Rondas armadas (pares sorteados Y su posición de intrusa, juntos como una
-  // sola unidad) para CADA nivel a la vez — decididas una vez por epoch (una
-  // pasada completa 1→2→3), al montar y de nuevo en "Hacer otro", nunca
-  // vueltas a sortear por revisitar un nivel, así "Repetir" devuelve
-  // exactamente las mismas rondas de forma determinística.
-  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
+  // sola unidad) para CADA nivel a la vez — decididas una sola vez, al
+  // montar, nunca vueltas a sortear por revisitar un nivel, así "Repetir"
+  // devuelve exactamente las mismas rondas de forma determinística.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
   const level = LEVELS[levelIdx]
   const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
@@ -231,12 +230,11 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
     setWrongIdx(null)
   }
 
-  // Compartida por los dos botones de la tarjeta final (solo se muestra
-  // cuando el nivel 3 está completo, así que siempre es un reinicio real del
-  // día — se pone en cero el contador de errores en ambos casos). roundKey
-  // siempre avanza acá: es el contador de "qué intento es este" que usa el
-  // efecto de onComplete para volver a dispararse en una repetición, más
-  // allá de si las rondas cambiaron o no.
+  // roundKey siempre avanza acá: es el contador de "qué intento es este" que
+  // usa el efecto de onComplete para volver a dispararse en una repetición,
+  // más allá de si las rondas cambiaron o no. Sólo se muestra cuando el
+  // nivel 3 está completo, así que siempre es un reinicio real del día — se
+  // pone en cero el contador de errores.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -248,12 +246,6 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
   // "Repetir" — las mismas rondas del intento que acaba de terminar.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — un sorteo nuevo de rondas por nivel, igual que antes de
-  // que existiera esta funcionalidad (la única opción que había).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => buildRounds(lvl)))
   }
 
   // Fires once per roundKey when level 3's last round resolves. A full day
@@ -353,22 +345,14 @@ export function LaIntrusa({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

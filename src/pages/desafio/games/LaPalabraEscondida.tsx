@@ -128,11 +128,10 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // Which rounds (3-of-4 pool entries drawn, already built into full
   // BuiltRound objects) are playing for level i THIS "epoch" (a full
-  // 3-level pass). Decided once per epoch — at mount, and again on "Hacer
-  // otro" — never re-rolled just because the player re-visits a level, so
-  // "Repetir" can hand back the exact same rounds deterministically instead
-  // of re-randomizing.
-  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
+  // 3-level pass). Decided once — at mount — never re-rolled just because
+  // the player re-visits a level, so "Repetir" can hand back the exact same
+  // rounds deterministically.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
   const level = LEVELS[levelIdx]
   const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
@@ -183,7 +182,7 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Shared by both restart buttons on the final level's complete card.
+  // Called by restartSame on the final level's complete card.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
@@ -196,15 +195,6 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same rounds, same order, as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random draw per level, same as before this
-  // feature existed (the only option there used to be). Note: level 3's
-  // rounds count equals its pool size, so for that level this only reshuffles
-  // ORDER, not which entries are drawn — an accurate reflection of the data,
-  // not a bug.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => buildRounds(lvl)))
   }
 
   // Fires once per roundKey when level 3's last round resolves. totalAttempts
@@ -309,22 +299,14 @@ export function LaPalabraEscondida({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

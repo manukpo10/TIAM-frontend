@@ -120,12 +120,11 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // Two 4-photo groups covering a level's pool exactly once, for the WHOLE
-  // epoch — generated once at mount, and again only inside
-  // restartDifferent(). Which four land in round 1 vs round 2 stays fixed
-  // for the rest of the epoch so "Repetir" hands back the same groups.
-  // Nivel 3 draws from its own disjoint NIVEL_3_PHOTOS pool (see file
-  // header) so it never repeats a photo Nivel 1/2 already showed.
-  const [epochGroups, setEpochGroups] = useState(() =>
+  // epoch — generated once at mount. Which four land in round 1 vs round 2
+  // stays fixed for the rest of the epoch so "Repetir" hands back the same
+  // groups. Nivel 3 draws from its own disjoint NIVEL_3_PHOTOS pool (see
+  // file header) so it never repeats a photo Nivel 1/2 already showed.
+  const [epochGroups] = useState(() =>
     LEVELS.map((lvl) => {
       const shuffled = shuffle(lvl.n === 3 ? NIVEL_3_PHOTOS : ALL_PHOTOS)
       return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
@@ -208,11 +207,11 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // both accumulators either way). roundKey always bumps here: it's the
-  // "which attempt is this" generation counter the onComplete effect uses to
-  // fire again on a replay, independent of whether the photos changed.
+  // Backs the "Repetir" restart button on the final level's complete card
+  // (only ever shown once level 3 is done, so always a genuine day restart
+  // — zero both accumulators either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -227,17 +226,6 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same photo groups as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — fresh random groups per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochGroups(
-      LEVELS.map((lvl) => {
-        const shuffled = shuffle(lvl.n === 3 ? NIVEL_3_PHOTOS : ALL_PHOTOS)
-        return [shuffled.slice(0, 4), shuffled.slice(4, 8)]
-      }),
-    )
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -383,22 +371,14 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

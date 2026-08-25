@@ -17,9 +17,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * valence).
  *
  * Content is fixed (2 curated rounds per level, no larger pool to sample
- * from), so "Repetir"/"Hacer otro" only differ in shuffle order — same
- * epochRounds/restart architecture as LaIntrusa, kept so both buttons are
- * always present and meaningfully different on the final completion card.
+ * from); the shuffle order is decided once per epoch, at mount, so
+ * "Repetir" always returns the exact same round order — same epochRounds
+ * architecture as LaIntrusa.
  */
 
 interface Round {
@@ -84,7 +84,7 @@ export function LaQueNoEncaja({ day: _day, onComplete }: GameProps) {
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => shuffle(lvl.rounds)))
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => shuffle(lvl.rounds)))
   const level = LEVELS[levelIdx]
   const order = epochRounds[levelIdx]
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -143,10 +143,6 @@ export function LaQueNoEncaja({ day: _day, onComplete }: GameProps) {
   }
   function restartSame() {
     restartEpoch()
-  }
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => shuffle(lvl.rounds)))
   }
 
   // Fires once per roundKey when level 3's last round resolves. A full day
@@ -264,22 +260,14 @@ export function LaQueNoEncaja({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -164,10 +164,10 @@ export function CalculoEnCuadro({ day: _day, onComplete }: GameProps) {
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  // Las rondas de la época completa, decididas una sola vez — al montar y de
-  // nuevo en "Hacer otro" — nunca vueltas a generar por re-visitar un nivel,
+  // Las rondas de la época completa, decididas una sola vez — al montar —
+  // nunca vueltas a generar por re-visitar un nivel,
   // así "Repetir" devuelve exactamente la misma tabla.
-  const [epochRounds, setEpochRounds] = useState(() => buildEpoch())
+  const [epochRounds] = useState(() => buildEpoch())
   const cfg = LEVEL_CONFIGS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
   const rounds = epochRounds[levelIdx]
@@ -253,7 +253,7 @@ export function CalculoEnCuadro({ day: _day, onComplete }: GameProps) {
     setCorrectCount(0)
   }
 
-  // Compartida por los dos botones de reinicio en la tarjeta final del
+  // Se ejecuta con el botón "Repetir" en la tarjeta final del
   // último nivel (sólo se muestra ahí, así que siempre es un reinicio real
   // del día). roundKey siempre avanza: es el contador de "qué intento es
   // este" que usa el efecto de onComplete para dispararse otra vez en una
@@ -273,11 +273,6 @@ export function CalculoEnCuadro({ day: _day, onComplete }: GameProps) {
   // "Repetir" — misma tabla del intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — tablas nuevas por nivel.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(buildEpoch())
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -435,22 +430,14 @@ export function CalculoEnCuadro({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

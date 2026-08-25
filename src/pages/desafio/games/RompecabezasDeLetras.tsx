@@ -141,10 +141,10 @@ export function RompecabezasDeLetras({ day: _day, onComplete }: GameProps) {
 
   // `ROUNDS_PER_LEVEL[i]` entries drawn at random from level i's own pool,
   // for EVERY level at once — decided once per "epoch" (a full 1→2→3 pass),
-  // at mount and again on "Hacer otro", never re-rolled by revisiting a
+  // at mount, never re-rolled by revisiting a
   // level, so "Repetir" hands back the exact same words deterministically
   // (same pattern as Encaminada/Coordenadas' epochOrder).
-  const [epochOrder, setEpochOrder] = useState(() =>
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const order = epochOrder[levelIdx]
@@ -217,9 +217,9 @@ export function RompecabezasDeLetras({ day: _day, onComplete }: GameProps) {
     setRoundIdx(0)
     setChecked(false)
   }
-  // Shared by both restart buttons on the FINAL level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the mistake accumulator either way).
+  // Runs on the "Repetir" button on the FINAL level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — it
+  // zeroes the mistake accumulator).
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -231,11 +231,6 @@ export function RompecabezasDeLetras({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same words as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random set of words per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Reports the SUM across levels 1→2→3 once per roundKey, so a genuine full
@@ -425,24 +420,14 @@ export function RompecabezasDeLetras({ day: _day, onComplete }: GameProps) {
               </button>
             )}
             {done && levelIdx === LEVELS.length - 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={restartSame}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Repetir
-                </button>
-                <button
-                  type="button"
-                  onClick={restartDifferent}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-                >
-                  Hacer otro
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={restartSame}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Repetir
+              </button>
             )}
           </div>
         </div>

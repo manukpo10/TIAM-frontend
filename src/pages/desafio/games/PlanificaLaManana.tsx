@@ -205,7 +205,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   // epoch. Plain lookup (NOT useMemo): a useMemo here would get invalidated
   // anyway since levelIdx cycles 0→1→2→0 on every restart, regardless of
   // roundKey.
-  const [morningSetChoices, setMorningSetChoices] = useState(() =>
+  const [morningSetChoices] = useState(() =>
     LEVELS.map((lvl) => shuffle(lvl.sets).slice(0, lvl.rounds)),
   )
   const roundSets = morningSetChoices[levelIdx]
@@ -244,7 +244,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
     placedReal.every((item, i) => item.id === i)
 
   // True once the LAST round of the level has been checked — gates the
-  // level-complete screen (advanceLevel / restartSame / restartDifferent)
+  // level-complete screen (advanceLevel / restartSame)
   // instead of the plain "next round" button. Derived from `checked` +
   // `roundIdx`, both real state reset synchronously below — never from a
   // value reset inside a useEffect (see restartEpoch()'s comment for why
@@ -282,11 +282,11 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
     setRoundIdx(0)
     setLevelIdx((i) => i + 1)
   }
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the accumulators either way). roundKey always bumps here: it's the
+  // Runs on the "Repetir" button on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — it
+  // zeroes the accumulators). roundKey always bumps here: it's the
   // "which attempt is this" generation counter the onComplete effect uses to
-  // fire again on a replay, independent of whether the task-sets changed.
+  // fire again on a replay.
   function restartEpoch() {
     setChecked(false)
     setRoundIdx(0)
@@ -298,12 +298,6 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same task-sets as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random task-set draw per level, the only option
-  // there used to be before this feature existed.
-  function restartDifferent() {
-    restartEpoch()
-    setMorningSetChoices(LEVELS.map((lvl) => shuffle(lvl.sets).slice(0, lvl.rounds)))
   }
 
   // Reports the SUM across levels 1→2→3, not just level 3: check() already
@@ -355,7 +349,7 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
           ronda) para ganar espacio vertical; el nivel 3 llega a apilar 5
           tareas de una oración completa cada una, más el distractor
           opcional. Igual que en Encaminada, `phase` no vuelve a 'ready'
-          nunca — ni al subir de nivel ni en "Repetir"/"Hacer otro". */}
+          nunca — ni al subir de nivel ni en "Repetir". */}
       {phase === 'ready' && (
         <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
@@ -493,22 +487,14 @@ export function PlanificaLaManana({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-4 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

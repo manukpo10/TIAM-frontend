@@ -51,11 +51,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * chips, so nivel 3 fits with comfortable margin under the same 375×812
  * budget without needing any further nivel-3-only shrinking. `phase` flips
  * to 'playing' once and never resets — not on level-advance, not on
- * "Repetir"/"Hacer otro".
- *
- * Unlike Coordenadas (which only offers "Repetir" on its final card), this
- * game offers BOTH "Repetir" (same words) and "Hacer otro" (fresh words) at
- * nivel 3 completion — same dual-button pattern as Encaminada.
+ * "Repetir".
  */
 
 interface Cell {
@@ -177,10 +173,10 @@ export function RadarDeSilabas({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` words drawn at random from level i's own pool, for
   // EVERY level at once — decided once per "epoch" (a full 1→2→3 pass), at
-  // mount and again on "Hacer otro", never re-rolled by revisiting a level,
+  // mount, never re-rolled by revisiting a level,
   // so "Repetir" hands back the exact same formulas deterministically (same
   // pattern as Encaminada/Coordenadas' epochOrder).
-  const [epochOrder, setEpochOrder] = useState(() =>
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -271,9 +267,9 @@ export function RadarDeSilabas({ day: _day, onComplete }: GameProps) {
     setWrongKey(null)
     setHint(null)
   }
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the mistake accumulator either way).
+  // Runs on the "Repetir" button on the final level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — it
+  // zeroes the mistake accumulator).
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
@@ -287,11 +283,6 @@ export function RadarDeSilabas({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same words, same order, as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random set of words per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
@@ -501,22 +492,14 @@ export function RadarDeSilabas({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

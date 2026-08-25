@@ -186,10 +186,10 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` compras drawn at random from level i's own scenario
-  // pool, for EVERY level at once — decided once per epoch (a full 1→2→3
-  // pass), at mount and again on "Hacer otro", never re-rolled by revisiting
-  // a level, so "Repetir" hands back the exact same compras deterministically.
-  const [epochScenarios, setEpochScenarios] = useState(() =>
+  // pool, for EVERY level at once — decided once at mount and never
+  // re-rolled again, so "Repetir" hands back the exact same compras
+  // deterministically.
+  const [epochScenarios] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -269,8 +269,8 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
     setResolved(false)
   }
 
-  // Shared by both restart buttons on the FINAL level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
+  // Called by restartSame on the FINAL level's complete card (only ever
+  // shown once level 3 is done, so always a genuine day restart — zero
   // the mistake accumulator either way). roundKey always bumps here: it's
   // the "which attempt is this" generation counter the onComplete effect
   // uses to fire again on a replay, independent of whether the compras
@@ -287,12 +287,6 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same compras as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random set of compras per level, same as before
-  // this feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochScenarios(LEVELS.map((lvl, i) => shuffle(lvl.scenarios).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3's last compra resolves. A full day
@@ -471,22 +465,14 @@ export function ElVuelto({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -39,8 +39,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * letters. ROUNDS_PER_LEVEL is [2, 2, 2], matching Coordenadas — each
  * "round" here is already a 3-5 tap sequence, not a single tap, so 3 rounds
  * at the top levels would make one level unreasonably long. Each level's
- * pool has 5 words (only 2 drawn per playthrough, shuffled), leaving room
- * for "Hacer otro" to hand back a genuinely different pair. Puzzle data
+ * pool has 5 words (only 2 drawn per playthrough, shuffled). Puzzle data
  * (in-bounds, no duplicate coordinate within a word, no word reused from
  * Coordenadas' own pool) was verified with a throwaway Node script before
  * writing this component — same discipline Coordenadas/Encaminada/
@@ -55,23 +54,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * sentence out of the persistent header reclaims the space Nivel 3 needs: a
  * 6×6 board PLUS a target-coordinate box AND a found-word strip, all
  * stacked, sits right at a 375×812 mobile budget. `phase` flips to
- * 'playing' once and never resets — not on level-advance, not on "Repetir"
- * or "Hacer otro" — a replayer already knows the rules. Every body cell is a
+ * 'playing' once and never resets — not on level-advance, not on
+ * "Repetir" — a replayer already knows the rules. Every body cell is a
  * real tap target (handleTap), so Nivel 3's mobile grid cap (340px → 320px,
  * max-width only, gap left untouched) is copied from Coordenadas — the same
  * board shape needs the same fix, and shrinking the gap instead would have
  * pushed real `<button>` cells below the ~44px minimum tap target.
- *
- * NOTE for future maintainers: Coordenadas.tsx's own header comment
- * describes an epoch/"Hacer otro" design (re-roll the pool on demand so a
- * replay can differ from the attempt just finished) but its shipped code
- * only wires up "Repetir" — no "Hacer otro" button, no `setEpochOrder` call
- * (epochOrder there is a plain `useState` initializer, never updated). The
- * pool-of-5-draw-2 shape strongly suggests "Hacer otro" was the original
- * intent. This file implements both buttons, using Encaminada.tsx's
- * restartSame/restartDifferent split (which already demonstrates the exact
- * pattern Coordenadas' own comment describes) layered on Coordenadas'
- * epochOrder/restartEpoch machinery.
  */
 
 interface Coord {
@@ -184,11 +172,10 @@ export function ElMapaDeLetras({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which words (and in what order) are playing for level i THIS "epoch" (a
-  // full 3-level pass). Decided once per epoch — at mount, and again on
-  // "Hacer otro" (see restartDifferent) — never re-rolled just because the
-  // player re-visits a level, so "Repetir" can hand back the exact same
-  // words deterministically instead of re-randomizing.
-  const [epochOrder, setEpochOrder] = useState(() =>
+  // full 3-level pass). Decided once per epoch, at mount — never re-rolled
+  // just because the player re-visits a level, so "Repetir" can hand back
+  // the exact same words deterministically instead of re-randomizing.
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -214,7 +201,7 @@ export function ElMapaDeLetras({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Mistakes + successful coordinate finds, accumulated across levels 1→2→3
-  // and only zeroed on a genuine day restart ("Repetir"/"Hacer otro" on the
+  // and only zeroed on a genuine day restart ("Repetir" on the
   // level-3 complete screen) — same policy as every other multi-level game
   // in this folder.
   const [mistakes, setMistakes] = useState(0)
@@ -285,7 +272,7 @@ export function ElMapaDeLetras({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Compartido por ambos botones de reinicio de la tarjeta final de nivel 3.
+  // Se ejecuta con el botón "Repetir" de la tarjeta final de nivel 3.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
@@ -300,15 +287,9 @@ export function ElMapaDeLetras({ day: _day, onComplete }: GameProps) {
   function restartSame() {
     restartEpoch()
   }
-  // "Hacer otro" — un nuevo sorteo de palabras por nivel (ver nota del
-  // encabezado del archivo sobre por qué este botón sí está acá).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
-  }
 
   // Se dispara una vez por roundKey cuando se completa el nivel 3. Un
-  // reinicio genuino del día (Repetir o Hacer otro) obtiene un roundKey
+  // reinicio genuino del día (Repetir) obtiene un roundKey
   // nuevo vía restartEpoch, así que una repetición real del día vuelve a
   // reportar; re-renderizar mientras se sigue "done" en nivel 3 no dispara
   // dos veces. totalAttempts usa totalFound (cada coordenada encontrada en
@@ -504,22 +485,14 @@ export function ElMapaDeLetras({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -105,9 +105,9 @@ export function OrdenaLasCifras({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Los números YA ORDENADOS de cada ronda de la época, decididos una sola
-  // vez — al montar y de nuevo en "Hacer otro" — nunca vueltos a generar por
+  // vez — al montar — nunca vueltos a generar por
   // re-visitar un nivel, así "Repetir" devuelve exactamente la misma lista.
-  const [epochRounds, setEpochRounds] = useState(() => buildEpoch())
+  const [epochRounds] = useState(() => buildEpoch())
   const level = LEVEL_CONFIGS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
@@ -186,7 +186,7 @@ export function OrdenaLasCifras({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Compartida por los dos botones de reinicio en la tarjeta final del
+  // Se ejecuta con el botón "Repetir" en la tarjeta final del
   // último nivel (sólo se muestra ahí, así que siempre es un reinicio real
   // del día). roundKey siempre avanza: es el contador de "qué intento es
   // este" que usa tanto useSequencingPuzzle (para rebarajar) como el efecto
@@ -204,11 +204,6 @@ export function OrdenaLasCifras({ day: _day, onComplete }: GameProps) {
   // "Repetir" — misma lista del intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — listas nuevas por nivel.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(buildEpoch())
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -346,22 +341,14 @@ export function OrdenaLasCifras({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

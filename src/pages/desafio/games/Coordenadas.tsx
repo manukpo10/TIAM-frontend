@@ -166,10 +166,9 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which words (and in what order) are playing for level i THIS "epoch" (a
-  // full 3-level pass). Decided once per epoch — at mount, and again on
-  // "Hacer otro" — never re-rolled just because the player re-visits a
-  // level, so "Repetir" can hand back the exact same words deterministically
-  // instead of re-randomizing.
+  // full 3-level pass). Decided once, at mount, and never re-rolled
+  // afterward, so "Repetir" always hands back the exact same words
+  // deterministically.
   const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
@@ -268,7 +267,7 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Shared by both restart buttons on the final level's complete card.
+  // Backs the "Repetir" restart button on the final level's complete card.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
@@ -479,11 +478,11 @@ export function Coordenadas({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir

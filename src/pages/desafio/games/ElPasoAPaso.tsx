@@ -254,12 +254,12 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // `rounds` rutinas distintas por nivel para ESTA "epoch" (una pasada
-  // completa de 3 niveles) — elegidas una sola vez por epoch (al montar y
-  // en "Hacer otro"), nunca vueltas a tirar por "Repetir" ni por re-visitar
-  // un nivel a mitad de epoch. Look-up plano (NO useMemo): un useMemo acá
-  // quedaría invalidado igual porque levelIdx cicla 0→1→2→0 en cada
-  // restart, sin importar roundKey.
-  const [routineChoices, setRoutineChoices] = useState(() => LEVELS.map((lvl) => shuffle(lvl.routines).slice(0, lvl.rounds)))
+  // completa de 3 niveles) — elegidas una sola vez por epoch, al montar,
+  // nunca vueltas a tirar por "Repetir" ni por re-visitar un nivel a mitad
+  // de epoch. Look-up plano (NO useMemo): un useMemo acá quedaría
+  // invalidado igual porque levelIdx cicla 0→1→2→0 en cada restart, sin
+  // importar roundKey.
+  const [routineChoices] = useState(() => LEVELS.map((lvl) => shuffle(lvl.routines).slice(0, lvl.rounds)))
   const roundRoutines = routineChoices[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
   const routine = roundRoutines[roundIdx]
@@ -283,8 +283,8 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   const tight = level.n === 3
 
   // True recién cuando se revisó la ÚLTIMA ronda del nivel — habilita la
-  // pantalla de nivel completo (advanceLevel / restartSame / restartDifferent)
-  // en vez del botón de "siguiente ronda" común. Derivado de `checked` +
+  // pantalla de nivel completo (advanceLevel / restartSame) en vez del
+  // botón de "siguiente ronda" común. Derivado de `checked` +
   // `roundIdx`, ambos reset sincrónicos más abajo — nunca desde un valor
   // puesto en cero dentro de un useEffect (ver el comentario de
   // restartEpoch() para el motivo).
@@ -314,12 +314,11 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
     setRoundIdx(0)
     setLevelIdx((i) => i + 1)
   }
-  // Compartida por los dos botones de reinicio en la tarjeta final de nivel
+  // Respalda el botón de reinicio "Repetir" en la tarjeta final de nivel
   // (sólo se muestra al completar el nivel 3, siempre un reinicio real del
-  // día — los acumuladores se ponen en cero en ambos casos). roundKey
-  // siempre avanza acá: es el contador de "qué intento es este" que usa el
-  // efecto de onComplete para dispararse otra vez en una repetición, sin
-  // importar si las rutinas cambiaron.
+  // día). roundKey siempre avanza acá: es el contador de "qué intento es
+  // este" que usa el efecto de onComplete para dispararse otra vez en una
+  // repetición.
   function restartEpoch() {
     setChecked(false)
     setRoundIdx(0)
@@ -331,12 +330,6 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
   // "Repetir" — mismas rutinas que el intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — rutinas elegidas al azar de nuevo por nivel, el único
-  // comportamiento que existía antes de esta feature.
-  function restartDifferent() {
-    restartEpoch()
-    setRoutineChoices(LEVELS.map((lvl) => shuffle(lvl.routines).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -521,22 +514,14 @@ export function ElPasoAPaso({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

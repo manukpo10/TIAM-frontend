@@ -144,11 +144,10 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which set (index into LEVELS[i].sets) is playing for level i THIS "epoch"
-  // (a full 3-level pass). Decided once per epoch — at mount, and again on
-  // "Empezar de nuevo" — never re-rolled just because the player re-visits a
-  // level, so "Repetir" can hand back the exact same 3 sets deterministically
-  // instead of re-randomizing and accidentally landing on something new.
-  const [epochChoices, setEpochChoices] = useState(() => LEVELS.map((lvl) => Math.floor(Math.random() * lvl.sets.length)))
+  // (a full 3-level pass). Decided once — at mount — never re-rolled just
+  // because the player re-visits a level, so "Repetir" can hand back the
+  // exact same 3 sets deterministically.
+  const [epochChoices] = useState(() => LEVELS.map((lvl) => Math.floor(Math.random() * lvl.sets.length)))
   const level = LEVELS[levelIdx]
   const words = level.sets[epochChoices[levelIdx]]
 
@@ -246,12 +245,12 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Shared by both restart buttons on the "Empezar de nuevo" screen (only
-  // ever shown once level 3 is done, so always a genuine day restart —
-  // zero the mistake accumulator either way). roundKey always bumps here:
-  // it's the "which attempt is this" generation counter the onComplete
-  // effect uses to fire again on a replay, independent of whether the
-  // words themselves changed.
+  // Called by restartSame on the level-3 complete screen (only ever shown
+  // once level 3 is done, so always a genuine day restart — zero the
+  // mistake accumulator either way). roundKey always bumps here: it's the
+  // "which attempt is this" generation counter the onComplete effect uses
+  // to fire again on a replay, independent of whether the words themselves
+  // changed.
   function restartEpoch() {
     setLevelIdx(0)
     setPlaced([])
@@ -263,12 +262,6 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same 3 word-sets as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Empezar de nuevo" — a fresh random word-set per level, same as before
-  // this feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochChoices(LEVELS.map((lvl) => Math.floor(Math.random() * lvl.sets.length)))
   }
 
   // Fires once per roundKey when level 3's last word is found.
@@ -411,28 +404,14 @@ export function ArmaLasPalabras({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            // Two ways to go again, not one: some players want another crack
-            // at these exact words, others want fresh ones. "Empezar de
-            // nuevo" read as "start over" (wiping progress) to this audience,
-            // so the second option is phrased as "Hacer otro" instead — one
-            // more round, not a reset. Neither label repeats "estas
-            // palabras": the result text right above already names them.
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

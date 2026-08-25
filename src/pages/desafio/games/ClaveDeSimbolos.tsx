@@ -26,7 +26,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * (keySize/rowLen 7), stacking above three blocks in a row (key + decode row
  * + keypad) that risked pushing the keypad below a 375×812 fold. `phase`
  * flips to 'playing' once and never resets — not on level-advance, not on
- * "Repetir"/"Hacer otro".
+ * "Repetir".
  */
 
 interface Sym {
@@ -95,10 +95,10 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
   const [roundIdx, setRoundIdx] = useState(0)
   const done = roundIdx >= level.rounds
 
-  // Every row (one per round) for the WHOLE epoch, generated once — at
-  // mount, and again only inside restartDifferent(). Never re-rolled just by
-  // revisiting a level/round, so "Repetir" hands back the exact same rows.
-  const [epochRows, setEpochRows] = useState(() =>
+  // Every row (one per round) for the WHOLE epoch, generated once at mount.
+  // Never re-rolled just by revisiting a level/round, so "Repetir" hands
+  // back the exact same rows.
+  const [epochRows] = useState(() =>
     LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomRow(lvl.keySize, lvl.rowLen))),
   )
   const row = epochRows[levelIdx][roundIdx]
@@ -161,11 +161,11 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // both accumulators either way). roundKey always bumps here: it's the
-  // "which attempt is this" generation counter the onComplete effect uses to
-  // fire again on a replay, independent of whether the rows changed.
+  // Backs the "Repetir" restart button on the final level's complete card
+  // (only ever shown once level 3 is done, so always a genuine day restart
+  // — zero both accumulators either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -179,12 +179,6 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same rows as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — fresh random rows per level, same as before this feature
-  // existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRows(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => randomRow(lvl.keySize, lvl.rowLen))))
   }
 
   // Fires once per roundKey when level 3's last row is decoded.
@@ -312,22 +306,14 @@ export function ClaveDeSimbolos({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

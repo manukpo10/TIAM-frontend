@@ -128,9 +128,9 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // Layout (objects AND their cell positions, decided together) for the
-  // WHOLE epoch, one per level — generated once at mount, and again only
-  // inside restartDifferent(). Never re-rolled just by revisiting a level,
-  // so "Repetir" hands back the exact same layout.
+  // WHOLE epoch, one per level — generated once at mount. Never re-rolled
+  // just by revisiting a level, so "Repetir" hands back the exact same
+  // layout.
   const [epochLayouts] = useState(() => LEVELS.map((lvl) => buildLayout(lvl)))
   const layout = epochLayouts[levelIdx]
 
@@ -396,11 +396,11 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir

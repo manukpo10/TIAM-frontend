@@ -34,7 +34,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * A one-time "¿Listo?" ready screen (`dayPhase`, named to avoid colliding
  * with the play/results/recognize `phase` below) gates the START of the
  * day only — same lifecycle as Encaminada.tsx's `phase`: flips once on
- * mount, never resets on level-advance or "Repetir"/"Hacer otro". Moves the
+ * mount, never resets on level-advance or "Repetir". Moves the
  * contar/reconocer instructions out of the persistent header. Nivel 3's
  * recognize grid (11 options vs 7-9 for nivel 1-2, 4 wrapped rows of
  * ~132px cards) was the remaining overflow driver at 375px, so it also
@@ -241,11 +241,10 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which composition (index into LEVELS[i].compositions) is playing for
-  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
-  // mount, and again on "Hacer otro" — never re-rolled just because the
-  // player re-visits a level, so "Repetir" can hand back the exact same 3
-  // láminas deterministically instead of re-randomizing.
-  const [epochChoices, setEpochChoices] = useState(() =>
+  // level i THIS "epoch" (a full 3-level pass). Decided once, at mount, and
+  // never re-rolled afterward, so "Repetir" always hands back the exact
+  // same 3 láminas deterministically.
+  const [epochChoices] = useState(() =>
     LEVELS.map((lvl) => Math.floor(Math.random() * lvl.compositions.length)),
   )
   const level = LEVELS[levelIdx]
@@ -336,11 +335,11 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
     setGraded(false)
   }
 
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the accumulators either way). roundKey always bumps here: it's the
-  // "which attempt is this" generation counter the onComplete effect uses to
-  // fire again on a replay, independent of whether the content changed.
+  // Backs the "Repetir" restart button on the final level's complete card
+  // (only ever shown once level 3 is done, so always a genuine day restart
+  // — zero the accumulators either way). roundKey always bumps here: it's
+  // the "which attempt is this" generation counter the onComplete effect
+  // uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setPhase('play')
@@ -354,12 +353,6 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same 3 láminas as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random lámina per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochChoices(LEVELS.map((lvl) => Math.floor(Math.random() * lvl.compositions.length)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -685,24 +678,14 @@ export function FigurasSuperpuestas({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            // Two ways to go again, not one: some players want another crack
-            // at these exact láminas, others want fresh ones.
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

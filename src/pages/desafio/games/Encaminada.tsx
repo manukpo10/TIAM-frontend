@@ -46,7 +46,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * that made nivel 3's 5×5 grid + 4 arrows + 4 options overflow a 375×812
  * viewport (professional feedback from the mes 2 catalog review). `phase`
  * flips to 'playing' once and never resets — not on level-advance, not on
- * "Repetir"/"Hacer otro" — those are a replay by someone who already knows
+ * "Repetir" — that's a replay by someone who already knows
  * the rules, re-showing the splash would be pure friction.
  */
 
@@ -209,9 +209,9 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` path-words drawn at random from level i's own pool,
   // for EVERY level at once — decided once per epoch (a full 1→2→3 pass), at
-  // mount and again on "Hacer otro", never re-rolled by revisiting a level,
-  // so "Repetir" hands back the exact same paths deterministically.
-  const [epochOrder, setEpochOrder] = useState(() =>
+  // mount, never re-rolled by revisiting a level, so "Repetir" hands back
+  // the exact same paths deterministically.
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -292,12 +292,11 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
     setCorrectCount(0)
   }
 
-  // Shared by both restart buttons on the FINAL level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the mistake accumulator either way). roundKey always bumps here: it's
-  // the "which attempt is this" generation counter the onComplete effect
-  // uses to fire again on a replay, independent of whether the paths
-  // themselves changed.
+  // Backs the "Repetir" restart button on the FINAL level's complete card
+  // (only ever shown once level 3 is done, so always a genuine day restart
+  // — zero the mistake accumulator either way). roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -312,15 +311,9 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
   function restartSame() {
     restartEpoch()
   }
-  // "Hacer otro" — a fresh random set of paths per level, same as before
-  // this feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
-  }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
-  // (via restartEpoch, from either restart button) gets a new roundKey, so a
+  // (via restartEpoch, from the "Repetir" button) gets a new roundKey, so a
   // genuine replay of the whole day reports again; re-rendering while still
   // done on level 3 does not fire twice.
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -494,22 +487,14 @@ export function Encaminada({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

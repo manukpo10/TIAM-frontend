@@ -11,10 +11,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * N palabras en un tablero", el equivalente natural a "rondas" acá (ver
  * REGLAS del batch: "salvo que la mecánica pida otra cosa"). Nivel 1 y 2
  * solo horizontal/vertical; nivel 3 suma diagonal, con grilla 10×10 (techo
- * duro del presupuesto mobile). El tablero se arma una vez por epoch (al
- * montar y de nuevo en "Hacer otro"), nunca se vuelve a sortear por
- * revisitar un nivel, así "Repetir" devuelve exactamente el mismo tablero —
- * mismo patrón que LaIntrusa.
+ * duro del presupuesto mobile). El tablero se arma una vez por epoch, al
+ * montar, nunca se vuelve a sortear por revisitar un nivel, así "Repetir"
+ * devuelve exactamente el mismo tablero — mismo patrón que LaIntrusa.
  *
  * Selección: tocar-y-arrastrar con Pointer Events SIN pointer capture — así
  * los eventos de pointermove/pointerup siguen naturalmente a la celda real
@@ -201,7 +200,7 @@ export function SopaDeLetras({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // Un tablero armado por nivel, decidido una vez por epoch — ver comentario
   // del encabezado del archivo.
-  const [epochBoards, setEpochBoards] = useState(() => LEVELS.map((lvl) => buildBoard(lvl.words, lvl.size, lvl.allowDiagonal)))
+  const [epochBoards] = useState(() => LEVELS.map((lvl) => buildBoard(lvl.words, lvl.size, lvl.allowDiagonal)))
   const level = LEVELS[levelIdx]
   const board = epochBoards[levelIdx]
 
@@ -329,10 +328,6 @@ export function SopaDeLetras({ day: _day, onComplete }: GameProps) {
   }
   function restartSame() {
     restartEpoch()
-  }
-  function restartDifferent() {
-    restartEpoch()
-    setEpochBoards(LEVELS.map((lvl) => buildBoard(lvl.words, lvl.size, lvl.allowDiagonal)))
   }
 
   const totalWordsAllLevels = LEVELS.reduce((sum, l) => sum + l.words.length, 0)
@@ -466,22 +461,14 @@ export function SopaDeLetras({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -155,12 +155,10 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which rounds (target + decoy silhouettes, one per round) are playing for
-  // level i THIS "epoch" (a full 3-level pass). Decided once per epoch — at
-  // mount, and again on "Hacer otro" — never re-rolled just because the
-  // player re-visits a level, so "Repetir" can hand back the exact same
-  // rounds deterministically instead of re-generating and accidentally
-  // landing on something new.
-  const [epochRounds, setEpochRounds] = useState(() =>
+  // level i THIS "epoch" (a full 3-level pass). Decided once, at mount, and
+  // never re-rolled afterward, so "Repetir" always hands back the exact
+  // same rounds deterministically.
+  const [epochRounds] = useState(() =>
     LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => makeRound(lvl))),
   )
   const level = LEVELS[levelIdx]
@@ -210,10 +208,9 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
     setResolved(false)
     setHint(null)
   }
-  // Shared by both restart buttons on the final level's complete card.
+  // Backs the "Repetir" restart button on the final level's complete card.
   // roundKey always bumps here: it's the "which attempt is this" generation
-  // counter the onComplete effect uses to fire again on a replay,
-  // independent of whether the rounds themselves changed.
+  // counter the onComplete effect uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
@@ -226,11 +223,6 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same rounds as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh set of rounds per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => Array.from({ length: lvl.rounds }, () => makeRound(lvl))))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -344,22 +336,14 @@ export function EsEstaSombra({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

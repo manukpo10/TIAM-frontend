@@ -333,10 +333,10 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // `level.rounds` composiciones drawn at random from each level's own pool,
-  // for EVERY level at once — decided once per epoch (a full 1→2→3 pass), at
-  // mount and again on "Hacer otro", never re-rolled by revisiting a level,
-  // so "Repetir" hands back the exact same lámina(s) deterministically.
-  const [epochCompositions, setEpochCompositions] = useState(() =>
+  // for EVERY level at once — decided once, at mount, never re-rolled by
+  // revisiting a level, so "Repetir" always hands back the exact same
+  // lámina(s) deterministically.
+  const [epochCompositions] = useState(() =>
     LEVELS.map((lvl) => shuffle(lvl.compositions).slice(0, lvl.rounds)),
   )
   const level = LEVELS[levelIdx]
@@ -409,12 +409,11 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
     setPhase('play')
   }
 
-  // Compartida por los dos botones de la tarjeta final (solo se muestra
-  // cuando el nivel 3 está completo, así que siempre es un reinicio real del
-  // día — se ponen en cero los acumulados en ambos casos). roundKey siempre
-  // avanza acá: es el contador de "qué intento es este" que usa el efecto de
-  // onComplete para volver a dispararse en una repetición, más allá de si el
-  // contenido cambió o no.
+  // Se muestra cuando el nivel 3 está completo, así que siempre es un
+  // reinicio real del día — se ponen en cero los acumulados. roundKey
+  // siempre avanza acá: es el contador de "qué intento es este" que usa el
+  // efecto de onComplete para volver a dispararse en una repetición, más
+  // allá de si el contenido cambió o no.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -427,12 +426,6 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
   // "Repetir" — las mismas láminas del intento que acaba de terminar.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — un sorteo nuevo de láminas por nivel, igual que antes de
-  // que existiera esta funcionalidad (la única opción que había).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochCompositions(LEVELS.map((lvl) => shuffle(lvl.compositions).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -616,22 +609,14 @@ export function CuantosHay({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

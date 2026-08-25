@@ -151,10 +151,10 @@ export function BuscaLaDistinta({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Rondas armadas (par + posición de la intrusa) para CADA nivel a la vez,
-  // decididas una vez por epoch (una pasada completa 1→2→3), al montar y de
-  // nuevo en "Hacer otro" — nunca vueltas a sortear por revisitar un nivel,
-  // así "Repetir" devuelve exactamente las mismas rondas.
-  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
+  // decididas una vez por epoch (una pasada completa 1→2→3), al montar —
+  // nunca vueltas a sortear por revisitar un nivel, así "Repetir" devuelve
+  // exactamente las mismas rondas.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
   const level = LEVELS[levelIdx]
   const rounds = epochRounds[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
@@ -198,9 +198,9 @@ export function BuscaLaDistinta({ day: _day, onComplete }: GameProps) {
     setWrongIdx(null)
   }
 
-  // Compartida por los dos botones de la tarjeta final. roundKey siempre
-  // avanza acá: es el contador de "qué intento es este" que usa el efecto
-  // de onComplete para volver a dispararse en una repetición.
+  // Llamada por "Repetir" en la tarjeta final. roundKey siempre avanza acá:
+  // es el contador de "qué intento es este" que usa el efecto de onComplete
+  // para volver a dispararse en una repetición.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -211,10 +211,6 @@ export function BuscaLaDistinta({ day: _day, onComplete }: GameProps) {
   }
   function restartSame() {
     restartEpoch()
-  }
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => buildRounds(lvl)))
   }
 
   // totalAttempts = errores acumulados + un acierto por ronda en cada nivel
@@ -335,22 +331,14 @@ export function BuscaLaDistinta({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

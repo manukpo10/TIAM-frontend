@@ -156,17 +156,17 @@ const TOTAL_PAIRS = LEVELS.reduce((sum, l) => sum + l.pairs, 0)
 
 export function Memotest({ day: _day, onComplete }: GameProps) {
   // One-time ready gate — never resets after mount (not on level-advance,
-  // not on "Repetir"/"Hacer otro"). See file header for why this replaced
+  // not on "Repetir"). See file header for why this replaced
   // the old timer-based auto-collapse.
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // The built board (drawn animals AND their shuffled card positions, as one
   // unit — see file header on why positions must stay fixed) for EVERY level
-  // at once — decided once per epoch (a full 1→2→3 pass), at mount and again
-  // on "Hacer otro", never re-rolled by revisiting a level, so "Repetir"
+  // at once — decided once per epoch (a full 1→2→3 pass), at mount,
+  // never re-rolled by revisiting a level, so "Repetir"
   // hands back the exact same board deterministically.
-  const [epochBoard, setEpochBoard] = useState(() => LEVELS.map((lvl) => buildBoard(lvl)))
+  const [epochBoard] = useState(() => LEVELS.map((lvl) => buildBoard(lvl)))
   const level = LEVELS[levelIdx]
   const board = epochBoard[levelIdx]
 
@@ -252,12 +252,11 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
     setTurns(0)
   }
 
-  // Shared by both restart buttons on the FINAL level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the mistake accumulator either way). roundKey always bumps here: it's
+  // Runs on the "Repetir" button on the FINAL level's complete card (only
+  // ever shown once level 3 is done, so always a genuine day restart — it
+  // zeroes the mistake accumulator). roundKey always bumps here: it's
   // the "which attempt is this" generation counter the onComplete effect
-  // uses to fire again on a replay, independent of whether the board itself
-  // changed.
+  // uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -271,12 +270,6 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
   // "Repetir" — the exact same board as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a freshly built board per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochBoard(LEVELS.map((lvl) => buildBoard(lvl)))
   }
 
   return (
@@ -304,7 +297,7 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
       {/* Pantalla previa: única vez, al principio del día — reemplaza el
           título + pista que antes vivían siempre montados (ver el comentario
           del encabezado del archivo sobre por qué). No vuelve a aparecer al
-          subir de nivel ni en "Repetir"/"Hacer otro". */}
+          subir de nivel ni en "Repetir". */}
       {phase === 'ready' && (
         <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
@@ -411,22 +404,14 @@ export function Memotest({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

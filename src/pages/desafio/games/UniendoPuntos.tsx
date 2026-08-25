@@ -101,12 +101,11 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which star-polygon points are playing for level i THIS "epoch" (a full
-  // 3-level pass). Decided once per epoch — at mount, and again on "Hacer
-  // otro" — never re-rolled just because the player re-visits a level, so
-  // "Repetir" can hand back the exact same drawing deterministically instead
-  // of re-generating (a fresh rotation/jitter) and accidentally landing on
-  // something new.
-  const [epochPoints, setEpochPoints] = useState(() =>
+  // 3-level pass). Decided once, at mount — never re-rolled just because the
+  // player re-visits a level, so "Repetir" always hands back the exact same
+  // drawing deterministically instead of re-generating (a fresh
+  // rotation/jitter) and accidentally landing on something new.
+  const [epochPoints] = useState(() =>
     LEVELS.map((lvl) => starPolygonPoints(lvl.shape.n, pickOne(lvl.shape.kOptions), lvl.jitter)),
   )
   const level = LEVELS[levelIdx]
@@ -162,10 +161,10 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
     setWrongIdx(null)
     setWrongHint(null)
   }
-  // Shared by both restart buttons on the final level's complete card.
-  // roundKey always bumps here: it's the "which attempt is this" generation
-  // counter the onComplete effect uses to fire again on a replay,
-  // independent of whether the drawing itself changed.
+  // Shown on the final level's complete card. roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay, independent of whether the
+  // drawing itself changed.
   function restartEpoch() {
     setLevelIdx(0)
     setFoundCount(0)
@@ -178,11 +177,6 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same drawing as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh drawing per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochPoints(LEVELS.map((lvl) => starPolygonPoints(lvl.shape.n, pickOne(lvl.shape.kOptions), lvl.jitter)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -303,22 +297,14 @@ export function UniendoPuntos({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

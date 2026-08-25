@@ -20,7 +20,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * DIFERENCIA con el original en los botones de cierre: acá se sigue la
  * convención de todo este lote — nivel 1/2 completos muestran solo
  * "Siguiente nivel"; nivel 3 completo muestra "Repetir" (misma
- * distribución de palabras) y "Hacer otro" (una nueva), con onComplete
+ * distribución de palabras), con onComplete
  * disparando una sola vez ahí. mistakes/correctCount se acumulan a través
  * de los 3 niveles y solo se ponen en cero en un reinicio real del día.
  *
@@ -127,10 +127,10 @@ export function ElGrupoCorrecto({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Orden de palabras de cada nivel para ESTA epoch (las 3 niveles) —
-  // decidido una vez al montar, y de nuevo solo en "Hacer otro". Nunca se
+  // decidido una vez al montar. Nunca se
   // re-mezcla por revisitar un nivel, así "Repetir" devuelve exactamente el
   // mismo orden.
-  const [epochOrder, setEpochOrder] = useState(() => LEVELS.map((lvl) => shuffle(lvl.items)))
+  const [epochOrder] = useState(() => LEVELS.map((lvl) => shuffle(lvl.items)))
   const level = LEVELS[levelIdx]
   const order = epochOrder[levelIdx]
 
@@ -176,11 +176,11 @@ export function ElGrupoCorrecto({ day: _day, onComplete }: GameProps) {
     setSorted({})
     setWrongCategory(null)
   }
-  // Compartido por los dos botones de la tarjeta final de nivel 3 (solo se
+  // Se ejecuta con el botón "Repetir" de la tarjeta final de nivel 3 (solo se
   // ve una vez completado el nivel 3, así que siempre es un reinicio real
   // del día). roundKey siempre avanza acá: es el contador de "qué intento
   // es este" que usa el efecto de onComplete para disparar de nuevo en una
-  // repetición, sin importar si el orden cambió.
+  // repetición.
   function restartEpoch() {
     setLevelIdx(0)
     setCurrentIndex(0)
@@ -193,11 +193,6 @@ export function ElGrupoCorrecto({ day: _day, onComplete }: GameProps) {
   // "Repetir" — mismo orden de palabras que el intento recién terminado.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — un orden nuevo por nivel.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl) => shuffle(lvl.items)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -333,22 +328,14 @@ export function ElGrupoCorrecto({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -180,11 +180,10 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which board (level.build() output) is playing for level i THIS "epoch"
-  // (a full 3-level pass). Decided once per epoch — at mount, and again on
-  // "Hacer otro" — never re-rolled just because the player re-visits a
-  // level, so "Repetir" can hand back the exact same board deterministically
-  // instead of re-generating and accidentally landing on something new.
-  const [epochBoards, setEpochBoards] = useState(() => LEVELS.map((lvl) => shuffle(lvl.build())))
+  // (a full 3-level pass). Decided once, at mount — never re-rolled just
+  // because the player re-visits a level, so "Repetir" always hands back
+  // the exact same board deterministically.
+  const [epochBoards] = useState(() => LEVELS.map((lvl) => shuffle(lvl.build())))
   const level = LEVELS[levelIdx]
   const board = epochBoards[levelIdx]
   const targetIds = useMemo(
@@ -251,11 +250,11 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
     setLevelIdx((i) => i + 1)
   }
 
-  // Shared by both restart buttons on the "Empezar de nuevo" screen (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the accumulators either way). roundKey always bumps here: it's the
-  // "which attempt is this" generation counter the onComplete effect uses to
-  // fire again on a replay, independent of whether the board itself changed.
+  // Shown on the "Empezar de nuevo" screen (only ever shown once level 3 is
+  // done, so always a genuine day restart — zero the accumulators).
+  // roundKey always bumps here: it's the "which attempt is this" generation
+  // counter the onComplete effect uses to fire again on a replay,
+  // independent of whether the board itself changed.
   function restartEpoch() {
     setLevelIdx(0)
     reset()
@@ -266,12 +265,6 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same board as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random board per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochBoards(LEVELS.map((lvl) => shuffle(lvl.build())))
   }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
@@ -390,22 +383,14 @@ export function BuscarLosRojos({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

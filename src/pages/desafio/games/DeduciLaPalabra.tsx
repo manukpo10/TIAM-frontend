@@ -27,8 +27,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * at nivel 3 (up to 5 clues, one long enough to wrap on mobile, plus 7
  * options in a 2-col grid) that sentence was enough to push content past a
  * 375×812 viewport. `phase` flips to 'playing' once and never resets — not
- * on level-advance, not on "Repetir"/"Hacer otro" — a replay by someone who
- * already knows the rules shouldn't see the splash again (same policy as
+ * on level-advance, not on "Repetir" — a replay by someone who already
+ * knows the rules shouldn't see the splash again (same policy as
  * Encaminada.tsx).
  */
 
@@ -108,11 +108,10 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which puzzle order (drawn from the level's pool) is playing for level i
-  // THIS "epoch" (a full 3-level pass). Decided once per epoch — at mount,
-  // and again on "Hacer otro" — never re-rolled just because the player
-  // re-visits a level, so "Repetir" can hand back the exact same puzzles
-  // deterministically instead of re-randomizing.
-  const [epochOrder, setEpochOrder] = useState(() =>
+  // THIS "epoch" (a full 3-level pass). Decided once, at mount, and never
+  // re-rolled afterward, so "Repetir" always hands back the exact same
+  // puzzles deterministically.
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)),
   )
   const level = LEVELS[levelIdx]
@@ -165,11 +164,11 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
 
-  // Shared by both restart buttons on level 3's complete card (only ever
-  // shown once the final level is done, so always a genuine day restart —
-  // zero the accumulators either way). roundKey always bumps here: it's the
-  // "which attempt is this" generation counter the onComplete effect uses
-  // to fire again on a replay, independent of whether the puzzles changed.
+  // Backs the "Repetir" restart button on level 3's complete card (only
+  // ever shown once the final level is done, so always a genuine day
+  // restart — zero the accumulators either way). roundKey always bumps
+  // here: it's the "which attempt is this" generation counter the
+  // onComplete effect uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setCurrentIndex(0)
@@ -183,11 +182,6 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same puzzles as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random puzzle order per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, lvl.rounds)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -307,25 +301,15 @@ export function DeduciLaPalabra({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            // Two ways to go again: "Repetir" replays the identical
-            // puzzles, "Hacer otro" draws a fresh order per level — same
-            // choice ArmaLasPalabras.tsx (día 1) offers at epoch's end.
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            // "Repetir" replays the identical puzzles for this epoch.
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

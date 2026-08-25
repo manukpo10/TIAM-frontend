@@ -171,10 +171,10 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
 
   // The generated Round (studied items + distractors — there's no
   // pre-authored "sets" to index into, the Round itself IS the content) for
-  // the WHOLE epoch, one per level — built once at mount, and again only
-  // inside restartDifferent(). Never re-rolled just by revisiting a level,
-  // so "Repetir" hands back the exact same list.
-  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => lvl.build()))
+  // the WHOLE epoch, one per level — built once at mount and never again.
+  // Never re-rolled just by revisiting a level, so "Repetir" hands back the
+  // exact same list.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => lvl.build()))
   const round = epochRounds[levelIdx]
   const testBoard = useMemo(() => shuffle([...round.studied, ...round.distractors]), [round])
   const targetIds = useMemo(() => new Set(round.studied.map((o) => o.id)), [round])
@@ -261,12 +261,12 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
     setResultsSeen(false)
   }
 
-  // Shared by both restart buttons on the final level's complete card (only
-  // ever shown once the last level is done, so always a genuine day restart
-  // — zero the accumulators either way; a same-round replay must NOT, which
-  // is why this never runs mid-epoch). roundKey always bumps here: it's the
-  // "which attempt is this" generation counter the onComplete effect uses to
-  // fire again on a replay, independent of whether the list changed.
+  // Shown on the final level's complete card (only ever shown once the last
+  // level is done, so always a genuine day restart — zero the accumulators;
+  // a same-round replay must NOT, which is why this never runs mid-epoch).
+  // roundKey always bumps here: it's the "which attempt is this" generation
+  // counter the onComplete effect uses to fire again on a replay,
+  // independent of whether the list changed.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -280,12 +280,6 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same list as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random list per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => lvl.build()))
   }
 
   // Reports the SUM across levels 1→2→3, not just level 3: submit() already
@@ -497,22 +491,14 @@ export function ListaDelMercado({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

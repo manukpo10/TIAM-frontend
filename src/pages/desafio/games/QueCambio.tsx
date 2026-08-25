@@ -186,12 +186,10 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which round (theme + studied/current/targets, all together as one unit)
-  // is playing for level i THIS "epoch" (a full 3-level pass). Decided once
-  // per epoch — at mount, and again on "Hacer otro" — never re-rolled just
-  // because the player re-visits a level, so "Repetir" can hand back the
-  // exact same round deterministically instead of re-generating and
-  // accidentally landing on something new.
-  const [epochRounds, setEpochRounds] = useState(() => LEVELS.map((lvl) => buildRound(lvl)))
+  // is playing for level i THIS "epoch" (a full 3-level pass). Decided once,
+  // at mount — never re-rolled just because the player re-visits a level, so
+  // "Repetir" always hands back the exact same round deterministically.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => buildRound(lvl)))
   const level = LEVELS[levelIdx]
   const round = epochRounds[levelIdx]
   const k = round.targets.size
@@ -300,10 +298,10 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
     setRevealAcknowledged(false)
   }
 
-  // Shared by both restart buttons on the final level's complete card.
-  // roundKey always bumps here: it's the "which attempt is this" generation
-  // counter the onComplete effect uses to fire again on a replay,
-  // independent of whether the round itself changed.
+  // Shown on the final level's complete card. roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay, independent of whether the round
+  // itself changed.
   function restartEpoch() {
     setLevelIdx(0)
     setRoundKey((kk) => kk + 1)
@@ -322,11 +320,6 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same round as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random round per level.
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(LEVELS.map((lvl) => buildRound(lvl)))
   }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
@@ -516,22 +509,14 @@ export function QueCambio({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

@@ -116,11 +116,10 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Which faces were studied, and the derived test queries built from them,
-  // for level i THIS "epoch" (a full 3-level pass). Decided once per epoch —
-  // at mount, and again on "Hacer otro" — never re-rolled just because the
-  // player re-visits a level, so "Repetir" can hand back the exact same
-  // faces and queries deterministically instead of re-randomizing.
-  const [epochLevels, setEpochLevels] = useState(() => LEVELS.map((lvl) => buildEpochLevel(lvl)))
+  // for level i THIS "epoch" (a full 3-level pass). Decided once — at
+  // mount — never re-rolled just because the player re-visits a level, so
+  // "Repetir" can hand back the exact same faces and queries deterministically.
+  const [epochLevels] = useState(() => LEVELS.map((lvl) => buildEpochLevel(lvl)))
   const level = LEVELS[levelIdx]
   const { studied, queries } = epochLevels[levelIdx]
 
@@ -197,7 +196,7 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
     setCorrectCount(0)
   }
 
-  // Shared by both restart buttons on the final level's complete card.
+  // Called by restartSame on the final level's complete card.
   function restartEpoch() {
     setLevelIdx(0)
     setPhase('study')
@@ -213,12 +212,6 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same faces, same queries, as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random draw per level, same as before this
-  // feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochLevels(LEVELS.map((lvl) => buildEpochLevel(lvl)))
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -394,22 +387,14 @@ export function QuienEsQuien({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

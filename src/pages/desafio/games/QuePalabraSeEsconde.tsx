@@ -68,8 +68,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * existing convention instead of this file's old one-off h-28) together
  * reclaim the height nivel 3 needs to fit without scrolling. `phase` flips
  * to 'playing' once and never resets — not on level-advance, not on
- * "Repetir"/"Hacer otro" — those are a replay by someone who already knows
- * the rules, re-showing the splash would be pure friction.
+ * "Repetir" — that's a replay by someone who already knows the rules,
+ * re-showing the splash would be pure friction.
  */
 
 interface AnagramEntry {
@@ -196,9 +196,9 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` distinct entries drawn at random from level i's own
   // pool, for EVERY level at once — decided once per epoch (a full 1→2→3
-  // pass), at mount and again on "Hacer otro", never re-rolled by revisiting
-  // a level, so "Repetir" hands back the exact same words deterministically.
-  const [epochEntries, setEpochEntries] = useState(() =>
+  // pass), at mount, never re-rolled by revisiting a level, so "Repetir"
+  // hands back the exact same words deterministically.
+  const [epochEntries] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.entries).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -234,11 +234,11 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   const [mistakes, setMistakes] = useState(0)
 
   // True once the LAST round of the level has been resolved correctly —
-  // gates the level-complete buttons (advanceLevel, or restartSame/
-  // restartDifferent on the final level) instead of the plain "next word"
-  // button. Derived from `resolved` + `roundIdx`, both real state reset
-  // synchronously below — never from a value reset inside a useEffect (see
-  // advanceLevel/restartEpoch's comment for why that matters).
+  // gates the level-complete buttons (advanceLevel, or restartSame on the
+  // final level) instead of the plain "next word" button. Derived from
+  // `resolved` + `roundIdx`, both real state reset synchronously below —
+  // never from a value reset inside a useEffect (see advanceLevel/
+  // restartEpoch's comment for why that matters).
   const done = resolved && roundIdx >= roundsForLevel - 1
 
   function handlePlace(item: Tile) {
@@ -325,12 +325,11 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
     setRoundIdx(0)
   }
 
-  // Shared by both restart buttons on the FINAL level's complete card (only
-  // ever shown once level 3 is done, so always a genuine day restart — zero
-  // the mistake accumulator either way). roundKey always bumps here: it's
-  // the "which attempt is this" generation counter the onComplete effect
-  // uses to fire again on a replay, independent of whether the words
-  // themselves changed.
+  // Backs the "Repetir" restart button on the FINAL level's complete card
+  // (only ever shown once level 3 is done, so always a genuine day restart
+  // — zero the mistake accumulator either way). roundKey always bumps here:
+  // it's the "which attempt is this" generation counter the onComplete
+  // effect uses to fire again on a replay.
   function restartEpoch() {
     setLevelIdx(0)
     setResolved(false)
@@ -343,12 +342,6 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same words as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random set of words per level, same as before
-  // this feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochEntries(LEVELS.map((lvl, i) => shuffle(lvl.entries).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3's last word resolves. A full day
@@ -392,8 +385,8 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
           Encaminada.tsx: sacar la instrucción del header persistente (se
           repetía en cada ronda) es lo que le devuelve a nivel 3 el aire que
           necesita para entrar en 375×812 sin scroll. Nunca vuelve a 'ready'
-          desde ningún handler de abajo (avanzar nivel, Repetir, Hacer otro):
-          es un gate de una sola vez por día, no por ronda. */}
+          desde ningún handler de abajo (avanzar nivel, Repetir): es un gate
+          de una sola vez por día, no por ronda. */}
       {phase === 'ready' && (
         <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
@@ -541,22 +534,14 @@ export function QuePalabraSeEsconde({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

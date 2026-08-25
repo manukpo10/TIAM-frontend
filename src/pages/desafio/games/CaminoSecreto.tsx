@@ -63,7 +63,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Encaminada — moving the "how to play" sentence out of the persistent
  * header is what keeps nivel 3's fully-loaded state inside the mobile
  * budget. `phase` flips to 'playing' once and never resets — not on
- * level-advance, not on "Repetir"/"Hacer otro".
+ * level-advance, not on "Repetir".
  *
  * mistakes/totalAttempts semantics copied exactly from Encaminada:
  * `totalAttempts` is the fixed TOTAL_ROUNDS (every round always resolves in
@@ -236,9 +236,9 @@ export function CaminoSecreto({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // `ROUNDS_PER_LEVEL[i]` syllable-paths drawn at random from level i's own
   // pool, for EVERY level at once — decided once per epoch (a full 1→2→3
-  // pass), at mount and again on "Hacer otro", never re-rolled by revisiting
-  // a level, so "Repetir" hands back the exact same paths deterministically.
-  const [epochOrder, setEpochOrder] = useState(() =>
+  // pass), at mount, never re-rolled by revisiting a level, so "Repetir"
+  // hands back the exact same paths deterministically.
+  const [epochOrder] = useState(() =>
     LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])),
   )
   const level = LEVELS[levelIdx]
@@ -338,12 +338,6 @@ export function CaminoSecreto({ day: _day, onComplete }: GameProps) {
   // "Repetir" — same paths as the attempt just finished.
   function restartSame() {
     restartEpoch()
-  }
-  // "Hacer otro" — a fresh random set of paths per level, same as before
-  // this feature existed (the only option there used to be).
-  function restartDifferent() {
-    restartEpoch()
-    setEpochOrder(LEVELS.map((lvl, i) => shuffle(lvl.pool).slice(0, ROUNDS_PER_LEVEL[i])))
   }
 
   // Fires once per roundKey when level 3 is completed. A full day restart
@@ -519,22 +513,14 @@ export function CaminoSecreto({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 text-base font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 text-base font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 text-base font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}

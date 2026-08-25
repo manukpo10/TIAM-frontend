@@ -125,10 +125,10 @@ export function QueFaltaEnLaLista({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Las 6 rondas (2 por nivel), decididas una vez por epoch — al montar y de
-  // nuevo sólo en restartDifferent() — así "Repetir" devuelve exactamente las
+  // Las 6 rondas (2 por nivel), decididas una vez por epoch, al montar —
+  // así "Repetir" devuelve exactamente las
   // mismas listas y la misma pregunta.
-  const [epochRounds, setEpochRounds] = useState(() => buildEpoch())
+  const [epochRounds] = useState(() => buildEpoch())
   const current = epochRounds[levelIdx][roundIdx]
   const roundsInLevel = ROUNDS_PER_LEVEL[levelIdx]
   const levelDone = roundIdx >= roundsInLevel
@@ -219,10 +219,6 @@ export function QueFaltaEnLaLista({ day: _day, onComplete }: GameProps) {
   }
   function restartSame() {
     restartEpoch()
-  }
-  function restartDifferent() {
-    restartEpoch()
-    setEpochRounds(buildEpoch())
   }
 
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -390,22 +386,14 @@ export function QueFaltaEnLaLista({ day: _day, onComplete }: GameProps) {
               </button>
             </div>
           ) : (
-            <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={restartSame}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border-2 border-tiam-blue bg-white px-5 font-semibold text-tiam-blue hover:bg-tiam-blue/5"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
-              </button>
-              <button
-                type="button"
-                onClick={restartDifferent}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Hacer otro
-                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           )}
