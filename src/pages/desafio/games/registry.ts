@@ -65,7 +65,7 @@ import { ListaConParecidas } from './ListaConParecidas'
 import { TripleYCorrida } from './TripleYCorrida'
 import { TrazaElCamino } from './TrazaElCamino'
 import { RompecabezasDeLetras } from './RompecabezasDeLetras'
-import { NumerosTorcidos } from './NumerosTorcidos'
+import { MarcaLosNumeros } from './MarcaLosNumeros'
 import { PistasConvergentes } from './PistasConvergentes'
 import { ElEslabonPerdido } from './ElEslabonPerdido'
 import { RecordaLosDetalles } from './RecordaLosDetalles'
@@ -179,7 +179,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     3: TripleYCorrida,
     4: TrazaElCamino,
     5: RompecabezasDeLetras,
-    6: NumerosTorcidos,
+    6: MarcaLosNumeros,
     7: PistasConvergentes,
     8: ElEslabonPerdido,
     9: RecordaLosDetalles,
