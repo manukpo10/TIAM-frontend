@@ -46,7 +46,7 @@ import { Encaminada } from './Encaminada'
 import { FluenciaCerrada } from './FluenciaCerrada'
 import { ElGranObservador } from './ElGranObservador'
 import { DondeLoDeje } from './DondeLoDeje'
-import { EsEstaSombra } from './EsEstaSombra'
+import { LetrasRevueltas } from './LetrasRevueltas'
 import { LaIntrusa } from './LaIntrusa'
 import { AlmacenDeSilabas } from './AlmacenDeSilabas'
 import { SeguiElPatron } from './SeguiElPatron'
@@ -158,7 +158,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     14: FluenciaCerrada,
     15: ElGranObservador,
     16: DondeLoDeje,
-    17: EsEstaSombra,
+    17: LetrasRevueltas,
     18: LaIntrusa,
     19: AlmacenDeSilabas,
     20: SeguiElPatron,
