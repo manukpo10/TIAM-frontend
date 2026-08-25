@@ -78,7 +78,15 @@ const LEVELS: SquareLevel[] = [
     name: 'Nivel 3',
     size: 4,
     mode: 'fragment',
-    grids: [{ rows: ['SALA', 'AJOS', 'LOMA', 'ASAS'] }],
+    // Antes era SALA/AJOS/LOMA/ASAS — verificado y simétrico, pero AJOS,
+    // LOMA y ASAS son vocabulario mucho menos cotidiano que el resto del
+    // catálogo, y sumado al modo fragmento (fichas de 2 letras, ya de por
+    // sí más abstracto que una palabra entera) el usuario lo marcó como
+    // "muy difícil". Este cuadrado usa 4 palabras de uso diario (rosa,
+    // ojos, sopa, asar) — la dificultad de nivel 3 sigue viniendo del modo
+    // fragmento, no también del vocabulario. Simetría re-verificada con el
+    // mismo script descartable que el resto de las grillas del archivo.
+    grids: [{ rows: ['ROSA', 'OJOS', 'SOPA', 'ASAR'] }],
   },
 ]
 
