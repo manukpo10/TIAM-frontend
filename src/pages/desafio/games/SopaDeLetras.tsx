@@ -10,10 +10,17 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Una sola grilla por nivel — la mecánica de sopa de letras YA es "encontrar
  * N palabras en un tablero", el equivalente natural a "rondas" acá (ver
  * REGLAS del batch: "salvo que la mecánica pida otra cosa"). Nivel 1 y 2
- * solo horizontal/vertical; nivel 3 suma diagonal, con grilla 10×10 (techo
- * duro del presupuesto mobile). El tablero se arma una vez por epoch, al
- * montar, nunca se vuelve a sortear por revisitar un nivel, así "Repetir"
- * devuelve exactamente el mismo tablero — mismo patrón que LaIntrusa.
+ * solo horizontal/vertical; nivel 3 suma diagonal. La dificultad sube por
+ * cantidad de palabras (5→6→7) y por mecánica (diagonal sólo en nivel 3),
+ * NO por tamaño de grilla: los tres niveles comparten `size: 8` a propósito
+ * — una versión anterior escalaba la grilla con el nivel (8×8→9×9→10×10)
+ * dentro del mismo contenedor `max-w-xs`, así que el nivel 3 terminaba con
+ * celdas ~22% más chicas que el nivel 1 (mismo ancho, más columnas). Por eso
+ * "BANDONEON" (9 letras) se cambió por "TROMBON" (7) en el pool de nivel 3 —
+ * a 8×8 no entra ninguna palabra de 9+ letras. El tablero se arma una vez
+ * por epoch, al montar, nunca se vuelve a sortear por revisitar un nivel,
+ * así "Repetir" devuelve exactamente el mismo tablero — mismo patrón que
+ * LaIntrusa.
  *
  * Selección: tocar-y-arrastrar con Pointer Events SIN pointer capture — así
  * los eventos de pointermove/pointerup siguen naturalmente a la celda real
@@ -25,7 +32,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 const L1_WORDS = ['ARPA', 'TUBA', 'PIANO', 'CAJON', 'TAMBOR']
 const L2_WORDS = ['OBOE', 'BOMBO', 'FLAUTA', 'ORGANO', 'VIOLIN', 'SAXOFON']
-const L3_WORDS = ['BATERIA', 'MARACAS', 'GUITARRA', 'TROMPETA', 'ACORDEON', 'CHARANGO', 'BANDONEON']
+const L3_WORDS = ['BATERIA', 'MARACAS', 'GUITARRA', 'TROMPETA', 'ACORDEON', 'CHARANGO', 'TROMBON']
 
 interface Level {
   n: number
@@ -54,20 +61,20 @@ const LEVELS: Level[] = [
     name: 'Nivel 2',
     instruction: 'Ahora hay más palabras para encontrar.',
     words: L2_WORDS,
-    size: 9,
+    size: 8,
     allowDiagonal: false,
-    boardClass: 'grid-cols-9 gap-1',
-    textClass: 'text-xs sm:text-sm',
+    boardClass: 'grid-cols-8 gap-1',
+    textClass: 'text-sm',
   },
   {
     n: 3,
     name: 'Nivel 3',
     instruction: 'Atención: ¡ahora también hay palabras en diagonal!',
     words: L3_WORDS,
-    size: 10,
+    size: 8,
     allowDiagonal: true,
-    boardClass: 'grid-cols-10 gap-1',
-    textClass: 'text-xs',
+    boardClass: 'grid-cols-8 gap-1',
+    textClass: 'text-sm',
   },
 ]
 
