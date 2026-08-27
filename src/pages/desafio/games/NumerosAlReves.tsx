@@ -20,7 +20,23 @@ import { useSequencingPuzzle } from './useSequencingPuzzle'
  * memorizar la secuencia y taparla). El truco es pasarle al hook la
  * secuencia YA invertida como `correctOrder` — el banco se arma barajando
  * esos mismos dígitos, y tocar en el orden que pide el hook ES tocarlos en
- * el orden inverso al original, sin necesitar ninguna validación aparte.
+ * el orden inverso al original.
+ *
+ * Validación INMEDIATA por ficha (attemptPlace), no un "Revisar" al final:
+ * la primera versión dejaba acomodar las fichas en cualquier orden, deshacer
+ * libremente y recién chequear todo junto al tocar "Revisar" — con nivel 1
+ * (3 cifras, sólo 3!=6 órdenes posibles) eso se podía resolver por prueba y
+ * error puro, sin pensar la inversión de verdad (feedback en vivo del
+ * usuario: "se ve muy fácil"). Ahora cada toque se valida contra la
+ * posición exacta que le toca (`item.id === placed.length`): si no es la
+ * ficha correcta para ESE lugar, rebota con una pista y no se coloca — nunca
+ * bloquea, mismo contrato "siempre reintentable" que el resto del catálogo
+ * (ElEslabonPerdido, CrucigramaDeCifras, El hilo invisible). Como una ficha
+ * sólo se acepta si es correcta, la ronda se resuelve sola al completar el
+ * último lugar — ya no hace falta un paso de "Revisar" ni un estado
+ * "completo pero mal", así que PRAISE_OK y el resumen "el inverso era X" de
+ * la primera versión se sacaron por no tener ya ningún caso real que
+ * mostrar.
  *
  * Los pools SÍ repiten cifras dentro de una misma secuencia a propósito
  * (ej. nivel 3 reutiliza el 9 y el 7) — la propia hoja de referencia lo
@@ -56,7 +72,15 @@ const LEVELS = [
 ]
 
 const PRAISE_GOOD = ['¡Exacto!', '¡Muy bien invertida!', '¡Perfecto!', '¡Así se hace!']
-const PRAISE_OK = ['¡Buen intento! Mirá cómo quedaba la secuencia.', '¡Casi! Con la práctica te sale cada vez mejor.']
+const HINTS = [
+  'Esa no es la que sigue — fijate bien qué cifra va en ese lugar.',
+  'Todavía no. Repasá la secuencia de arriba antes de tocar otra.',
+  'Casi. Contá de nuevo desde el final de la secuencia original.',
+]
+// Total de cifras a completar en todo el día — la longitud es fija por
+// nivel (todas las secuencias de un mismo pool tienen el mismo largo), así
+// que este total no depende de qué secuencias caen en cada época.
+const TOTAL_DIGITS = LEVELS.reduce((sum, lvl) => sum + lvl.rounds * lvl.pool[0].length, 0)
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -82,42 +106,64 @@ export function NumerosAlReves({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
   const order = epochOrder[levelIdx]
   const [roundIdx, setRoundIdx] = useState(0)
-  const original = order[roundIdx]
+  // `order[roundIdx]` puede ser undefined por un render de transición: el
+  // setTimeout de la última ronda sube roundIdx a level.rounds (fuera de
+  // rango) en el mismo tick en que `done` recién se vuelve true — el JSX ya
+  // no usa `original` en ese caso (gateado por `!done`), pero esta cuenta
+  // corre en CADA render sin importar el JSX, así que igual necesita un
+  // resguardo o revienta con "is not iterable" antes de llegar a pintar
+  // nada (visto en vivo).
+  const original: number[] = order[roundIdx] ?? []
   const reversed = [...original].reverse()
 
   const { bank, placed, place, unplace } = useSequencingPuzzle(reversed, `${levelIdx}-${roundKey}-${roundIdx}`)
-  const [checked, setChecked] = useState(false)
+  const [resolved, setResolved] = useState(false)
+  const [hint, setHint] = useState<string | null>(null)
+  const [wrongId, setWrongId] = useState<number | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
-  const [accMistakes, setAccMistakes] = useState(0)
-  const [accAttempts, setAccAttempts] = useState(0)
+  const [mistakes, setMistakes] = useState(0)
 
-  const isCorrect = bank.length === 0 && placed.every((item, i) => item.id === i)
-  const readyToCheck = bank.length === 0
-  const done = checked && roundIdx >= level.rounds - 1
+  // Puro en función de roundIdx, NO de `resolved` — si dependiera de ambos,
+  // el setTimeout de la última ronda que sube roundIdx Y resetea resolved a
+  // la vez haría que `done` se vuelva falso justo cuando roundIdx ya está
+  // fuera de rango (crash real visto en vivo: `order[roundIdx]` da
+  // undefined). Mismo patrón que CrucigramaDeCifras.
+  const done = roundIdx >= level.rounds
 
-  function check() {
-    setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
-    setChecked(true)
-    const stepMistakes = placed.filter((item, i) => item.id !== i).length
-    setAccMistakes((m) => m + stepMistakes)
-    setAccAttempts((a) => a + reversed.length)
-  }
-  function nextRound() {
-    setChecked(false)
-    setRoundIdx((i) => i + 1)
+  function attemptPlace(item: { id: number; value: number }) {
+    if (resolved) return
+    if (item.id !== placed.length) {
+      setWrongId(item.id)
+      setHint(pickOne(HINTS))
+      setMistakes((m) => m + 1)
+      window.setTimeout(() => setWrongId((w) => (w === item.id ? null : w)), 500)
+      return
+    }
+    setHint(null)
+    place(item)
+    if (placed.length + 1 >= reversed.length) {
+      setPraise(pickOne(PRAISE_GOOD))
+      setResolved(true)
+      window.setTimeout(() => {
+        setRoundIdx((i) => i + 1)
+        setResolved(false)
+        setHint(null)
+      }, 1000)
+    }
   }
   function advanceLevel() {
-    setChecked(false)
+    setResolved(false)
+    setHint(null)
     setRoundIdx(0)
     setLevelIdx((i) => i + 1)
   }
   function restartEpoch() {
-    setChecked(false)
+    setResolved(false)
+    setHint(null)
     setRoundIdx(0)
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
-    setAccMistakes(0)
-    setAccAttempts(0)
+    setMistakes(0)
   }
   function restartSame() {
     restartEpoch()
@@ -127,10 +173,10 @@ export function NumerosAlReves({ day: _day, onComplete }: GameProps) {
   useEffect(() => {
     if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_DIGITS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done, levelIdx, roundKey, accMistakes, accAttempts])
+  }, [done, levelIdx, roundKey, mistakes])
 
   function slot(i: number) {
     const item = placed[i]
@@ -211,7 +257,7 @@ export function NumerosAlReves({ day: _day, onComplete }: GameProps) {
         </div>
       )}
 
-      {phase === 'playing' && !done && !checked && (
+      {phase === 'playing' && !done && (
         <>
           {/* Secuencia original — siempre visible, ver cabecera. */}
           <div className="mx-auto mt-6 flex max-w-xs flex-wrap justify-center gap-2">
@@ -233,58 +279,44 @@ export function NumerosAlReves({ day: _day, onComplete }: GameProps) {
             {reversed.map((_, i) => slot(i))}
           </div>
 
-          {/* Banco de números */}
-          <div className="mx-auto mt-6 flex max-w-xs flex-wrap justify-center gap-2">
-            {bank.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => place(item)}
-                className="flex h-11 min-w-[44px] items-center justify-center rounded-lg border-2 border-slate-200 bg-white px-2 text-base font-extrabold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-              >
-                {item.value}
-              </button>
-            ))}
-          </div>
-
-          {readyToCheck && (
-            <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
+          {/* Banco de números — cada toque se valida contra el próximo lugar
+              exacto, ver cabecera. */}
+          {!resolved && (
+            <div className="mx-auto mt-6 flex max-w-xs flex-wrap justify-center gap-2">
+              {bank.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => attemptPlace(item)}
+                  className={[
+                    'flex h-11 min-w-[44px] items-center justify-center rounded-lg border-2 px-2 text-base font-extrabold transition',
+                    wrongId === item.id
+                      ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-300 bg-slate-100 text-slate-500'
+                      : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
+                  ].join(' ')}
+                >
+                  {item.value}
+                </button>
+              ))}
             </div>
           )}
+
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
+          {resolved && <p className="mt-4 text-center text-lg font-semibold text-tiam-green">{praise}</p>}
         </>
       )}
 
-      {/* Resultado */}
-      {checked && (
+      {/* Nivel completo */}
+      {done && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
-          {!isCorrect && (
-            <p className="mt-2 text-base text-slate-600">
-              El inverso era: <span className="font-bold text-slate-900">{reversed.join(' ')}</span>
-            </p>
-          )}
-          {!done ? (
-            <div className="mt-5 flex justify-center">
-              <button
-                type="button"
-                onClick={nextRound}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Siguiente secuencia
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          ) : levelIdx < LEVELS.length - 1 ? (
+          <p className="mt-1 text-slate-600">
+            Invertiste las {level.rounds} secuencias — completaste el {level.name.toLowerCase()}.
+          </p>
+          {levelIdx < LEVELS.length - 1 ? (
             <div className="mt-5 flex justify-center">
               <button
                 type="button"
