@@ -17,7 +17,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Test).
  *
  * Cada ronda arma un laberinto de columnas (ítemsPorFila) × filas de números
- * (numRows, 2/3/4 según nivel): entre cada par de filas consecutivas hay una
+ * (numRows, 2/3/3 según nivel — nivel 3 no crece más allá de nivel 2, ver su
+ * propio comentario en LEVELS más abajo): entre cada par de filas consecutivas hay una
  * PERMUTACIÓN — cada columna de la fila de arriba conecta con exactamente
  * una columna de la fila de abajo, y viceversa (nunca dos líneas nacen o
  * terminan en el mismo lugar), así el laberinto se ve exactamente como la
@@ -95,7 +96,12 @@ interface Level {
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', itemsPerRow: 4, numRows: 2, iconPool: ['🍎', '🍐', '🥕', '🥦'] },
   { n: 2, name: 'Nivel 2', itemsPerRow: 5, numRows: 3, iconPool: ['🍎', '🍐', '🎃', '🥦', '🍅'] },
-  { n: 3, name: 'Nivel 3', itemsPerRow: 6, numRows: 4, iconPool: ['🍎', '🍐', '🎃', '🥦', '🍅', '🍆'] },
+  // Mismo tamaño que nivel 2 a propósito — la forma "completa" de la hoja de
+  // referencia (6 columnas × 4 filas) resultó demasiado cargada en la
+  // práctica (feedback en vivo del usuario). Sigue siendo un nivel propio
+  // (rondas y laberintos nuevos, no comparte contenido con nivel 2), sólo
+  // que ya no escala en tamaño en el último paso.
+  { n: 3, name: 'Nivel 3', itemsPerRow: 5, numRows: 3, iconPool: ['🍎', '🍐', '🎃', '🥦', '🍅'] },
 ]
 const ROUNDS_PER_LEVEL = [2, 2, 2]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
