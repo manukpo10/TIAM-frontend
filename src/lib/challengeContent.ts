@@ -263,8 +263,17 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego visoespacial: mirá el medio dibujo y elegí, entre las opciones, cuál lo completa reflejado correctamente. Subís de dificultad a medida que avanzás.' },
   { day: 13, type: 'game', area: 'orientacion', title: 'Radar de sílabas',
     instructions: 'Un ejercicio de orientación: seguí la fórmula tocando, en orden, las celdas de sílabas que indica para armar la palabra completa. Subís de dificultad a medida que avanzás.' },
-  { day: 14, type: 'game', area: 'agnosias', title: 'Letras torcidas',
-    instructions: 'Un juego de reconocimiento: la letra aparece dada vuelta o espejada, y vos tocás cuál es en realidad entre las opciones derechas. Subís de dificultad a medida que avanzás.' },
+  // Único día 'card' de todo el catálogo (los otros 89 son 'game') — pedido
+  // explícito del usuario a partir de una hoja de ecognitiva.com ("escribí
+  // palabras que empiecen con esta sílaba"). Se descartó hacerlo juego: no
+  // existe una lista cerrada de respuestas válidas para "palabras que
+  // empiezan con CA" — validarlo de verdad pediría un diccionario completo,
+  // la única forma honesta de puntuarlo sería débil comparada con el resto
+  // del catálogo. Lápiz y papel es además más fiel al ejercicio real (fluencia
+  // verbal es, en la práctica clínica, un ejercicio de papel). Sílabas
+  // propias, distintas de la hoja de referencia (que usaba me/cu/si/pe).
+  { day: 14, type: 'card', area: 'lenguaje', title: 'Palabras por sílaba',
+    instructions: 'Hoy es un día de lápiz y papel: te dejamos 4 sílabas — CA, LU, PA y TO — y vos anotá en una hoja todas las palabras que se te ocurran que empiecen con cada una. No hay límite de tiempo ni de cantidad: cuantas más palabras encuentres, mejor ejercicio para la memoria y el lenguaje. 📝' },
   { day: 15, type: 'game', area: 'ejecutivas', title: 'Puente de opuestos',
     instructions: 'Un juego de razonamiento: mirá los dos conceptos opuestos y tocá cuál es el concepto del medio que los mide o regula. Subís de dificultad a medida que avanzás.' },
   { day: 16, type: 'game', area: 'lenguaje', title: 'La que no encaja',

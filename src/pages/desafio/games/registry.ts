@@ -73,7 +73,6 @@ import { SopaDeLetras } from './SopaDeLetras'
 import { CrucigramaDeCifras } from './CrucigramaDeCifras'
 import { LaOtraMitad } from './LaOtraMitad'
 import { RadarDeSilabas } from './RadarDeSilabas'
-import { LetrasTorcidas } from './LetrasTorcidas'
 import { PuenteDeOpuestos } from './PuenteDeOpuestos'
 import { LaQueNoEncaja } from './LaQueNoEncaja'
 import { FluenciaConRecuerdo } from './FluenciaConRecuerdo'
@@ -187,7 +186,8 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     11: CrucigramaDeCifras,
     12: LaOtraMitad,
     13: RadarDeSilabas,
-    14: LetrasTorcidas,
+    // 14 sin entrada: día 'card' (lápiz y papel), no tiene componente — ver
+    // el comentario junto a su entrada en challengeContent.ts.
     15: PuenteDeOpuestos,
     16: LaQueNoEncaja,
     17: FluenciaConRecuerdo,
