@@ -27,6 +27,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Estilo de la casa: toque incorrecto elimina esa opción (gris, nunca rojo)
  * y da una pista para releer el par; la ronda queda abierta hasta acertar.
  * Sin timer. Pantalla "¿Listo?" única vez al principio del día.
+ *
+ * La pantalla previa ya explicaba la mecánica, pero solo con la descripción
+ * abstracta ("el concepto que mide o regula") — sin nada concreto, es fácil
+ * quedarse pensando en el antónimo directo en la primera ronda real. Se
+ * agregó un ejemplo resuelto (Calor/Frío → Termómetro, el par más
+ * inmediato del propio pool de nivel 1 — "la relación es casi automática",
+ * ver arriba) siguiendo el mismo patrón "cómo se lee: un ejemplo" que
+ * OracionesAMedida/ElGranObservador. Que ese par pueda repetirse como una
+ * de las 2 rondas reales del nivel 1 no es un problema acá — igual que en
+ * ElGranObservador, no es una evaluación competitiva.
  */
 
 interface Puzzle {
@@ -201,6 +211,12 @@ export function PuenteDeOpuestos({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Vas a ver dos conceptos opuestos. Tocá, entre las opciones, cuál es el concepto que está en el medio y los mide o regula.
           </p>
+          <div className="mx-auto mt-4 flex max-w-[260px] items-center justify-center gap-2 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3">
+            <span className="text-sm font-bold text-slate-700">Calor / Frío</span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" />
+            <span className="text-sm font-extrabold uppercase tracking-wide text-tiam-blue">Termómetro</span>
+          </div>
+          <p className="mt-2 text-sm text-slate-400">Por ejemplo: el termómetro es lo que mide el calor y el frío.</p>
           <button
             type="button"
             onClick={() => setPhase('playing')}
