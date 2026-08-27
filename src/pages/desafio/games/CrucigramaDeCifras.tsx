@@ -14,7 +14,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * verificada por script antes de escribir este componente (misma disciplina
  * que Encaminada/LaPiramide) — armar a mano una forma de crucigrama válida
  * es fácil de arruinar con un índice mal puesto, así que eso se chequeó una
- * sola vez, no en cada partida. Las CIFRAS de cada celda, en cambio, se
+ * sola vez, no en cada partida. El chequeo incluye CONECTIVIDAD, no sólo
+ * bordes/alineación: las 6 formas originales de este archivo tenían 1-3
+ * tiras por grilla que no cruzaban a NINGUNA otra tira (ej. una fila de 2
+ * cifras flotando sola en una esquina, sin compartir celda con nada) — eso
+ * es justo lo que un jugador ve como "las filas y columnas no coinciden":
+ * una tira sin cruce nunca revela ni una cifra por deducción, así que se
+ * resuelve a puro ensayo-y-error de longitud+coincidencia exacta, sin
+ * sentirse un crucigrama real. Corregido rehaciendo esas tiras para que
+ * TODAS las de una misma grilla queden en una sola red conectada (BFS desde
+ * la primera tira debe alcanzar a todas — verificado por script). Las CIFRAS de cada celda, en cambio, se
  * generan al azar en cada ronda: se llena la grilla celda por celda (una
  * sola vez por celda, así una intersección queda automáticamente consistente
  * entre ambas tiras que la comparten — no hace falta ningún chequeo extra de
@@ -79,7 +88,7 @@ const L1_SHAPE_A: GridShape = {
   slots: [
     { id: 'S1', cells: [[0, 2], [1, 2], [2, 2]] },
     { id: 'S2', cells: [[1, 2], [1, 3]] },
-    { id: 'S3', cells: [[4, 0], [4, 1]] },
+    { id: 'S3', cells: [[1, 3], [2, 3], [3, 3]] },
   ],
   givenIds: ['S1'],
 }
@@ -99,8 +108,8 @@ const L2_SHAPE_A: GridShape = {
   slots: [
     { id: 'S1', cells: [[0, 3], [1, 3], [2, 3], [3, 3]] },
     { id: 'S2', cells: [[1, 2], [1, 3], [1, 4]] },
-    { id: 'S3', cells: [[3, 3], [3, 4]] },
-    { id: 'S4', cells: [[5, 0], [5, 1], [5, 2]] },
+    { id: 'S3', cells: [[3, 3], [3, 4], [3, 5]] },
+    { id: 'S4', cells: [[3, 5], [4, 5], [5, 5]] },
   ],
   givenIds: ['S1'],
 }
@@ -110,7 +119,7 @@ const L2_SHAPE_B: GridShape = {
   slots: [
     { id: 'S1', cells: [[3, 1], [3, 2], [3, 3], [3, 4]] },
     { id: 'S2', cells: [[1, 2], [2, 2], [3, 2]] },
-    { id: 'S3', cells: [[3, 4], [4, 4]] },
+    { id: 'S3', cells: [[3, 4], [4, 4], [5, 4]] },
     { id: 'S4', cells: [[5, 4], [5, 5], [5, 6]] },
   ],
   givenIds: ['S1'],
@@ -122,7 +131,7 @@ const L3_SHAPE_A: GridShape = {
     { id: 'S1', cells: [[0, 3], [1, 3], [2, 3], [3, 3]] },
     { id: 'S2', cells: [[5, 2], [5, 3], [5, 4], [5, 5]] },
     { id: 'S3', cells: [[1, 2], [1, 3], [1, 4]] },
-    { id: 'S4', cells: [[3, 3], [3, 4]] },
+    { id: 'S4', cells: [[3, 3], [3, 4], [3, 5]] },
     { id: 'S5', cells: [[3, 5], [4, 5], [5, 5]] },
     { id: 'S6', cells: [[5, 2], [6, 2]] },
   ],
@@ -136,8 +145,8 @@ const L3_SHAPE_B: GridShape = {
     { id: 'S2', cells: [[3, 5], [4, 5], [5, 5], [6, 5]] },
     { id: 'S3', cells: [[2, 2], [3, 2], [4, 2]] },
     { id: 'S4', cells: [[2, 4], [3, 4]] },
-    { id: 'S5', cells: [[3, 3], [3, 4]] },
-    { id: 'S6', cells: [[6, 2], [6, 3], [6, 4]] },
+    { id: 'S5', cells: [[3, 3], [3, 4], [3, 5]] },
+    { id: 'S6', cells: [[6, 2], [6, 3], [6, 4], [6, 5]] },
   ],
   givenIds: ['S1', 'S2'],
 }
