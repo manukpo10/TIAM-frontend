@@ -79,7 +79,7 @@ import { FluenciaConRecuerdo } from './FluenciaConRecuerdo'
 import { CompletaLaFrase } from './CompletaLaFrase'
 import { CalculoEnCuadro } from './CalculoEnCuadro'
 import { ContinuaLaSerie } from './ContinuaLaSerie'
-import { CaminoSecreto } from './CaminoSecreto'
+import { ElHiloInvisible } from './ElHiloInvisible'
 import { QueFaltaEnLaEsquina } from './QueFaltaEnLaEsquina'
 import { SinonimoAntonimoOIgual } from './SinonimoAntonimoOIgual'
 import { QueFaltaEnLaLista } from './QueFaltaEnLaLista'
@@ -194,7 +194,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     18: CompletaLaFrase,
     19: CalculoEnCuadro,
     20: ContinuaLaSerie,
-    21: CaminoSecreto,
+    21: ElHiloInvisible,
     22: QueFaltaEnLaEsquina,
     23: SinonimoAntonimoOIgual,
     24: QueFaltaEnLaLista,
