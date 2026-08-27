@@ -35,11 +35,23 @@ import type { GameProps } from '@/lib/challengeProgress'
  * the single most common connector (realistic to the language) without
  * being an exploitable default.
  *
- * Never a hard fail: a wrong tap gets a muted nudge, dims just that option
- * (`wrongIds`, cleared every round) so it's not tapped again by habit, and
- * leaves every other option live — same "always retryable" contract as the
- * rest of the app. Every round resolves via a genuine correct tap (no
- * give-up path), so totalAttempts = mistakes + TOTAL_ROUNDS.
+ * Never a hard fail, but NOT infinitely retryable either — that distinction
+ * matters here specifically. With 4 static options and wrong taps only ever
+ * dimming (never disabling) an option, a player could tap every option in
+ * turn and be GUARANTEED to land on the right one within 4 tries, no
+ * reading or recall required — the connector-distribution rebalance above
+ * fixed the "de is always right" shortcut but did nothing about this: pure
+ * mechanical exhaustion still won every round, 100% of the time, for free.
+ * Two changes close that gap: 6 options instead of 4 (buildOptions now
+ * takes 5 decoys), and a soft MAX_WRONG_TAPS=2 cap — the 2nd wrong tap
+ * auto-resolves the round (no 3rd try) with a gentle reveal card instead of
+ * the green success one (`revealed`, tracked alongside `resolved`), same
+ * "never blocks, never shames" tone as the rest of the app, just no longer
+ * an unlimited-attempts safety net. Blind sequential guessing now succeeds
+ * ~33% of the time (2 tries out of 6 options) instead of 100%. Every round
+ * still resolves exactly once either way, so totalAttempts = mistakes +
+ * TOTAL_ROUNDS is unchanged — a revealed round consumes one round same as a
+ * self-solved one, it just doesn't reward guessing.
  */
 
 interface LinkEntry {
@@ -108,6 +120,8 @@ const LEVELS: LinkLevel[] = [
 
 const ROUNDS_PER_LEVEL = [2, 2, 2]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
+// 2 tries per round, not unlimited — ver comentario de cabecera.
+const MAX_WRONG_TAPS = 2
 
 // Palabras de enlace posibles — todas reales, así que un señuelo siempre es
 // una palabra válida, sólo que incorrecta para ese par puntual.
@@ -130,7 +144,7 @@ interface Option {
   value: string
 }
 function buildOptions(answer: string): Option[] {
-  const decoys = shuffle(CONNECTOR_POOL.filter((c) => c !== answer)).slice(0, 3)
+  const decoys = shuffle(CONNECTOR_POOL.filter((c) => c !== answer)).slice(0, 5)
   return shuffle([answer, ...decoys]).map((value, id) => ({ id, value }))
 }
 
@@ -167,12 +181,17 @@ export function ElEslabonPerdido({ day: _day, onComplete }: GameProps) {
   )
 
   const [resolved, setResolved] = useState(false)
+  // Ronda resuelta por agotar MAX_WRONG_TAPS, no por un acierto genuino —
+  // controla qué tarjeta de resultado se muestra (ver cabecera).
+  const [revealed, setRevealed] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   const [mistakes, setMistakes] = useState(0)
   // Ids de opciones tocadas y erradas esta ronda — se atenúan para no
-  // volver a tocarlas por costumbre, pero no bloquean el resto.
+  // volver a tocarlas por costumbre, pero no bloquean el resto (un
+  // re-toque sobre una ya errada también cuenta para MAX_WRONG_TAPS).
   const [wrongIds, setWrongIds] = useState<number[]>([])
+  const [wrongTapCount, setWrongTapCount] = useState(0)
 
   const done = resolved && roundIdx >= roundsForLevel - 1
 
@@ -181,32 +200,47 @@ export function ElEslabonPerdido({ day: _day, onComplete }: GameProps) {
     if (opt.value === entry.answer) {
       setPraise(pickOne(PRAISE_GOOD))
       setResolved(true)
+      setRevealed(false)
+      setHint(null)
+      return
+    }
+    setMistakes((m) => m + 1)
+    setWrongIds((ids) => (ids.includes(opt.id) ? ids : [...ids, opt.id]))
+    const tapsUsed = wrongTapCount + 1
+    setWrongTapCount(tapsUsed)
+    if (tapsUsed >= MAX_WRONG_TAPS) {
+      setResolved(true)
+      setRevealed(true)
       setHint(null)
     } else {
       setHint(pickOne(NUDGE_MESSAGES))
-      setMistakes((m) => m + 1)
-      setWrongIds((ids) => (ids.includes(opt.id) ? ids : [...ids, opt.id]))
     }
   }
 
   function nextRound() {
     setResolved(false)
+    setRevealed(false)
     setHint(null)
     setWrongIds([])
+    setWrongTapCount(0)
     setRoundIdx((i) => i + 1)
   }
   function advanceLevel() {
     setLevelIdx((i) => i + 1)
     setResolved(false)
+    setRevealed(false)
     setHint(null)
     setWrongIds([])
+    setWrongTapCount(0)
     setRoundIdx(0)
   }
   function restartEpoch() {
     setLevelIdx(0)
     setResolved(false)
+    setRevealed(false)
     setHint(null)
     setWrongIds([])
+    setWrongTapCount(0)
     setRoundIdx(0)
     setMistakes(0)
     setRoundKey((k) => k + 1)
@@ -255,8 +289,8 @@ export function ElEslabonPerdido({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a ver dos palabras que parecen no tener nada que ver. Elegí, entre las 4 opciones, la palabra que las
-            conecta a las dos formando una expresión que seguro conocés.
+            Vas a ver dos palabras que parecen no tener nada que ver. Elegí, entre las 6 opciones, la palabra que las
+            conecta a las dos formando una expresión que seguro conocés. Tenés 2 intentos por par.
           </p>
           <button
             type="button"
@@ -329,15 +363,26 @@ export function ElEslabonPerdido({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {/* Result */}
+      {/* Result — dos variantes, mismo layout: verde+Sparkles si se resolvió
+          con un acierto genuino, azul+Puzzle si se reveló tras agotar
+          MAX_WRONG_TAPS (nunca la tarjeta de éxito para algo que no se
+          acertó — ver cabecera). */}
       {resolved && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
-            <Sparkles className="h-6 w-6 text-tiam-green" />
+        <div
+          className={`mt-6 rounded-3xl border p-6 text-center ${
+            revealed ? 'border-tiam-blue/20 bg-tiam-blue/5' : 'border-tiam-green/20 bg-tiam-green/5'
+          }`}
+        >
+          <div
+            className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${
+              revealed ? 'bg-tiam-blue/15' : 'bg-tiam-green/15'
+            }`}
+          >
+            {revealed ? <Puzzle className="h-6 w-6 text-tiam-blue" /> : <Sparkles className="h-6 w-6 text-tiam-green" />}
           </div>
-          <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
+          <p className="mt-3 text-xl font-bold text-slate-900">{revealed ? '¡Vamos con la próxima!' : praise}</p>
           <p className="mt-1 text-slate-600">
-            Formaste la expresión:{' '}
+            {revealed ? 'La expresión era:' : 'Formaste la expresión:'}{' '}
             <span className="font-semibold uppercase text-slate-800">
               {entry.wordA} {entry.answer} {entry.wordB}
             </span>
