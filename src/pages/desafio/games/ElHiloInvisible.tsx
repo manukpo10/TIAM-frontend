@@ -34,19 +34,41 @@ import type { GameProps } from '@/lib/challengeProgress'
  * El laberinto ENTERO (los 6 caminos, no sólo el del ícono activo) se
  * dibuja siempre completo, igual que la hoja de papel — ocultar las otras
  * líneas convertiría esto en un ejercicio trivial de "seguí la única línea
- * que hay". El ícono activo de la ronda se marca con un aro de color; el
- * jugador toca, fila por fila, la celda de número donde cree que sigue SU
- * línea (nunca en otro orden: la fila siguiente ni siquiera es interactiva
- * hasta resolver la actual, mismo contrato secuencial que TrazaElCamino).
- * Un acierto pinta ese tramo de línea en azul (progreso visible) y revela
- * la cifra en el "código" que se arma abajo; un error dreal dentro de esa
- * fila específica sólo da una pista y nunca bloquea — igual que el resto
- * del catálogo.
+ * que hay". El ícono activo de la ronda se marca con un aro de color.
+ *
+ * La grilla en sí NUNCA es superficie de toque (a propósito, mismo
+ * principio que el CaminoSecreto original: "las celdas nunca son destino
+ * de toque... las opciones de múltiple choice son la única superficie de
+ * respuesta interactiva") — la pregunta es "¿cuál es el camino COMPLETO,
+ * en números, de este ícono?" y se responde eligiendo, entre varios
+ * códigos de 2 a 4 cifras, cuál es el correcto. Los códigos señuelo son
+ * los caminos REALES de otros íconos de ESTE MISMO laberinto (nunca
+ * inventados) — así un señuelo nunca es descartable a simple vista por
+ * "no tiene pinta de código válido"; hay que haber trazado bien el ícono
+ * correcto, no solo reconocer un número con forma rara. Un acierto pinta
+ * el camino completo del ícono activo en azul (confirmación visual, todo
+ * de una vez); un error elimina esa opción (gris, nunca roja) y da una
+ * pista, sin bloquear — igual que el resto del catálogo.
  *
  * Renderizado: mismo mecanismo que TrazaElCamino.tsx (SVG con viewBox +
  * posiciones absolutas en porcentaje) pero adaptado de "una polyline por
  * camino sobre una grilla 2D" a "N líneas independientes por franja entre
  * dos filas", ya que acá son 6 caminos simultáneos, no uno solo.
+ *
+ * El color/grosor de línea NO son cosméticos, son el hallazgo real de una
+ * verificación en vivo: un primer intento con gris clarito (#94A3B8,
+ * 1.5px) se veía perfecto en la franja ícono→fila1, pero se volvía
+ * invisible a simple vista en franjas donde la permutación converge cerca
+ * de un único punto central (ej. una reversión completa [3,2,1,0]: las 4
+ * líneas se apiñan tan cerca unas de otras cerca del cruce que un trazo
+ * clarito deja de distinguirse). Confirmado con una prueba directa
+ * (pintar esas líneas de rojo intenso — SÍ aparecían, eran datos/posición
+ * correctos, sólo bajo contraste) antes de asumir que era un bug de
+ * cálculo. #64748B (slate-600) a 2px resuelve el peor caso sin verse
+ * pesado en las franjas con más separación. No confiar en un chequeo por
+ * DOM (conteo de `<line>`, atributos, computed style) como prueba de que
+ * algo "se ve": ese chequeo pasó igual con el gris invisible — sólo una
+ * captura de pantalla real lo detectó.
  *
  * Contenido: números e íconos se generan de nuevo en cada ronda (nunca fijos
  * como CaminoSecreto/TrazaElCamino) — memorizar "la fila 2 siempre es
@@ -109,25 +131,61 @@ function goodPermutation(n: number): number[] {
   return randomPermutation(n)
 }
 
+// Con la respuesta como múltiple choice de CÓDIGOS completos (ver cabecera),
+// dos columnas con el mismo código serían dos opciones idénticas en la
+// lista — ambigüedad real, no cosmética. Reintenta hasta que las
+// `itemsPerRow` columnas den `itemsPerRow` códigos distintos; verificado por
+// script (2000 corridas/nivel) que 30 intentos alcanzan siempre y de sobra
+// (peor caso nivel 1, sólo 2 cifras = 100 códigos posibles para 4 columnas:
+// máximo 3 intentos vistos en 2000 corridas).
 function buildMaze(level: Level): Maze {
-  const perms = Array.from({ length: level.numRows }, () => goodPermutation(level.itemsPerRow))
-  const rows = Array.from({ length: level.numRows }, () =>
-    Array.from({ length: level.itemsPerRow }, () => Math.floor(Math.random() * 10)),
-  )
-  const icons = shuffle(level.iconPool).slice(0, level.itemsPerRow)
-  const activeCol = Math.floor(Math.random() * level.itemsPerRow)
-  return { icons, rows, perms, activeCol }
+  let lastAttempt: Maze | null = null
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const perms = Array.from({ length: level.numRows }, () => goodPermutation(level.itemsPerRow))
+    const rows = Array.from({ length: level.numRows }, () =>
+      Array.from({ length: level.itemsPerRow }, () => Math.floor(Math.random() * 10)),
+    )
+    const maze: Maze = {
+      icons: shuffle(level.iconPool).slice(0, level.itemsPerRow),
+      rows,
+      perms,
+      activeCol: Math.floor(Math.random() * level.itemsPerRow),
+    }
+    const codes = Array.from({ length: level.itemsPerRow }, (_, c) => codeFor(maze, c))
+    if (new Set(codes).size === level.itemsPerRow) return maze
+    lastAttempt = maze
+  }
+  // Nunca pasa en la práctica (ver script de verificación arriba) — pero si
+  // los 30 intentos fallan, mejor un laberinto con un código repetido que
+  // tirar el componente entero abajo.
+  return lastAttempt as Maze
 }
 
-/** Columna que ocupa el camino activo en cada fila (0 = íconos, 1..numRows = números). */
-function activePathColumns(maze: Maze): number[] {
-  const cols = [maze.activeCol]
-  let cur = maze.activeCol
+/** Columna que ocupa un camino (el que arranca en `startCol`) en cada fila. */
+function pathColumns(maze: Maze, startCol: number): number[] {
+  const cols = [startCol]
+  let cur = startCol
   for (const perm of maze.perms) {
     cur = perm[cur]
     cols.push(cur)
   }
   return cols
+}
+/** Código de cifras (una por fila de números) del camino que arranca en `startCol`. */
+function codeFor(maze: Maze, startCol: number): string {
+  const cols = pathColumns(maze, startCol)
+  return cols.slice(1).map((col, r) => maze.rows[r][col]).join('')
+}
+// Tope parejo de 4 opciones en los 3 niveles — la dificultad real ya sube
+// vía itemsPerRow/numRows (más caminos para desambiguar, más cifras por
+// código), no hace falta encima ampliar el menú de opciones.
+function buildOptions(maze: Maze, itemsPerRow: number): string[] {
+  const numOptions = Math.min(4, itemsPerRow)
+  const correct = codeFor(maze, maze.activeCol)
+  const decoyCols = shuffle(
+    Array.from({ length: itemsPerRow }, (_, c) => c).filter((c) => c !== maze.activeCol),
+  ).slice(0, numOptions - 1)
+  return shuffle([correct, ...decoyCols.map((c) => codeFor(maze, c))])
 }
 
 const pctX = (col: number, itemsPerRow: number) => `${(col / (itemsPerRow - 1)) * 100}%`
@@ -156,59 +214,53 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
   const done = roundIdx >= roundsForLevel
   const maze = epochMazes[levelIdx][roundIdx] as Maze | undefined
 
-  const activeCols = useMemo(() => (maze ? activePathColumns(maze) : []), [maze])
-  const activeCode = useMemo(
-    () => (maze ? activeCols.slice(1).map((col, r) => maze.rows[r][col]) : []),
-    [maze, activeCols],
+  const activeCols = useMemo(() => (maze ? pathColumns(maze, maze.activeCol) : []), [maze])
+  const correctCode = useMemo(() => (maze ? codeFor(maze, maze.activeCol) : ''), [maze])
+  const options = useMemo(
+    () => (maze ? buildOptions(maze, level.itemsPerRow) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [maze],
   )
 
-  // Cuántas filas de números ya resolvió para el camino activo (0 = ninguna).
-  const [progress, setProgress] = useState(0)
-  const [resolved, setResolved] = useState(false)
+  const [eliminated, setEliminated] = useState<Set<string>>(new Set())
+  const [solved, setSolved] = useState<string | null>(null)
   const [hint, setHint] = useState<string | null>(null)
-  const [wrongCell, setWrongCell] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   // Errores, acumulados a través de niveles 1→2→3, sólo en cero en un
   // reinicio real del día — mismo patrón que el resto del catálogo.
   const [mistakes, setMistakes] = useState(0)
 
-  function tapCell(row: number, col: number) {
-    if (!maze || resolved || row !== progress + 1) return
-    if (col === activeCols[row]) {
+  function guess(code: string) {
+    if (!maze || solved || eliminated.has(code)) return
+    if (code === correctCode) {
       setHint(null)
-      const next = progress + 1
-      setProgress(next)
-      if (next >= level.numRows) {
-        setPraise(pickOne(PRAISE))
-        setResolved(true)
-        window.setTimeout(() => {
-          setRoundIdx((i) => i + 1)
-          setProgress(0)
-          setResolved(false)
-          setHint(null)
-        }, 1000)
-      }
+      setPraise(pickOne(PRAISE))
+      setSolved(code)
+      window.setTimeout(() => {
+        setRoundIdx((i) => i + 1)
+        setEliminated(new Set())
+        setSolved(null)
+        setHint(null)
+      }, 1200)
     } else {
-      const key = `${row}-${col}`
-      setWrongCell(key)
+      setEliminated((prev) => (prev.has(code) ? prev : new Set(prev).add(code)))
       setHint(pickOne(HINTS))
       setMistakes((m) => m + 1)
-      window.setTimeout(() => setWrongCell((w) => (w === key ? null : w)), 500)
     }
   }
 
   function advanceLevel() {
     setLevelIdx((i) => i + 1)
     setRoundIdx(0)
-    setProgress(0)
-    setResolved(false)
+    setEliminated(new Set())
+    setSolved(null)
     setHint(null)
   }
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
-    setProgress(0)
-    setResolved(false)
+    setEliminated(new Set())
+    setSolved(null)
     setHint(null)
     setMistakes(0)
     setRoundKey((k) => k + 1)
@@ -253,8 +305,8 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            El ícono marcado tiene una línea que se cruza con las demás hasta abajo. Seguila con la vista, fila por
-            fila, y tocá el número donde sigue tu línea — sin confundirte con las otras.
+            El ícono marcado tiene una línea que se cruza con las demás hasta abajo. Seguila con la vista hasta el
+            final y tocá, entre las opciones, el código de números que forma tu línea.
           </p>
           <button
             type="button"
@@ -269,7 +321,9 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
 
       {phase === 'playing' && !done && maze && (
         <>
-          {/* Laberinto */}
+          {/* Laberinto — sólo visual, nunca superficie de toque (ver
+              cabecera). Al acertar, el camino completo del ícono activo se
+              resalta en azul de una sola vez, como confirmación. */}
           <div className="relative mx-auto mt-4 w-full max-w-sm" style={{ aspectRatio: `${level.itemsPerRow} / ${totalRows * 0.9}` }}>
             <svg
               viewBox={`0 0 ${level.itemsPerRow - 1} ${level.numRows}`}
@@ -279,7 +333,7 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
               {maze.perms.map((perm, row) =>
                 perm.map((toCol, fromCol) => {
                   const isActiveSegment = activeCols[row] === fromCol && activeCols[row + 1] === toCol
-                  const isSolvedSegment = isActiveSegment && progress > row
+                  const isSolvedSegment = isActiveSegment && !!solved
                   return (
                     <line
                       key={`${row}-${fromCol}`}
@@ -287,8 +341,8 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
                       y1={row}
                       x2={toCol}
                       y2={row + 1}
-                      stroke={isSolvedSegment ? '#1B6FC4' : '#CBD5E1'}
-                      strokeWidth={isSolvedSegment ? 0.06 : 0.03}
+                      stroke={isSolvedSegment ? '#1B6FC4' : '#64748B'}
+                      strokeWidth={isSolvedSegment ? 2.5 : 2}
                       vectorEffect="non-scaling-stroke"
                     />
                   )
@@ -311,50 +365,60 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
               </div>
             ))}
 
-            {/* Filas de números */}
+            {/* Filas de números — puramente visuales, ver arriba */}
             {maze.rows.map((rowValues, r) =>
               rowValues.map((value, col) => {
                 const row = r + 1
-                const isNext = row === progress + 1
-                const isSolvedHere = activeCols[row] === col && progress >= row
-                const isWrong = wrongCell === `${row}-${col}`
+                const isSolvedHere = !!solved && activeCols[row] === col
                 return (
-                  <button
+                  <div
                     key={`n-${row}-${col}`}
-                    type="button"
-                    disabled={!isNext || resolved}
-                    onClick={() => tapCell(row, col)}
-                    aria-label={`número ${value}, fila ${row}, columna ${col + 1}`}
                     className={[
                       'absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-sm font-extrabold transition sm:text-base',
-                      'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                      isSolvedHere
-                        ? 'border-tiam-green bg-tiam-green/10 text-tiam-green'
-                        : isWrong
-                          ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out] border-slate-300 bg-slate-100 text-slate-500'
-                          : isNext
-                            ? 'border-tiam-blue bg-white text-slate-800 hover:bg-tiam-blue/5 active:scale-90'
-                            : 'border-slate-200 bg-white text-slate-400',
+                      isSolvedHere ? 'border-tiam-green bg-tiam-green/10 text-tiam-green' : 'border-slate-200 bg-white text-slate-700',
                     ].join(' ')}
                     style={{ left: pctX(col, level.itemsPerRow), top: pctY(row, level.numRows) }}
                   >
                     {value}
-                  </button>
+                  </div>
                 )
               }),
             )}
           </div>
 
-          {/* Código que se arma a medida que se resuelve cada fila */}
-          <div className="mx-auto mt-4 flex max-w-[220px] items-center justify-center gap-2 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3">
+          {/* Pregunta + opciones — la única superficie interactiva */}
+          <p className="mx-auto mt-4 flex max-w-xs items-center justify-center gap-2 text-center text-base font-semibold text-slate-600">
             <span className="text-xl">{maze.icons[maze.activeCol]}</span>
-            <span className="font-mono text-xl font-extrabold tracking-wider text-tiam-blue">
-              {activeCode.map((d, i) => (i < progress ? d : '_')).join(' ')}
-            </span>
+            ¿Cuál es su camino en números?
+          </p>
+          <div className="mx-auto mt-3 grid max-w-xs grid-cols-2 gap-2.5">
+            {options.map((code) => {
+              const isEliminated = eliminated.has(code)
+              const isSolvedOption = solved === code
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  disabled={isEliminated || !!solved}
+                  onClick={() => guess(code)}
+                  className={[
+                    'min-h-[48px] rounded-2xl border-2 font-mono text-lg font-bold tracking-wider transition',
+                    'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
+                    isSolvedOption
+                      ? 'border-tiam-green bg-tiam-green/5 text-slate-700 ring-2 ring-tiam-green/30'
+                      : isEliminated
+                        ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
+                        : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
+                  ].join(' ')}
+                >
+                  {code}
+                </button>
+              )
+            })}
           </div>
 
-          {hint && !resolved && <p className="mt-3 text-center text-base font-medium text-slate-500">{hint}</p>}
-          {resolved && <p className="mt-3 text-center text-lg font-semibold text-tiam-green">{praise}</p>}
+          {hint && !solved && <p className="mt-3 text-center text-base font-medium text-slate-500">{hint}</p>}
+          {solved && <p className="mt-3 text-center text-lg font-semibold text-tiam-green">{praise}</p>}
         </>
       )}
 
