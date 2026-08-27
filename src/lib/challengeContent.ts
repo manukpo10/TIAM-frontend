@@ -55,6 +55,12 @@ export type ChallengeArea =
   | 'orientacion'
   | 'ejecutivas'
 
+/** One syllable prompt in a 'card' day's pen-and-paper worksheet grid. */
+export interface WorksheetPrompt {
+  syllable: string
+  example: string
+}
+
 export interface ChallengeDayContent {
   day: number
   type: ChallengeDayType
@@ -63,6 +69,8 @@ export interface ChallengeDayContent {
   instructions: string
   /** Optional illustration (Flux-generated). Added per-day as content is produced. */
   illustration?: string
+  /** Optional structured prompts for a 'card' day — renders as a grid instead of plain text. */
+  worksheet?: WorksheetPrompt[]
 }
 
 /** Access state returned by the backend (mocked for now). */
@@ -273,7 +281,13 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // verbal es, en la práctica clínica, un ejercicio de papel). Sílabas
   // propias, distintas de la hoja de referencia (que usaba me/cu/si/pe).
   { day: 14, type: 'card', area: 'lenguaje', title: 'Palabras por sílaba',
-    instructions: 'Hoy es un día de lápiz y papel: te dejamos 4 sílabas — CA, LU, PA y TO — y vos anotá en una hoja todas las palabras que se te ocurran que empiecen con cada una. No hay límite de tiempo ni de cantidad: cuantas más palabras encuentres, mejor ejercicio para la memoria y el lenguaje. 📝' },
+    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y, para cada sílaba de abajo, escribí todas las palabras que se te ocurran que empiecen así (fijate el ejemplo en cada recuadro). No hay límite de tiempo ni de cantidad: cuantas más palabras encuentres, mejor ejercicio para la memoria y el lenguaje. 📝',
+    worksheet: [
+      { syllable: 'CA', example: 'casa' },
+      { syllable: 'LU', example: 'luna' },
+      { syllable: 'PA', example: 'pato' },
+      { syllable: 'TO', example: 'tomate' },
+    ] },
   { day: 15, type: 'game', area: 'ejecutivas', title: 'Puente de opuestos',
     instructions: 'Un juego de razonamiento: mirá los dos conceptos opuestos y tocá cuál es el concepto del medio que los mide o regula. Subís de dificultad a medida que avanzás.' },
   { day: 16, type: 'game', area: 'lenguaje', title: 'La que no encaja',

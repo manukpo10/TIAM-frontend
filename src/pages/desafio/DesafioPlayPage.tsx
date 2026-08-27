@@ -339,7 +339,11 @@ export function DesafioPlayPage() {
                 )}
               </>
             ) : (
-              <>
+              // Scrollable, same as the Game branch's own wrapper below — a
+              // plain instructions paragraph never needed it, but the
+              // worksheet grid (día 14) is tall enough to clip against the
+              // modal's fixed max-height on a short viewport without it.
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 {/* Illustration — the Flux image if present, else a colored icon placeholder */}
                 {selected.illustration ? (
                   <img
@@ -382,8 +386,33 @@ export function DesafioPlayPage() {
                   <p className="mt-4 text-lg leading-relaxed text-slate-700">
                     {selected.instructions}
                   </p>
+
+                  {/* Worksheet grid — visual stand-in for the printed sheet the
+                      player writes on; the dashed lines are illustrative only,
+                      never inputs (this is a 'card' day, nothing here submits
+                      to the backend). */}
+                  {selected.worksheet && (
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                      {selected.worksheet.map((prompt) => (
+                        <div key={prompt.syllable} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+                          <span
+                            className="inline-flex min-w-[44px] items-center justify-center rounded-lg px-3 py-1 text-lg font-extrabold uppercase text-white"
+                            style={{ backgroundColor: AREA_META[selected.area].color }}
+                          >
+                            {prompt.syllable}
+                          </span>
+                          <p className="mt-2 text-base text-slate-500">{prompt.example}</p>
+                          <div className="mt-3 space-y-2.5">
+                            {[0, 1, 2].map((i) => (
+                              <div key={i} className="h-px border-b border-dashed border-slate-300" />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
