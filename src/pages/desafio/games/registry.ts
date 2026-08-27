@@ -76,7 +76,7 @@ import { RadarDeSilabas } from './RadarDeSilabas'
 import { PuenteDeOpuestos } from './PuenteDeOpuestos'
 import { LaQueNoEncaja } from './LaQueNoEncaja'
 import { FluenciaConRecuerdo } from './FluenciaConRecuerdo'
-import { BuscaLaDistinta } from './BuscaLaDistinta'
+import { CompletaLaFrase } from './CompletaLaFrase'
 import { CalculoEnCuadro } from './CalculoEnCuadro'
 import { ContinuaLaSerie } from './ContinuaLaSerie'
 import { CaminoSecreto } from './CaminoSecreto'
@@ -191,7 +191,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     15: PuenteDeOpuestos,
     16: LaQueNoEncaja,
     17: FluenciaConRecuerdo,
-    18: BuscaLaDistinta,
+    18: CompletaLaFrase,
     19: CalculoEnCuadro,
     20: ContinuaLaSerie,
     21: CaminoSecreto,
