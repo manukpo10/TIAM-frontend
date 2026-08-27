@@ -85,7 +85,7 @@ import { SinonimoAntonimoOIgual } from './SinonimoAntonimoOIgual'
 import { QueFaltaEnLaLista } from './QueFaltaEnLaLista'
 import { OrdenaLasCifras } from './OrdenaLasCifras'
 import { CopiaElPatron } from './CopiaElPatron'
-import { ElMapaDeLetras } from './ElMapaDeLetras'
+import { NumerosAlReves } from './NumerosAlReves'
 import { ObjetosYLetras } from './ObjetosYLetras'
 import { ElGrupoCorrecto } from './ElGrupoCorrecto'
 import { CierreDeCuentas } from './CierreDeCuentas'
@@ -200,7 +200,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     24: QueFaltaEnLaLista,
     25: OrdenaLasCifras,
     26: CopiaElPatron,
-    27: ElMapaDeLetras,
+    27: NumerosAlReves,
     28: ObjetosYLetras,
     29: ElGrupoCorrecto,
     30: CierreDeCuentas,
