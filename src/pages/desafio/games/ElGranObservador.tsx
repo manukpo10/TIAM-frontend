@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles, Check } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Check, Eye } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -42,6 +42,22 @@ import type { GameProps } from '@/lib/challengeProgress'
  * matching), L2 adds one, L3 adds two — same "more options to sift" ramp
  * CualNoVa/QueOficioEs use, adapted to a many-to-one-at-a-time match instead
  * of a single odd-one-out.
+ *
+ * Ready screen + worked example: this was the one game in the catalog with
+ * no `phase: 'ready'|'playing'` intro at all (46 of the other 47 have one) —
+ * it dropped the player straight into "tap a photo, tap a tag" with no
+ * walkthrough. Added one, following OracionesAMedida.tsx's "cómo se lee: un
+ * ejemplo" mini-card pattern (input → arrow → resolved output) adapted to
+ * photo → tag. EXAMPLE reuses the 'invierno' photo specifically because it's
+ * the least ambiguous pairing in the pool (snow reads as "Invierno" faster
+ * than, say, 'campo' could be read as several things) — unlike
+ * OracionesAMedida's example, this one ISN'T a disjoint spoiler-free pattern
+ * (there's no unused 9th photo to spare): both L1 and L2 independently
+ * shuffle+split the SAME 8-photo ALL_PHOTOS pool, so every concept surfaces
+ * in every playthrough regardless of which one the tutorial shows. That's
+ * fine here — unlike OracionesAMedida's decode-the-pattern skill, seeing one
+ * worked photo→tag pair doesn't trivialize the rest; recognizing it again
+ * later is itself a legitimate bit of the same recall task.
  */
 
 interface PhotoConcept {
@@ -107,6 +123,9 @@ function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+// Ver cabecera: ejemplo resuelto que se muestra en la pantalla previa.
+const EXAMPLE: PhotoConcept = { id: 'invierno', tag: 'Invierno' }
+
 const PRAISE = ['¡Muy bien!', '¡Excelente ojo!', '¡Así se observa!', '¡Perfecto!', '¡Qué buena asociación!']
 const HINTS = [
   'Esa palabra no es — mirá bien la foto y pensá qué momento o lugar muestra.',
@@ -115,6 +134,7 @@ const HINTS = [
 ]
 
 export function ElGranObservador({ day: _day, onComplete }: GameProps) {
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -247,10 +267,9 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
         >
           {level.name}
         </span>
-        {!roundDone && (
+        {phase === 'playing' && !roundDone && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tocá una foto y su palabra</h2>
-            <p className="mt-2 text-base text-slate-500">¿Qué momento o lugar te sugiere cada imagen?</p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Ronda {roundIdx + 1} de {level.rounds}
             </p>
@@ -258,7 +277,42 @@ export function ElGranObservador({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {!roundDone && (
+      {/* Pantalla previa: única vez por día, con un ejemplo resuelto — ver
+          cabecera del archivo. */}
+      {phase === 'ready' && (
+        <div className="mt-6 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-blue/15">
+            <Eye className="h-6 w-6 text-tiam-blue" />
+          </div>
+          <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
+          <p className="mt-1 text-slate-600">
+            Vas a ver 4 fotos que muestran un momento o un lugar — una estación del año, un clima, una hora del día.
+            Tocá una foto y después tocá, entre las palabras de abajo, la que la describe.
+          </p>
+          <div className="mx-auto mt-4 flex max-w-[240px] items-center gap-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70 p-3 text-left">
+            {imgFor(EXAMPLE.id) && (
+              <img
+                src={imgFor(EXAMPLE.id)}
+                alt=""
+                className="h-14 w-14 shrink-0 rounded-xl object-cover"
+              />
+            )}
+            <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" />
+            <span className="font-bold uppercase tracking-wide text-slate-800">{EXAMPLE.tag}</span>
+          </div>
+          <p className="mt-2 text-sm text-slate-400">Por ejemplo: esta nieve es de Invierno.</p>
+          <button
+            type="button"
+            onClick={() => setPhase('playing')}
+            className="mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            Empezar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {phase === 'playing' && !roundDone && (
         <>
           {/* Photo grid */}
           <div className="mt-4 grid grid-cols-2 gap-3">
