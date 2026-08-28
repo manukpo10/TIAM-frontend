@@ -79,6 +79,15 @@ export interface ChallengeDayContent {
   illustration?: string
   /** Optional structured prompts for a 'card' day — renders as a grid instead of plain text. */
   worksheet?: WorksheetPrompt[]
+  /**
+   * When 'flower', `worksheet` renders via FlowerWorksheet instead of the
+   * plain grid — a fixed 9-slot layout (see FlowerWorksheet.tsx's `SLOTS`).
+   * `worksheet` must supply exactly 9 entries, in this exact order: [0]
+   * center, [1] top, [2] upper-right, [3] right, [4] lower-right, [5]
+   * upper-left, [6] lower-left, [7] leaf (lower-right), [8] leaf
+   * (lower-left). Omit for the default grid layout.
+   */
+  worksheetShape?: 'flower'
 }
 
 /** Access state returned by the backend (mocked for now). */
@@ -328,17 +337,20 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // (a self-portrait box) per user request — writing strengths fits this
   // catalog's digital delivery better than a drawing prompt would.
   { day: 28, type: 'card', area: 'orientacion', title: 'Todo sobre mí',
-    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada recuadro con un dato sobre vos — tu nombre, tu edad, dónde vivís, qué te gusta y qué no. En el recuadro del medio, escribí tres cosas en las que sentís que sos bueno/a. No hay respuestas correctas ni incorrectas: es un ejercicio para poner en palabras quién sos hoy. 📝',
+    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada pétalo con un dato sobre vos — tu nombre, tu edad, dónde vivís, qué te gusta y qué no. En el centro de la flor, escribí tres cosas en las que sentís que sos bueno/a. No hay respuestas correctas ni incorrectas: es un ejercicio para poner en palabras quién sos hoy. 📝',
+    worksheetShape: 'flower',
+    // Order is load-bearing — matches FlowerWorksheet's fixed SLOTS geometry
+    // exactly (center, then clockwise from top, then the 2 base leaves).
     worksheet: [
-      { label: 'Mis fortalezas', lines: 3 },
-      { label: 'Me llamo', lines: 1 },
-      { label: 'Mi edad', lines: 1 },
-      { label: 'Soy de', lines: 1 },
-      { label: 'Vivo en', lines: 1 },
-      { label: 'Me gusta', lines: 1 },
-      { label: 'No me gusta', lines: 1 },
-      { label: 'Mi color favorito', lines: 1 },
-      { label: 'Mi mejor amigo/a', lines: 1 },
+      { label: 'Mis fortalezas' },
+      { label: 'Me llamo' },
+      { label: 'Soy de' },
+      { label: 'Vivo en' },
+      { label: 'No me gusta' },
+      { label: 'Mi edad' },
+      { label: 'Me gusta' },
+      { label: 'Mi mejor amigo/a' },
+      { label: 'Mi color favorito' },
     ] },
   { day: 29, type: 'game', area: 'ejecutivas', title: 'El grupo correcto',
     instructions: 'Un juego de razonamiento: tocá el grupo correcto para cada palabra que aparezca. Subís de dificultad a medida que avanzás.' },

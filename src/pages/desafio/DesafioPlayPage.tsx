@@ -14,6 +14,7 @@ import {
 import { computeStars, type BadgeId, type ChallengeProgress, type CompleteDayResponse, type GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES_BY_MONTH } from './games/registry'
+import { FlowerWorksheet } from './FlowerWorksheet'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
 import { DayResultOverlay } from './DayResultOverlay'
 import { BadgeUnlockOverlay } from './BadgeUnlockOverlay'
@@ -391,7 +392,13 @@ export function DesafioPlayPage() {
                       player writes on; the dashed lines are illustrative only,
                       never inputs (this is a 'card' day, nothing here submits
                       to the backend). */}
-                  {selected.worksheet && (
+                  {selected.worksheet && selected.worksheetShape === 'flower' && (
+                    <div className="mt-5">
+                      <FlowerWorksheet items={selected.worksheet} color={AREA_META[selected.area].color} />
+                    </div>
+                  )}
+
+                  {selected.worksheet && selected.worksheetShape !== 'flower' && (
                     <div className="mt-5 grid grid-cols-2 gap-3">
                       {selected.worksheet.map((prompt) => (
                         <div key={prompt.label} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
