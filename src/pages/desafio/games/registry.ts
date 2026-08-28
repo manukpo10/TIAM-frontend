@@ -86,7 +86,6 @@ import { QueFaltaEnLaLista } from './QueFaltaEnLaLista'
 import { OrdenaLasCifras } from './OrdenaLasCifras'
 import { CopiaElPatron } from './CopiaElPatron'
 import { NumerosAlReves } from './NumerosAlReves'
-import { ObjetosYLetras } from './ObjetosYLetras'
 import { ElGrupoCorrecto } from './ElGrupoCorrecto'
 import { CierreDeCuentas } from './CierreDeCuentas'
 
@@ -201,7 +200,8 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     25: OrdenaLasCifras,
     26: CopiaElPatron,
     27: NumerosAlReves,
-    28: ObjetosYLetras,
+    // 28 sin entrada: día 'card' (lápiz y papel), no tiene componente — ver
+    // el comentario junto a su entrada en challengeContent.ts.
     29: ElGrupoCorrecto,
     30: CierreDeCuentas,
   },

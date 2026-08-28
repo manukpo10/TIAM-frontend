@@ -3,9 +3,9 @@
  *
  * This lives in the frontend on purpose: the `type` field distinguishes a
  * static "card" (title + instructions + illustration) from an interactive
- * mini-game (`type: 'game'`, a React component rather than data) — all 30
- * days are games as of this writing, but the split is kept so a future day
- * can still ship as a plain card if that's ever the right call. The backend
+ * mini-game (`type: 'game'`, a React component rather than data) — most days
+ * are games, but a handful are lápiz-y-papel cards (see `worksheet` below).
+ * The backend
  * only gates access (which day the buyer is on); the content itself is here.
  *
  * The 30 exercises below are grounded in cognitive-stimulation reference
@@ -55,10 +55,18 @@ export type ChallengeArea =
   | 'orientacion'
   | 'ejecutivas'
 
-/** One syllable prompt in a 'card' day's pen-and-paper worksheet grid. */
+/**
+ * One prompt in a 'card' day's pen-and-paper worksheet grid. Two shapes:
+ *  - `hint` present → renders as a colored pill `label` + `hint` text below
+ *    it (día14's "syllable + example word" shape).
+ *  - `hint` absent → renders as a plain bold `label` (a direct fill-in-the-
+ *    blank prompt, e.g. "Me llamo").
+ * `lines` controls how many blank lines render below (default 3).
+ */
 export interface WorksheetPrompt {
-  syllable: string
-  example: string
+  label: string
+  hint?: string
+  lines?: number
 }
 
 export interface ChallengeDayContent {
@@ -283,10 +291,10 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 14, type: 'card', area: 'lenguaje', title: 'Palabras por sílaba',
     instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y, para cada sílaba de abajo, escribí todas las palabras que se te ocurran que empiecen así (fijate el ejemplo en cada recuadro). No hay límite de tiempo ni de cantidad: cuantas más palabras encuentres, mejor ejercicio para la memoria y el lenguaje. 📝',
     worksheet: [
-      { syllable: 'CA', example: 'casa' },
-      { syllable: 'LU', example: 'luna' },
-      { syllable: 'PA', example: 'pato' },
-      { syllable: 'TO', example: 'tomate' },
+      { label: 'CA', hint: 'casa' },
+      { label: 'LU', hint: 'luna' },
+      { label: 'PA', hint: 'pato' },
+      { label: 'TO', hint: 'tomate' },
     ] },
   { day: 15, type: 'game', area: 'ejecutivas', title: 'Puente de opuestos',
     instructions: 'Un juego de razonamiento: mirá los dos conceptos opuestos y tocá cuál es el concepto del medio que los mide o regula. Subís de dificultad a medida que avanzás.' },
@@ -314,8 +322,24 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de praxia construccional: mirá el patrón de modelo y tocá las mismas celdas en tu cuadrícula para copiarlo. Subís de dificultad a medida que avanzás.' },
   { day: 27, type: 'game', area: 'atencion', title: 'Números al revés',
     instructions: 'Un juego de atención: mirá la secuencia de números y tocá, del banco de abajo, esos mismos números pero en orden inverso. Subís de dificultad a medida que avanzás.' },
-  { day: 28, type: 'game', area: 'agnosias', title: 'Objetos y letras',
-    instructions: 'Un juego de reconocimiento: mirá cada dibujo, date cuenta qué objeto es y sacale una letra según la regla que tiene abajo. Todas juntas, en orden, arman una palabra escondida. Subís de dificultad a medida que avanzás.' },
+  // Personal-identity worksheet (name, age, likes, strengths) — orientación
+  // personal + autoconcepto, not a closed-answer exercise, so lápiz y papel
+  // like día14. "Mis fortalezas" replaces the reference sheet's "Mi retrato"
+  // (a self-portrait box) per user request — writing strengths fits this
+  // catalog's digital delivery better than a drawing prompt would.
+  { day: 28, type: 'card', area: 'orientacion', title: 'Todo sobre mí',
+    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada recuadro con un dato sobre vos — tu nombre, tu edad, dónde vivís, qué te gusta y qué no. En el recuadro del medio, escribí tres cosas en las que sentís que sos bueno/a. No hay respuestas correctas ni incorrectas: es un ejercicio para poner en palabras quién sos hoy. 📝',
+    worksheet: [
+      { label: 'Mis fortalezas', lines: 3 },
+      { label: 'Me llamo', lines: 1 },
+      { label: 'Mi edad', lines: 1 },
+      { label: 'Soy de', lines: 1 },
+      { label: 'Vivo en', lines: 1 },
+      { label: 'Me gusta', lines: 1 },
+      { label: 'No me gusta', lines: 1 },
+      { label: 'Mi color favorito', lines: 1 },
+      { label: 'Mi mejor amigo/a', lines: 1 },
+    ] },
   { day: 29, type: 'game', area: 'ejecutivas', title: 'El grupo correcto',
     instructions: 'Un juego de razonamiento: tocá el grupo correcto para cada palabra que aparezca. Subís de dificultad a medida que avanzás.' },
   { day: 30, type: 'game', area: 'calculo', title: 'Cierre de cuentas',

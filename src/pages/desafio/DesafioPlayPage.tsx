@@ -394,16 +394,24 @@ export function DesafioPlayPage() {
                   {selected.worksheet && (
                     <div className="mt-5 grid grid-cols-2 gap-3">
                       {selected.worksheet.map((prompt) => (
-                        <div key={prompt.syllable} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-                          <span
-                            className="inline-flex min-w-[44px] items-center justify-center rounded-lg px-3 py-1 text-lg font-extrabold uppercase text-white"
-                            style={{ backgroundColor: AREA_META[selected.area].color }}
-                          >
-                            {prompt.syllable}
-                          </span>
-                          <p className="mt-2 text-base text-slate-500">{prompt.example}</p>
+                        <div key={prompt.label} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+                          {prompt.hint ? (
+                            <>
+                              <span
+                                className="inline-flex min-w-[44px] items-center justify-center rounded-lg px-3 py-1 text-lg font-extrabold uppercase text-white"
+                                style={{ backgroundColor: AREA_META[selected.area].color }}
+                              >
+                                {prompt.label}
+                              </span>
+                              <p className="mt-2 text-base text-slate-500">{prompt.hint}</p>
+                            </>
+                          ) : (
+                            <p className="text-base font-bold" style={{ color: AREA_META[selected.area].color }}>
+                              {prompt.label}
+                            </p>
+                          )}
                           <div className="mt-3 space-y-2.5">
-                            {[0, 1, 2].map((i) => (
+                            {Array.from({ length: prompt.lines ?? 3 }).map((_, i) => (
                               <div key={i} className="h-px border-b border-dashed border-slate-300" />
                             ))}
                           </div>
