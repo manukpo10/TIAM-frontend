@@ -27,6 +27,17 @@ import type { WorksheetPrompt } from '@/lib/challengeContent'
  * array by index — see the order comment on `worksheetShape` in
  * challengeContent.ts.
  */
+
+/**
+ * Purely decorative circle, no label — the ring has 3 petals on the right
+ * (Soy de/Vivo en/No me gusta) but only 2 on the left (Mi edad/Me gusta),
+ * since there's no 10th worksheet prompt to fill the mirror slot. This is
+ * the mirror image of "Vivo en"'s box (left = 100% − Vivo en's left − Vivo
+ * en's width) so the ring reads as evenly balanced left/right, without
+ * inventing content that isn't there — an unlabeled petal-sized shape,
+ * empty and unremarkable enough not to look like a missed worksheet field.
+ */
+const BALANCE_CIRCLE = { top: '35.4%', left: '15.5%', width: '19.2%', height: '23.4%' }
 const SLOTS: { top: string; left: string; width: string; height: string; shape: 'center' | 'petal' | 'leaf-left' | 'leaf-right' }[] = [
   { top: '33.6%', left: '35.6%', width: '28.8%', height: '23.4%', shape: 'center' }, // 0 Mis fortalezas
   { top: '13.3%', left: '40.4%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 1 Me llamo (top)
@@ -67,6 +78,10 @@ export function FlowerWorksheet({ items, color }: FlowerWorksheetProps) {
       <div
         className="absolute rounded-full"
         style={{ top: '57.0%', left: '48.9%', width: '2.3%', height: '33%', backgroundColor: color, opacity: 0.5 }}
+      />
+      <div
+        className="absolute rounded-full border-[3px] bg-white"
+        style={{ ...BALANCE_CIRCLE, borderColor: color }}
       />
       {/* Petals/leaves painted first, center last — so the center circle
           sits crisply on top where it overlaps them, like the reference
