@@ -1,15 +1,17 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, Clock, ShieldCheck, MapPin, Sparkles } from 'lucide-react'
+import { Heart, Clock, ShieldCheck, MapPin, Sparkles, X } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import nosotrosHero from '@/assets/nosotros-hero.jpg'
 import tallerFoto1 from '@/assets/taller/taller-1.jpg'
 import tallerFoto2 from '@/assets/taller/taller-2.jpg'
 import tallerFoto3 from '@/assets/taller/taller-3.jpg'
 import tallerFoto4 from '@/assets/taller/taller-4.jpg'
 import tallerFoto5 from '@/assets/taller/taller-5.jpg'
+import tallerFoto6 from '@/assets/taller/taller-6.jpg'
 
 // Fotos reales del Taller Interactivo para Adultos Mayores en La Plata — el
 // espacio presencial que la sección de arriba narra. Distinct alt text per
@@ -21,7 +23,49 @@ const TALLER_PHOTOS = [
   { src: tallerFoto3, alt: 'Seis personas escriben en cuadernos durante un encuentro del taller, con una consigna de lenguaje anotada en el pizarrón de fondo' },
   { src: tallerFoto4, alt: 'Participantes del taller completan fichas de estimulación cognitiva sentados a la mesa' },
   { src: tallerFoto5, alt: 'Grupo de participantes trabaja con tableros de fichas de colores para armar secuencias, en el espacio del taller en La Plata' },
+  { src: tallerFoto6, alt: 'Grupo de participantes resuelve un ejercicio de secuencia numérica anotado en el pizarrón, durante un encuentro del taller' },
 ]
+
+/** Full-size view of one taller photo — same modal pattern (backdrop,
+ * role="dialog", Escape/backdrop-click to close, body scroll lock) as
+ * CheckoutModal on Desafio30DiasPage and the day-card modal on
+ * DesafioPlayPage. */
+function PhotoLightbox({ photo, onClose }: { photo: { src: string; alt: string }; onClose: () => void }) {
+  useBodyScrollLock(true)
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 px-4 py-6"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={photo.alt}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Cerrar"
+        className="absolute right-4 top-4 rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/60"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      <img
+        src={photo.src}
+        alt={photo.alt}
+        className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  )
+}
 
 const VALUES = [
   {
@@ -51,6 +95,8 @@ const VALUES = [
 ]
 
 export function AboutPage() {
+  const [lightboxPhoto, setLightboxPhoto] = useState<(typeof TALLER_PHOTOS)[number] | null>(null)
+
   useEffect(() => {
     window.scrollTo(0, 0)
     document.title = 'Sobre TIAM — Estimulación cognitiva profesional en Argentina'
@@ -140,14 +186,20 @@ export function AboutPage() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-              {TALLER_PHOTOS.map(({ src, alt }) => (
-                <img
-                  key={src}
-                  src={src}
-                  alt={alt}
-                  className="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm"
-                  loading="lazy"
-                />
+              {TALLER_PHOTOS.map((photo) => (
+                <button
+                  key={photo.src}
+                  type="button"
+                  onClick={() => setLightboxPhoto(photo)}
+                  className="group relative overflow-hidden rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-tiam-blue/50"
+                >
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </button>
               ))}
             </div>
           </div>
@@ -208,6 +260,8 @@ export function AboutPage() {
       </main>
 
       <PublicFooter />
+
+      {lightboxPhoto && <PhotoLightbox photo={lightboxPhoto} onClose={() => setLightboxPhoto(null)} />}
     </div>
   )
 }
