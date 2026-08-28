@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Brain, Eye, MessageCircle, Hand, Calculator, Compass, Lightbulb, Puzzle,
-  Lock, Star, X, type LucideIcon,
+  Lock, Star, X, ArrowLeft, type LucideIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import {
@@ -47,6 +47,12 @@ export function DesafioPlayPage() {
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  // A big worksheet (currently just the flower) gets its own step instead of
+  // sharing scroll space with the instructions paragraph above it — reset on
+  // every day change so a previous day's 'sheet' step never leaks into the
+  // next one opened.
+  const [worksheetStep, setWorksheetStep] = useState<'intro' | 'sheet'>('intro')
+  useEffect(() => setWorksheetStep('intro'), [selectedDay])
   const [dayResult, setDayResult] = useState<{ day: number; stars: 1 | 2 | 3; message: string | null } | null>(null)
   // Newly-earned badges, shown one at a time (rare, but more than one can
   // unlock off a single completion — e.g. first day played landing on 3
@@ -290,7 +296,9 @@ export function DesafioPlayPage() {
           <div
             className={[
               'relative flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-3xl bg-white shadow-xl',
-              Game ? 'max-w-2xl' : 'max-w-md',
+              // The flower needs more room than a typical card to space its
+              // petals out without crowding — widen only on its own screen.
+              Game ? 'max-w-2xl' : selected?.worksheetShape === 'flower' && worksheetStep === 'sheet' ? 'max-w-xl' : 'max-w-md',
             ].join(' ')}
             onClick={(e) => e.stopPropagation()}
           >
@@ -345,88 +353,126 @@ export function DesafioPlayPage() {
               // worksheet grid (día 14) is tall enough to clip against the
               // modal's fixed max-height on a short viewport without it.
               <div className="min-h-0 flex-1 overflow-y-auto">
-                {/* Illustration — the Flux image if present, else a colored icon placeholder */}
-                {selected.illustration ? (
-                  <img
-                    src={selected.illustration}
-                    alt={selected.title}
-                    className="h-44 w-full object-cover"
-                  />
+                {selected.worksheetShape === 'flower' && worksheetStep === 'sheet' ? (
+                  // Dedicated screen for a big worksheet — no instructions
+                  // paragraph competing for space, so the flower gets the
+                  // full width/height to space its petals out cleanly.
+                  <div className="p-6 sm:p-8">
+                    <div className="flex items-center justify-between gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setWorksheetStep('intro')}
+                        className="-ml-1.5 flex items-center gap-1.5 rounded-lg px-1.5 py-1 text-sm font-bold text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Volver
+                      </button>
+                      <button
+                        type="button"
+                        onClick={closeDayModal}
+                        aria-label="Cerrar"
+                        className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    {selected.worksheet && (
+                      <div className="mt-4">
+                        <FlowerWorksheet items={selected.worksheet} color={AREA_META[selected.area].color} />
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <div
-                    className="flex h-44 items-center justify-center"
-                    style={{ background: `linear-gradient(135deg, ${AREA_META[selected.area].color}, ${AREA_META[selected.area].color}bb)` }}
-                  >
-                    {(() => {
-                      const Icon = AREA_META[selected.area].icon
-                      return <Icon className="h-16 w-16 text-white/90" strokeWidth={1.5} />
-                    })()}
-                  </div>
-                )}
+                  <>
+                    {/* Illustration — the Flux image if present, else a colored icon placeholder */}
+                    {selected.illustration ? (
+                      <img
+                        src={selected.illustration}
+                        alt={selected.title}
+                        className="h-44 w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="flex h-44 items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${AREA_META[selected.area].color}, ${AREA_META[selected.area].color}bb)` }}
+                      >
+                        {(() => {
+                          const Icon = AREA_META[selected.area].icon
+                          return <Icon className="h-16 w-16 text-white/90" strokeWidth={1.5} />
+                        })()}
+                      </div>
+                    )}
 
-                <div className="p-6 sm:p-8">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: AREA_META[selected.area].color }}>
-                        Día {selected.day} · {AREA_META[selected.area].label}
-                      </p>
-                      <h2 id="day-card-title" className="mt-1 text-2xl font-bold text-slate-900">
-                        {selected.title}
-                      </h2>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={closeDayModal}
-                      aria-label="Cerrar"
-                      className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <p className="mt-4 text-lg leading-relaxed text-slate-700">
-                    {selected.instructions}
-                  </p>
-
-                  {/* Worksheet grid — visual stand-in for the printed sheet the
-                      player writes on; the dashed lines are illustrative only,
-                      never inputs (this is a 'card' day, nothing here submits
-                      to the backend). */}
-                  {selected.worksheet && selected.worksheetShape === 'flower' && (
-                    <div className="mt-5">
-                      <FlowerWorksheet items={selected.worksheet} color={AREA_META[selected.area].color} />
-                    </div>
-                  )}
-
-                  {selected.worksheet && selected.worksheetShape !== 'flower' && (
-                    <div className="mt-5 grid grid-cols-2 gap-3">
-                      {selected.worksheet.map((prompt) => (
-                        <div key={prompt.label} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
-                          {prompt.hint ? (
-                            <>
-                              <span
-                                className="inline-flex min-w-[44px] items-center justify-center rounded-lg px-3 py-1 text-lg font-extrabold uppercase text-white"
-                                style={{ backgroundColor: AREA_META[selected.area].color }}
-                              >
-                                {prompt.label}
-                              </span>
-                              <p className="mt-2 text-base text-slate-500">{prompt.hint}</p>
-                            </>
-                          ) : (
-                            <p className="text-base font-bold" style={{ color: AREA_META[selected.area].color }}>
-                              {prompt.label}
-                            </p>
-                          )}
-                          <div className="mt-3 space-y-2.5">
-                            {Array.from({ length: prompt.lines ?? 3 }).map((_, i) => (
-                              <div key={i} className="h-px border-b border-dashed border-slate-300" />
-                            ))}
-                          </div>
+                    <div className="p-6 sm:p-8">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: AREA_META[selected.area].color }}>
+                            Día {selected.day} · {AREA_META[selected.area].label}
+                          </p>
+                          <h2 id="day-card-title" className="mt-1 text-2xl font-bold text-slate-900">
+                            {selected.title}
+                          </h2>
                         </div>
-                      ))}
+                        <button
+                          type="button"
+                          onClick={closeDayModal}
+                          aria-label="Cerrar"
+                          className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      <p className="mt-4 text-lg leading-relaxed text-slate-700">
+                        {selected.instructions}
+                      </p>
+
+                      {/* Worksheet grid — visual stand-in for the printed sheet the
+                          player writes on; the dashed lines are illustrative only,
+                          never inputs (this is a 'card' day, nothing here submits
+                          to the backend). */}
+                      {selected.worksheet && selected.worksheetShape === 'flower' && (
+                        <button
+                          type="button"
+                          onClick={() => setWorksheetStep('sheet')}
+                          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold text-white transition hover:opacity-90"
+                          style={{ backgroundColor: AREA_META[selected.area].color }}
+                        >
+                          Ver mi flor 🌼
+                        </button>
+                      )}
+
+                      {selected.worksheet && selected.worksheetShape !== 'flower' && (
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+                          {selected.worksheet.map((prompt) => (
+                            <div key={prompt.label} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
+                              {prompt.hint ? (
+                                <>
+                                  <span
+                                    className="inline-flex min-w-[44px] items-center justify-center rounded-lg px-3 py-1 text-lg font-extrabold uppercase text-white"
+                                    style={{ backgroundColor: AREA_META[selected.area].color }}
+                                  >
+                                    {prompt.label}
+                                  </span>
+                                  <p className="mt-2 text-base text-slate-500">{prompt.hint}</p>
+                                </>
+                              ) : (
+                                <p className="text-base font-bold" style={{ color: AREA_META[selected.area].color }}>
+                                  {prompt.label}
+                                </p>
+                              )}
+                              <div className="mt-3 space-y-2.5">
+                                {Array.from({ length: prompt.lines ?? 3 }).map((_, i) => (
+                                  <div key={i} className="h-px border-b border-dashed border-slate-300" />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
               </div>
             )}
           </div>

@@ -8,25 +8,35 @@ import type { WorksheetPrompt } from '@/lib/challengeContent'
  * only one flower-shaped day, so this stays a one-off rather than a
  * reusable layout engine.
  *
- * Petals deliberately overlap each other and the center (boxes genuinely
- * intersect, not just touch) so the whole thing reads as one fused flower
- * silhouette instead of a cluster of separate badges — matching the
- * reference sheet's hand-drawn look more closely than the first pass did.
+ * Sized by hand from actual distances, not eyeballed: the 6 ring petals are
+ * a UNIFORM size (100×150 on a 520×640 design grid) placed at radius 130
+ * from the center — chosen so adjacent petals touch or lightly overlap
+ * (checked per-pair: chord between neighboring petal centers vs. petal
+ * width) while their inner tips overlap the center circle by ~15 units, so
+ * the center (painted last, see below) cleanly swallows the petal-tip
+ * tangle instead of it staying visible. The 2 leaves sit lower, at a wider
+ * radius (210) than the first version of this layout — their boxes still
+ * overlap "No me gusta"/"Me gusta" a bit (outline overlap is fine, wanted
+ * even, it's what fuses the shapes), but their TEXT CENTERS are ~100
+ * design-units apart, verified with a live `getBoundingClientRect()` probe
+ * (see the bugfix this replaced — an earlier pass "verified" this by hand
+ * trig assuming single-line labels, which was wrong: several labels wrap
+ * to 2 lines, eating the margin a center-point calculation alone misses).
  *
  * `items` (from ChallengeDayContent.worksheet) must line up with this
  * array by index — see the order comment on `worksheetShape` in
  * challengeContent.ts.
  */
 const SLOTS: { top: string; left: string; width: string; height: string; shape: 'center' | 'petal' | 'leaf-left' | 'leaf-right' }[] = [
-  { top: '36.6%', left: '28.7%', width: '40.2%', height: '29.7%', shape: 'center' }, // 0 Mis fortalezas
-  { top: '14.0%', left: '27.1%', width: '43.4%', height: '21.6%', shape: 'petal' }, // 1 Me llamo (top)
-  { top: '24.8%', left: '57.5%', width: '36.6%', height: '22.8%', shape: 'petal' }, // 2 Soy de (upper-right)
-  { top: '44.2%', left: '64.4%', width: '33.7%', height: '24.0%', shape: 'petal' }, // 3 Vivo en (right)
-  { top: '60.0%', left: '48.8%', width: '37.8%', height: '21.6%', shape: 'petal' }, // 4 No me gusta (lower-right)
-  { top: '24.8%', left: '3.5%', width: '36.6%', height: '22.8%', shape: 'petal' }, // 5 Mi edad (upper-left)
-  { top: '60.0%', left: '11.0%', width: '37.8%', height: '21.6%', shape: 'petal' }, // 6 Me gusta (lower-left)
-  { top: '76.0%', left: '46.3%', width: '29.3%', height: '19.8%', shape: 'leaf-right' }, // 7 Mi mejor amigo/a
-  { top: '76.0%', left: '22.0%', width: '29.3%', height: '19.8%', shape: 'leaf-left' }, // 8 Mi color favorito
+  { top: '33.6%', left: '35.6%', width: '28.8%', height: '23.4%', shape: 'center' }, // 0 Mis fortalezas
+  { top: '13.3%', left: '40.4%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 1 Me llamo (top)
+  { top: '20.5%', left: '59.5%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 2 Soy de (upper-right)
+  { top: '35.4%', left: '65.3%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 3 Vivo en (right)
+  { top: '47.2%', left: '59.0%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 4 No me gusta (lower-right)
+  { top: '20.5%', left: '21.2%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 5 Mi edad (upper-left)
+  { top: '47.2%', left: '21.8%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 6 Me gusta (lower-left)
+  { top: '66.5%', left: '57.9%', width: '18.3%', height: '17.2%', shape: 'leaf-right' }, // 7 Mi mejor amigo/a
+  { top: '66.5%', left: '23.8%', width: '18.3%', height: '17.2%', shape: 'leaf-left' }, // 8 Mi color favorito
 ]
 
 /** Corner radii per shape — leaves get one sharp corner (pointing outward,
@@ -50,11 +60,11 @@ interface FlowerWorksheetProps {
  * photo can't hold live text that stays legible at phone widths). */
 export function FlowerWorksheet({ items, color }: FlowerWorksheetProps) {
   return (
-    <div className="relative mx-auto w-full max-w-sm" style={{ aspectRatio: '410 / 505' }}>
+    <div className="relative mx-auto w-full max-w-lg" style={{ aspectRatio: '520 / 640' }}>
       {/* Stem, rendered first so petals visually sit on top of it */}
       <div
         className="absolute rounded-full"
-        style={{ top: '66.3%', left: '47.8%', width: '2%', height: '25.7%', backgroundColor: color, opacity: 0.5 }}
+        style={{ top: '57.0%', left: '49.0%', width: '1.9%', height: '9.4%', backgroundColor: color, opacity: 0.5 }}
       />
       {/* Petals/leaves painted first, center last — so the center circle
           sits crisply on top where it overlaps them, like the reference
