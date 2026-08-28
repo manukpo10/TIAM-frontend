@@ -27,6 +27,13 @@ import shotLaRecetaDoble from '@/assets/desafio-screenshots/la-receta-doble.webp
 
 const PRICE_ARS = 15000
 
+// How many independent 30-day catalogs exist today (mirrors the backend's
+// ChallengePurchaseService month allowlist). This is NOT a permanent ceiling
+// — more months ship over time — so every "van N meses"-style line on this
+// page reads from here instead of a hardcoded number, and bumping this one
+// constant is the only change needed when a new month launches.
+const CHALLENGE_MONTHS_AVAILABLE = 3
+
 const formatPrice = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
@@ -102,12 +109,17 @@ const AUDIENCE = [
 // Recortes de solo la ilustración de cada juego (sin preguntas ni opciones a la vista,
 // para no espoilear la mecánica) — uno por área cognitiva. Area label/color mirror
 // AREA_META in DesafioPlayPage.tsx (single source of truth).
+//
+// All 5 are from month 1 on purpose — there's no illustration asset yet for
+// any month 2/3 game (each one needs its own custom crop, same as these),
+// so this stays a labeled "month 1" sample rather than implying it covers
+// every month. Add month 2/3 entries here once those assets exist.
 const GAME_SHOWCASE = [
-  { image: shotElReloj, day: 9, title: 'El reloj', area: 'Visuoespacial', color: '#7C3AED' },
-  { image: shotCualNoVa, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
-  { image: shotMemotest, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
-  { image: shotLaRecetaDoble, day: 26, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
-  { image: shotQueSera, day: 29, title: '¿Qué será?', area: 'Reconocimiento', color: '#DB2777' },
+  { image: shotElReloj, month: 1, day: 9, title: 'El reloj', area: 'Visuoespacial', color: '#7C3AED' },
+  { image: shotCualNoVa, month: 1, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
+  { image: shotMemotest, month: 1, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
+  { image: shotLaRecetaDoble, month: 1, day: 26, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
+  { image: shotQueSera, month: 1, day: 29, title: '¿Qué será?', area: 'Reconocimiento', color: '#DB2777' },
 ]
 
 const FAQS = [
@@ -126,6 +138,10 @@ const FAQS = [
   {
     q: '¿Es un pago mensual?',
     a: 'No. Es un único pago por los 30 días del desafío. Sin suscripciones ni cobros automáticos.',
+  },
+  {
+    q: '¿Qué pasa cuando termino los 30 días?',
+    a: `Podés volver a comprar el desafío y arrancás automáticamente con el mes siguiente — actividades completamente nuevas, sin tener que elegir nada. Por ahora hay ${CHALLENGE_MONTHS_AVAILABLE} meses distintos, y seguimos sumando más.`,
   },
 ]
 
@@ -434,12 +450,13 @@ export function Desafio30DiasPage() {
               </h2>
               <p className="mt-3 text-slate-600 max-w-xl mx-auto">
                 Cada día trabaja un área cognitiva distinta, con ilustraciones propias y letra grande.
+                Estos son del mes 1 — cada mes nuevo trae actividades completamente distintas.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
-              {GAME_SHOWCASE.map(({ image, day, title, area, color }) => (
+              {GAME_SHOWCASE.map(({ image, month, day, title, area, color }) => (
                 <article
-                  key={day}
+                  key={`${month}-${day}`}
                   className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm"
                 >
                   <div className="flex h-28 items-center justify-center bg-slate-50 p-4 sm:h-36">
@@ -454,7 +471,7 @@ export function Desafio30DiasPage() {
                       className="inline-block rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase"
                       style={{ color, backgroundColor: `${color}1A` }}
                     >
-                      Día {day} · {area}
+                      Mes {month} · Día {day} · {area}
                     </span>
                     <p className="mt-2 font-semibold text-slate-900">{title}</p>
                   </div>
@@ -699,6 +716,11 @@ export function Desafio30DiasPage() {
                 </p>
               </div>
             </div>
+
+            <p className="mt-6 text-sm text-slate-500">
+              ¿Ya hiciste un mes? Comprá de nuevo y arrancás automáticamente con el siguiente —
+              por ahora hay {CHALLENGE_MONTHS_AVAILABLE} meses distintos, y seguimos sumando más.
+            </p>
           </div>
         </section>
 
