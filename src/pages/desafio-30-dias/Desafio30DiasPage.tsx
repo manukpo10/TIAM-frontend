@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import {
   Brain, MessageCircle, CalendarCheck, Check, ChevronRight,
   ShieldCheck, Heart, Clock, Smartphone, Send, Gift, Sparkles, X,
+  MousePointerClick, CreditCard, CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -493,6 +494,152 @@ export function Desafio30DiasPage() {
                 </p>
                 {/* TODO(social-proof): replace with a real testimonial once available. */}
                 <p className="mt-4 text-sm font-semibold text-slate-500">Equipo TIAM Digital</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5.5. Purchase walkthrough — mockups, not real screenshots: this tool
+             has no way to save a browser capture as an image asset, so each
+             step is a small hand-built recreation of the real screen using
+             the same components/colors instead. Marked aria-hidden since
+             they're purely illustrative (no functional buttons/inputs). */}
+        <section aria-labelledby="steps-heading" className="py-16 md:py-24 bg-slate-50">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <SectionEyebrow text="Cómo comprar" />
+              <h2 id="steps-heading" className="text-3xl font-bold text-slate-900">
+                Así se compra, paso a paso
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Te mostramos exactamente qué vas a ver en cada paso, para que llegues tranquilo hasta el final.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Paso 1 */}
+              <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-tiam-blue/10 text-tiam-blue">
+                    <MousePointerClick className="h-5 w-5" />
+                  </div>
+                  <p className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso 1</p>
+                  <h3 className="mt-1 font-semibold text-slate-900">Tocá “Quiero empezar”</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    En cualquier parte de esta página, tocá el botón azul para arrancar.
+                  </p>
+                </div>
+                <div className="flex-1" aria-hidden="true">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="mb-3 flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-slate-300" />
+                      <span className="h-2 w-2 rounded-full bg-slate-300" />
+                      <span className="h-2 w-2 rounded-full bg-slate-300" />
+                    </div>
+                    <div className="h-2.5 w-3/4 rounded-full bg-slate-200" />
+                    <div className="mt-2 h-2.5 w-1/2 rounded-full bg-slate-200" />
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-tiam-blue px-4 py-2.5 text-sm font-semibold text-white">
+                      Quiero empezar el desafío
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Paso 2 */}
+              <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-tiam-blue/10 text-tiam-blue">
+                    <Smartphone className="h-5 w-5" />
+                  </div>
+                  <p className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso 2</p>
+                  <h3 className="mt-1 font-semibold text-slate-900">Completá tus datos</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    Nombre y WhatsApp de la persona que va a hacer los ejercicios. El email es opcional.
+                  </p>
+                </div>
+                <div className="flex-1" aria-hidden="true">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-[11px] font-semibold text-slate-500">Nombre</p>
+                    <div className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-400">
+                      María García
+                    </div>
+                    <p className="mt-2.5 text-[11px] font-semibold text-slate-500">WhatsApp</p>
+                    <div className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-400">
+                      11 2233 4455
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-xl bg-tiam-blue px-4 py-2.5 text-sm font-semibold text-white">
+                      <Send className="h-3.5 w-3.5" />
+                      Ir al pago
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Paso 3 */}
+              <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-tiam-blue/10 text-tiam-blue">
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <p className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso 3</p>
+                  <h3 className="mt-1 font-semibold text-slate-900">Pagá con Mercado Pago</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    Te lleva a Mercado Pago, donde elegís tarjeta, efectivo o transferencia. Es un pago único.
+                  </p>
+                </div>
+                <div className="flex-1" aria-hidden="true">
+                  <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center">
+                    <img src={mercadoPagoLogo} alt="" className="h-7 w-auto" />
+                    <p className="text-xs text-slate-500">Tarjeta · Efectivo · Transferencia</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Paso 4 */}
+              <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-tiam-green/10 text-tiam-green">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <p className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso 4</p>
+                  <h3 className="mt-1 font-semibold text-slate-900">Confirmá el pago</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    Volvés a esta página con la confirmación y el botón para el último paso.
+                  </p>
+                </div>
+                <div className="flex-1" aria-hidden="true">
+                  <div className="rounded-2xl border border-tiam-green/20 bg-tiam-green/5 p-4 text-center">
+                    <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-tiam-green/10">
+                      <CheckCircle2 className="h-5 w-5 text-tiam-green" />
+                    </div>
+                    <p className="mt-2 text-sm font-bold text-slate-900">¡Pago confirmado! 🎉</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Paso 5 */}
+              <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366]/10 text-[#25D366]">
+                    <MessageCircle className="h-5 w-5" />
+                  </div>
+                  <p className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso 5</p>
+                  <h3 className="mt-1 font-semibold text-slate-900">Activá por WhatsApp</h3>
+                  <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    Tocá el botón: se abre WhatsApp con un mensaje ya escrito. Enviálo y te llega el primer ejercicio al instante.
+                  </p>
+                </div>
+                <div className="flex-1" aria-hidden="true">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="rounded-2xl rounded-tl-sm bg-[#DCF8C6] px-3.5 py-2.5 text-xs leading-relaxed text-slate-700">
+                      ¡Hola! Ya compré el Desafío 30 días y quiero empezar. ¿Me mandan mi primer ejercicio? 💙
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white">
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      Activar por WhatsApp
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
