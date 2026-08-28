@@ -80,14 +80,15 @@ export interface ChallengeDayContent {
   /** Optional structured prompts for a 'card' day — renders as a grid instead of plain text. */
   worksheet?: WorksheetPrompt[]
   /**
-   * When 'flower', `worksheet` renders via FlowerWorksheet instead of the
-   * plain grid — a fixed 9-slot layout (see FlowerWorksheet.tsx's `SLOTS`).
-   * `worksheet` must supply exactly 9 entries, in this exact order: [0]
-   * center, [1] top, [2] upper-right, [3] right, [4] lower-right, [5]
-   * upper-left, [6] lower-left, [7] leaf (lower-right), [8] leaf
-   * (lower-left). Omit for the default grid layout.
+   * When 'cards', `worksheet` renders via PersonalInfoWorksheet instead of
+   * the plain grid: `worksheet[0]` becomes a featured hero card, the rest
+   * render as an icon-badged grid below it. Order is just display order —
+   * no positioning to keep in sync, unlike the flower-shaped layout this
+   * replaced (see PersonalInfoWorksheet.tsx's history for why: hand-placed
+   * overlapping shapes kept breaking in new ways on every content/sizing
+   * change; a grid can't have that failure mode). Omit for the plain grid.
    */
-  worksheetShape?: 'flower'
+  worksheetShape?: 'cards'
 }
 
 /** Access state returned by the backend (mocked for now). */
@@ -337,10 +338,10 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // (a self-portrait box) per user request — writing strengths fits this
   // catalog's digital delivery better than a drawing prompt would.
   { day: 28, type: 'card', area: 'orientacion', title: 'Todo sobre mí',
-    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada pétalo con un dato sobre vos — tu nombre, tu edad, dónde vivís, qué te gusta y qué no. En el centro de la flor, escribí tres cosas en las que sentís que sos bueno/a. No hay respuestas correctas ni incorrectas: es un ejercicio para poner en palabras quién sos hoy. 📝',
-    worksheetShape: 'flower',
-    // Order is load-bearing — matches FlowerWorksheet's fixed SLOTS geometry
-    // exactly (center, then clockwise from top, then the 2 base leaves).
+    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada tarjeta con un dato sobre vos — tu nombre, tu edad, dónde vivís, qué te gusta y qué no. En la tarjeta grande de arriba, escribí tres cosas en las que sentís que sos bueno/a. No hay respuestas correctas ni incorrectas: es un ejercicio para poner en palabras quién sos hoy. 📝',
+    worksheetShape: 'cards',
+    // worksheet[0] is the featured hero card, the rest render as a grid —
+    // see PersonalInfoWorksheet.tsx.
     worksheet: [
       { label: 'Mis fortalezas' },
       { label: 'Me llamo' },
@@ -348,6 +349,7 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
       { label: 'Vivo en' },
       { label: 'No me gusta' },
       { label: 'Mi edad' },
+      { label: 'Mi comida' },
       { label: 'Me gusta' },
       { label: 'Mi mejor amigo/a' },
       { label: 'Mi color favorito' },

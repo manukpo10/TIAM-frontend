@@ -14,7 +14,7 @@ import {
 import { computeStars, type BadgeId, type ChallengeProgress, type CompleteDayResponse, type GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logo-sinfondo.png'
 import { GAMES_BY_MONTH } from './games/registry'
-import { FlowerWorksheet } from './FlowerWorksheet'
+import { PersonalInfoWorksheet } from './PersonalInfoWorksheet'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'
 import { DayResultOverlay } from './DayResultOverlay'
 import { BadgeUnlockOverlay } from './BadgeUnlockOverlay'
@@ -47,10 +47,10 @@ export function DesafioPlayPage() {
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  // A big worksheet (currently just the flower) gets its own step instead of
-  // sharing scroll space with the instructions paragraph above it — reset on
-  // every day change so a previous day's 'sheet' step never leaks into the
-  // next one opened.
+  // A big worksheet (currently just día28's card grid) gets its own step
+  // instead of sharing scroll space with the instructions paragraph above
+  // it — reset on every day change so a previous day's 'sheet' step never
+  // leaks into the next one opened.
   const [worksheetStep, setWorksheetStep] = useState<'intro' | 'sheet'>('intro')
   useEffect(() => setWorksheetStep('intro'), [selectedDay])
   const [dayResult, setDayResult] = useState<{ day: number; stars: 1 | 2 | 3; message: string | null } | null>(null)
@@ -296,9 +296,9 @@ export function DesafioPlayPage() {
           <div
             className={[
               'relative flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-3xl bg-white shadow-xl',
-              // The flower needs more room than a typical card to space its
-              // petals out without crowding — widen only on its own screen.
-              Game ? 'max-w-2xl' : selected?.worksheetShape === 'flower' && worksheetStep === 'sheet' ? 'max-w-xl' : 'max-w-md',
+              // A card grid worksheet needs more room than a typical card to
+              // stay legible — widen only on its own screen.
+              Game ? 'max-w-2xl' : selected?.worksheetShape === 'cards' && worksheetStep === 'sheet' ? 'max-w-xl' : 'max-w-md',
             ].join(' ')}
             onClick={(e) => e.stopPropagation()}
           >
@@ -353,12 +353,16 @@ export function DesafioPlayPage() {
               // worksheet grid (día 14) is tall enough to clip against the
               // modal's fixed max-height on a short viewport without it.
               <div className="min-h-0 flex-1 overflow-y-auto">
-                {selected.worksheetShape === 'flower' && worksheetStep === 'sheet' ? (
+                {selected.worksheetShape === 'cards' && worksheetStep === 'sheet' ? (
                   // Dedicated screen for a big worksheet — no instructions
-                  // paragraph competing for space, so the flower gets the
-                  // full width/height to space its petals out cleanly.
-                  <div className="p-6 sm:p-8">
-                    <div className="flex items-center justify-between gap-4">
+                  // paragraph competing for space, so the card grid gets the
+                  // full width/height to lay out comfortably.
+                  // Horizontal padding shrinks on mobile specifically (vs.
+                  // the standard p-6/p-8 every other screen uses) — this is
+                  // the one screen where every extra pixel of width visibly
+                  // grows every card, so it's worth the asymmetry.
+                  <div className="px-2 py-6 sm:px-8 sm:py-8">
+                    <div className="flex items-center justify-between gap-4 px-1">
                       <button
                         type="button"
                         onClick={() => setWorksheetStep('intro')}
@@ -378,7 +382,7 @@ export function DesafioPlayPage() {
                     </div>
                     {selected.worksheet && (
                       <div className="mt-4">
-                        <FlowerWorksheet items={selected.worksheet} color={AREA_META[selected.area].color} />
+                        <PersonalInfoWorksheet items={selected.worksheet} color={AREA_META[selected.area].color} />
                       </div>
                     )}
                   </div>
@@ -431,18 +435,18 @@ export function DesafioPlayPage() {
                           player writes on; the dashed lines are illustrative only,
                           never inputs (this is a 'card' day, nothing here submits
                           to the backend). */}
-                      {selected.worksheet && selected.worksheetShape === 'flower' && (
+                      {selected.worksheet && selected.worksheetShape === 'cards' && (
                         <button
                           type="button"
                           onClick={() => setWorksheetStep('sheet')}
                           className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold text-white transition hover:opacity-90"
                           style={{ backgroundColor: AREA_META[selected.area].color }}
                         >
-                          Ver mi flor 🌼
+                          Ver mi hoja 📝
                         </button>
                       )}
 
-                      {selected.worksheet && selected.worksheetShape !== 'flower' && (
+                      {selected.worksheet && selected.worksheetShape !== 'cards' && (
                         <div className="mt-5 grid grid-cols-2 gap-3">
                           {selected.worksheet.map((prompt) => (
                             <div key={prompt.label} className="rounded-2xl border-2 border-slate-100 bg-slate-50 p-4">
