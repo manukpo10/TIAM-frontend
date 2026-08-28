@@ -61,10 +61,12 @@ interface FlowerWorksheetProps {
 export function FlowerWorksheet({ items, color }: FlowerWorksheetProps) {
   return (
     <div className="relative mx-auto w-full max-w-lg" style={{ aspectRatio: '520 / 640' }}>
-      {/* Stem, rendered first so petals visually sit on top of it */}
+      {/* Stem, rendered first so petals sit on top of it — starts at the
+          center's bottom edge and runs well past the leaves so a real
+          length of it stays visible below them, not just a sliver. */}
       <div
         className="absolute rounded-full"
-        style={{ top: '57.0%', left: '49.0%', width: '1.9%', height: '9.4%', backgroundColor: color, opacity: 0.5 }}
+        style={{ top: '57.0%', left: '48.9%', width: '2.3%', height: '33%', backgroundColor: color, opacity: 0.5 }}
       />
       {/* Petals/leaves painted first, center last — so the center circle
           sits crisply on top where it overlaps them, like the reference
