@@ -35,8 +35,8 @@ const SLOTS: { top: string; left: string; width: string; height: string; shape: 
   { top: '47.2%', left: '59.0%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 4 No me gusta (lower-right)
   { top: '20.5%', left: '21.2%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 5 Mi edad (upper-left)
   { top: '47.2%', left: '21.8%', width: '19.2%', height: '23.4%', shape: 'petal' }, // 6 Me gusta (lower-left)
-  { top: '66.5%', left: '57.9%', width: '18.3%', height: '17.2%', shape: 'leaf-right' }, // 7 Mi mejor amigo/a
-  { top: '66.5%', left: '23.8%', width: '18.3%', height: '17.2%', shape: 'leaf-left' }, // 8 Mi color favorito
+  { top: '66.5%', left: '50.4%', width: '18.3%', height: '17.2%', shape: 'leaf-right' }, // 7 Mi mejor amigo/a
+  { top: '66.5%', left: '31.4%', width: '18.3%', height: '17.2%', shape: 'leaf-left' }, // 8 Mi color favorito
 ]
 
 /** Corner radii per shape — leaves get one sharp corner (pointing outward,
