@@ -5,6 +5,23 @@ import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
 import nosotrosHero from '@/assets/nosotros-hero.jpg'
+import tallerFoto1 from '@/assets/taller/taller-1.jpg'
+import tallerFoto2 from '@/assets/taller/taller-2.jpg'
+import tallerFoto3 from '@/assets/taller/taller-3.jpg'
+import tallerFoto4 from '@/assets/taller/taller-4.jpg'
+import tallerFoto5 from '@/assets/taller/taller-5.jpg'
+
+// Fotos reales del Taller Interactivo para Adultos Mayores en La Plata — el
+// espacio presencial que la sección de arriba narra. Distinct alt text per
+// photo on purpose (not a repeated generic caption) since they show genuinely
+// different moments/exercises.
+const TALLER_PHOTOS = [
+  { src: tallerFoto1, alt: 'Dos personas completan ejercicios de estimulación cognitiva en cuadernos, con café y galletitas sobre la mesa' },
+  { src: tallerFoto2, alt: 'Cuatro participantes del taller resuelven ejercicios en cuadernos alrededor de una mesa compartida' },
+  { src: tallerFoto3, alt: 'Seis personas escriben en cuadernos durante un encuentro del taller, con una consigna de lenguaje anotada en el pizarrón de fondo' },
+  { src: tallerFoto4, alt: 'Participantes del taller completan fichas de estimulación cognitiva sentados a la mesa' },
+  { src: tallerFoto5, alt: 'Grupo de participantes trabaja con tableros de fichas de colores para armar secuencias, en el espacio del taller en La Plata' },
+]
 
 const VALUES = [
   {
@@ -104,6 +121,34 @@ export function AboutPage() {
                 La construimos en Argentina, para el contexto argentino: con lenguaje cercano, foco en
                 adultos mayores y un modelo de precios en pesos que no depende del dólar.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Fotos del taller — bg-white on purpose: reads as a continuation of
+            the origin-story section right above (also bg-white) rather than
+            a new beat, since these photos ARE that story, not a new topic.
+            Values right after provides the actual section break (bg-slate-50). */}
+        <section className="py-16 md:py-24 bg-white">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+                Así es el taller
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Encuentros reales, semana a semana, en La Plata.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+              {TALLER_PHOTOS.map(({ src, alt }) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={alt}
+                  className="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm"
+                  loading="lazy"
+                />
+              ))}
             </div>
           </div>
         </section>
