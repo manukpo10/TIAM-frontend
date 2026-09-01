@@ -66,7 +66,6 @@ interface PlacedSlot {
   answer: string
   given: boolean
   dir: 'Fila' | 'Columna'
-  index: number // 1-based, sólo se usa (y se muestra) para las tiras no dadas
 }
 interface CrosswordRound {
   rows: number
@@ -212,7 +211,6 @@ function buildRound(shape: GridShape): CrosswordRound {
     guard++
   } while (hasDuplicate && guard < 20)
 
-  let nextIndex = 1
   const slots: PlacedSlot[] = shape.slots.map((slot) => {
     const given = shape.givenIds.includes(slot.id)
     const horizontal = slot.cells.every(([r]) => r === slot.cells[0][0])
@@ -223,7 +221,6 @@ function buildRound(shape: GridShape): CrosswordRound {
       answer: answers[slot.id],
       given,
       dir: horizontal ? 'Fila' : 'Columna',
-      index: given ? 0 : nextIndex++,
     }
   })
   const bankOrder = shuffle(slots.filter((s) => !s.given).map((s) => s.id))
@@ -279,6 +276,14 @@ export function CrucigramaDeCifras({ day: _day, onComplete }: GameProps) {
 
   function slotPreview(slot: PlacedSlot): string {
     return slot.cells.map(([r, c]) => (visibleCellKeys.has(cellKey(r, c)) ? round.grid[r][c] : '_')).join(' ')
+  }
+
+  // Todas las celdas de una tira "Fila" comparten fila, y las de "Columna"
+  // comparten columna — así que ese único número (1-based) es a la vez el
+  // eje que hay que mostrar en la consigna Y el que ya está pintado en el
+  // borde de la grilla, para que se puedan emparejar a simple vista.
+  function slotAxisNumber(slot: PlacedSlot): number {
+    return slot.dir === 'Fila' ? slot.cells[0][0] + 1 : slot.cells[0][1] + 1
   }
 
   function attemptPlace(targetId: string) {
@@ -386,8 +391,9 @@ export function CrucigramaDeCifras({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Tocá un número del banco y después la fila o columna donde creas que encaja. Si coincide con las cifras
-            que ya cruzan ahí, se coloca solo.
+            Tocá un número del banco y después la fila o columna donde creas que encaja. Los números al borde de la
+            grilla te ayudan a ubicarla — coinciden con los de la lista. Si coincide con las cifras que ya cruzan
+            ahí, se coloca solo.
           </p>
           <button
             type="button"
@@ -404,13 +410,26 @@ export function CrucigramaDeCifras({ day: _day, onComplete }: GameProps) {
         <>
           {/* Grilla — el nivel 3 (8 columnas) se achica un poco más que
               6×6/7×7: son 64 celdas en vez de 36-49, y ese es el margen que
-              cierra el presupuesto mobile del nivel más cargado. */}
+              cierra el presupuesto mobile del nivel más cargado. Primera
+              fila/columna del grid CSS son los números de eje (1-based), no
+              celdas jugables — mismos números que usa la consigna de abajo
+              ("Fila 3", "Columna 5"), para que se puedan ubicar a simple
+              vista en vez de tener que adivinar por forma/posición. */}
           <div
             className={round.cols >= 8 ? 'mx-auto mt-3 grid w-full max-w-[260px] gap-1' : 'mx-auto mt-4 grid w-full max-w-[300px] gap-1'}
-            style={{ gridTemplateColumns: `repeat(${round.cols}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `0.9rem repeat(${round.cols}, minmax(0, 1fr))` }}
           >
-            {Array.from({ length: round.rows }, (_, r) =>
-              Array.from({ length: round.cols }, (_, c) => {
+            <div aria-hidden="true" />
+            {Array.from({ length: round.cols }, (_, c) => (
+              <div key={`col-${c}`} className="flex items-center justify-center text-[9px] font-bold text-slate-400 sm:text-[10px]">
+                {c + 1}
+              </div>
+            ))}
+            {Array.from({ length: round.rows }, (_, r) => [
+              <div key={`row-${r}`} className="flex items-center justify-center text-[9px] font-bold text-slate-400 sm:text-[10px]">
+                {r + 1}
+              </div>,
+              ...Array.from({ length: round.cols }, (_, c) => {
                 const k = cellKey(r, c)
                 if (!allSlotCellKeys.has(k)) {
                   return <div key={k} className="aspect-square rounded-md bg-slate-100" />
@@ -428,7 +447,7 @@ export function CrucigramaDeCifras({ day: _day, onComplete }: GameProps) {
                   </div>
                 )
               }),
-            )}
+            ])}
           </div>
 
           {!resolved && (
@@ -476,7 +495,7 @@ export function CrucigramaDeCifras({ day: _day, onComplete }: GameProps) {
                     ].join(' ')}
                   >
                     <span className="text-base font-bold text-slate-600">
-                      {s.index} · {s.dir}
+                      {s.dir} {slotAxisNumber(s)}
                     </span>
                     <span className="font-mono text-base font-bold text-tiam-blue">{slotPreview(s)}</span>
                   </button>
