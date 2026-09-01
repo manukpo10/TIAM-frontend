@@ -17,7 +17,7 @@ export function PublicFooter() {
               <span className="font-bold text-white">TIAM Digital</span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
-              Estimulación cognitiva profesional para adultos mayores. Todo el material que necesitás, en un solo lugar.
+              Estimulación cognitiva para cada momento: plataforma para profesionales, Desafío 30 días para familias y, pronto, formación para especializarte.
             </p>
           </div>
 
@@ -25,8 +25,9 @@ export function PublicFooter() {
           <nav aria-label="Producto">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Producto</p>
             <ul className="flex flex-col gap-3 text-sm">
+              <li><Link to="/plataforma" className="hover:text-white transition-colors">Plataforma</Link></li>
               <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
-              <li><a href="/#planes" className="hover:text-white transition-colors">Planes</a></li>
+              <li><a href="/plataforma#planes" className="hover:text-white transition-colors">Planes</a></li>
               <li><Link to="/desafio-30-dias" className="hover:text-white transition-colors">Desafío 30 días</Link></li>
               <li><Link to="/autoevaluacion" className="hover:text-white transition-colors">Autoevaluación</Link></li>
               <li><Link to="/nosotros" className="hover:text-white transition-colors">Sobre nosotros</Link></li>

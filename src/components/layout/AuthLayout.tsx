@@ -30,7 +30,7 @@ export function AuthLayout() {
 
         {/* Logo */}
         <div className="relative">
-          <Link to="/" aria-label="TIAM Digital — volver al inicio" className="inline-block">
+          <Link to="/plataforma" aria-label="TIAM Digital — volver al inicio" className="inline-block">
             <img src={logoImg} alt="TIAM" className="h-14 w-auto object-contain" />
           </Link>
         </div>
@@ -70,7 +70,7 @@ export function AuthLayout() {
       {/* Right — form panel */}
       <div className="flex flex-1 flex-col items-center justify-center bg-slate-50 px-6 py-12">
         {/* Mobile logo */}
-        <Link to="/" aria-label="TIAM Digital — volver al inicio" className="mb-8 flex items-center gap-2 lg:hidden">
+        <Link to="/plataforma" aria-label="TIAM Digital — volver al inicio" className="mb-8 flex items-center gap-2 lg:hidden">
           <img src={logoImg} alt="TIAM" className="h-8 w-auto object-contain" />
           <span className="text-xl font-bold text-slate-900">TIAM Digital</span>
         </Link>

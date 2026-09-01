@@ -20,6 +20,7 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
+  { label: 'Plataforma', href: '/plataforma', route: true },
   { label: 'Cómo funciona', href: '/demo', route: true },
   { label: 'Autoevaluación', href: '/autoevaluacion', route: true },
   { label: 'Desafío 30 días', href: '/desafio-30-dias', route: true },

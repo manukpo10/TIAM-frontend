@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 
 import { LandingPage } from '@/pages/landing/LandingPage'
+import { PlataformaPage } from '@/pages/plataforma/PlataformaPage'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
@@ -53,6 +54,7 @@ export default function App() {
           <Routes>
             {/* Public — landing */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/plataforma" element={<PlataformaPage />} />
 
             {/* Public — legal */}
             <Route path="/terms" element={<TermsPage />} />
