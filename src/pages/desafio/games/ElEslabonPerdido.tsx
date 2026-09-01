@@ -21,9 +21,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * genuine, verified Spanish expressions/idioms; nivel 1 uses very common
  * ones (dolor de cabeza, punto de vista), nivel 3 leans on figurative/less
  * literal ones (talón de Aquiles, caja de Pandora) for the requested
- * subtlety. No word is reused within the same nivel's pool (self-pairs like
- * CARA/CARA or CODO/CODO are the one deliberate exception — real Spanish
- * reduplicative idioms, cara a cara / codo con codo).
+ * subtlety. No word is reused within the same nivel's pool (CODO/CODO is
+ * the one deliberate exception — a real Spanish reduplicative idiom, codo
+ * con codo).
  *
  * Connector distribution is deliberately capped, not naturalistic: "de" is
  * the default Spanish preposition, so a pool of real expressions picked
@@ -77,7 +77,7 @@ const LEVELS: LinkLevel[] = [
       { wordA: 'PUNTO', wordB: 'VISTA', answer: 'de' },
       { wordA: 'SALA', wordB: 'ESPERA', answer: 'de' },
       { wordA: 'CAFÉ', wordB: 'LECHE', answer: 'con' },
-      { wordA: 'CARA', wordB: 'CARA', answer: 'a' },
+      { wordA: 'CARA', wordB: 'CECA', answer: 'o' },
       { wordA: 'IDA', wordB: 'VUELTA', answer: 'y' },
       { wordA: 'SANO', wordB: 'SALVO', answer: 'y' },
       { wordA: 'TARDE', wordB: 'TEMPRANO', answer: 'o' },
