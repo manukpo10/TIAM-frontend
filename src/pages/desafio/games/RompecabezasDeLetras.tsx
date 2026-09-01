@@ -138,6 +138,10 @@ export function RompecabezasDeLetras({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
+  // Nivel-level property (every entry in a level's pool either has decoys or
+  // none do, per LEVELS above) — derived, not separate state, same discipline
+  // as showReadyNudge below.
+  const levelHasDecoys = level.pool.some((e) => (e.decoys?.length ?? 0) > 0)
 
   // `ROUNDS_PER_LEVEL[i]` entries drawn at random from level i's own pool,
   // for EVERY level at once — decided once per "epoch" (a full 1→2→3 pass),
@@ -292,6 +296,16 @@ export function RompecabezasDeLetras({ day: _day, onComplete }: GameProps) {
 
       {phase === 'playing' && !done && (
         <>
+          {/* Aviso de sílabas señuelo — sólo nivel 2/3 (ver levelHasDecoys),
+              visible durante todas las rondas del nivel, no sólo la primera:
+              el banco se rearma entero en cada ronda, así que la trampa está
+              presente siempre, no sólo una vez. */}
+          {levelHasDecoys && (
+            <p className="mt-4 text-center text-sm font-medium text-tiam-orange">
+              Ojo: entre las piezas hay sílabas de más que no van en la frase.
+            </p>
+          )}
+
           {/* Frame — exactly `fragments.length` huecos, filled left-to-right
               by placedReal (real fragments only, in tap order). A wider gap
               is inserted at each `groupStarts` index to hint the phrase's
