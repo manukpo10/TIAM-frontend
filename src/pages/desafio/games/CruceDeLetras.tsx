@@ -4,7 +4,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Cruce de letras" — día 1, lenguaje. A word-square puzzle: the player taps
- * fichas (whole words at niveles 1-2, 2-letter fragments at nivel 3) in the
+ * fichas (palabra entera por fila, en los tres niveles) in the
  * order they belong so that, once the grid fills, BOTH the rows and the
  * columns spell valid Spanish words. Every grid below is a genuine symmetric
  * word square (grid[i][j] === grid[j][i]), hand-verified letter by letter —
@@ -30,21 +30,20 @@ import type { GameProps } from '@/lib/challengeProgress'
  * suave y las fichas quedan donde estaban (nunca se barren), así el jugador
  * puede deshacer sólo la que ve mal.
  *
- * Nivel 1 (3×3, mode 'word'): each row IS one ficha — a 3-letter word can't
- * split into two >=2-letter fragments, so the whole-word ficha is the only
- * shape that fits "fragmentos de 2-4 letras." Nivel 2 (4×4, mode 'word')
- * keeps whole-word fichas but a bigger grid (4 to order instead of 3).
- * Nivel 3 (4×4, mode 'fragment') splits each 4-letter row into two 2-letter
- * fichas (8 total instead of 4), which is where "más ambigüedad" actually
- * comes from — more, smaller pieces to place correctly.
+ * Los tres niveles usan la MISMA mecánica y tamaño (3×3, mode 'word', cada
+ * fila es una ficha entera) — a pedido explícito, se sacó la rampa de
+ * dificultad que antes escalaba a grillas 4×4 y, en nivel 3, a modo
+ * 'fragment' (fichas de 2 letras). El motor de abajo sigue soportando ambos
+ * modos (`mode`/`fragmentsFor`) por si algún día se vuelve a usar, pero hoy
+ * los tres niveles son, a propósito, igual de fáciles que el nivel 1 — cada
+ * uno con su propio par de grillas 3×3 para que no se repita el contenido
+ * de un nivel a otro.
  *
- * ROUNDS_PER_LEVEL is [2, 1, 1], not the usual 2-per-level: a valid 4×4
- * SYMMETRIC word square in Spanish is a hard constraint (four crossing
- * words, hand-verified), and shipping a second, hastily-checked one risks
- * teaching a wrong "word." One well-verified grid per 4×4 level is safer
- * than two rushed ones. Nivel 1's 3×3 squares are far easier to verify by
- * hand, so it keeps 2 rounds. Every round still resolves via a genuine
- * correct check (no give-up path), so totalAttempts = mistakes + TOTAL_ROUNDS.
+ * ROUNDS_PER_LEVEL es [2, 2, 2]: con los tres niveles en 3×3 (mucho más
+ * fáciles de verificar a mano que un 4×4), no hay motivo para que ningún
+ * nivel tenga menos rondas que los demás. Cada ronda se sigue resolviendo
+ * con una comprobación real (sin botón de "rendirse"), así que
+ * totalAttempts = mistakes + TOTAL_ROUNDS.
  */
 
 interface SquareGrid {
@@ -69,31 +68,25 @@ const LEVELS: SquareLevel[] = [
   {
     n: 2,
     name: 'Nivel 2',
-    size: 4,
+    size: 3,
     mode: 'word',
-    grids: [{ rows: ['AMOR', 'MESA', 'OSAR', 'RARO'] }],
+    // Antes 4×4/modo palabra — igualado a nivel 1 a pedido explícito (ver
+    // comentario de cabecera). Grillas nuevas (no las de nivel 1) para que
+    // no se repita el mismo cuadrado de un nivel a otro.
+    grids: [{ rows: ['AMO', 'MAL', 'OLA'] }, { rows: ['OSA', 'SAL', 'ALA'] }],
   },
   {
     n: 3,
     name: 'Nivel 3',
-    size: 4,
-    mode: 'fragment',
-    // Antes era SALA/AJOS/LOMA/ASAS — verificado y simétrico, pero AJOS,
-    // LOMA y ASAS son vocabulario mucho menos cotidiano que el resto del
-    // catálogo, y sumado al modo fragmento (fichas de 2 letras, ya de por
-    // sí más abstracto que una palabra entera) el usuario lo marcó como
-    // "muy difícil". Este cuadrado usa 4 palabras de uso diario (rosa,
-    // ojos, sopa, asar) — la dificultad de nivel 3 sigue viniendo del modo
-    // fragmento, no también del vocabulario. Simetría re-verificada con el
-    // mismo script descartable que el resto de las grillas del archivo.
-    grids: [{ rows: ['ROSA', 'OJOS', 'SOPA', 'ASAR'] }],
+    size: 3,
+    mode: 'word',
+    // Antes 4×4/modo fragmento — igualado a nivel 1 a pedido explícito (ver
+    // comentario de cabecera). Grillas nuevas, hand-verificadas simétricas.
+    grids: [{ rows: ['PAN', 'ARO', 'NOS'] }, { rows: ['MES', 'ESO', 'SOS'] }],
   },
 ]
 
-// Deviates from the 2-rounds-per-level default — ver el comentario de
-// cabecera: el costo de verificar a mano una grilla 4×4 simétrica adicional
-// no vale la pena frente al riesgo de un error de contenido.
-const ROUNDS_PER_LEVEL = [2, 1, 1]
+const ROUNDS_PER_LEVEL = [2, 2, 2]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
 function shuffle<T>(arr: T[]): T[] {
