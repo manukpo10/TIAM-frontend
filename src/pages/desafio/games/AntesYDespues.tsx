@@ -259,6 +259,16 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
 
       {phase === 'playing' && !done && (
         <>
+          {/* Instrucción de 2 pasos, dinámica según si hay un número
+              seleccionado — mismo patrón que QueFaltaEnLaEsquina.tsx: la
+              pantalla "¿Listo?" explica el orden una sola vez, esto lo
+              recuerda en cada ronda, no sólo al principio del día. */}
+          {!resolved && (
+            <p className="mt-4 text-center text-sm font-semibold text-tiam-blue">
+              {selectedTileId ? 'Ahora tocá el lugar donde va' : 'Primero tocá un número del banco'}
+            </p>
+          )}
+
           {/* Secuencia en 3 filas — antes / número fijo / después — en vez
               de una sola fila horizontal: con K=3 (nivel 3) los 7 elementos
               (3 + 1 + 3) no entran en una línea a 375px de ancho sin que el
