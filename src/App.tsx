@@ -31,7 +31,7 @@ import { BlogPostPage } from '@/pages/blog/BlogPostPage'
 import { ClinicalFaqPage } from '@/pages/faq/ClinicalFaqPage'
 import { DemoTourPage } from '@/pages/demo/DemoTourPage'
 import { RecursosPage } from '@/pages/recursos/RecursosPage'
-import { AboutPage } from '@/pages/about/AboutPage'
+import { TalleresPage } from '@/pages/talleres/TalleresPage'
 import { Desafio30DiasPage } from '@/pages/desafio-30-dias/Desafio30DiasPage'
 import { DesafioExitoPage } from '@/pages/desafio-30-dias/DesafioExitoPage'
 import { DesafioPlayPage } from '@/pages/desafio/DesafioPlayPage'
@@ -65,7 +65,7 @@ export default function App() {
             <Route path="/preguntas-frecuentes" element={<ClinicalFaqPage />} />
             <Route path="/demo" element={<DemoTourPage />} />
             <Route path="/recursos" element={<RecursosPage />} />
-            <Route path="/nosotros" element={<AboutPage />} />
+            <Route path="/talleres" element={<TalleresPage />} />
             <Route path="/desafio-30-dias" element={<Desafio30DiasPage />} />
             <Route path="/desafio-30-dias/exito" element={<DesafioExitoPage />} />
 

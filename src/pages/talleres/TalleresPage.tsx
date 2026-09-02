@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Heart, Clock, ShieldCheck, MapPin, Sparkles, X } from 'lucide-react'
+import { MessageCircle, Users, Heart, Brain, Puzzle, Lightbulb, X } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
-import nosotrosHero from '@/assets/nosotros-hero.jpg'
 import tallerFoto1 from '@/assets/taller/taller-1.jpg'
 import tallerFoto2 from '@/assets/taller/taller-2.jpg'
 import tallerFoto3 from '@/assets/taller/taller-3.jpg'
@@ -13,9 +11,14 @@ import tallerFoto4 from '@/assets/taller/taller-4.jpg'
 import tallerFoto5 from '@/assets/taller/taller-5.jpg'
 import tallerFoto6 from '@/assets/taller/taller-6.jpg'
 
+// Número real de inscripciones del taller (del flyer impreso), NO el de
+// WhatsApp Business que usa el bot del Desafío — este lo atiende una persona.
+const TALLER_WHATSAPP = '5492215226725'
+const TALLER_INQUIRY_TEXT = '¡Hola! Quiero sacar un turno para el taller presencial de TIAM.'
+
 // Fotos reales del Taller Interactivo para Adultos Mayores en La Plata — el
-// espacio presencial que la sección de arriba narra. Distinct alt text per
-// photo on purpose (not a repeated generic caption) since they show genuinely
+// espacio presencial que esta página narra. Distinct alt text per photo on
+// purpose (not a repeated generic caption) since they show genuinely
 // different moments/exercises.
 const TALLER_PHOTOS = [
   { src: tallerFoto1, alt: 'Dos personas completan ejercicios de estimulación cognitiva en cuadernos, con café y galletitas sobre la mesa' },
@@ -67,39 +70,36 @@ function PhotoLightbox({ photo, onClose }: { photo: { src: string; alt: string }
   )
 }
 
+// Los 4 bullets tal como están en el flyer impreso de inscripciones — copy
+// ya probado, no reinventado acá.
 const VALUES = [
-  {
-    icon: Clock,
-    title: 'Tu tiempo es clínico',
-    description:
-      'Cada hora que un profesional pierde buscando o armando material es una hora que no está con su paciente. TIAM existe para devolver ese tiempo.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Curaduría, no cantidad',
-    description:
-      'No medimos el valor en miles de ejercicios sueltos. Preferimos material curado por área cognitiva, listo para usar con adultos mayores.',
-  },
-  {
-    icon: MapPin,
-    title: 'Pensado en Argentina',
-    description:
-      'Hecho para el contexto local: lenguaje cercano, precios en pesos y pago con Mercado Pago, sin tarjetas internacionales de por medio.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Los datos de tus pacientes importan',
-    description:
-      'Tratamos la información clínica con el cuidado que merece. Podés revisar cómo la protegemos en nuestra Política de Privacidad.',
-  },
+  { icon: Brain, text: 'Ejercitamos la memoria y la atención' },
+  { icon: Puzzle, text: 'Juegos y actividades cognitivas divertidas y desafiantes' },
+  { icon: Users, text: 'Compartimos, nos escuchamos y hacemos nuevos amigos' },
+  { icon: Lightbulb, text: 'Activamos nuestra mente y mejoramos nuestra calidad de vida' },
 ]
 
-export function AboutPage() {
+function WhatsAppCta({ label }: { label: string }) {
+  return (
+    <a
+      href={`https://wa.me/${TALLER_WHATSAPP}?text=${encodeURIComponent(TALLER_INQUIRY_TEXT)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Button size="lg" className="min-h-[44px] px-8">
+        <MessageCircle className="h-4 w-4" />
+        {label}
+      </Button>
+    </a>
+  )
+}
+
+export function TalleresPage() {
   const [lightboxPhoto, setLightboxPhoto] = useState<(typeof TALLER_PHOTOS)[number] | null>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    document.title = 'Sobre TIAM — Estimulación cognitiva profesional en Argentina'
+    document.title = 'Talleres presenciales — TIAM Digital'
   }, [])
 
   return (
@@ -112,39 +112,62 @@ export function AboutPage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-4">
                   <Heart className="h-3.5 w-3.5 text-tiam-blue" />
                   <span className="text-xs font-semibold uppercase tracking-wide text-tiam-blue">
-                    Sobre nosotros
+                    Talleres personalizados
                   </span>
                 </div>
+                <p className="font-semibold text-tiam-orange mb-2">Tu mente activa, tu vida plena.</p>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
-                  Le devolvemos horas a quienes cuidan la cognición de los adultos mayores.
+                  El taller presencial donde nació TIAM.
                 </h1>
                 <p className="mt-6 text-lg text-slate-700 leading-relaxed">
                   TIAM Digital nació en un lugar concreto: el Taller Interactivo para Adultos Mayores,
                   un espacio presencial de estimulación cognitiva que funciona en La Plata desde 2024.
-                  Lo que empezó como material hecho a mano para acompañar a adultos mayores se convirtió
-                  en la herramienta que hoy ponemos en manos de otros profesionales.
+                  Hoy seguimos coordinando esos mismos encuentros, cara a cara, semana a semana.
                 </p>
+                <div className="mt-8">
+                  <WhatsAppCta label="Sacar turno por WhatsApp" />
+                </div>
+                <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm">
+                    <Users className="h-3.5 w-3.5 text-tiam-blue" />
+                    Para adultos mayores
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm">
+                    <Heart className="h-3.5 w-3.5 text-tiam-orange" />
+                    Espacio amigable y cálido
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm">
+                    <Brain className="h-3.5 w-3.5 text-tiam-green" />
+                    Grupo reducido
+                  </span>
+                </div>
               </div>
-              <img
-                src={nosotrosHero}
-                alt="Una profesional de la salud acompaña a un adulto mayor mientras completan juntos una ficha de estimulación cognitiva, junto a una ventana con luz natural"
-                className="w-full rounded-2xl shadow-sm"
-                width={1024}
-                height={572}
-                fetchPriority="high"
-              />
+              <div className="relative">
+                <img
+                  src={tallerFoto3}
+                  alt="Seis personas escriben en cuadernos durante un encuentro del taller, con una consigna de lenguaje anotada en el pizarrón de fondo"
+                  className="w-full rounded-2xl shadow-sm"
+                />
+                <div className="absolute -bottom-4 -left-4 -rotate-6 rounded-full bg-tiam-orange px-5 py-3 text-center shadow-lg">
+                  <p className="text-sm font-bold text-white leading-tight">
+                    ¡La pasamos
+                    <br />
+                    bárbaro!
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Mission / why */}
+        {/* Origin story */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-5">
-              Por qué existe TIAM
+              De dónde viene el taller
             </h2>
             <div className="space-y-4 text-slate-600 leading-relaxed">
               <p>
@@ -153,19 +176,9 @@ export function AboutPage() {
                 de memoria, atención, funciones ejecutivas y, sobre todo, integración social.
               </p>
               <p>
-                Cada encuentro exigía horas previas de preparación: buscar ejercicios, adaptarlos,
-                imprimirlos y registrar a mano qué se trabajó con cada persona. Ese trabajo invisible
-                era el que más tiempo se llevaba — y el que menos se notaba.
-              </p>
-              <p>
-                Así nació TIAM Digital: para reunir todo en un solo lugar. Una biblioteca curada por
-                área cognitiva, fichas A4 listas para imprimir, armado de sesiones en minutos y
-                seguimiento de la evolución de cada paciente. La herramienta que el taller necesitaba,
-                ahora al alcance de cualquier profesional.
-              </p>
-              <p>
-                La construimos en Argentina, para el contexto argentino: con lenguaje cercano, foco en
-                adultos mayores y un modelo de precios en pesos que no depende del dólar.
+                Cada semana, un grupo se reúne para ejercitar la mente y, de paso, pasar un buen rato
+                juntos. Con el tiempo, ese trabajo también dio origen a la plataforma digital que hoy
+                usan otros profesionales — pero el taller presencial sigue siendo el corazón de TIAM.
               </p>
             </div>
           </div>
@@ -205,22 +218,19 @@ export function AboutPage() {
           </div>
         </section>
 
-        {/* Values */}
+        {/* Values — bullets del flyer */}
         <section className="py-16 md:py-24 bg-slate-50">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-                En qué creemos
+                Un espacio para aprender, compartir y disfrutar
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {VALUES.map(({ icon: Icon, title, description }, i) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {VALUES.map(({ icon: Icon, text }, i) => {
                 const isOrange = i % 2 === 1
                 return (
-                  <article
-                    key={title}
-                    className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex gap-4 items-start"
-                  >
+                  <div key={text} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
                     <div
                       className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
                         isOrange ? 'bg-tiam-orange/10 text-tiam-orange' : 'bg-tiam-blue/10 text-tiam-blue'
@@ -228,11 +238,8 @@ export function AboutPage() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-                    </div>
-                  </article>
+                    <p className="font-medium text-slate-800 leading-snug">{text}</p>
+                  </div>
                 )
               })}
             </div>
@@ -243,17 +250,13 @@ export function AboutPage() {
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-              Probá TIAM con tus pacientes
+              ¡Te esperamos!
             </h2>
             <p className="mt-4 text-slate-600">
-              7 días gratis, sin tarjeta. Armá tu primera sesión y comprobá cuánto tiempo recuperás.
+              Sacá tu turno por WhatsApp y te contamos cómo funciona, los horarios y el valor.
             </p>
             <div className="mt-8">
-              <Link to="/register">
-                <Button size="lg" className="min-h-[44px] px-8">
-                  Armá tu primera sesión gratis
-                </Button>
-              </Link>
+              <WhatsAppCta label="Sacar turno por WhatsApp" />
             </div>
           </div>
         </section>

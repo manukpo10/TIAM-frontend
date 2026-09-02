@@ -23,10 +23,10 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Plataforma', href: '/plataforma', route: true },
   { label: 'Cómo funciona', href: '/demo', route: true },
   { label: 'Desafío 30 días', href: '/desafio-30-dias', route: true },
+  { label: 'Talleres', href: '/talleres', route: true },
   { label: 'Recursos', href: '/recursos', route: true },
   { label: 'Preguntas', href: '/preguntas-frecuentes', route: true },
   { label: 'Blog', href: '/blog', route: true },
-  { label: 'Nosotros', href: '/nosotros', route: true },
 ]
 
 export function PublicHeader() {

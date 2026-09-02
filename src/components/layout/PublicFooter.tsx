@@ -29,7 +29,7 @@ export function PublicFooter() {
               <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
               <li><a href="/plataforma#planes" className="hover:text-white transition-colors">Planes</a></li>
               <li><Link to="/desafio-30-dias" className="hover:text-white transition-colors">Desafío 30 días</Link></li>
-              <li><Link to="/nosotros" className="hover:text-white transition-colors">Sobre nosotros</Link></li>
+              <li><Link to="/talleres" className="hover:text-white transition-colors">Talleres</Link></li>
             </ul>
           </nav>
 

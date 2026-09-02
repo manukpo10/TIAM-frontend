@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { GraduationCap, ChevronRight, MessageCircle } from 'lucide-react'
+import { GraduationCap, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
 import { PublicHeader } from '@/components/layout/PublicHeader'
@@ -11,18 +11,12 @@ import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import tallerFoto from '@/assets/taller/taller-1.jpg'
 import tallerHeroFoto from '@/assets/taller/taller-5.jpg'
 
-// TIAM's WhatsApp business number (international format, no "+") — same
-// number PublicHeader/AuthLayout etc. treat as the official contact channel.
-const TIAM_BUSINESS_WHATSAPP = '5492214817297'
-const TALLER_INQUIRY_TEXT = '¡Hola! Quiero consultar por los talleres presenciales de TIAM.'
-
 // ─── Page ────────────────────────────────────────────────────────────────────
 // TIAM es una marca con 4 patas: la plataforma para profesionales
 // (/plataforma), el Desafío 30 días (/desafio-30-dias), los talleres
-// presenciales (el origen de TIAM, sin ruta propia todavía — consulta por
-// WhatsApp) y un curso futuro (todavía sin contenido). Esta página es el hub
-// liviano que bifurca a las 4 — el pitch completo de cada producto vive en
-// su propia ruta cuando la tiene.
+// presenciales (/talleres, el origen de TIAM) y un curso futuro (todavía sin
+// contenido). Esta página es el hub liviano que bifurca a las 4 — el pitch
+// completo de cada producto vive en su propia ruta cuando la tiene.
 
 export function LandingPage() {
   useEffect(() => {
@@ -149,17 +143,12 @@ export function LandingPage() {
                   Encuentros grupales en La Plata, guiados en persona y adaptados a cada grupo —
                   el formato original con el que arrancamos, antes de la app y el Desafío.
                 </p>
-                <a
-                  href={`https://wa.me/${TIAM_BUSINESS_WHATSAPP}?text=${encodeURIComponent(TALLER_INQUIRY_TEXT)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6"
-                >
+                <Link to="/talleres" className="mt-6">
                   <Button size="lg" className="w-full min-h-[44px]">
-                    <MessageCircle className="h-4 w-4" />
-                    Consultanos por WhatsApp
+                    Conocer los talleres
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
-                </a>
+                </Link>
               </div>
 
               {/* Curso — próximamente, sin link (elemento inerte) */}
@@ -187,7 +176,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── Closing — pointer to /nosotros ─────────────────────────────────── */}
+        {/* ── Closing — pointer to /talleres ───────────────────────────────── */}
         <section className="py-16 md:py-20 bg-slate-50 border-t border-slate-100">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
             <h2 className="text-2xl font-bold text-slate-900">
@@ -198,7 +187,7 @@ export function LandingPage() {
             </p>
             <div className="mt-6">
               <Link
-                to="/nosotros"
+                to="/talleres"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
               >
                 Conocer nuestra historia
