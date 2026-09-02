@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Download, FileText, Check, Gift, Brain, Target, Hand, type LucideIcon } from 'lucide-react'
+import { Download, FileText, Check, Gift, Brain, Target, Hand, Quote, ListOrdered, type LucideIcon } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
@@ -19,6 +19,8 @@ const FICHAS: Ficha[] = [
   { file: '/recursos/ficha-memoria.pdf', area: 'Memoria', title: 'Categorías: escribí 4 ejemplos', icon: Brain },
   { file: '/recursos/ficha-atencion.pdf', area: 'Atención', title: 'Encontrá las estrellas', icon: Target },
   { file: '/recursos/ficha-praxias.pdf', area: 'Praxias', title: 'Copiá la figura en la cuadrícula', icon: Hand },
+  { file: '/recursos/ficha-lenguaje.pdf', area: 'Lenguaje', title: 'Dichos a medias: completá el refrán', icon: Quote },
+  { file: '/recursos/ficha-ejecutivas.pdf', area: 'Funciones ejecutivas', title: 'Ordená los pasos', icon: ListOrdered },
 ]
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -70,16 +72,17 @@ export function RecursosPage() {
                   <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
                 </div>
                 <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-                  3 fichas gratis para tus sesiones
+                  5 fichas gratis para tus sesiones
                 </h1>
                 <p className="mt-4 max-w-2xl text-lg text-slate-600 leading-relaxed">
-                  Una muestra del material de TIAM: tres fichas imprimibles en A4, listas para trabajar
-                  memoria, atención y praxias. Dejanos tu email y las descargás al instante.
+                  Una muestra del material de TIAM: cinco fichas imprimibles en A4, listas para trabajar
+                  memoria, atención, praxias, lenguaje y funciones ejecutivas. Dejanos tu email y las
+                  descargás al instante.
                 </p>
               </div>
               <img
                 src={recursosHero}
-                alt="Vista previa de las 3 fichas gratuitas de TIAM: memoria, atención y praxias, listas para imprimir en A4"
+                alt="Vista previa de las fichas gratuitas de TIAM, listas para imprimir en A4"
                 className="w-full rounded-2xl"
                 width={1024}
                 height={572}
@@ -145,7 +148,7 @@ export function RecursosPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} noValidate>
-                  <h2 className="text-xl font-bold text-slate-900">Descargá las fichas</h2>
+                  <h2 className="text-xl font-bold text-slate-900">Descargá las 5 fichas</h2>
                   <p className="mt-1 text-sm text-slate-600">Te las damos a cambio de tu email.</p>
 
                   <div className="mt-5 space-y-4">
@@ -212,7 +215,7 @@ export function RecursosPage() {
                     className="mt-5 w-full"
                   >
                     <Download className="h-4 w-4" />
-                    Descargar las 3 fichas
+                    Descargar las 5 fichas
                   </Button>
 
                   <p className="mt-3 text-xs text-slate-400 text-center">
