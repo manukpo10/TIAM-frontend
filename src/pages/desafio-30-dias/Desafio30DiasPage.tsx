@@ -59,7 +59,7 @@ const HOW_IT_WORKS = [
     step: '03',
     icon: CalendarCheck,
     title: 'Un ejercicio nuevo cada día',
-    description: 'Durante 30 días, cada día pedís tu actividad por WhatsApp con un simple mensaje. Para hacer en casa, a tu ritmo, en pocos minutos.',
+    description: 'Durante 30 días se desbloquea un ejercicio cognitivo distinto cada día, siempre en el mismo link que ya tenés. Para hacer en casa, a tu ritmo, en pocos minutos.',
   },
 ]
 
