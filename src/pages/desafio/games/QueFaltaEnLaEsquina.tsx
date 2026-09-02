@@ -8,34 +8,49 @@ import type { GameProps } from '@/lib/challengeProgress'
  * A pedido explícito del usuario ("quiero que sea un rompecabezas y que lo
  * arme") se pasó de una tarea de reconocimiento (elegir, entre 3 recortes,
  * cuál completa la ÚNICA esquina tapada) a una de armado real: la foto
- * completa se corta en 4 piezas (2×2) y el jugador arma el rompecabezas
- * entero, tocando una pieza del banco y después el casillero donde cree que
- * va. El banco mezcla las 4 piezas reales con 2 señuelos — piezas de OTROS
- * objetos — así armar sigue exigiendo distinguir "¿es esta foto o no?"
- * además de, ahora también, "¿en qué lugar va?".
+ * completa se corta en piezas y el jugador arma el rompecabezas entero,
+ * tocando una pieza del banco y después el casillero donde cree que va. El
+ * banco mezcla las piezas reales con señuelos — piezas de OTROS objetos —
+ * así armar sigue exigiendo distinguir "¿es esta foto o no?" además de
+ * "¿en qué lugar va?".
+ *
+ * Grilla variable por nivel (`gridRows`×`gridCols`, ver `Level`) — a pedido
+ * explícito ("que sean más difíciles, pueden ser con más imágenes"): nivel 1
+ * sigue en 2×2 (4 piezas), nivel 2 sube a 2×3 (6) y nivel 3 a 3×3 (9). La
+ * dificultad ya no viene sólo de qué tan parecidos son los señuelos (eso
+ * sigue igual: misma familia de color = más difícil) sino TAMBIÉN de cuántas
+ * piezas hay que ubicar.
+ *
+ * Catálogo de fotos (`OBJECTS`) curado a mano — ver el comentario ahí mismo:
+ * 4 objetos (frutilla, pepino, maíz, calabaza) se sacaron porque sus fotos
+ * dejaban piezas ENTERAS en blanco al cortar en grillas finas. Se probó
+ * agrandar el recorte con zoom en vez de sacarlas, pero cambiaba el
+ * encuadre de TODAS las piezas (no sólo las rotas) y no era el resultado
+ * buscado — a pedido explícito se volvió al recorte 1:1 de siempre y se
+ * arregló el catálogo, no el recorte.
  *
  * Las piezas se cortan en el momento con CSS, directamente de la foto
  * completa que YA existe (`imgFor`) — no hace falta ningún asset nuevo. Una
- * pieza es un <img> de tamaño DOBLE al de su casillero (mismo recorte
- * `object-cover` que usa el resto de la app para estas fotos, así respeta
- * el encuadre real sin depender de que la foto sea cuadrada) puesto dentro
- * de un contenedor `overflow-hidden` del tamaño de un casillero, desplazado
- * con margin negativo según la esquina — siempre se ve exactamente un
- * cuarto de la foto. (Los recortes -corner-*.webp pre-generados que usaba
- * la versión anterior quedaron sin usar en este archivo — no se tocaron,
- * por si algo más los necesita.)
- *
- * Dificultad: sigue viniendo de qué tan parecidos son los señuelos al
- * objetivo (misma familia de color = más difícil), NO de más piezas — se
- * mantiene 2×2 en los 3 niveles, mismo criterio del diseño original.
+ * pieza es un <img> de tamaño `cols`×`rows` veces el de su casillero (mismo
+ * recorte `object-cover` que usa el resto de la app para estas fotos, así
+ * respeta el encuadre real sin depender de que la foto sea cuadrada) puesto
+ * dentro de un contenedor `overflow-hidden` del tamaño de un casillero,
+ * desplazado con margin negativo según fila/columna. (Los recortes
+ * -corner-*.webp pre-generados que usaba la versión anterior quedaron sin
+ * usar en este archivo — no se tocaron, por si algo más los necesita.)
  *
  * Colocación de a una pieza por vez, validada al toque (mismo patrón que
  * CrucigramaDeCifras): tocás una pieza del banco y después el casillero —
  * si es la pieza real Y el casillero correcto, encaja; si no, un aviso
- * suave y la pieza vuelve al banco (nunca desaparece — a diferencia de la
- * versión anterior que eliminaba definitivamente cada opción descartada,
- * acá los señuelos se quedan disponibles para las 4 colocaciones, no sólo
- * la primera). Nunca rojo, sin timer, siempre reintentable.
+ * suave y la pieza vuelve al banco (nunca desaparece — los señuelos se
+ * quedan disponibles para TODAS las colocaciones, no sólo la primera).
+ *
+ * Instrucción dinámica de 2 pasos ("Primero tocá una pieza" / "Ahora tocá
+ * dónde va", ver el texto justo arriba del marco) — a pedido explícito del
+ * usuario, para que quede claro el orden de los dos toques sin depender de
+ * que el adulto mayor recuerde la explicación de la pantalla "¿Listo?".
+ *
+ * Nunca rojo, sin timer, siempre reintentable.
  */
 
 interface ImgObject {
@@ -43,25 +58,30 @@ interface ImgObject {
   category: 'rojo' | 'verde' | 'amarillo' | 'naranja' | 'marron'
 }
 
+// frutilla, pepino, maíz y calabaza SACADOS a propósito: sus fotos tienen
+// el objeto chico/angosto sobre fondo blanco, y al cortarlas en grillas
+// finas (2×3, 3×3) quedaban columnas o esquinas ENTERAS en blanco — piezas
+// sin ningún contenido real, imposibles de distinguir entre sí. Se probó
+// (y se descartó) agrandar el recorte con zoom antes de cortar: funcionaba
+// pero cambiaba cómo se ve cada pieza en TODAS las fotos, no sólo en las
+// rotas, y no era el resultado que se quería. No hay fotos de repuesto para
+// esas 4 categorías en este set (ver carpeta de assets) — hasta que haya
+// una foto nueva con el objeto llenando más el cuadro, quedan afuera.
 const OBJECTS: ImgObject[] = [
   { slug: 'manzana-roja', category: 'rojo' },
   { slug: 'tomate', category: 'rojo' },
-  { slug: 'frutilla', category: 'rojo' },
   { slug: 'pimiento-rojo', category: 'rojo' },
 
   { slug: 'manzana-verde', category: 'verde' },
-  { slug: 'pepino', category: 'verde' },
   { slug: 'pimiento-verde', category: 'verde' },
   { slug: 'lima', category: 'verde' },
 
   { slug: 'banana', category: 'amarillo' },
   { slug: 'limon', category: 'amarillo' },
   { slug: 'pimiento-amarillo', category: 'amarillo' },
-  { slug: 'maiz', category: 'amarillo' },
 
   { slug: 'naranja', category: 'naranja' },
   { slug: 'zanahoria', category: 'naranja' },
-  { slug: 'calabaza', category: 'naranja' },
   { slug: 'damasco', category: 'naranja' },
 
   { slug: 'nuez', category: 'marron' },
@@ -78,24 +98,38 @@ function imgFor(slug: string): string | undefined {
   return Object.entries(IMAGES).find(([path]) => path.endsWith(`/${slug}.webp`))?.[1]
 }
 
-type Corner = 'tl' | 'tr' | 'bl' | 'br'
-const CORNERS: Corner[] = ['tl', 'tr', 'bl', 'br']
-// Tamaño fijo de casillero/pieza — ver comentario de cabecera sobre por qué
-// es un <img> de tamaño DOBLE recortado, no una clase de Tailwind: el
-// desplazamiento de margin negativo necesita el mismo número en JS y en el
-// estilo, y no varía por breakpoint (2×2 ya entra cómodo en 375px).
-const PIECE_SIZE = 88
+interface GridPos {
+  row: number
+  col: number
+}
+function posKey(pos: GridPos): string {
+  return `${pos.row}-${pos.col}`
+}
+function allPositions(rows: number, cols: number): GridPos[] {
+  const out: GridPos[] = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) out.push({ row: r, col: c })
+  }
+  return out
+}
 
-function PieceImage({ slug, corner }: { slug: string; corner: Corner }) {
-  const offsetX = corner === 'tr' || corner === 'br' ? -PIECE_SIZE : 0
-  const offsetY = corner === 'bl' || corner === 'br' ? -PIECE_SIZE : 0
+// Tamaño fijo de casillero/pieza, en los 3 niveles — así nivel 3 (3×3 = 9
+// piezas + hasta 3 señuelos en el banco) entra sin scroll en 375×812.
+const PIECE_SIZE = 68
+
+function PieceImage({ slug, row, col, rows, cols }: { slug: string; row: number; col: number; rows: number; cols: number }) {
   return (
     <div style={{ width: PIECE_SIZE, height: PIECE_SIZE }} className="overflow-hidden">
       <img
         src={imgFor(slug)}
         alt=""
         draggable={false}
-        style={{ width: PIECE_SIZE * 2, height: PIECE_SIZE * 2, marginLeft: offsetX, marginTop: offsetY }}
+        style={{
+          width: PIECE_SIZE * cols,
+          height: PIECE_SIZE * rows,
+          marginLeft: -PIECE_SIZE * col,
+          marginTop: -PIECE_SIZE * row,
+        }}
         className="max-w-none max-h-none object-cover"
       />
     </div>
@@ -108,17 +142,25 @@ interface Level {
   name: string
   rounds: number
   difficulty: Difficulty
+  gridRows: number
+  gridCols: number
+  decoyCount: number
 }
+// decoyCount de nivel 3 en 2, no 3: 'hard' saca señuelos SÓLO de la misma
+// familia de color, y tras sacar los 4 objetos con fragmentos en blanco
+// (ver comentario de OBJECTS) la familia más chica quedó en 3 miembros —
+// el objetivo + 2 disponibles. Pedir 3 señuelos ahí dejaría a esas familias
+// con un señuelo menos que las demás; 2 es el máximo que TODAS soportan
+// parejo.
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', rounds: 2, difficulty: 'easy' },
-  { n: 2, name: 'Nivel 2', rounds: 2, difficulty: 'mixed' },
-  { n: 3, name: 'Nivel 3', rounds: 2, difficulty: 'hard' },
+  { n: 1, name: 'Nivel 1', rounds: 2, difficulty: 'easy', gridRows: 2, gridCols: 2, decoyCount: 2 },
+  { n: 2, name: 'Nivel 2', rounds: 2, difficulty: 'mixed', gridRows: 2, gridCols: 3, decoyCount: 3 },
+  { n: 3, name: 'Nivel 3', rounds: 2, difficulty: 'hard', gridRows: 3, gridCols: 3, decoyCount: 2 },
 ]
-const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
-// Cada ronda ahora exige 4 colocaciones correctas (una por esquina), no 1
-// —  el denominador de "intentos totales" tiene que reflejar eso, si no
-// cada error pesa 4× más de lo que debería en el cálculo de estrellas.
-const PIECES_PER_ROUND = 4
+// Cada ronda exige tantas colocaciones correctas como piezas tenga su
+// grilla — el denominador de "intentos totales" tiene que sumar eso por
+// nivel (4, 6 y 9), no un número fijo, ahora que la grilla escala.
+const TOTAL_REQUIRED_PLACEMENTS = LEVELS.reduce((sum, l) => sum + l.rounds * l.gridRows * l.gridCols, 0)
 const ACCENT = '#D97706' // ámbar
 
 function shuffle<T>(arr: T[]): T[] {
@@ -138,7 +180,7 @@ function pickOne<T>(arr: T[]): T {
 
 interface DecoyPiece {
   obj: ImgObject
-  corner: Corner
+  pos: GridPos
 }
 interface Round {
   target: ImgObject
@@ -147,18 +189,20 @@ interface Round {
 }
 // Nivel 1: señuelos de otra familia de color (fácil, saltan a la vista).
 // Nivel 3: señuelos de la MISMA familia (difícil, el color no alcanza).
-function pickDecoys(target: ImgObject, difficulty: Difficulty): ImgObject[] {
+function pickDecoys(target: ImgObject, difficulty: Difficulty, count: number): ImgObject[] {
   const others = OBJECTS.filter((o) => o.slug !== target.slug)
   const same = others.filter((o) => o.category === target.category)
   const diff = others.filter((o) => o.category !== target.category)
-  if (difficulty === 'easy') return pick(diff, 2)
-  if (difficulty === 'hard') return pick(same, 2)
-  return [pick(same, 1)[0], pick(diff, 1)[0]]
+  if (difficulty === 'easy') return pick(diff, count)
+  if (difficulty === 'hard') return pick(same, count)
+  const sameCount = Math.ceil(count / 2)
+  return [...pick(same, sameCount), ...pick(diff, count - sameCount)]
 }
 function buildOnce(level: Level): Round {
   const target = pickOne(OBJECTS)
-  const decoyObjs = pickDecoys(target, level.difficulty)
-  const decoyPieces = decoyObjs.map((obj) => ({ obj, corner: pickOne(CORNERS) }))
+  const decoyObjs = pickDecoys(target, level.difficulty, level.decoyCount)
+  const positions = allPositions(level.gridRows, level.gridCols)
+  const decoyPieces = decoyObjs.map((obj) => ({ obj, pos: pickOne(positions) }))
   return { target, decoyPieces, key: target.slug }
 }
 function makeRound(level: Level, avoidKey?: string): Round {
@@ -181,20 +225,20 @@ function makeLevelRounds(level: Level): Round[] {
 interface BankPiece {
   id: string
   slug: string
-  corner: Corner
+  pos: GridPos
   isReal: boolean
 }
-function buildBank(round: Round): BankPiece[] {
-  const real: BankPiece[] = CORNERS.map((corner) => ({
-    id: `real-${corner}`,
+function buildBank(round: Round, level: Level): BankPiece[] {
+  const real: BankPiece[] = allPositions(level.gridRows, level.gridCols).map((pos) => ({
+    id: `real-${posKey(pos)}`,
     slug: round.target.slug,
-    corner,
+    pos,
     isReal: true,
   }))
   const decoys: BankPiece[] = round.decoyPieces.map((d, i) => ({
     id: `decoy-${i}`,
     slug: d.obj.slug,
-    corner: d.corner,
+    pos: d.pos,
     isReal: false,
   }))
   return shuffle([...real, ...decoys])
@@ -204,7 +248,7 @@ const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen o
 const HINTS = [
   'Ese pedacito no va ahí — fijate el color y la forma.',
   'Casi. Mirá bien de qué parte de la foto es ese pedacito.',
-  'No es ese lugar — pensá qué esquina de la foto le corresponde.',
+  'No es ese lugar — pensá qué parte de la foto le corresponde.',
 ]
 
 export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
@@ -217,23 +261,23 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
+  const totalPieces = level.gridRows * level.gridCols
 
   // Banco estable por ronda: `round` sólo cambia de referencia cuando
   // levelIdx/roundIdx avanzan (epochRounds, más abajo, se decide una única
   // vez al montar) — mismo patrón que CruceDeLetras.tsx.
-  const allPieces = useMemo(() => (round ? buildBank(round) : []), [round])
+  const allPieces = useMemo(() => (round ? buildBank(round, level) : []), [round, level])
 
-  const [placedCorners, setPlacedCorners] = useState<Set<Corner>>(new Set())
+  const [placedPositions, setPlacedPositions] = useState<Set<string>>(new Set())
   const [selectedPieceId, setSelectedPieceId] = useState<string | null>(null)
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   const [mistakes, setMistakes] = useState(0)
 
-  const resolved = placedCorners.size === 4
+  const resolved = placedPositions.size === totalPieces
   // Sólo las piezas reales YA colocadas salen del banco — los señuelos se
-  // quedan siempre (ver comentario de cabecera: a diferencia de la versión
-  // anterior, acá nunca desaparecen).
-  const bank = allPieces.filter((p) => !(p.isReal && placedCorners.has(p.corner)))
+  // quedan siempre (ver comentario de cabecera).
+  const bank = allPieces.filter((p) => !(p.isReal && placedPositions.has(posKey(p.pos))))
 
   useEffect(() => {
     if (done) setLevelPraise(pickOne(PRAISE))
@@ -244,21 +288,21 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
     setSelectedPieceId((prev) => (prev === id ? null : id))
   }
 
-  function attemptSlot(slotCorner: Corner) {
-    if (!round || resolved || placedCorners.has(slotCorner) || !selectedPieceId) return
+  function attemptSlot(slotPos: GridPos) {
+    if (!round || resolved || placedPositions.has(posKey(slotPos)) || !selectedPieceId) return
     const piece = bank.find((p) => p.id === selectedPieceId)
     if (!piece) return
-    if (piece.isReal && piece.corner === slotCorner) {
+    if (piece.isReal && piece.pos.row === slotPos.row && piece.pos.col === slotPos.col) {
       setHint(null)
       setSelectedPieceId(null)
-      const next = new Set(placedCorners).add(slotCorner)
-      setPlacedCorners(next)
-      if (next.size === 4) {
+      const next = new Set(placedPositions).add(posKey(slotPos))
+      setPlacedPositions(next)
+      if (next.size === totalPieces) {
         // Un poco más que el resto del catálogo: da tiempo a ver el
         // rompecabezas completo armado antes de pasar a la próxima ronda.
         window.setTimeout(() => {
           setRoundIdx((i) => i + 1)
-          setPlacedCorners(new Set())
+          setPlacedPositions(new Set())
           setSelectedPieceId(null)
           setHint(null)
         }, 900)
@@ -273,14 +317,14 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
   function advanceLevel() {
     setLevelIdx((i) => i + 1)
     setRoundIdx(0)
-    setPlacedCorners(new Set())
+    setPlacedPositions(new Set())
     setSelectedPieceId(null)
     setHint(null)
   }
   function restartEpoch() {
     setLevelIdx(0)
     setRoundIdx(0)
-    setPlacedCorners(new Set())
+    setPlacedPositions(new Set())
     setSelectedPieceId(null)
     setHint(null)
     setMistakes(0)
@@ -294,7 +338,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
   useEffect(() => {
     if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS * PIECES_PER_ROUND })
+      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_REQUIRED_PLACEMENTS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, levelIdx, roundKey, mistakes])
@@ -333,8 +377,8 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a armar una foto en 4 pedacitos. Tocá un pedacito del banco y después el lugar del rompecabezas donde
-            creas que va. Ojo: hay pedacitos de otras fotos mezclados.
+            Vas a armar una foto en pedacitos. Primero tocá un pedacito del banco de abajo. Después tocá el lugar del
+            rompecabezas donde creas que va. Ojo: hay pedacitos de otras fotos mezclados, para despistar.
           </p>
           <button
             type="button"
@@ -349,19 +393,32 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
 
       {phase === 'playing' && !done && round && (
         <>
-          {/* Marco del rompecabezas: 4 casilleros vacíos que se van llenando. */}
+          {/* Instrucción de 2 pasos, dinámica según si hay una pieza
+              seleccionada — refuerza el orden del toque en cada ronda, no
+              sólo una vez en la pantalla "¿Listo?". */}
+          {!resolved && (
+            <p className="mt-4 text-center text-sm font-semibold text-tiam-blue">
+              {selectedPieceId ? 'Ahora tocá el lugar del rompecabezas donde va' : 'Primero tocá un pedacito del banco'}
+            </p>
+          )}
+
+          {/* Marco del rompecabezas: casilleros vacíos que se van llenando. */}
           <div
-            className="mx-auto mt-4 grid grid-cols-2 gap-1 sm:mt-6"
-            style={{ width: PIECE_SIZE * 2 + 4 }}
+            className="mx-auto mt-3 grid gap-1"
+            style={{
+              gridTemplateColumns: `repeat(${level.gridCols}, ${PIECE_SIZE}px)`,
+              width: level.gridCols * PIECE_SIZE + (level.gridCols - 1) * 4,
+            }}
           >
-            {CORNERS.map((corner) => {
-              const filled = placedCorners.has(corner)
+            {allPositions(level.gridRows, level.gridCols).map((pos) => {
+              const key = posKey(pos)
+              const filled = placedPositions.has(key)
               return (
                 <button
-                  key={corner}
+                  key={key}
                   type="button"
                   disabled={filled || resolved}
-                  onClick={() => attemptSlot(corner)}
+                  onClick={() => attemptSlot(pos)}
                   aria-label={filled ? 'Casillero completo' : 'Casillero vacío'}
                   style={{ width: PIECE_SIZE, height: PIECE_SIZE }}
                   className={[
@@ -372,7 +429,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
                 >
                   {filled && (
                     <>
-                      <PieceImage slug={round.target.slug} corner={corner} />
+                      <PieceImage slug={round.target.slug} row={pos.row} col={pos.col} rows={level.gridRows} cols={level.gridCols} />
                       <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
                         <Check className="h-3 w-3" strokeWidth={3} />
                       </span>
@@ -401,7 +458,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
                       : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
                   ].join(' ')}
                 >
-                  <PieceImage slug={piece.slug} corner={piece.corner} />
+                  <PieceImage slug={piece.slug} row={piece.pos.row} col={piece.pos.col} rows={level.gridRows} cols={level.gridCols} />
                 </button>
               ))}
             </div>
