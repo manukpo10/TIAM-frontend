@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
 import logoImg from '@/assets/logogrande-sinfondo.png'
@@ -45,154 +45,168 @@ export function PublicHeader() {
   const showAuthCtas = useLocation().pathname === '/plataforma'
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
-      {/* Thin brand accent */}
-      <div className="h-[3px] w-full bg-tiam-blue" />
+    <>
+      {/* Promo banner — not sticky on purpose, scrolls away with the page
+          while the header below (sticky) takes over the top of the
+          viewport. Site-wide, same on every page that renders PublicHeader. */}
+      <Link
+        to="/desafio-30-dias"
+        className="block bg-tiam-navy px-4 py-2 text-center text-sm font-medium text-white hover:bg-tiam-navy/90 transition-colors"
+      >
+        🎁 Nuevo: <span className="font-bold text-tiam-orange">Desafío 30 días</span> — un ejercicio
+        cognitivo por día para tu ser querido, directo por WhatsApp
+        <ChevronRight className="ml-1 inline h-3.5 w-3.5" />
+      </Link>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-        {/* Brand */}
-        <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="TIAM Digital — inicio">
-          <img src={logoImg} alt="TIAM Digital" className="h-10 w-auto object-contain" />
-        </Link>
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
+        {/* Thin brand accent */}
+        <div className="h-[3px] w-full bg-tiam-blue" />
 
-        {/* Desktop nav links */}
-        <nav className="hidden lg:flex items-center gap-6" aria-label="Navegación principal">
-          {NAV_LINKS.map((link) =>
-            link.children ? (
-              <div key={link.href} className="group relative py-2 -my-2">
-                <Link
-                  to={link.href}
-                  className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
-                >
-                  {link.label}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </Link>
-                <div className="invisible absolute left-0 top-full opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
-                  <div className="mt-2 min-w-[180px] rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        to={child.href}
-                        className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-tiam-blue transition-colors"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : link.route ? (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
-              >
-                {link.label}
-              </a>
-            ),
-          )}
-        </nav>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+          {/* Brand */}
+          <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="TIAM Digital — inicio">
+            <img src={logoImg} alt="TIAM Digital" className="h-10 w-auto object-contain" />
+          </Link>
 
-        {/* Right: auth CTAs + mobile toggle */}
-        <div className="flex items-center gap-2">
-          {showAuthCtas && (
-            user ? (
-              <Link to="/library">
-                <Button size="md">Ir a la biblioteca</Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/login" className="hidden sm:inline-flex">
-                  <Button variant="ghost" size="md">Iniciar sesión</Button>
-                </Link>
-                <Link to="/register" className="hidden sm:inline-flex">
-                  <Button size="md">Probá gratis</Button>
-                </Link>
-              </>
-            )
-          )}
-
-          <button
-            type="button"
-            className="lg:hidden inline-flex items-center justify-center h-10 w-10 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile dropdown panel */}
-      {open && (
-        <nav
-          className="lg:hidden border-t border-slate-100 bg-white px-4 sm:px-6 py-4"
-          aria-label="Navegación móvil"
-        >
-          <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                {link.route ? (
+          {/* Desktop nav links */}
+          <nav className="hidden lg:flex items-center gap-6" aria-label="Navegación principal">
+            {NAV_LINKS.map((link) =>
+              link.children ? (
+                <div key={link.href} className="group relative py-2 -my-2">
                   <Link
                     to={link.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
                   >
                     {link.label}
+                    <ChevronDown className="h-3.5 w-3.5" />
                   </Link>
-                ) : (
-                  <a
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                )}
-                {link.children && (
-                  <ul className="ml-3 border-l border-slate-100 pl-3">
-                    {link.children.map((child) => (
-                      <li key={child.href}>
+                  <div className="invisible absolute left-0 top-full opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
+                    <div className="mt-2 min-w-[180px] rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
+                      {link.children.map((child) => (
                         <Link
+                          key={child.href}
                           to={child.href}
-                          onClick={() => setOpen(false)}
-                          className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-tiam-blue transition-colors"
+                          className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-tiam-blue transition-colors"
                         >
                           {child.label}
                         </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-
-            {showAuthCtas && !user && (
-              <li className="pt-2 mt-1 border-t border-slate-100 sm:hidden">
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : link.route ? (
                 <Link
-                  to="/login"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  key={link.href}
+                  to={link.href}
+                  className="text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
                 >
-                  Iniciar sesión
+                  {link.label}
                 </Link>
-                <Link to="/register" onClick={() => setOpen(false)} className="block mt-1">
-                  <Button size="md" className="w-full">Probá gratis</Button>
-                </Link>
-              </li>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
+                >
+                  {link.label}
+                </a>
+              ),
             )}
-          </ul>
-        </nav>
-      )}
-    </header>
+          </nav>
+
+          {/* Right: auth CTAs + mobile toggle */}
+          <div className="flex items-center gap-2">
+            {showAuthCtas && (
+              user ? (
+                <Link to="/library">
+                  <Button size="md">Ir a la biblioteca</Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/login" className="hidden sm:inline-flex">
+                    <Button variant="ghost" size="md">Iniciar sesión</Button>
+                  </Link>
+                  <Link to="/register" className="hidden sm:inline-flex">
+                    <Button size="md">Probá gratis</Button>
+                  </Link>
+                </>
+              )
+            )}
+
+            <button
+              type="button"
+              className="lg:hidden inline-flex items-center justify-center h-10 w-10 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={open}
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile dropdown panel */}
+        {open && (
+          <nav
+            className="lg:hidden border-t border-slate-100 bg-white px-4 sm:px-6 py-4"
+            aria-label="Navegación móvil"
+          >
+            <ul className="flex flex-col gap-1">
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  {link.route ? (
+                    <Link
+                      to={link.href}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  )}
+                  {link.children && (
+                    <ul className="ml-3 border-l border-slate-100 pl-3">
+                      {link.children.map((child) => (
+                        <li key={child.href}>
+                          <Link
+                            to={child.href}
+                            onClick={() => setOpen(false)}
+                            className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-tiam-blue transition-colors"
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+
+              {showAuthCtas && !user && (
+                <li className="pt-2 mt-1 border-t border-slate-100 sm:hidden">
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    Iniciar sesión
+                  </Link>
+                  <Link to="/register" onClick={() => setOpen(false)} className="block mt-1">
+                    <Button size="md" className="w-full">Probá gratis</Button>
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </nav>
+        )}
+      </header>
+    </>
   )
 }
