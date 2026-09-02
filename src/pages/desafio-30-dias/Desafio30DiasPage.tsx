@@ -17,11 +17,6 @@ import desafioHero from '@/assets/desafio-hero.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import mercadoPagoLogo from '@/assets/mercadopago-logo.svg'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
-import shotElReloj from '@/assets/desafio-screenshots/el-reloj.webp'
-import shotQueSera from '@/assets/desafio-screenshots/que-sera.webp'
-import shotMemotest from '@/assets/desafio-screenshots/memotest.webp'
-import shotCualNoVa from '@/assets/desafio-screenshots/cual-no-va.webp'
-import shotLaRecetaDoble from '@/assets/desafio-screenshots/la-receta-doble.webp'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
@@ -104,22 +99,6 @@ const AUDIENCE = [
   'Buscás una rutina simple para hacer en casa, sin depender de un turno',
   'Preferís algo que llegue por WhatsApp y no una app más para aprender',
   'Te gustaría acompañar los ejercicios y compartir un momento juntos',
-]
-
-// Recortes de solo la ilustración de cada juego (sin preguntas ni opciones a la vista,
-// para no espoilear la mecánica) — uno por área cognitiva. Area label/color mirror
-// AREA_META in DesafioPlayPage.tsx (single source of truth).
-//
-// All 5 are from month 1 on purpose — there's no illustration asset yet for
-// any month 2/3 game (each one needs its own custom crop, same as these),
-// so this stays a labeled "month 1" sample rather than implying it covers
-// every month. Add month 2/3 entries here once those assets exist.
-const GAME_SHOWCASE = [
-  { image: shotElReloj, month: 1, day: 9, title: 'El reloj', area: 'Visuoespacial', color: '#7C3AED' },
-  { image: shotCualNoVa, month: 1, day: 11, title: '¿Cuál no va?', area: 'Atención', color: '#E8531E' },
-  { image: shotMemotest, month: 1, day: 19, title: 'Memotest', area: 'Memoria', color: '#1B6FC4' },
-  { image: shotLaRecetaDoble, month: 1, day: 26, title: 'La receta doble', area: 'Cálculo', color: '#0891B2' },
-  { image: shotQueSera, month: 1, day: 29, title: '¿Qué será?', area: 'Reconocimiento', color: '#DB2777' },
 ]
 
 const FAQS = [
@@ -434,47 +413,6 @@ export function Desafio30DiasPage() {
                   </div>
                   <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
                   <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── 4.5. See the real games ──────────────────────────────────────── */}
-        <section aria-labelledby="games-heading" className="py-16 md:py-24 bg-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
-              <SectionEyebrow text="Así son los juegos" />
-              <h2 id="games-heading" className="text-3xl font-bold text-slate-900">
-                Mirá algunos ejemplos reales
-              </h2>
-              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
-                Cada día trabaja un área cognitiva distinta, con ilustraciones propias y letra grande.
-                Estos son del mes 1 — cada mes nuevo trae actividades completamente distintas.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
-              {GAME_SHOWCASE.map(({ image, month, day, title, area, color }) => (
-                <article
-                  key={`${month}-${day}`}
-                  className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm"
-                >
-                  <div className="flex h-28 items-center justify-center bg-slate-50 p-4 sm:h-36">
-                    <img
-                      src={image}
-                      alt={`Ilustración del juego "${title}"`}
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                  <div className="border-t border-slate-100 p-4">
-                    <span
-                      className="inline-block rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase"
-                      style={{ color, backgroundColor: `${color}1A` }}
-                    >
-                      Mes {month} · Día {day} · {area}
-                    </span>
-                    <p className="mt-2 font-semibold text-slate-900">{title}</p>
-                  </div>
                 </article>
               ))}
             </div>
