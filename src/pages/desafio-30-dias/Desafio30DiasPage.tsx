@@ -120,7 +120,7 @@ const FAQS = [
   },
   {
     q: '¿Qué pasa cuando termino los 30 días?',
-    a: `Podés volver a comprar el desafío y arrancás automáticamente con el mes siguiente — actividades completamente nuevas, sin tener que elegir nada. Por ahora hay ${CHALLENGE_MONTHS_AVAILABLE} meses distintos, y seguimos sumando más.`,
+    a: 'Podés volver a comprar el desafío y arrancás automáticamente con el mes siguiente — actividades completamente nuevas, sin tener que elegir nada.',
   },
 ]
 
