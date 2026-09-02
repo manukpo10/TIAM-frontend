@@ -311,7 +311,7 @@ export function DondeLoDeje({ day: _day, onComplete }: GameProps) {
                 >
                   {obj && imgFor(obj.id) && (
                     <>
-                      <img src={imgFor(obj.id)} alt="" className="h-10 w-10 object-contain sm:h-12 sm:w-12" draggable={false} />
+                      <img src={imgFor(obj.id)} alt="" className="h-12 w-12 object-contain sm:h-14 sm:w-14" draggable={false} />
                       <span className="text-center text-[9px] font-medium leading-tight text-slate-500 sm:text-[10px]">
                         {obj.label}
                       </span>
