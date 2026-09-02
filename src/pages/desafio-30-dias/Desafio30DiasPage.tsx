@@ -20,7 +20,7 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
-const PRICE_ARS = 15000
+const PRICE_ARS = 100
 
 // How many independent 30-day catalogs exist today (mirrors the backend's
 // ChallengePurchaseService month allowlist). This is NOT a permanent ceiling
