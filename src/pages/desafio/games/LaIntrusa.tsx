@@ -54,12 +54,18 @@ const L2_PAIRS: WordPair[] = [
   { base: 'MOTO', intruder: 'MODO' },
   { base: 'PATO', intruder: 'PASO' },
 ]
+// VENTANA/VENTASA y CUCHARA/CUCHASA (7 letras) se sacaron: no entraban en la
+// grilla de 5 columnas a este tamaño de texto y el borde de la palabra se
+// cortaba en mobile — ver comentario de cabecera, la dificultad de nivel 3
+// tiene que venir del par de palabras, no de romper el layout. Reemplazadas
+// por pares de 5-6 letras, misma disciplina de "una sola letra distinta,
+// lejos de las puntas" que el resto del pool.
 const L3_PAIRS: WordPair[] = [
-  { base: 'VENTANA', intruder: 'VENTASA' },
+  { base: 'BANCO', intruder: 'BARCO' },
   { base: 'CAMINO', intruder: 'CAMENO' },
   { base: 'ZAPATO', intruder: 'ZAPETO' },
   { base: 'PALOMA', intruder: 'PALEMA' },
-  { base: 'CUCHARA', intruder: 'CUCHASA' },
+  { base: 'CARRO', intruder: 'CARGO' },
 ]
 
 interface Level {
