@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
@@ -39,6 +39,10 @@ const NAV_LINKS: NavLink[] = [
 export function PublicHeader() {
   const user = useAuthStore((s) => s.user)
   const [open, setOpen] = useState(false)
+  // Login/signup/library only make sense on the platform's own page — the
+  // other public pages (hub, Desafío, Talleres, blog...) don't need an
+  // account at all, so showing account UI there is just noise.
+  const showAuthCtas = useLocation().pathname === '/plataforma'
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
@@ -99,19 +103,21 @@ export function PublicHeader() {
 
         {/* Right: auth CTAs + mobile toggle */}
         <div className="flex items-center gap-2">
-          {user ? (
-            <Link to="/library">
-              <Button size="md">Ir a la biblioteca</Button>
-            </Link>
-          ) : (
-            <>
-              <Link to="/login" className="hidden sm:inline-flex">
-                <Button variant="ghost" size="md">Iniciar sesión</Button>
+          {showAuthCtas && (
+            user ? (
+              <Link to="/library">
+                <Button size="md">Ir a la biblioteca</Button>
               </Link>
-              <Link to="/register" className="hidden sm:inline-flex">
-                <Button size="md">Probá gratis</Button>
-              </Link>
-            </>
+            ) : (
+              <>
+                <Link to="/login" className="hidden sm:inline-flex">
+                  <Button variant="ghost" size="md">Iniciar sesión</Button>
+                </Link>
+                <Link to="/register" className="hidden sm:inline-flex">
+                  <Button size="md">Probá gratis</Button>
+                </Link>
+              </>
+            )
           )}
 
           <button
@@ -170,7 +176,7 @@ export function PublicHeader() {
               </li>
             ))}
 
-            {!user && (
+            {showAuthCtas && !user && (
               <li className="pt-2 mt-1 border-t border-slate-100 sm:hidden">
                 <Link
                   to="/login"
