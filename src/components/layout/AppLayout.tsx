@@ -4,7 +4,7 @@ import { BookOpen, CreditCard, HelpCircle, LogOut, Menu, Settings, Users, X } fr
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
 import { OnboardingTour, START_TOUR_EVENT, OPEN_DRAWER_EVENT } from '@/features/onboarding/OnboardingTour'
-import logoImg from '@/assets/logo-sinfondo.png'
+import logoImg from '@/assets/logogrande-sinfondo.png'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 const NAV_ITEMS = [
@@ -155,7 +155,7 @@ export function AppLayout() {
           {drawerOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
         <div className="flex items-center gap-2">
-          <img src={logoImg} alt="TIAM" className="h-8 w-8 shrink-0 object-contain" />
+          <img src={logoImg} alt="TIAM" className="h-8 w-auto shrink-0 object-contain" />
           <span className="text-sm font-bold text-slate-900">TIAM Digital</span>
         </div>
       </header>
@@ -183,7 +183,7 @@ export function AppLayout() {
       >
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 pb-4 pt-4">
-          <img src={logoImg} alt="TIAM" className="h-10 w-10 shrink-0 object-contain" />
+          <img src={logoImg} alt="TIAM" className="h-10 w-auto shrink-0 object-contain" />
           <div>
             <span className="block text-sm font-bold text-slate-900">TIAM Digital</span>
             <span className="block text-xs text-slate-400">Estimulación cognitiva</span>

@@ -12,7 +12,7 @@ import {
   type ChallengeArea,
 } from '@/lib/challengeContent'
 import { computeStars, type BadgeId, type ChallengeProgress, type CompleteDayResponse, type GameResult } from '@/lib/challengeProgress'
-import logoImg from '@/assets/logo-sinfondo.png'
+import logoImg from '@/assets/logogrande-sinfondo.png'
 import { GAMES_BY_MONTH } from './games/registry'
 import { PersonalInfoWorksheet } from './PersonalInfoWorksheet'
 import { ChallengeProgressPanel } from './ChallengeProgressPanel'

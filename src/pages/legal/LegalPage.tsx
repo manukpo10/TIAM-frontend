@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
-import logoImg from '@/assets/logo-sinfondo.png'
+import logoImg from '@/assets/logogrande-sinfondo.png'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export function LegalPage({ title, lastUpdated, sections, crossLinkTo, crossLink
             className="flex items-center gap-2 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue/30 rounded"
             aria-label="TIAM Digital — inicio"
           >
-            <img src={logoImg} alt="TIAM" className="h-9 w-9 object-contain" />
+            <img src={logoImg} alt="TIAM" className="h-9 w-auto object-contain" />
             <span className="font-bold text-slate-900 text-base leading-none hidden sm:block">
               TIAM Digital
             </span>

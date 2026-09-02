@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import logoImg from '@/assets/logo-sinfondo.png'
+import logoImg from '@/assets/logogrande-sinfondo.png'
 
 /** Shared footer for the public-facing pages (landing, blog). */
 export function PublicFooter() {
@@ -13,7 +13,7 @@ export function PublicFooter() {
           {/* Brand */}
           <div className="sm:col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
-              <img src={logoImg} alt="TIAM" className="h-10 w-10 object-contain" />
+              <img src={logoImg} alt="TIAM" className="h-10 w-auto object-contain" />
               <span className="font-bold text-white">TIAM Digital</span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">

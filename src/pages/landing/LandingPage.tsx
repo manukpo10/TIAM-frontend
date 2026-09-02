@@ -1,19 +1,28 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { GraduationCap, ChevronRight } from 'lucide-react'
+import { GraduationCap, ChevronRight, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
-import { TiamLogo } from '@/components/ui/TiamLogo'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import tiamLogoFull from '@/assets/logo.png'
 import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
+import tallerFoto from '@/assets/taller/taller-1.jpg'
+import tallerHeroFoto from '@/assets/taller/taller-5.jpg'
+
+// TIAM's WhatsApp business number (international format, no "+") — same
+// number PublicHeader/AuthLayout etc. treat as the official contact channel.
+const TIAM_BUSINESS_WHATSAPP = '5492214817297'
+const TALLER_INQUIRY_TEXT = '¡Hola! Quiero consultar por los talleres presenciales de TIAM.'
 
 // ─── Page ────────────────────────────────────────────────────────────────────
-// TIAM es una marca con 3 productos: la plataforma para profesionales
-// (/plataforma), el Desafío 30 días (/desafio-30-dias) y un curso futuro
-// (todavía sin contenido). Esta página es el hub liviano que bifurca a los
-// 3 — el pitch completo de cada producto vive en su propia ruta.
+// TIAM es una marca con 4 patas: la plataforma para profesionales
+// (/plataforma), el Desafío 30 días (/desafio-30-dias), los talleres
+// presenciales (el origen de TIAM, sin ruta propia todavía — consulta por
+// WhatsApp) y un curso futuro (todavía sin contenido). Esta página es el hub
+// liviano que bifurca a las 4 — el pitch completo de cada producto vive en
+// su propia ruta cuando la tiene.
 
 export function LandingPage() {
   useEffect(() => {
@@ -36,20 +45,35 @@ export function LandingPage() {
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <section
           aria-labelledby="hero-heading"
-          className="relative overflow-hidden bg-gradient-to-br from-tiam-blue/5 to-slate-50 py-20 md:py-28"
+          className="relative overflow-hidden bg-gradient-to-br from-tiam-blue/5 to-slate-50 py-16 md:py-24"
         >
-          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <TiamLogo variant="mark" className="h-16 w-auto mx-auto mb-6" />
-            <h1
-              id="hero-heading"
-              className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight tracking-tight"
-            >
-              Estimulación cognitiva, para cada momento.
-            </h1>
-            <p className="mt-5 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto">
-              TIAM nació en un taller presencial en La Plata y hoy ayuda a profesionales, familias
-              y futuros especialistas a cuidar la memoria y la cognición de los adultos mayores.
-            </p>
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div className="text-center lg:text-left">
+              <img
+                src={tiamLogoFull}
+                alt="TIAM — taller interactivo adultos mayores"
+                className="h-24 w-auto mx-auto lg:mx-0 mb-6"
+              />
+              <h1
+                id="hero-heading"
+                className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight tracking-tight"
+              >
+                Estimulación cognitiva, para cada momento.
+              </h1>
+              <p className="mt-5 text-lg sm:text-xl text-slate-600 max-w-xl mx-auto lg:mx-0">
+                TIAM significa Taller Interactivo Adultos Mayores. Nació en un taller presencial en
+                La Plata y hoy ayuda a profesionales, familias y futuros especialistas a cuidar la
+                memoria y la cognición de los adultos mayores.
+              </p>
+            </div>
+
+            <div className="aspect-[4/3] overflow-hidden rounded-3xl shadow-xl shadow-tiam-blue/10 ring-1 ring-slate-100">
+              <img
+                src={tallerHeroFoto}
+                alt="Grupo de participantes del taller de TIAM en La Plata, trabajando juntos alrededor de una mesa"
+                className="h-full w-full object-cover"
+              />
+            </div>
           </div>
         </section>
 
@@ -57,7 +81,7 @@ export function LandingPage() {
         <section aria-labelledby="fork-heading" className="py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <h2 id="fork-heading" className="sr-only">Elegí tu camino en TIAM</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
               {/* Para profesionales */}
               <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-[box-shadow] duration-200">
                 <img
@@ -107,6 +131,35 @@ export function LandingPage() {
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </Link>
+              </div>
+
+              {/* Talleres personalizados — el origen de TIAM, formato presencial en La Plata */}
+              <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-[box-shadow] duration-200">
+                <img
+                  src={tallerFoto}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-28 w-28 rounded-2xl object-cover mb-5"
+                />
+                <SectionEyebrow text="Talleres personalizados" />
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  El taller presencial, donde nació TIAM
+                </h3>
+                <p className="text-slate-600 flex-1">
+                  Encuentros grupales en La Plata, guiados en persona y adaptados a cada grupo —
+                  el formato original con el que arrancamos, antes de la app y el Desafío.
+                </p>
+                <a
+                  href={`https://wa.me/${TIAM_BUSINESS_WHATSAPP}?text=${encodeURIComponent(TALLER_INQUIRY_TEXT)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6"
+                >
+                  <Button size="lg" className="w-full min-h-[44px]">
+                    <MessageCircle className="h-4 w-4" />
+                    Consultanos por WhatsApp
+                  </Button>
+                </a>
               </div>
 
               {/* Curso — próximamente, sin link (elemento inerte) */}

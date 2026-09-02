@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { PatientPlaySession, MemoryCard } from '@/types'
-import logoImg from '@/assets/logo-sinfondo.png'
+import logoImg from '@/assets/logogrande-sinfondo.png'
 import { useToast } from '@/components/ui/Toast'
 
 // ── Icon map (hoisted outside component — static data) ─────────────────────
