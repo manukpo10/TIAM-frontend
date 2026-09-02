@@ -32,6 +32,13 @@ const CHALLENGE_MONTHS_AVAILABLE = 3
 const formatPrice = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
+// Manu's personal WhatsApp (international format, no "+") — deliberately NOT
+// TIAM's business number (the one DesafioExitoPage.tsx uses for automated
+// post-purchase activation): that number is API-only, so manual-transfer
+// receipts need to land somewhere a person can actually read them.
+const MANU_PERSONAL_WHATSAPP_NUMBER = '5492213080532'
+const TRANSFER_RECEIPT_TEXT = '¡Hola! Quiero pagar el Desafío 30 días por transferencia, te paso el comprobante.'
+
 // Buyer details collected BEFORE checkout — the phone is captured up front because
 // Mercado Pago Checkout Pro navigates away and we can't rely on the user coming back.
 const checkoutSchema = z.object({
@@ -659,6 +666,24 @@ export function Desafio30DiasPage() {
               ¿Ya hiciste un mes? Comprá de nuevo y arrancás automáticamente con el siguiente —
               por ahora hay {CHALLENGE_MONTHS_AVAILABLE} meses distintos, y seguimos sumando más.
             </p>
+
+            <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left sm:p-6">
+              <p className="text-sm font-semibold text-slate-800">¿Se te complica pagar desde acá?</p>
+              <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
+                También podés transferir {formatPrice(PRICE_ARS)} al alias de Mercado Pago{' '}
+                <strong className="text-slate-900">manu.bata.it</strong> y mandarnos el comprobante
+                por WhatsApp. Activamos tu acceso a mano, ni bien lo recibimos.
+              </p>
+              <a
+                href={`https://wa.me/${MANU_PERSONAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(TRANSFER_RECEIPT_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Mandar comprobante por WhatsApp
+              </a>
+            </div>
           </div>
         </section>
 
