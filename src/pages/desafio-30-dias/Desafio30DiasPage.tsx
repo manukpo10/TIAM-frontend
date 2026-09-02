@@ -330,7 +330,7 @@ export function Desafio30DiasPage() {
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button size="lg" className="w-full sm:w-auto min-h-[44px]" onClick={handleBuy}>
-                  Quiero empezar el desafío
+                  Quiero comprar el desafío
                 </Button>
                 <a href="#como-funciona">
                   <Button variant="secondary" size="lg" className="w-full sm:w-auto min-h-[44px]">
@@ -494,7 +494,7 @@ export function Desafio30DiasPage() {
                     <div className="h-2.5 w-3/4 rounded-full bg-slate-200" />
                     <div className="mt-2 h-2.5 w-1/2 rounded-full bg-slate-200" />
                     <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-tiam-blue px-4 py-2.5 text-sm font-semibold text-white">
-                      Quiero empezar el desafío
+                      Quiero comprar el desafío
                     </div>
                   </div>
                 </div>
@@ -697,7 +697,7 @@ export function Desafio30DiasPage() {
                 className="w-full sm:w-auto min-h-[44px] bg-white text-tiam-blue hover:bg-slate-100"
                 onClick={handleBuy}
               >
-                Quiero empezar el desafío
+                Quiero comprar el desafío
               </Button>
               <Link to="/preguntas-frecuentes">
                 <Button
