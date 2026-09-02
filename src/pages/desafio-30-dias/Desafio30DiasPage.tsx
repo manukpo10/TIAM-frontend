@@ -47,7 +47,7 @@ const HOW_IT_WORKS = [
     step: '01',
     icon: Gift,
     title: 'Comprás una sola vez',
-    description: 'Un pago único, sin suscripción ni renovaciones. El desafío queda tuyo para siempre.',
+    description: 'Un pago único por mes, sin suscripción. Los ejercicios de ese mes están disponibles durante 30 días: si te salteás un día, podés seguir con los demás. Pasado el mes, podés inscribirte para el siguiente.',
   },
   {
     step: '02',
