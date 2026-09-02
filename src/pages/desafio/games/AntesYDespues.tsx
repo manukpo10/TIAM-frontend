@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ListOrdered, ArrowRight, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
-import { useSequencingPuzzle } from './useSequencingPuzzle'
 
 /**
  * "Antes y después" — día 30, Mes 2, cierre del área cálculo. Reemplaza a
  * FigurasSuperpuestas.tsx (agnosias): el usuario pidió este juego puntual,
  * a partir de un boceto en papel — un número fijo en el medio, y hay que
- * completar los números que van justo antes y justo después, en orden.
+ * completar los números que van justo antes y justo después.
  * Sube de nivel = sube la cantidad de números a completar de cada lado (1
  * → 2 → 3), no el tamaño de los números — igual que en el boceto original.
  *
@@ -17,14 +16,20 @@ import { useSequencingPuzzle } from './useSequencingPuzzle'
  * lenguaje en un pedido anterior) — vale la pena que el usuario lo sepa,
  * no es algo para decidir en silencio acá.
  *
- * Mecánica: reutiliza useSequencingPuzzle (mismo motor que
- * LetrasRevueltas/ArmaLaEscena/CopiaElPatron) de una forma directa — los
- * números que faltan (antes y después del número mostrado) son, por
- * construcción, una secuencia YA ascendente y consecutiva, así que pasarlos
- * como "pool" y dejar que el jugador los toque en el orden correcto
- * ES exactamente "tocarlos de menor a mayor", que es lo mismo que "llenar
- * los huecos de izquierda a derecha" en la fila `_ _ _ N _ _ _`. No hace
- * falta ninguna lógica de validación aparte.
+ * Colocación LIBRE por lugar, no por orden de toque — a pedido explícito
+ * del usuario ("si haces click en otra posicion poder elegir el numero que
+ * va"): la versión original usaba useSequencingPuzzle, que rellena el
+ * PRÓXIMO hueco vacío sin importar qué ficha se tocó — tocar los números
+ * fuera de orden ascendente los mandaba en silencio al lugar equivocado, y
+ * recién se notaba al final con "Revisar". Ahora es tocar una ficha del
+ * banco y DESPUÉS el lugar exacto donde va — mismo patrón que
+ * CrucigramaDeCifras/QueFaltaEnLaEsquina: si el número no es el que
+ * corresponde a ESE lugar, un aviso suave y la ficha vuelve al banco. Como
+ * cada ubicación se valida al toque, una ronda completa siempre terminó
+ * genuinamente bien — no hace falta botón "Revisar" ni una pantalla de "la
+ * secuencia era..." (esas dos piezas existían sólo porque el modelo viejo
+ * podía terminar con números en el lugar equivocado sin que el jugador se
+ * enterara hasta el final).
  *
  * Pool verificado con un script descartable (mismo criterio que el resto
  * del catálogo): para cada número de cada nivel se confirmó que los K
@@ -44,9 +49,17 @@ const LEVELS: Level[] = [
   { n: 2, name: 'Nivel 2', rounds: 2, k: 2, pool: [158, 167, 284, 725, 341, 512] },
   { n: 3, name: 'Nivel 3', rounds: 2, k: 3, pool: [928, 605, 421, 850, 300] },
 ]
+// Cada ronda exige tantas colocaciones correctas como números tenga (2×k) —
+// el denominador de "intentos totales" tiene que sumar eso por nivel, no un
+// número fijo, ahora que cada lugar se valida por separado.
+const TOTAL_REQUIRED_PLACEMENTS = LEVELS.reduce((sum, l) => sum + l.rounds * 2 * l.k, 0)
 
 const PRAISE_GOOD = ['¡Exacto!', '¡Muy bien completada!', '¡Perfecto!', '¡Así se hace!']
-const PRAISE_OK = ['¡Buen intento! Mirá cómo iba la secuencia.', '¡Casi! Con la práctica te sale cada vez mejor.']
+const HINTS = [
+  'Ese número no va ahí — fijate si tiene que ir antes o después.',
+  'Casi. Pensá qué número sigue justo en ese lugar.',
+  'No es ese lugar — mirá bien el orden de la secuencia.',
+]
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -58,6 +71,11 @@ function shuffle<T>(arr: T[]): T[] {
 }
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+interface Tile {
+  id: string
+  value: number
 }
 
 export function AntesYDespues({ day: _day, onComplete }: GameProps) {
@@ -76,43 +94,84 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
   const k = level.k
   const before = Array.from({ length: k }, (_, i) => target - k + i)
   const after = Array.from({ length: k }, (_, i) => target + i + 1)
+  const totalSlots = 2 * k
+  // slots[0..k-1] = before (índice i -> before[i]); slots[k..2k-1] = after
+  // (índice k+i -> after[i]) — mismo orden que se muestra en pantalla.
+  const slotValues = [...before, ...after]
 
-  const { bank, placed, place, unplace } = useSequencingPuzzle(
-    [...before, ...after],
-    `${levelIdx}-${roundKey}-${roundIdx}`,
+  // Ficha por valor (todos distintos dentro de una ronda, por construcción:
+  // antes/después de un mismo número nunca se repiten) — estable por ronda,
+  // ver mismo patrón en CruceDeLetras.tsx.
+  const allTiles = useMemo<Tile[]>(
+    () => shuffle(slotValues.map((v) => ({ id: `${v}`, value: v }))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [levelIdx, roundKey, roundIdx],
   )
-  const [checked, setChecked] = useState(false)
+
+  const [placedBySlot, setPlacedBySlot] = useState<Map<number, number>>(new Map())
+  const [selectedTileId, setSelectedTileId] = useState<string | null>(null)
+  const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GOOD[0])
   const [accMistakes, setAccMistakes] = useState(0)
-  const [accAttempts, setAccAttempts] = useState(0)
 
-  const isCorrect = bank.length === 0 && placed.every((item, i) => item.id === i)
-  const readyToCheck = bank.length === 0
-  const done = checked && roundIdx >= level.rounds - 1
+  // `done` es puramente el índice de ronda contra el total — NUNCA
+  // combinado con `resolved`: una vez que la última ronda se resuelve, el
+  // setTimeout de attemptSlot() igual hace avanzar roundIdx (y resetea
+  // placedBySlot a vacío) un momento después. Si `done` dependiera de
+  // `resolved`, ese reset lo volvería a apagar justo cuando roundIdx ya
+  // está fuera de rango, y la pantalla mostraría una ronda fantasma con
+  // `target` undefined (NaN por toda la fila) — se reprodujo en vivo antes
+  // de este comentario. Mismo patrón que QueFaltaEnLaEsquina.tsx.
+  const done = roundIdx >= level.rounds
+  const resolved = !done && placedBySlot.size === totalSlots
+  const placedValues = new Set(placedBySlot.values())
+  const bank = allTiles.filter((t) => !placedValues.has(t.value))
 
-  function check() {
-    setPraise(pickOne(isCorrect ? PRAISE_GOOD : PRAISE_OK))
-    setChecked(true)
-    const stepMistakes = placed.filter((item, i) => item.id !== i).length
-    setAccMistakes((m) => m + stepMistakes)
-    setAccAttempts((a) => a + before.length + after.length)
+  function selectTile(id: string) {
+    if (resolved) return
+    setSelectedTileId((prev) => (prev === id ? null : id))
   }
-  function nextRound() {
-    setChecked(false)
-    setRoundIdx((i) => i + 1)
+
+  function attemptSlot(slotIdx: number) {
+    if (resolved || placedBySlot.has(slotIdx) || !selectedTileId) return
+    const tile = bank.find((t) => t.id === selectedTileId)
+    if (!tile) return
+    if (tile.value === slotValues[slotIdx]) {
+      setSelectedTileId(null)
+      setHint(null)
+      const next = new Map(placedBySlot).set(slotIdx, tile.value)
+      setPlacedBySlot(next)
+      if (next.size === totalSlots) {
+        setPraise(pickOne(PRAISE_GOOD))
+        window.setTimeout(() => {
+          setRoundIdx((i) => i + 1)
+          setPlacedBySlot(new Map())
+          setSelectedTileId(null)
+          setHint(null)
+        }, 900)
+      }
+      return
+    }
+    setSelectedTileId(null)
+    setAccMistakes((m) => m + 1)
+    setHint(pickOne(HINTS))
   }
+
   function advanceLevel() {
-    setChecked(false)
     setRoundIdx(0)
     setLevelIdx((i) => i + 1)
+    setPlacedBySlot(new Map())
+    setSelectedTileId(null)
+    setHint(null)
   }
   function restartEpoch() {
-    setChecked(false)
     setRoundIdx(0)
     setLevelIdx(0)
     setRoundKey((k2) => k2 + 1)
+    setPlacedBySlot(new Map())
+    setSelectedTileId(null)
+    setHint(null)
     setAccMistakes(0)
-    setAccAttempts(0)
   }
   function restartSame() {
     restartEpoch()
@@ -122,37 +181,33 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
   useEffect(() => {
     if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes: accMistakes, totalAttempts: accAttempts })
+      onComplete({ mistakes: accMistakes, totalAttempts: accMistakes + TOTAL_REQUIRED_PLACEMENTS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done, levelIdx, roundKey, accMistakes, accAttempts])
+  }, [done, levelIdx, roundKey, accMistakes])
 
-  // Cada slot vacío, en orden: primero los K "antes", después N (fijo, no
-  // se toca), después los K "después" — `placed[i]` cubre los slots antes
-  // Y después con el mismo índice corrido, sin distinguir grupo: el slot
-  // "antes" #j es placed[j], el slot "después" #j es placed[k + j].
   function slot(i: number) {
-    const item = placed[i]
-    if (!item) {
+    const value = placedBySlot.get(i)
+    if (value === undefined) {
       return (
-        <div
-          key={`empty-${i}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-slate-200 bg-slate-50 text-sm text-slate-300"
+        <button
+          key={`slot-${i}`}
+          type="button"
+          onClick={() => attemptSlot(i)}
+          aria-label="Lugar vacío"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-300 transition hover:border-tiam-blue/40"
         >
           ?
-        </div>
+        </button>
       )
     }
     return (
-      <button
-        key={`filled-${i}`}
-        type="button"
-        onClick={() => unplace(item)}
-        aria-label={`Quitar ${item.value}`}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-tiam-green bg-tiam-green/5 text-base font-extrabold text-tiam-green transition hover:-translate-y-0.5"
+      <div
+        key={`slot-${i}`}
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-tiam-green bg-tiam-green/5 text-base font-extrabold text-tiam-green"
       >
-        {item.value}
-      </button>
+        {value}
+      </div>
     )
   }
 
@@ -163,7 +218,7 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
           {level.name}
         </span>
-        {!done && (
+        {phase === 'playing' && !done && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Antes y después</h2>
             <p className="mt-2 text-base font-semibold text-slate-500">
@@ -188,8 +243,8 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a ver un número fijo en el medio. Tocá, en orden de menor a mayor, los números del banco que van
-            justo antes y justo después — a medida que subís de nivel, hay más para completar de cada lado.
+            Vas a ver un número fijo en el medio. Tocá un número del banco y después el lugar exacto donde creas que
+            va — a medida que subís de nivel, hay más para completar de cada lado.
           </p>
           <button
             type="button"
@@ -202,7 +257,7 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
         </div>
       )}
 
-      {phase === 'playing' && !done && !checked && (
+      {phase === 'playing' && !done && (
         <>
           {/* Secuencia en 3 filas — antes / número fijo / después — en vez
               de una sola fila horizontal: con K=3 (nivel 3) los 7 elementos
@@ -218,60 +273,42 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
           </div>
 
           {/* Banco de números */}
-          <div className="mx-auto mt-6 flex max-w-xs flex-wrap justify-center gap-2">
-            {bank.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => place(item)}
-                className="flex h-11 min-w-[44px] items-center justify-center rounded-lg border-2 border-slate-200 bg-white px-2 text-base font-extrabold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
-              >
-                {item.value}
-              </button>
-            ))}
-          </div>
-
-          {readyToCheck && (
-            <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={check}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
-              >
-                Revisar
-              </button>
+          {!resolved && (
+            <div className="mx-auto mt-6 flex max-w-xs flex-wrap justify-center gap-2">
+              {bank.map((tile) => (
+                <button
+                  key={tile.id}
+                  type="button"
+                  onClick={() => selectTile(tile.id)}
+                  className={[
+                    'flex h-11 min-w-[44px] items-center justify-center rounded-lg border-2 px-2 text-base font-extrabold transition',
+                    selectedTileId === tile.id
+                      ? 'border-tiam-blue bg-tiam-blue/5 text-slate-900 ring-2 ring-tiam-blue/30'
+                      : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
+                  ].join(' ')}
+                >
+                  {tile.value}
+                </button>
+              ))}
             </div>
           )}
+
+          {hint && !resolved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
+          {resolved && <p className="mt-4 text-center text-base font-semibold text-tiam-green">{praise}</p>}
         </>
       )}
 
-      {/* Resultado */}
-      {checked && (
+      {/* Nivel completo */}
+      {done && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
-          {!isCorrect && (
-            <p className="mt-2 text-base text-slate-600">
-              La secuencia era:{' '}
-              <span className="font-bold text-slate-900">
-                {before.join(', ')}, {target}, {after.join(', ')}
-              </span>
-            </p>
-          )}
-          {!done ? (
-            <div className="mt-5 flex justify-center">
-              <button
-                type="button"
-                onClick={nextRound}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                Siguiente número
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          ) : levelIdx < LEVELS.length - 1 ? (
+          <p className="mt-1 text-slate-600">
+            Completaste las {level.rounds} secuencias — terminaste el {level.name.toLowerCase()}.
+          </p>
+          {levelIdx < LEVELS.length - 1 ? (
             <div className="mt-5 flex justify-center">
               <button
                 type="button"
