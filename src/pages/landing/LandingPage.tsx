@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GraduationCap, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -9,7 +9,56 @@ import tiamLogoFull from '@/assets/logo.png'
 import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import tallerFoto from '@/assets/taller/taller-1.jpg'
-import tallerHeroFoto from '@/assets/taller/taller-5.jpg'
+import tallerFoto2 from '@/assets/taller/taller-2.jpg'
+import tallerFoto3 from '@/assets/taller/taller-3.jpg'
+import tallerFoto4 from '@/assets/taller/taller-4.jpg'
+import tallerFoto5 from '@/assets/taller/taller-5.jpg'
+import tallerFoto6 from '@/assets/taller/taller-6.jpg'
+
+// Mismas 6 fotos reales del taller que usa /talleres, acá en modo carrusel
+// para la foto del hero — arrancan en taller-5 (la que ya se mostraba fija)
+// para no cambiar la primera impresión.
+const HERO_PHOTOS = [
+  { src: tallerFoto5, alt: 'Grupo de participantes trabaja con tableros de fichas de colores para armar secuencias, en el espacio del taller en La Plata' },
+  { src: tallerFoto, alt: 'Dos personas completan ejercicios de estimulación cognitiva en cuadernos, con café y galletitas sobre la mesa' },
+  { src: tallerFoto2, alt: 'Cuatro participantes del taller resuelven ejercicios en cuadernos alrededor de una mesa compartida' },
+  { src: tallerFoto3, alt: 'Seis personas escriben en cuadernos durante un encuentro del taller, con una consigna de lenguaje anotada en el pizarrón de fondo' },
+  { src: tallerFoto4, alt: 'Participantes del taller completan fichas de estimulación cognitiva sentados a la mesa' },
+  { src: tallerFoto6, alt: 'Grupo de participantes resuelve un ejercicio de secuencia numérica anotado en el pizarrón, durante un encuentro del taller' },
+]
+
+/** Auto-advancing sliding carousel — plain translateX + setInterval, no
+ * library, matches the modal/lightbox pattern this codebase already uses
+ * elsewhere (custom, dependency-free) instead of pulling in a carousel dep
+ * for a single hero slot. */
+function HeroPhotoCarousel() {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % HERO_PHOTOS.length)
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className="aspect-[4/3] overflow-hidden rounded-3xl shadow-xl shadow-tiam-blue/10 ring-1 ring-slate-100">
+      <div
+        className="flex h-full transition-transform duration-700 ease-in-out"
+        style={{ transform: `translateX(-${index * 100}%)` }}
+      >
+        {HERO_PHOTOS.map((photo) => (
+          <img
+            key={photo.src}
+            src={photo.src}
+            alt={photo.alt}
+            className="h-full w-full shrink-0 object-cover"
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 // TIAM es una marca con 4 patas: la plataforma para profesionales
@@ -46,7 +95,7 @@ export function LandingPage() {
               <img
                 src={tiamLogoFull}
                 alt="TIAM — taller interactivo adultos mayores"
-                className="h-24 w-auto mx-auto lg:mx-0 mb-6"
+                className="h-24 w-auto mx-auto lg:mx-0 mb-6 mix-blend-multiply"
               />
               <h1
                 id="hero-heading"
@@ -61,13 +110,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="aspect-[4/3] overflow-hidden rounded-3xl shadow-xl shadow-tiam-blue/10 ring-1 ring-slate-100">
-              <img
-                src={tallerHeroFoto}
-                alt="Grupo de participantes del taller de TIAM en La Plata, trabajando juntos alrededor de una mesa"
-                className="h-full w-full object-cover"
-              />
-            </div>
+            <HeroPhotoCarousel />
           </div>
         </section>
 
