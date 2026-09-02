@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
 import logoImg from '@/assets/logogrande-sinfondo.png'
@@ -8,7 +8,9 @@ import logoImg from '@/assets/logogrande-sinfondo.png'
 /**
  * Shared navigation header for the public-facing pages (landing, blog).
  * Section links point at landing anchors so they work from any route; page
- * links use the router.
+ * links use the router. A link with `children` renders as a dropdown on
+ * desktop (hover) and as an indented sub-list on mobile — one level deep,
+ * no need for anything recursive since only "Plataforma" has a submenu.
  */
 
 interface NavLink {
@@ -17,11 +19,16 @@ interface NavLink {
   href: string
   /** True when it targets a different route (uses <Link>, not a hash anchor). */
   route?: boolean
+  children?: NavLink[]
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: 'Plataforma', href: '/plataforma', route: true },
-  { label: 'Cómo funciona', href: '/demo', route: true },
+  {
+    label: 'Plataforma',
+    href: '/plataforma',
+    route: true,
+    children: [{ label: 'Cómo funciona', href: '/demo', route: true }],
+  },
   { label: 'Desafío 30 días', href: '/desafio-30-dias', route: true },
   { label: 'Talleres', href: '/talleres', route: true },
   { label: 'Recursos', href: '/recursos', route: true },
@@ -47,7 +54,30 @@ export function PublicHeader() {
         {/* Desktop nav links */}
         <nav className="hidden lg:flex items-center gap-6" aria-label="Navegación principal">
           {NAV_LINKS.map((link) =>
-            link.route ? (
+            link.children ? (
+              <div key={link.href} className="group relative py-2 -my-2">
+                <Link
+                  to={link.href}
+                  className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-tiam-blue transition-colors"
+                >
+                  {link.label}
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Link>
+                <div className="invisible absolute left-0 top-full opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
+                  <div className="mt-2 min-w-[180px] rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        to={child.href}
+                        className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-tiam-blue transition-colors"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : link.route ? (
               <Link
                 key={link.href}
                 to={link.href}
@@ -121,6 +151,21 @@ export function PublicHeader() {
                   >
                     {link.label}
                   </a>
+                )}
+                {link.children && (
+                  <ul className="ml-3 border-l border-slate-100 pl-3">
+                    {link.children.map((child) => (
+                      <li key={child.href}>
+                        <Link
+                          to={child.href}
+                          onClick={() => setOpen(false)}
+                          className="block rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 hover:text-tiam-blue transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </li>
             ))}
