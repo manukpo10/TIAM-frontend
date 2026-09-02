@@ -104,7 +104,7 @@ const AUDIENCE = [
 const FAQS = [
   {
     q: '¿Cómo recibo los ejercicios?',
-    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer mes al instante. Cada día le escribís “desafío” y te pasamos la actividad nueva, para hacer desde el celular o imprimir.',
+    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer mes al instante. Todos los días entrás a ese mismo link y encontrás la actividad nueva, para hacer desde el celular o imprimir.',
   },
   {
     q: '¿Necesito instalar alguna aplicación?',

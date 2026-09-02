@@ -109,7 +109,7 @@ function Ready() {
         <p className="mt-4 flex items-start gap-2 text-sm text-slate-500">
           <CalendarCheck className="mt-0.5 h-4 w-4 shrink-0 text-tiam-orange" />
           <span>
-            Después, cada día escribinos <strong>“desafío”</strong> y te mandamos el ejercicio nuevo.
+            Después, entrá todos los días a ese mismo link: vas a encontrar un ejercicio nuevo.
           </span>
         </p>
       </div>
