@@ -126,13 +126,9 @@ const FAQ: QA[] = [
     answer: (
       <>
         Si notás olvidos que interfieren con la vida diaria, desorientación, dificultad con tareas
-        conocidas o repetición de preguntas de forma sostenida, vale la pena consultar. Podés empezar
-        por nuestra{' '}
-        <Link to="/autoevaluacion" className="font-medium text-primary hover:underline">
-          autoevaluación orientativa
-        </Link>
-        : son 8 preguntas rápidas. <strong>No es un diagnóstico</strong> —solo un profesional puede
-        darlo— pero ayuda a decidir si conviene consultar.
+        conocidas o repetición de preguntas de forma sostenida, vale la pena consultar. Un
+        neurólogo, neuropsicólogo o tu médico de cabecera pueden hacer la valoración adecuada
+        —<strong>no hace falta esperar a tener certezas</strong> para pedir el turno.
       </>
     ),
   },
@@ -244,16 +240,13 @@ export function ClinicalFaqPage() {
 
           {/* CTA */}
           <div className="mt-10 rounded-2xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
-            <p className="font-semibold text-slate-900">¿Tenés dudas sobre tu memoria o la de un ser querido?</p>
+            <p className="font-semibold text-slate-900">¿Tenés más dudas sobre estimulación cognitiva?</p>
             <p className="mt-1 text-slate-600">
-              Hacé nuestra autoevaluación orientativa: son 8 preguntas y te lleva menos de 2 minutos.
+              Mirá nuestro blog: notas y recursos pensados para profesionales y familias.
             </p>
-            <div className="mt-4 flex flex-col sm:flex-row justify-center gap-3">
-              <Link to="/autoevaluacion">
-                <Button size="md">Hacer la autoevaluación</Button>
-              </Link>
+            <div className="mt-4 flex justify-center">
               <Link to="/blog">
-                <Button variant="secondary" size="md">Leer el blog</Button>
+                <Button size="md">Leer el blog</Button>
               </Link>
             </div>
           </div>

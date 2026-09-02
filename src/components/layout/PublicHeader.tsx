@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/Button'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
 /**
- * Shared navigation header for the public-facing pages (landing, blog,
- * screening test). Section links point at landing anchors so they work from
- * any route; page links use the router.
+ * Shared navigation header for the public-facing pages (landing, blog).
+ * Section links point at landing anchors so they work from any route; page
+ * links use the router.
  */
 
 interface NavLink {
@@ -22,7 +22,6 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
   { label: 'Plataforma', href: '/plataforma', route: true },
   { label: 'Cómo funciona', href: '/demo', route: true },
-  { label: 'Autoevaluación', href: '/autoevaluacion', route: true },
   { label: 'Desafío 30 días', href: '/desafio-30-dias', route: true },
   { label: 'Recursos', href: '/recursos', route: true },
   { label: 'Preguntas', href: '/preguntas-frecuentes', route: true },

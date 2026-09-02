@@ -46,6 +46,6 @@ No todo deterioro es demencia, y no todo olvido es deterioro. Pero solo una eval
 
 ## Un primer paso simple
 
-Si tenés dudas sobre vos o sobre un ser querido, podés empezar por nuestra [autoevaluación orientativa](/autoevaluacion): son 8 preguntas rápidas que te dan una orientación general. **No es un diagnóstico** —solo un profesional puede darlo— pero puede ayudarte a decidir si vale la pena consultar.
+Si tenés dudas sobre vos o sobre un ser querido, lo más simple es plantearlo en la próxima consulta con tu médico de cabecera, o pedir turno con un neurólogo o neuropsicólogo. No hace falta esperar a tener certezas para consultar.
 
 La prevención y la detección temprana son las mejores herramientas que tenemos. Ante la duda, consultar siempre es la mejor opción.
