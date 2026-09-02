@@ -65,6 +65,14 @@ const RANK_ARTICLE: Record<Rank, string> = {
   A: 'el', '2': 'el', '3': 'el', '4': 'el', '5': 'el', '6': 'el', '7': 'el', '8': 'el', '9': 'el',
   '10': 'la', '11': 'el', '12': 'el',
 }
+// countRank nunca elige Sota/Caballo/Rey como sujeto de la pregunta ("¿Cuántas
+// cartas de Rey hay?") — a pedido explícito del usuario: la carta acá es 100%
+// SVG genérico (número + glyph de palo, ver PlayingCard/SuitGlyph), sin
+// ninguna ilustración de figura, así que preguntar por una figura por NOMBRE
+// le pide al jugador reconocer un dibujo que nunca existió en pantalla. Sí
+// pueden seguir apareciendo en la mesa y como respuesta en 'repeated' (ahí el
+// nombre sólo describe una carta que el jugador YA vio, no la pide a ciegas).
+const COUNTABLE_RANKS = RANKS.filter((r) => r !== '10' && r !== '11' && r !== '12')
 
 function cardValue(rank: Rank): number {
   return rank === 'A' ? 1 : Number(rank)
@@ -195,7 +203,7 @@ function generateRound(levelIdx: number): Round {
     const seeds = SUITS.filter((s) => s !== suit).map((s) => grid.filter((c) => c.suit === s).length)
     numericOptions = shuffle([correctValue, ...fillDecoys(correctValue, seeds, 3)])
   } else if (type === 'countRank') {
-    const rank = pickOne(RANKS)
+    const rank = pickOne(COUNTABLE_RANKS)
     correctValue = grid.filter((c) => c.rank === rank).length
     prompt = `¿Cuántas cartas de ${RANK_SIMPLE[rank]} hay?`
     const otherRanks = shuffle(RANKS.filter((r) => r !== rank)).slice(0, 3)
