@@ -82,7 +82,7 @@ import { ContinuaLaSerie } from './ContinuaLaSerie'
 import { ElHiloInvisible } from './ElHiloInvisible'
 import { QueFaltaEnLaEsquina } from './QueFaltaEnLaEsquina'
 import { SinonimoAntonimoOIgual } from './SinonimoAntonimoOIgual'
-import { QueFaltaEnLaLista } from './QueFaltaEnLaLista'
+import { LaIntrusaDeLaLista } from './LaIntrusaDeLaLista'
 import { OrdenaLasCifras } from './OrdenaLasCifras'
 import { CopiaElPatron } from './CopiaElPatron'
 import { NumerosAlReves } from './NumerosAlReves'
@@ -196,7 +196,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     21: ElHiloInvisible,
     22: QueFaltaEnLaEsquina,
     23: SinonimoAntonimoOIgual,
-    24: QueFaltaEnLaLista,
+    24: LaIntrusaDeLaLista,
     25: OrdenaLasCifras,
     26: CopiaElPatron,
     27: NumerosAlReves,
