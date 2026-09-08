@@ -277,10 +277,9 @@ export function CruceDeLetras({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a armar una grilla de letras. La primera fila ya está puesta, de pista. Tocá las fichas para que las
-            demás filas, leídas hacia abajo en cada columna, formen la MISMA palabra que esa primera fila — por eso
-            cada letra de la primera fila te dice con qué letra tiene que empezar la fila de esa columna. Si te
-            equivocás no pasa nada: tocá una ficha puesta para sacarla y probá otro orden.
+            Vas a armar una grilla de letras. La primera fila es la pista: ya está completa. Tu trabajo es acomodar
+            las otras fichas para que la primera columna, leída de arriba a abajo, quede igual a esa primera fila. Si
+            te equivocás no pasa nada: tocá una ficha puesta para sacarla y probá otro orden.
           </p>
           <button
             type="button"
