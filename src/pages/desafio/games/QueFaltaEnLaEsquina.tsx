@@ -245,10 +245,21 @@ function buildBank(round: Round, level: Level): BankPiece[] {
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen ojo!']
-const HINTS = [
-  'Ese pedacito no va ahí — fijate el color y la forma.',
-  'Casi. Mirá bien de qué parte de la foto es ese pedacito.',
-  'No es ese lugar — pensá qué parte de la foto le corresponde.',
+// Dos pistas distintas según el error real (ver attemptSlot): una pieza
+// real en el casillero equivocado no es el mismo error que una pieza señuelo
+// (de otra foto) que no pertenece a esta figura en ningún lado — antes un
+// solo pool mezclaba ambos casos y la mitad de las pistas ("mirá de qué
+// parte de la foto es ese pedacito") quedaban engañosas cuando el pedacito
+// elegido ni siquiera era de esta foto.
+const HINTS_WRONG_SLOT = [
+  'Ese pedacito es correcto, pero no va en ese lugar — fijate bien dónde encaja.',
+  'Casi. Es la pieza correcta, pero no es ese casillero.',
+  'Buen pedacito, lugar equivocado — mirá qué parte de la foto es.',
+]
+const HINTS_WRONG_PIECE = [
+  'Ese pedacito es de otra foto — no pertenece a esta figura.',
+  'Fijate bien: ese no es un pedacito de esta foto.',
+  'Ese pedacito no es de acá — buscá uno que sea parte de la figura.',
 ]
 
 export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
@@ -311,7 +322,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
     }
     setSelectedPieceId(null)
     setMistakes((m) => m + 1)
-    setHint(pickOne(HINTS))
+    setHint(pickOne(piece.isReal ? HINTS_WRONG_SLOT : HINTS_WRONG_PIECE))
   }
 
   function advanceLevel() {
@@ -377,7 +388,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a armar una foto en pedacitos. Primero tocá un pedacito del banco de abajo. Después tocá el lugar del
+            Vas a armar una foto en pedacitos. Primero tocá un pedacito de la figura. Después tocá el lugar del
             rompecabezas donde creas que va. Ojo: hay pedacitos de otras fotos mezclados, para despistar.
           </p>
           <button
@@ -398,7 +409,7 @@ export function QueFaltaEnLaEsquina({ day: _day, onComplete }: GameProps) {
               sólo una vez en la pantalla "¿Listo?". */}
           {!resolved && (
             <p className="mt-4 text-center text-sm font-semibold text-tiam-blue">
-              {selectedPieceId ? 'Ahora tocá el lugar del rompecabezas donde va' : 'Primero tocá un pedacito del banco'}
+              {selectedPieceId ? 'Ahora tocá el lugar del rompecabezas donde va' : 'Primero tocá un pedacito de la figura'}
             </p>
           )}
 
