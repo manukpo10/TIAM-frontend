@@ -29,6 +29,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Un cruce mal puesto NUNCA borra lo ya colocado: las posiciones
  * equivocadas quedan marcadas en gris (nunca rojo) y el jugador sólo
  * reacomoda esas, no tiene que volver a armar toda la fila de cero.
+ *
+ * Los números se muestran SIN separador de miles (`item.value` a secas, no
+ * `.toLocaleString('es-AR')`) — a pedido explícito del usuario: el punto
+ * separador de miles del formato argentino (ej. "624.683") se leía como un
+ * separador decimal, justo lo contrario de la pista visual que el juego
+ * necesita (comparar por cantidad de cifras de un vistazo).
  */
 
 interface LevelConfig {
@@ -291,7 +297,7 @@ export function OrdenaLasCifras({ day: _day, onComplete }: GameProps) {
                     ].join(' ')}
                   >
                     <span className="text-base font-semibold text-slate-400">{i + 1}.</span>
-                    {item.value.toLocaleString('es-AR')}
+                    {item.value}
                   </button>
                 ))}
               </div>
@@ -308,7 +314,7 @@ export function OrdenaLasCifras({ day: _day, onComplete }: GameProps) {
                   onClick={() => handlePlace(item)}
                   className="min-h-[44px] rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-lg font-bold text-slate-700 transition hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0"
                 >
-                  {item.value.toLocaleString('es-AR')}
+                  {item.value}
                 </button>
               ))}
             </div>
