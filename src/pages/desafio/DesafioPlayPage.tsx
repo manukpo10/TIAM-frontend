@@ -380,6 +380,13 @@ export function DesafioPlayPage() {
                         <X className="h-5 w-5" />
                       </button>
                     </div>
+                    {/* La pantalla de instrucciones (paso 'intro') ya aclara que es
+                        lápiz y papel, pero esa pantalla queda atrás una vez acá — sin
+                        este recordatorio, las líneas punteadas de la grilla se pueden
+                        confundir con campos para completar en el celular. */}
+                    <p className="mt-3 px-1 text-center text-sm font-semibold text-slate-500">
+                      📝 Copiá esto en una hoja de papel — la pantalla es sólo de guía.
+                    </p>
                     {selected.worksheet && (
                       <div className="mt-4">
                         <PersonalInfoWorksheet items={selected.worksheet} color={AREA_META[selected.area].color} />
