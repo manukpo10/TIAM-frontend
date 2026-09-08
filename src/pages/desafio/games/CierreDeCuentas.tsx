@@ -227,8 +227,8 @@ export function CierreDeCuentas({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Un repaso de las cuentas de todos los días: vueltos, precios con descuento y horarios. Leé cada situación
-            y tocá la respuesta correcta entre las opciones.
+            Un repaso de las cuentas de todos los días: vueltos, precios con descuento y horarios. Leé cada situación,
+            hacé la cuenta en una hoja de papel si te ayuda, y tocá la respuesta correcta entre las opciones.
           </p>
           <button
             type="button"
