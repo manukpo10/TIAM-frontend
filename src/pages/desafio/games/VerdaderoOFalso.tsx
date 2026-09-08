@@ -330,14 +330,16 @@ export function VerdaderoOFalso({ day: _day, onComplete }: GameProps) {
               {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
               <ArrowRight className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Otra ronda
-            </button>
+            {levelIdx === LEVELS.length - 1 && (
+              <button
+                type="button"
+                onClick={replay}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Otra ronda
+              </button>
+            )}
           </div>
         </div>
       )}
