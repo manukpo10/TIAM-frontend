@@ -21,10 +21,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  * va"): la versión original usaba useSequencingPuzzle, que rellena el
  * PRÓXIMO hueco vacío sin importar qué ficha se tocó — tocar los números
  * fuera de orden ascendente los mandaba en silencio al lugar equivocado, y
- * recién se notaba al final con "Revisar". Ahora es tocar una ficha del
- * banco y DESPUÉS el lugar exacto donde va — mismo patrón que
+ * recién se notaba al final con "Revisar". Ahora es tocar una ficha de la
+ * fila y DESPUÉS el lugar exacto donde va — mismo patrón que
  * CrucigramaDeCifras/QueFaltaEnLaEsquina: si el número no es el que
- * corresponde a ESE lugar, un aviso suave y la ficha vuelve al banco. Como
+ * corresponde a ESE lugar, un aviso suave y la ficha vuelve a la fila. Como
  * cada ubicación se valida al toque, una ronda completa siempre terminó
  * genuinamente bien — no hace falta botón "Revisar" ni una pantalla de "la
  * secuencia era..." (esas dos piezas existían sólo porque el modelo viejo
@@ -243,7 +243,7 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Vas a ver un número fijo en el medio. Tocá un número del banco y después el lugar exacto donde creas que
+            Vas a ver un número fijo en el medio. Tocá un número de la fila y después el lugar exacto donde creas que
             va — a medida que subís de nivel, hay más para completar de cada lado.
           </p>
           <button
@@ -265,7 +265,7 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
               recuerda en cada ronda, no sólo al principio del día. */}
           {!resolved && (
             <p className="mt-4 text-center text-sm font-semibold text-tiam-blue">
-              {selectedTileId ? 'Ahora tocá el lugar donde va' : 'Primero tocá un número del banco'}
+              {selectedTileId ? 'Ahora tocá el lugar donde va' : 'Primero tocá un número de la fila'}
             </p>
           )}
 
@@ -282,7 +282,7 @@ export function AntesYDespues({ day: _day, onComplete }: GameProps) {
             <div className="flex flex-wrap justify-center gap-1.5">{after.map((_, i) => slot(k + i))}</div>
           </div>
 
-          {/* Banco de números */}
+          {/* Fila de números */}
           {!resolved && (
             <div className="mx-auto mt-6 flex max-w-xs flex-wrap justify-center gap-2">
               {bank.map((tile) => (
