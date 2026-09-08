@@ -70,7 +70,7 @@ import { PistasConvergentes } from './PistasConvergentes'
 import { ElEslabonPerdido } from './ElEslabonPerdido'
 import { RecordaLosDetalles } from './RecordaLosDetalles'
 import { SopaDeLetras } from './SopaDeLetras'
-import { CrucigramaDeCifras } from './CrucigramaDeCifras'
+import { CaminoNumerico } from './CaminoNumerico'
 import { LaOtraMitad } from './LaOtraMitad'
 import { RadarDeSilabas } from './RadarDeSilabas'
 import { PuenteDeOpuestos } from './PuenteDeOpuestos'
@@ -182,7 +182,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     8: ElEslabonPerdido,
     9: RecordaLosDetalles,
     10: SopaDeLetras,
-    11: CrucigramaDeCifras,
+    11: CaminoNumerico,
     12: LaOtraMitad,
     13: RadarDeSilabas,
     // 14 sin entrada: día 'card' (lápiz y papel), no tiene componente — ver
