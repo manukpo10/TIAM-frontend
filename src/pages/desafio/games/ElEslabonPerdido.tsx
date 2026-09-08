@@ -23,7 +23,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * literal ones (talón de Aquiles, caja de Pandora) for the requested
  * subtlety. No word is reused within the same nivel's pool (CODO/CODO is
  * the one deliberate exception — a real Spanish reduplicative idiom, codo
- * con codo).
+ * a codo).
  *
  * Connector distribution is deliberately capped, not naturalistic: "de" is
  * the default Spanish preposition, so a pool of real expressions picked
@@ -93,7 +93,7 @@ const LEVELS: LinkLevel[] = [
       { wordA: 'GOLPE', wordB: 'ESTADO', answer: 'de' },
       { wordA: 'AIRE', wordB: 'FAMILIA', answer: 'de' },
       { wordA: 'PASO', wordB: 'FALSO', answer: 'en' },
-      { wordA: 'CODO', wordB: 'CODO', answer: 'con' },
+      { wordA: 'CODO', wordB: 'CODO', answer: 'a' },
       { wordA: 'PUNTO', wordB: 'APARTE', answer: 'y' },
       { wordA: 'CUERPO', wordB: 'ALMA', answer: 'y' },
       { wordA: 'ENTRADA', wordB: 'SALIDA', answer: 'y' },
