@@ -67,7 +67,7 @@ const LEVEL_CONFIGS: LevelConfig[] = [
   { n: 3, name: 'Nivel 3', rowCount: 9, colCount: 4, targetCount: 4, baseRange: [100, 300], magRange: [16, 80] },
 ]
 
-const ROUNDS_PER_LEVEL = [2, 2, 2]
+const ROUNDS_PER_LEVEL = [1, 1, 1]
 const TOTAL_ROUNDS = ROUNDS_PER_LEVEL.reduce((a, b) => a + b, 0)
 
 function shuffle<T>(arr: T[]): T[] {
@@ -416,7 +416,8 @@ export function CalculoEnCuadro({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{levelPraise}</p>
           <p className="mt-1 text-slate-600">
-            Completaste las {roundsForLevel} tablas — terminaste el nivel {levelIdx + 1}.
+            Completaste {roundsForLevel === 1 ? 'la tabla' : `las ${roundsForLevel} tablas`} — terminaste el nivel{' '}
+            {levelIdx + 1}.
           </p>
           {levelIdx < LEVEL_CONFIGS.length - 1 ? (
             <div className="mt-5 flex justify-center">
