@@ -394,8 +394,8 @@ export function ElHiloInvisible({ day: _day, onComplete }: GameProps) {
 
           {/* Pregunta + opciones — la única superficie interactiva */}
           <p className="mx-auto mt-4 flex max-w-xs items-center justify-center gap-2 text-center text-base font-semibold text-slate-600">
+            ¿Cuál es el camino en números de la figura?
             <span className="text-xl">{maze.icons[maze.activeCol]}</span>
-            ¿Cuál es su camino en números?
           </p>
           <div className="mx-auto mt-3 grid max-w-xs grid-cols-2 gap-2.5">
             {options.map((code) => {
