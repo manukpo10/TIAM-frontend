@@ -306,7 +306,7 @@ export function Desafio30DiasPage() {
           {/* Background image */}
           <img
             src={desafioHero}
-            alt="Una hija acompaña a su mamá mientras resuelven juntas un ejercicio de estimulación cognitiva en la mesa de casa"
+            alt="Una hija acompaña a su mamá mientras juega el ejercicio del día desde el celular, sentadas en el living de casa"
             className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
             fetchPriority="high"
           />
