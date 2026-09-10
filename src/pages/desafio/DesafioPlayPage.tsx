@@ -187,6 +187,17 @@ export function DesafioPlayPage() {
   // module-level map — see the comment above GAMES_BY_MONTH in registry.ts.
   const Game = selected?.type === 'game' ? GAMES_BY_MONTH[month]?.[selected.day] : undefined
 
+  // The unlock ceiling (`access.currentDay`) now advances in weekly batches,
+  // so it can sit flat for up to a week while the player is still behind
+  // within that batch — "today" must track their actual next unplayed day,
+  // not the raw ceiling. `type === 'game'` lets 'card' days (no submittable
+  // result by design) pass through for free, same as the backend's own
+  // streak logic.
+  const nextUnplayedDay =
+    days.find((d) => d.day <= access.currentDay && d.type === 'game'
+      && !progress?.days.some((r) => r.day === d.day))?.day
+    ?? access.currentDay
+
   return (
     <div className="min-h-dvh bg-gradient-to-b from-tiam-blue/5 to-white">
       <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:px-6">
@@ -197,10 +208,10 @@ export function DesafioPlayPage() {
             ¡Hola, <span className="text-tiam-blue">{access.buyerFirstName}</span>!
           </h1>
           <p className="mt-3 text-lg text-slate-500 leading-relaxed">
-            Este es tu Desafío de 30 días. Tocá el día de hoy para ver tu ejercicio.
+            Este es tu Desafío de 30 días. Tocá un día para ver tu ejercicio.
           </p>
           <p className="mt-4 inline-block rounded-full bg-tiam-blue/10 px-4 py-1.5 text-sm font-semibold text-tiam-blue">
-            Vas por el día {access.currentDay} de {CHALLENGE_TOTAL_DAYS}
+            Tenés desbloqueado hasta el día {access.currentDay} de {CHALLENGE_TOTAL_DAYS}
           </p>
         </header>
 
@@ -213,7 +224,7 @@ export function DesafioPlayPage() {
           {days.map((d) => {
             const meta = AREA_META[d.area]
             const locked = d.day > access.currentDay
-            const isToday = d.day === access.currentDay
+            const isToday = d.day === nextUnplayedDay
             // Real result, not a calendar guess: a day only shows stars once
             // it actually has a recorded playthrough. An unlocked-but-unplayed
             // 'game' day (or a 'card' day, which never has a result at all)
@@ -273,7 +284,7 @@ export function DesafioPlayPage() {
         </div>
 
         <p className="mt-8 text-center text-sm text-slate-400">
-          Cada día se desbloquea uno nuevo. ¡Volvé mañana por el siguiente! 🌱
+          Cada semana se desbloquean 7 ejercicios nuevos. ¡Hacé uno o varios, a tu ritmo! 🌱
         </p>
 
         <ChallengeProgressPanel progress={progress} month={month} />

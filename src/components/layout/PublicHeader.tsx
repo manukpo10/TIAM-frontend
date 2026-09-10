@@ -53,8 +53,8 @@ export function PublicHeader() {
         to="/desafio-30-dias"
         className="block bg-tiam-navy px-4 py-2 text-center text-sm font-medium text-white hover:bg-tiam-navy/90 transition-colors"
       >
-        🎁 Nuevo: <span className="font-bold text-tiam-orange">Desafío 30 días</span> — un ejercicio
-        cognitivo por día para tu ser querido, directo por WhatsApp
+        🎁 Nuevo: <span className="font-bold text-tiam-orange">Desafío 30 días</span> — 7 ejercicios
+        cognitivos por semana para tu ser querido, directo por WhatsApp
         <ChevronRight className="ml-1 inline h-3.5 w-3.5" />
       </Link>
 

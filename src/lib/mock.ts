@@ -258,6 +258,13 @@ let mockChallengeDayResults: Record<string, DayResult[]> = {}
  * every day is unlocked for preview in dev (see the access handler below). Also
  * bounds the progress handler's streak walk, so the two can't silently disagree
  * about how many days are actually reachable.
+ *
+ * In real production, the backend now unlocks in weekly batches of 7 instead
+ * of one day at a time, so `currentDay` can only actually be one of
+ * {7, 14, 21, 28, 30} (30 being the short final week) — previously any
+ * integer 1-30 was a real possible state, now it isn't. This constant is
+ * already a flat hand-set value (never derived from a simulated purchase
+ * date), so it keeps working fine for previewing any unlock state either way.
  */
 const MOCK_CHALLENGE_CURRENT_DAY = 30
 

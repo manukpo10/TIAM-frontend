@@ -156,7 +156,7 @@ export function LandingPage() {
                   ¿Buscás algo para tu familia, no para tu consultorio?
                 </h3>
                 <p className="text-slate-600 flex-1">
-                  Conocé el Desafío 30 días: un ejercicio cognitivo por día que le llega a tu ser
+                  Conocé el Desafío 30 días: 7 ejercicios cognitivos por semana que le llegan a tu ser
                   querido directo por WhatsApp. Pago único, sin suscripción.
                 </p>
                 <Link to="/desafio-30-dias" className="mt-6">

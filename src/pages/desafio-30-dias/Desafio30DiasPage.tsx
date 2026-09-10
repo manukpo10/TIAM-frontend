@@ -65,15 +65,15 @@ const HOW_IT_WORKS = [
   {
     step: '03',
     icon: CalendarCheck,
-    title: 'Un ejercicio nuevo cada día',
-    description: 'Durante 30 días se desbloquea un ejercicio cognitivo distinto cada día, siempre en el mismo link que ya tenés. Para hacer en casa, a tu ritmo, en pocos minutos.',
+    title: '7 ejercicios nuevos por semana',
+    description: 'Durante 30 días se desbloquean 7 ejercicios cognitivos nuevos cada semana, siempre en el mismo link que ya tenés. Podés hacer uno por día o varios juntos — a tu ritmo, en pocos minutos cada uno.',
   },
 ]
 
 const INCLUDES = [
   {
     icon: Brain,
-    title: '30 ejercicios, uno por día',
+    title: '30 ejercicios, 7 por semana',
     description: 'Actividades pensadas para estimular la memoria, la atención y el lenguaje, sin repetirse.',
     stripClass: 'border-t-tiam-blue',
     iconClass: 'bg-tiam-blue/10 text-tiam-blue',
@@ -111,7 +111,7 @@ const AUDIENCE = [
 const FAQS = [
   {
     q: '¿Cómo recibo los ejercicios?',
-    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer mes al instante. Todos los días entrás a ese mismo link y encontrás la actividad nueva, para hacer desde el celular o imprimir.',
+    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer mes al instante. Cada semana se desbloquean 7 actividades nuevas en ese mismo link — entrás cuando quieras y hacés una o varias, para hacer desde el celular o imprimir.',
   },
   {
     q: '¿Necesito instalar alguna aplicación?',
@@ -331,7 +331,7 @@ export function Desafio30DiasPage() {
                 <span className="text-tiam-blue">quien más querés.</span>
               </h1>
               <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-xl">
-                Un ejercicio cognitivo por día, a través de WhatsApp. Simple, ameno y pensado para hacer en casa junto a tu ser querido.{' '}
+                Ejercicios cognitivos por WhatsApp, con 7 nuevos cada semana. Simple, ameno y pensado para hacer en casa junto a tu ser querido, a tu ritmo.{' '}
                 <strong className="font-semibold text-slate-900">Sin turnos, sin apps, sin complicaciones.</strong>
               </p>
 
@@ -350,7 +350,7 @@ export function Desafio30DiasPage() {
               {/* Trust signals */}
               <div className="mt-8 flex flex-wrap items-center gap-2">
                 {[
-                  { icon: CalendarCheck, text: 'Un ejercicio por día' },
+                  { icon: CalendarCheck, text: '7 ejercicios por semana' },
                   { icon: MessageCircle, text: 'Por WhatsApp' },
                   { icon: ShieldCheck, text: 'Un solo pago' },
                 ].map(({ icon: Icon, text }) => (
@@ -635,7 +635,7 @@ export function Desafio30DiasPage() {
               <div className="px-8 py-8 text-left">
                 <ul className="grid gap-x-4 gap-y-3.5 sm:grid-cols-2">
                   {[
-                    'Los 30 ejercicios, uno por día',
+                    'Los 30 ejercicios, 7 por semana',
                     'Todo por WhatsApp, sin apps',
                     'Para hacer en casa, a tu ritmo',
                     'Un pago, sin renovaciones',
