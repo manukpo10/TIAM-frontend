@@ -20,7 +20,13 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
-const PRICE_ARS = 100
+const PRICE_ARS = 20000
+
+// Transferencia manual = sin comisión de Mercado Pago, así que hay margen real
+// para pasarle parte de ese ahorro al comprador — a pedido explícito, mismo
+// patrón que Jugarnos (10% OFF por transferencia, ver COMPETITOR-ANALYSIS-jugarnos.md).
+const TRANSFER_DISCOUNT_PERCENT = 10
+const TRANSFER_PRICE_ARS = Math.round(PRICE_ARS * (1 - TRANSFER_DISCOUNT_PERCENT / 100))
 
 // How many independent 30-day catalogs exist today (mirrors the backend's
 // ChallengePurchaseService month allowlist). This is NOT a permanent ceiling
@@ -455,11 +461,14 @@ export function Desafio30DiasPage() {
             </p>
 
             <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left sm:p-6">
-              <p className="text-sm font-semibold text-slate-800">¿Se te complica pagar desde acá?</p>
+              <p className="text-sm font-semibold text-slate-800">
+                ¿Preferís transferencia? Pagás {TRANSFER_DISCOUNT_PERCENT}% menos
+              </p>
               <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-                También podés transferir {formatPrice(PRICE_ARS)} al alias de Mercado Pago{' '}
-                <strong className="text-slate-900">manu.bata.it</strong> y mandarnos el comprobante
-                por WhatsApp. Activamos tu acceso a mano, ni bien lo recibimos.
+                Transferí {formatPrice(TRANSFER_PRICE_ARS)}{' '}
+                <span className="text-slate-400 line-through">{formatPrice(PRICE_ARS)}</span> al alias de
+                Mercado Pago <strong className="text-slate-900">manu.bata.it</strong> y mandanos el
+                comprobante por WhatsApp. Activamos tu acceso a mano, ni bien lo recibimos.
               </p>
               <a
                 href={`https://wa.me/${MANU_PERSONAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(TRANSFER_RECEIPT_TEXT)}`}
