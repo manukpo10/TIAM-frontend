@@ -75,28 +75,24 @@ const INCLUDES = [
     icon: Brain,
     title: '30 ejercicios, 7 por semana',
     description: 'Actividades pensadas para estimular la memoria, la atención y el lenguaje, sin repetirse.',
-    stripClass: 'border-t-tiam-blue',
     iconClass: 'bg-tiam-blue/10 text-tiam-blue',
   },
   {
     icon: Smartphone,
     title: 'Simple para adultos mayores',
     description: 'Se hacen desde el celular o impresos. Letra grande, instrucciones claras, cero pantallas complicadas.',
-    stripClass: 'border-t-tiam-orange',
     iconClass: 'bg-tiam-orange/10 text-tiam-orange',
   },
   {
     icon: Heart,
     title: 'Para hacer acompañado',
     description: 'Ideal para compartir un rato con quien querés. El desafío se disfruta más en familia.',
-    stripClass: 'border-t-tiam-green',
     iconClass: 'bg-tiam-green/10 text-tiam-green',
   },
   {
     icon: Clock,
     title: 'Pocos minutos por día',
     description: 'Cada actividad lleva entre 10 y 15 minutos. Lo justo para sumar una rutina sin que pese.',
-    stripClass: 'border-t-tiam-blue-dark',
     iconClass: 'bg-tiam-blue/10 text-tiam-blue-dark',
   },
 ]
@@ -376,25 +372,109 @@ export function Desafio30DiasPage() {
                 En tres pasos tenés el desafío andando. No hace falta saber de tecnología.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {HOW_IT_WORKS.map(({ step, icon: Icon, title, description }) => (
-                <article
-                  key={step}
-                  className="relative rounded-3xl border border-slate-100 bg-white px-6 pt-6 pb-7 shadow-sm"
-                >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-tiam-blue to-tiam-blue-dark text-white">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <p className="mb-1 text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso {step}</p>
-                  <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-                </article>
-              ))}
+            <div className="mx-auto max-w-2xl rounded-3xl border border-slate-100 bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10">
+              <ol className="space-y-6">
+                {HOW_IT_WORKS.map(({ step, icon: Icon, title, description }) => (
+                  <li key={step} className="flex items-start gap-3.5">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-tiam-blue to-tiam-blue-dark text-white">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold tracking-widest text-slate-300 uppercase">Paso {step}</p>
+                      <p className="font-semibold text-slate-900">{title}</p>
+                      <p className="mt-0.5 text-sm text-slate-600 leading-relaxed">{description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         </section>
 
-        {/* ── 4. What's included ───────────────────────────────────────────── */}
+        {/* ── 4. Pricing — moved up here (right after "cómo funciona") so buying
+             is reachable with much less scrolling on mobile, per explicit user
+             request; used to sit after the purchase walkthrough, near the
+             bottom. ────────────────────────────────────────────────────────── */}
+        <section id="precio" aria-labelledby="pricing-heading" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <SectionEyebrow text="Precio" />
+            <h2 id="pricing-heading" className="text-3xl font-bold text-slate-900">
+              Un solo pago, el desafío completo
+            </h2>
+
+            <div className="mx-auto mt-10 max-w-lg overflow-hidden rounded-3xl bg-white shadow-xl shadow-tiam-blue/10 ring-1 ring-slate-100">
+              {/* Hero band — the price is the star */}
+              <div className="bg-gradient-to-br from-tiam-blue to-tiam-blue-dark px-8 py-10 text-white">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Desafío 30 días
+                </span>
+                <div className="mt-5 flex items-start justify-center">
+                  <span className="mt-2.5 text-3xl font-bold text-white/75">$</span>
+                  <span className="text-6xl font-extrabold leading-none tracking-tight sm:text-7xl">
+                    {PRICE_ARS.toLocaleString('es-AR')}
+                  </span>
+                </div>
+                <p className="mt-3 text-white/80">Un solo pago · acceso a los 30 ejercicios</p>
+              </div>
+
+              {/* Body — benefits + CTA */}
+              <div className="px-8 py-8 text-left">
+                <ul className="grid gap-x-4 gap-y-3.5 sm:grid-cols-2">
+                  {[
+                    'Los 30 ejercicios, 7 por semana',
+                    'Todo por WhatsApp, sin apps',
+                    'Para hacer en casa, a tu ritmo',
+                    'Un pago, sin renovaciones',
+                  ].map((text) => (
+                    <li key={text} className="flex items-start gap-2.5">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-tiam-green/10">
+                        <Check className="h-3 w-3 text-tiam-green" strokeWidth={3} />
+                      </span>
+                      <span className="text-sm text-slate-600">{text}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button size="lg" className="mt-7 w-full min-h-[52px] text-base" onClick={handleBuy}>
+                  <Send className="h-4 w-4" />
+                  Empezar ahora
+                </Button>
+
+                <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Pago único y seguro con
+                  <img src={mercadoPagoLogo} alt="Mercado Pago" className="h-5 w-auto" />
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-6 text-sm text-slate-500">
+              ¿Ya hiciste un mes? Comprá de nuevo y arrancás automáticamente con el siguiente —
+              por ahora hay {CHALLENGE_MONTHS_AVAILABLE} meses distintos, y seguimos sumando más.
+            </p>
+
+            <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left sm:p-6">
+              <p className="text-sm font-semibold text-slate-800">¿Se te complica pagar desde acá?</p>
+              <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
+                También podés transferir {formatPrice(PRICE_ARS)} al alias de Mercado Pago{' '}
+                <strong className="text-slate-900">manu.bata.it</strong> y mandarnos el comprobante
+                por WhatsApp. Activamos tu acceso a mano, ni bien lo recibimos.
+              </p>
+              <a
+                href={`https://wa.me/${MANU_PERSONAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(TRANSFER_RECEIPT_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Mandar comprobante por WhatsApp
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. What's included ───────────────────────────────────────────── */}
         <section aria-labelledby="includes-heading" className="py-16 md:py-24 bg-slate-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
@@ -406,27 +486,25 @@ export function Desafio30DiasPage() {
                 Pensado para que sea un hábito lindo de sostener, no una obligación más.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {INCLUDES.map(({ icon: Icon, title, description, stripClass, iconClass }, i) => (
-                <article
-                  key={title}
-                  className={`rounded-3xl border border-slate-100 border-t-2 ${stripClass} bg-white px-6 pt-5 pb-6 shadow-sm hover:shadow-md transition-[box-shadow] duration-200`}
-                >
-                  <p className="mb-3 text-[10px] font-bold tracking-widest text-slate-300 uppercase">
-                    {String(i + 1).padStart(2, '0')}
-                  </p>
-                  <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${iconClass}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-                </article>
-              ))}
+            <div className="mx-auto max-w-3xl rounded-3xl border border-slate-100 bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10">
+              <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                {INCLUDES.map(({ icon: Icon, title, description, iconClass }) => (
+                  <li key={title} className="flex items-start gap-3.5">
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900">{title}</p>
+                      <p className="mt-0.5 text-sm text-slate-600 leading-relaxed">{description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
 
-        {/* ── 5. Who it's for ──────────────────────────────────────────────── */}
+        {/* ── 6. Who it's for ──────────────────────────────────────────────── */}
         <section aria-labelledby="audience-heading" className="py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
@@ -461,7 +539,7 @@ export function Desafio30DiasPage() {
           </div>
         </section>
 
-        {/* ── 5.5. Purchase walkthrough — mockups, not real screenshots: this tool
+        {/* ── 7. Purchase walkthrough — mockups, not real screenshots: this tool
              has no way to save a browser capture as an image asset, so each
              step is a small hand-built recreation of the real screen using
              the same components/colors instead. Marked aria-hidden since
@@ -607,87 +685,7 @@ export function Desafio30DiasPage() {
           </div>
         </section>
 
-        {/* ── 6. Pricing ───────────────────────────────────────────────────── */}
-        <section id="precio" aria-labelledby="pricing-heading" className="py-16 md:py-24 bg-slate-50 scroll-mt-20">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <SectionEyebrow text="Precio" />
-            <h2 id="pricing-heading" className="text-3xl font-bold text-slate-900">
-              Un solo pago, el desafío completo
-            </h2>
-
-            <div className="mx-auto mt-10 max-w-lg overflow-hidden rounded-3xl bg-white shadow-xl shadow-tiam-blue/10 ring-1 ring-slate-100">
-              {/* Hero band — the price is the star */}
-              <div className="bg-gradient-to-br from-tiam-blue to-tiam-blue-dark px-8 py-10 text-white">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Desafío 30 días
-                </span>
-                <div className="mt-5 flex items-start justify-center">
-                  <span className="mt-2.5 text-3xl font-bold text-white/75">$</span>
-                  <span className="text-6xl font-extrabold leading-none tracking-tight sm:text-7xl">
-                    {PRICE_ARS.toLocaleString('es-AR')}
-                  </span>
-                </div>
-                <p className="mt-3 text-white/80">Un solo pago · acceso a los 30 ejercicios</p>
-              </div>
-
-              {/* Body — benefits + CTA */}
-              <div className="px-8 py-8 text-left">
-                <ul className="grid gap-x-4 gap-y-3.5 sm:grid-cols-2">
-                  {[
-                    'Los 30 ejercicios, 7 por semana',
-                    'Todo por WhatsApp, sin apps',
-                    'Para hacer en casa, a tu ritmo',
-                    'Un pago, sin renovaciones',
-                  ].map((text) => (
-                    <li key={text} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-tiam-green/10">
-                        <Check className="h-3 w-3 text-tiam-green" strokeWidth={3} />
-                      </span>
-                      <span className="text-sm text-slate-600">{text}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button size="lg" className="mt-7 w-full min-h-[52px] text-base" onClick={handleBuy}>
-                  <Send className="h-4 w-4" />
-                  Empezar ahora
-                </Button>
-
-                <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Pago único y seguro con
-                  <img src={mercadoPagoLogo} alt="Mercado Pago" className="h-5 w-auto" />
-                </p>
-              </div>
-            </div>
-
-            <p className="mt-6 text-sm text-slate-500">
-              ¿Ya hiciste un mes? Comprá de nuevo y arrancás automáticamente con el siguiente —
-              por ahora hay {CHALLENGE_MONTHS_AVAILABLE} meses distintos, y seguimos sumando más.
-            </p>
-
-            <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left sm:p-6">
-              <p className="text-sm font-semibold text-slate-800">¿Se te complica pagar desde acá?</p>
-              <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-                También podés transferir {formatPrice(PRICE_ARS)} al alias de Mercado Pago{' '}
-                <strong className="text-slate-900">manu.bata.it</strong> y mandarnos el comprobante
-                por WhatsApp. Activamos tu acceso a mano, ni bien lo recibimos.
-              </p>
-              <a
-                href={`https://wa.me/${MANU_PERSONAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(TRANSFER_RECEIPT_TEXT)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Mandar comprobante por WhatsApp
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 7. FAQ ───────────────────────────────────────────────────────── */}
+        {/* ── 8. FAQ ───────────────────────────────────────────────────────── */}
         <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
@@ -707,7 +705,7 @@ export function Desafio30DiasPage() {
           </div>
         </section>
 
-        {/* ── 8. Final CTA band ────────────────────────────────────────────── */}
+        {/* ── 9. Final CTA band ────────────────────────────────────────────── */}
         <section aria-labelledby="cta-heading" className="py-16 md:py-20 bg-gradient-to-br from-tiam-blue to-tiam-blue-dark">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
             <h2 id="cta-heading" className="text-3xl font-bold text-white">
