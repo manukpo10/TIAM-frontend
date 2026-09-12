@@ -33,7 +33,7 @@ const TRANSFER_PRICE_ARS = Math.round(PRICE_ARS * (1 - TRANSFER_DISCOUNT_PERCENT
 // — more months ship over time — so every "van N meses"-style line on this
 // page reads from here instead of a hardcoded number, and bumping this one
 // constant is the only change needed when a new month launches.
-const CHALLENGE_MONTHS_AVAILABLE = 3
+const CHALLENGE_MONTHS_AVAILABLE = 4
 
 const formatPrice = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
