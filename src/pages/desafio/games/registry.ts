@@ -88,6 +88,13 @@ import { CopiaElPatron } from './CopiaElPatron'
 import { NumerosAlReves } from './NumerosAlReves'
 import { ElGrupoCorrecto } from './ElGrupoCorrecto'
 import { CierreDeCuentas } from './CierreDeCuentas'
+import { LaCharlaDesordenada } from './LaCharlaDesordenada'
+import { CuatroPalabras } from './CuatroPalabras'
+import { SumaHastaDiez } from './SumaHastaDiez'
+import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
+import { CazadorDeLetras } from './CazadorDeLetras'
+import { LaBalanza } from './LaBalanza'
+import { ElRefranEscondido } from './ElRefranEscondido'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -204,6 +211,18 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     // el comentario junto a su entrada en challengeContent.ts.
     29: ElGrupoCorrecto,
     30: CierreDeCuentas,
+  },
+  // Month 4 ships in weekly batches of 7 — days 8-30 land in later batches and
+  // are absent from challengeContent.ts's MONTH_4_DAYS_CONTENT too, so they
+  // never render a tile in the first place.
+  4: {
+    1: LaCharlaDesordenada,
+    2: CuatroPalabras,
+    3: SumaHastaDiez,
+    4: EncontraLaFiguraIgual,
+    5: CazadorDeLetras,
+    6: LaBalanza,
+    7: ElRefranEscondido,
   },
 }
 

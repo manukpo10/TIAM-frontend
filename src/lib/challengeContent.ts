@@ -360,6 +360,35 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'El último día de cálculo repasa vueltos, precios y horarios de todos los días. ¡Un cierre a la altura de todo lo que practicaste este mes! 🎉' },
 ]
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Month 4 — fourth independent 30-day catalog. All 30 days are `type: 'game'`
+// (no lápiz-y-papel days, unlike month 3).
+//
+// SHIPS IN WEEKLY BATCHES OF 7, so this array grows over time: only the days
+// already built are listed here, and a day absent from this array simply never
+// renders a tile. That matches the weekly unlock cadence — a buyer only needs
+// days 1-7 to exist on the day they purchase. The BACKEND catalog
+// (ChallengeDayCatalog.DAYS_MONTH_4), by contrast, declares all 30 from the
+// start: it must resolve any day that ever reaches it, and a partial map would
+// throw instead. Keep the areas here in sync with that map as batches land.
+// ─────────────────────────────────────────────────────────────────────────────
+const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
+  { day: 1, type: 'game', area: 'lenguaje', title: 'La charla desordenada',
+    instructions: 'Un juego de lenguaje: las frases de una charla están mezcladas. Tocalas en el orden correcto para reconstruir la conversación — y ojo, que en los niveles difíciles hay una frase que no pertenece. Subís de dificultad a medida que avanzás.' },
+  { day: 2, type: 'game', area: 'memoria', title: 'Cuatro palabras',
+    instructions: 'Un juego de memoria: memorizá una lista de palabras y después reconocé cuáles eran entre otras que se le parecen. Subís de dificultad a medida que avanzás.' },
+  { day: 3, type: 'game', area: 'calculo', title: 'Suma hasta 10',
+    instructions: 'Un juego de cálculo: recorré la grilla y tocá los pares de números vecinos que sumen 10. Subís de dificultad a medida que avanzás.' },
+  { day: 4, type: 'game', area: 'praxias', title: 'Encontrá la figura igual',
+    instructions: 'Un juego visoespacial: mirá la figura de arriba y elegí, entre las opciones, cuál es la misma pero girada. Cuidado con la que está reflejada como en un espejo. Subís de dificultad a medida que avanzás.' },
+  { day: 5, type: 'game', area: 'atencion', title: 'Cazador de letras',
+    instructions: 'Un juego de atención sostenida: recorré la grilla y tocá todas las letras que pide la consigna, sin dejarte engañar por las que se parecen. Subís de dificultad a medida que avanzás.' },
+  { day: 6, type: 'game', area: 'ejecutivas', title: 'La balanza',
+    instructions: 'Un juego de razonamiento: las balanzas te dicen qué pesa más que qué. Juntá las pistas y deducí cuál es el más pesado o el más liviano. Subís de dificultad a medida que avanzás.' },
+  { day: 7, type: 'game', area: 'lenguaje', title: 'El refrán escondido',
+    instructions: 'Un juego de lenguaje: los pedacitos de un refrán están desordenados y numerados. Tocalos siguiendo los números y el refrán se arma solo. Subís de dificultad a medida que avanzás.' },
+]
+
 /** Content joined with its per-day illustration (matched by day number). */
 export const CHALLENGE_DAYS: ChallengeDayContent[] = MONTH_1_DAYS_CONTENT.map((d) => ({
   ...d,
@@ -376,6 +405,7 @@ export const CHALLENGE_CONTENT_BY_MONTH: Record<number, ChallengeDayContent[]> =
   1: CHALLENGE_DAYS,
   2: MONTH_2_DAYS_CONTENT,
   3: MONTH_3_DAYS_CONTENT,
+  4: MONTH_4_DAYS_CONTENT,
 }
 
 /** Content catalog for a given challenge month, falling back to month 1 for an
