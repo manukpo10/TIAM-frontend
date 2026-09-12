@@ -95,6 +95,29 @@ import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
 import { CazadorDeLetras } from './CazadorDeLetras'
 import { LaBalanza } from './LaBalanza'
 import { ElRefranEscondido } from './ElRefranEscondido'
+import { CrucigramaDeCifras } from './CrucigramaDeCifras'
+import { QueHayEnLaMesa } from './QueHayEnLaMesa'
+import { AnimalPorLetra } from './AnimalPorLetra'
+import { VerdaderoOFalso } from './VerdaderoOFalso'
+import { AlcanzaLaPlata } from './AlcanzaLaPlata'
+import { QueSigue } from './QueSigue'
+import { QueObjetoEs } from './QueObjetoEs'
+import { QueOficioEs } from './QueOficioEs'
+import { OrdenaTuSemana } from './OrdenaTuSemana'
+import { TuResumen } from './TuResumen'
+import { ElColorDeLaPalabra } from './ElColorDeLaPalabra'
+import { CuantoSuma } from './CuantoSuma'
+import { TelaranaMatematica } from './TelaranaMatematica'
+import { QuienLoDijo } from './QuienLoDijo'
+import { LeerYResponder } from './LeerYResponder'
+import { LaberintoDeMultiplicaciones } from './LaberintoDeMultiplicaciones'
+import { CarasYEmociones } from './CarasYEmociones'
+import { BanderasYSaludos } from './BanderasYSaludos'
+import { LasDiferencias } from './LasDiferencias'
+import { AnagramasPorCategoria } from './AnagramasPorCategoria'
+import { CandadosYLlaves } from './CandadosYLlaves'
+import { SoloUnPedacito } from './SoloUnPedacito'
+import { ComoSeLlamaba } from './ComoSeLlamaba'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -223,6 +246,29 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     5: CazadorDeLetras,
     6: LaBalanza,
     7: ElRefranEscondido,
+    8: CrucigramaDeCifras,
+    9: QueHayEnLaMesa,
+    10: AnimalPorLetra,
+    11: TelaranaMatematica,
+    12: CandadosYLlaves,
+    13: AnagramasPorCategoria,
+    14: ElColorDeLaPalabra,
+    15: QuienLoDijo,
+    16: VerdaderoOFalso,
+    17: AlcanzaLaPlata,
+    18: QueSigue,
+    19: QueObjetoEs,
+    20: LaberintoDeMultiplicaciones,
+    21: SoloUnPedacito,
+    22: QueOficioEs,
+    23: LasDiferencias,
+    24: ComoSeLlamaba,
+    25: CuantoSuma,
+    26: CarasYEmociones,
+    27: BanderasYSaludos,
+    28: LeerYResponder,
+    29: OrdenaTuSemana,
+    30: TuResumen,
   },
 }
 
