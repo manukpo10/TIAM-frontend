@@ -88,23 +88,23 @@ import { CopiaElPatron } from './CopiaElPatron'
 import { NumerosAlReves } from './NumerosAlReves'
 import { ElGrupoCorrecto } from './ElGrupoCorrecto'
 import { CierreDeCuentas } from './CierreDeCuentas'
-import { LaCharlaDesordenada } from './LaCharlaDesordenada'
-import { CuatroPalabras } from './CuatroPalabras'
+import { FlorDePalabra } from './FlorDePalabra'
+import { OficiosDeFamosos } from './OficiosDeFamosos'
 import { SumaHastaDiez } from './SumaHastaDiez'
-import { EncontraLaFiguraIgual } from './EncontraLaFiguraIgual'
-import { CazadorDeLetras } from './CazadorDeLetras'
-import { LaBalanza } from './LaBalanza'
+import { UnirConOperaciones } from './UnirConOperaciones'
+import { SopaDeMesesYDias } from './SopaDeMesesYDias'
+import { CualEsCual } from './CualEsCual'
 import { ElRefranEscondido } from './ElRefranEscondido'
-import { CrucigramaDeCifras } from './CrucigramaDeCifras'
-import { QueHayEnLaMesa } from './QueHayEnLaMesa'
-import { AnimalPorLetra } from './AnimalPorLetra'
-import { VerdaderoOFalso } from './VerdaderoOFalso'
-import { AlcanzaLaPlata } from './AlcanzaLaPlata'
-import { QueSigue } from './QueSigue'
-import { QueObjetoEs } from './QueObjetoEs'
-import { QueOficioEs } from './QueOficioEs'
-import { OrdenaTuSemana } from './OrdenaTuSemana'
-import { TuResumen } from './TuResumen'
+import { CalculoMental } from './CalculoMental'
+import { TiraElDado } from './TiraElDado'
+import { LetrasPerdidas } from './LetrasPerdidas'
+import { QuienEsCadaUno } from './QuienEsCadaUno'
+import { CifrasQueFaltan } from './CifrasQueFaltan'
+import { EliminaLaIntrusa } from './EliminaLaIntrusa'
+import { PalabraYDefinicion } from './PalabraYDefinicion'
+import { ArbolGenealogico } from './ArbolGenealogico'
+import { CasasDelBarrio } from './CasasDelBarrio'
+import { CrucigramaNumerico } from './CrucigramaNumerico'
 import { ElColorDeLaPalabra } from './ElColorDeLaPalabra'
 import { CuantoSuma } from './CuantoSuma'
 import { TelaranaMatematica } from './TelaranaMatematica'
@@ -239,36 +239,36 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
   // are absent from challengeContent.ts's MONTH_4_DAYS_CONTENT too, so they
   // never render a tile in the first place.
   4: {
-    1: LaCharlaDesordenada,
-    2: CuatroPalabras,
+    1: FlorDePalabra,
+    2: OficiosDeFamosos,
     3: SumaHastaDiez,
-    4: EncontraLaFiguraIgual,
-    5: CazadorDeLetras,
-    6: LaBalanza,
+    4: UnirConOperaciones,
+    5: SopaDeMesesYDias,
+    6: CualEsCual,
     7: ElRefranEscondido,
-    8: CrucigramaDeCifras,
-    9: QueHayEnLaMesa,
-    10: AnimalPorLetra,
+    8: CalculoMental,
+    9: TiraElDado,
+    10: LetrasPerdidas,
     11: TelaranaMatematica,
     12: CandadosYLlaves,
     13: AnagramasPorCategoria,
     14: ElColorDeLaPalabra,
     15: QuienLoDijo,
-    16: VerdaderoOFalso,
-    17: AlcanzaLaPlata,
-    18: QueSigue,
-    19: QueObjetoEs,
+    16: QuienEsCadaUno,
+    17: CifrasQueFaltan,
+    18: EliminaLaIntrusa,
+    19: PalabraYDefinicion,
     20: LaberintoDeMultiplicaciones,
     21: SoloUnPedacito,
-    22: QueOficioEs,
+    22: ArbolGenealogico,
     23: LasDiferencias,
     24: ComoSeLlamaba,
     25: CuantoSuma,
     26: CarasYEmociones,
     27: BanderasYSaludos,
     28: LeerYResponder,
-    29: OrdenaTuSemana,
-    30: TuResumen,
+    29: CasasDelBarrio,
+    30: CrucigramaNumerico,
   },
 }
 
