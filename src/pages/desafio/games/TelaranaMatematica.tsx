@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { Check, RotateCcw, ArrowRight, Sparkles, Pencil } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -9,9 +9,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * renders that walk as a single vertical chain that BUILDS downward: each
  * correct tap appends its value to the trail (highlighted node becomes
  * muted "done" green, matching SumaHastaDiez's claimed styling) and reveals
- * the next operation plus a fresh set of 4 candidates, so by the time a
- * round (4/5/6 steps depending on level) finishes the whole chain is
- * visible history.
+ * the next operation plus a fresh set of 4 candidates. Only the last two
+ * values stay on screen, with a ⋮ above them once older ones drop off: the
+ * full trail pushed the options below the fold on a phone from the fourth
+ * step on.
+ *
+ * One web per level, 4/5/6 steps. Levels used to play two webs each (8, 10
+ * and 12 calculations), which made the multiplication and division levels
+ * too long. The day opens on a "¿Cómo se juega?" screen that also suggests
+ * keeping pencil and paper at hand for the calculations.
  *
  * Generation walks strictly left-to-right — start value, then apply one
  * operation per step, current becomes the next step's input — never
@@ -60,7 +66,6 @@ interface Level {
 
 const MIN_VALUE = 1
 const MAX_VALUE = 200
-const ROUNDS_PER_LEVEL = 2
 
 const LEVELS: Level[] = [
   {
@@ -95,11 +100,15 @@ const LEVELS: Level[] = [
   },
 ]
 
-const TOTAL_STEPS = LEVELS.reduce((sum, lvl) => sum + lvl.chainLength * ROUNDS_PER_LEVEL, 0)
+const TOTAL_STEPS = LEVELS.reduce((sum, lvl) => sum + lvl.chainLength, 0)
 
 // Full class strings, never interpolated — Tailwind only emits classes it
 // can read literally in the source. Nodes shrink a touch as the chain gets
 // longer (4 → 5 → 6 steps) so a fully-grown Nivel 3 trail stays reasonable.
+// How many trail values stay on screen: the previous one and the current
+// one. Three already pushed the options below the fold at 375×812.
+const VISIBLE_NODES = 2
+
 const NODE_CLASS: Record<number, string> = {
   1: 'h-14 w-14 text-xl',
   2: 'h-12 w-12 text-lg',
@@ -222,8 +231,77 @@ function buildChain(level: Level): ChainRound {
   }
   return { start, steps }
 }
-function buildEpoch(): ChainRound[][] {
-  return LEVELS.map((level) => Array.from({ length: ROUNDS_PER_LEVEL }, () => buildChain(level)))
+function buildEpoch(): ChainRound[] {
+  return LEVELS.map((level) => buildChain(level))
+}
+
+// Worked example for the how-to screen: a start value and two steps.
+const HOW_TO_EXAMPLE = {
+  start: 20,
+  steps: [
+    { label: '+5', value: 25 },
+    { label: '−3', value: 22 },
+  ],
+}
+
+function HowToPlay({ onStart }: { onStart: () => void }) {
+  // Kept short on purpose: the whole screen, "Empezar" included, has to fit a
+  // phone without scrolling.
+  const steps = [
+    'Arrancás en un número.',
+    'Hacé la cuenta que aparece abajo y tocá el resultado.',
+    'Ese resultado es tu nuevo número: seguís con la próxima cuenta.',
+  ]
+  return (
+    <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-5 sm:p-6">
+      <p className="text-center text-xl font-bold text-slate-900">¿Cómo se juega?</p>
+
+      <ol className="mt-4 space-y-3">
+        {steps.map((step, i) => (
+          <li key={i} className="flex items-start gap-3 text-base leading-snug text-slate-700">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-sm font-bold text-white">
+              {i + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-4 rounded-2xl bg-white p-3">
+        <p className="text-center text-sm font-semibold text-slate-500">Por ejemplo:</p>
+        <div className="mt-2 flex items-center justify-center gap-1.5">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-tiam-green bg-tiam-green/10 text-base font-extrabold text-tiam-green">
+            {HOW_TO_EXAMPLE.start}
+          </span>
+          {HOW_TO_EXAMPLE.steps.map((step) => (
+            <div key={step.label} className="flex items-center gap-1.5">
+              <span className="text-sm font-bold text-tiam-blue">{step.label}</span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+              <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-tiam-green bg-tiam-green/10 text-base font-extrabold text-tiam-green">
+                {step.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-tiam-blue/15 bg-white p-3">
+        <Pencil className="mt-0.5 h-5 w-5 shrink-0 text-tiam-blue" aria-hidden="true" />
+        <p className="text-base leading-snug text-slate-700">Tené a mano lápiz y papel: podés anotar las cuentas si te ayuda.</p>
+      </div>
+
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={onStart}
+          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+        >
+          Empezar
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
 }
 
 const PRAISE = ['¡Excelente!', '¡Muy bien calculado!', '¡Así se resuelve una telaraña!', '¡Perfecto!']
@@ -236,6 +314,8 @@ const HINTS = [
 export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // How-to screen, once per opening of the day — "Repetir" never sets it back.
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   // Redrawn whenever roundKey changes (every level change and the day
   // restart), so "Repetir" plays new webs rather than the same ones.
   const epochRounds = useMemo(
@@ -245,12 +325,12 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
   )
 
   const level = LEVELS[levelIdx]
-  const [roundIdx, setRoundIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
-  const done = roundIdx >= ROUNDS_PER_LEVEL
-  const round = done ? undefined : epochRounds[levelIdx][roundIdx]
-  const currentStep = round ? round.steps[stepIdx] : undefined
-  const trail = round ? [round.start, ...round.steps.slice(0, stepIdx).map((s) => s.correct)] : []
+  const done = stepIdx >= level.chainLength
+  const round = epochRounds[levelIdx]
+  const currentStep = done ? undefined : round.steps[stepIdx]
+  const trail = [round.start, ...round.steps.slice(0, stepIdx).map((s) => s.correct)]
+  const firstVisible = Math.max(0, trail.length - VISIBLE_NODES)
 
   const [eliminated, setEliminated] = useState<Set<number>>(new Set())
   const [justCorrect, setJustCorrect] = useState<number | null>(null)
@@ -261,8 +341,8 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
   // restart (see nextLevel's wrap branch).
   const [mistakes, setMistakes] = useState(0)
 
-  const stepsInLevel = ROUNDS_PER_LEVEL * level.chainLength
-  const stepsDoneInLevel = done ? stepsInLevel : roundIdx * level.chainLength + stepIdx
+  const stepsInLevel = level.chainLength
+  const stepsDoneInLevel = Math.min(stepIdx, stepsInLevel)
 
   useEffect(() => {
     if (done) setPraise(pickOne(PRAISE))
@@ -274,21 +354,15 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
       setResolving(true)
       setJustCorrect(value)
       setHint(null)
-      const lastStepOfRound = stepIdx + 1 >= level.chainLength
-      const lastRoundOfLevel = roundIdx + 1 >= ROUNDS_PER_LEVEL
+      const lastStep = stepIdx + 1 >= level.chainLength
       window.setTimeout(
         () => {
-          if (lastStepOfRound) {
-            setRoundIdx((r) => r + 1)
-            setStepIdx(0)
-          } else {
-            setStepIdx((s) => s + 1)
-          }
+          setStepIdx((s) => s + 1)
           setEliminated(new Set())
           setJustCorrect(null)
           setResolving(false)
         },
-        lastStepOfRound && lastRoundOfLevel ? 800 : 600,
+        lastStep ? 800 : 600,
       )
     } else {
       setEliminated((prev) => new Set(prev).add(value))
@@ -299,13 +373,12 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
 
   // Resets happen HERE, synchronously with the level change, not in an
   // effect keyed on levelIdx — an effect lags one render, so `done` (derived
-  // straight from roundIdx) would read the previous level's stale-true
+  // straight from stepIdx) would read the previous level's stale-true
   // value on the very render that arrives at the new level and fire
   // onComplete with garbage. Same reasoning as SumaHastaDiez/ElVuelto.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundIdx(0)
     setStepIdx(0)
     setEliminated(new Set())
     setJustCorrect(null)
@@ -327,6 +400,19 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, levelIdx, roundKey, mistakes])
 
+  if (phase === 'ready') {
+    return (
+      <div className="px-5 pb-5 pt-4 sm:p-7">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
+            {level.name}
+          </span>
+        </div>
+        <HowToPlay onStart={() => setPhase('playing')} />
+      </div>
+    )
+  }
+
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
@@ -334,9 +420,7 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
-          Elegí el resultado correcto en cada paso y avanzá por la telaraña
-        </h2>
+        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Hacé cada cuenta y tocá el resultado</h2>
         <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
           <p className="shrink-0 text-base font-semibold text-slate-500">
             Llevás {stepsDoneInLevel} de {stepsInLevel}
@@ -351,10 +435,15 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
       </div>
 
       {/* Chain */}
-      {!done && round && currentStep && (
+      {!done && currentStep && (
         <>
           <div className="mx-auto mt-6 flex max-w-[220px] flex-col items-center">
-            {trail.map((value, i) => (
+            {firstVisible > 0 && (
+              <span className="text-xl font-bold leading-none text-slate-300" aria-hidden="true">
+                ⋮
+              </span>
+            )}
+            {trail.map((value, i) => i < firstVisible ? null : (
               <div key={i} className="flex flex-col items-center">
                 {i > 0 && (
                   <div className="flex flex-col items-center py-0.5">
@@ -430,7 +519,7 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
           <p className="mt-1 text-slate-600">
-            Resolviste las {ROUNDS_PER_LEVEL} telarañas — ¡completaste el {level.name.toLowerCase()}!
+            Resolviste la telaraña — ¡completaste el {level.name.toLowerCase()}!
           </p>
           <div className="mt-5 flex justify-center">
             <button

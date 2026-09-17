@@ -394,7 +394,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 10, type: 'game', area: 'lenguaje', title: 'Letras perdidas',
     instructions: 'Un juego de deducción: a la palabra le faltan letras y la única pista es de qué familia es. Tocá las letras para completarla. Subís de dificultad a medida que avanzás.' },
   { day: 11, type: 'game', area: 'calculo', title: 'Telaraña matemática',
-    instructions: 'Un juego de cálculo: tenés un número de partida y una operación atrás de otra. Hacé la cuenta y tocá a dónde te lleva cada paso. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: tenés un número de partida y una operación atrás de otra. Hacé la cuenta y tocá a dónde te lleva cada paso; si querés, usá lápiz y papel. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'game', area: 'orientacion', title: 'Candados y llaves',
     instructions: 'Un juego visoespacial: mirá la forma de la cerradura y tocá cuál de las llaves encaja. Subís de dificultad a medida que avanzás.' },
   { day: 13, type: 'game', area: 'lenguaje', title: 'Anagramas por categoría',
