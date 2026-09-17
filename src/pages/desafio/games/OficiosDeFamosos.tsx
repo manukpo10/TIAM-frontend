@@ -3,17 +3,29 @@ import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "¿A qué se dedicaba?" — semantic memory for well-known public figures.
- * Adapted from a paper exercise: a list of famous names, and for each you
- * name the job, craft or role that made them famous. Touch adaptation: show
- * one name, tap the correct occupation among 4 — a confrontation-naming /
- * semantic-retrieval task, not a recognition task.
+ * "¿A qué se dedicaba?" — memory for name ↔ occupation pairs of well-known
+ * public figures. Adapted from a paper exercise: a list of famous names, and
+ * for each you name the job, craft or role that made them famous.
+ *
+ * STUDY FIRST, THEN ASK. Each level opens on a study screen — every person
+ * in the round with their occupation and one short fact — and only then
+ * asks, one name at a time, to tap the occupation among 4. The first version
+ * went straight to the questions, to be answered from general knowledge, and
+ * that left a player who didn't know who Nicolino Locche or Luis Puenzo was
+ * with nothing to answer from; the instructions never said the answer was
+ * meant to come from what you already know. Studying first makes it
+ * encode-then-recall, which is what a memory day should be, and nobody
+ * depends on knowing the person beforehand — knowing them just helps. The
+ * study screen is the house pattern shared with ListaDelMercado.tsx and
+ * QuienLoDijo.tsx: a timed reveal with a progress bar and an early
+ * "ya estoy list@" button. Questions come in a different order than the
+ * study list, so position alone can't answer them.
  *
  * NAMES ONLY, NO PHOTOGRAPHS. This sidesteps likeness/rights questions
  * entirely, and it matches the paper original, which is a list of names
- * too. It also keeps the task in the "semantic memory" lane (retrieve a
- * fact tied to a name) instead of turning it into face-recognition, which
- * is a different skill and would need a photo library this app doesn't have.
+ * too. It also keeps the task about binding a job to a name instead of
+ * turning it into face-recognition, which is a different skill and would
+ * need a photo library this app doesn't have.
  *
  * ACCURACY POLICY — this is the whole point of the exercise, so it shaped
  * every entry in PEOPLE below. Only people whose defining public occupation
@@ -28,11 +40,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  * remembered as "cantante y actor", only as the definitive tango singer)
  * and Marshall's screen work IS her acting career (she originated Catita
  * there) — neither is a real second identity competing with the first.
- * The same bar applied to the optional "fun fact" shown after a correct
- * answer: every fact below is something ordinary and independently
- * checkable (a title, a year, a nickname), and any person the author could
- * not back with full confidence was either dropped from the roster
- * entirely or kept with `fact` left undefined rather than guessed at.
+ * The same bar applied to the short fact shown on the study screen and
+ * again after a correct answer: every fact below is something ordinary and
+ * independently checkable (a title, a year, a nickname), and any person the
+ * author could not back with full confidence was either dropped from the
+ * roster entirely or kept with `fact` left undefined rather than guessed at.
  *
  * DIFFICULTY — distractor occupations are drawn from OCCUPATIONS by
  * `cluster` (a broad professional field). Level 1 prefers a FAR cluster (a
@@ -134,12 +146,18 @@ interface Level {
   rounds: number
   mode: 'far' | 'mixed' | 'close'
   hint: string
+  /** The study screen moves on to the questions by itself after this long. */
+  studySeconds: number
+  /** The early-continue button unlocks after this long. */
+  minEarlySeconds: number
 }
 
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', rounds: 3, mode: 'far', hint: 'Mirá el nombre y elegí a qué se dedicaba.' },
-  { n: 2, name: 'Nivel 2', rounds: 4, mode: 'mixed', hint: 'Fijate bien: las opciones ya no son tan distintas entre sí.' },
-  { n: 3, name: 'Nivel 3', rounds: 5, mode: 'close', hint: 'Acá los oficios se parecen mucho — pensalo bien antes de tocar.' },
+  // Study times sit a little above ListaDelMercado / RecordaLosDetalles for
+  // the same card count, because every card here also carries a fact.
+  { n: 1, name: 'Nivel 1', rounds: 3, mode: 'far', studySeconds: 24, minEarlySeconds: 8, hint: 'Acordate de lo que leíste y elegí a qué se dedicaba.' },
+  { n: 2, name: 'Nivel 2', rounds: 4, mode: 'mixed', studySeconds: 30, minEarlySeconds: 10, hint: 'Fijate bien: las opciones ya no son tan distintas entre sí.' },
+  { n: 3, name: 'Nivel 3', rounds: 5, mode: 'close', studySeconds: 36, minEarlySeconds: 12, hint: 'Acá los oficios se parecen mucho — pensalo bien antes de tocar.' },
 ]
 // Every round is eventually answered correctly (a wrong tap never ends it),
 // so the correct-answer count at completion always equals this fixed total
@@ -156,6 +174,11 @@ function shuffle<T>(arr: T[]): T[] {
 }
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+/** "director de cine" → "Director de cine". CSS `capitalize` would title-case
+ * every word ("Director De Cine"), which isn't how Spanish is written. */
+function capitalizeFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 function pickPeople(n: number): Person[] {
@@ -200,6 +223,21 @@ function buildRounds(people: Person[], mode: Level['mode']): Round[] {
   })
 }
 
+interface LevelSet {
+  /** Study-screen order: alphabetical, like a list you'd read top to bottom. */
+  study: Person[]
+  /** Question order: reshuffled until it differs from the study order. */
+  rounds: Round[]
+}
+
+function buildLevelSet(level: Level): LevelSet {
+  const people = pickPeople(level.rounds)
+  const study = [...people].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  let asked = shuffle(people)
+  while (people.length > 1 && asked.every((person, i) => person.id === study[i].id)) asked = shuffle(people)
+  return { study, rounds: buildRounds(asked, level.mode) }
+}
+
 const PRAISE = ['¡Muy bien!', '¡Excelente memoria!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
 const HINTS = [
   'Esa persona no se dedicaba a eso — probá con otra opción.',
@@ -212,12 +250,14 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const rounds = useMemo(
-    () => buildRounds(pickPeople(level.rounds), level.mode),
+  const { study, rounds } = useMemo(
+    () => buildLevelSet(level),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
 
+  const [phase, setPhase] = useState<'study' | 'test'>('study')
+  const [canContinueEarly, setCanContinueEarly] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [eliminated, setEliminated] = useState<Set<string>>(new Set())
   const [solved, setSolved] = useState<string | null>(null)
@@ -234,6 +274,20 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
     if (done) setLevelPraise(pickOne(PRAISE))
   }, [done])
 
+  // Timed study reveal + early-continue escape hatch — same shape as
+  // QuienLoDijo.tsx. Re-armed on every level change and replay (both bump
+  // roundKey), since each one brings a fresh set of people to study.
+  const autoTimerRef = useRef<number | undefined>(undefined)
+  useEffect(() => {
+    const floorTimer = window.setTimeout(() => setCanContinueEarly(true), level.minEarlySeconds * 1000)
+    const autoTimer = window.setTimeout(() => setPhase('test'), level.studySeconds * 1000)
+    autoTimerRef.current = autoTimer
+    return () => {
+      window.clearTimeout(floorTimer)
+      window.clearTimeout(autoTimer)
+    }
+  }, [levelIdx, roundKey, level.minEarlySeconds, level.studySeconds])
+
   // Fires once per roundKey when level 3's last round resolves. A genuine
   // full-day restart (the wrap back to level 1) gets a new roundKey, so it
   // can report again; re-rendering while already done cannot fire twice.
@@ -247,7 +301,7 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   }, [done, levelIdx, roundKey, mistakes])
 
   function guess(occId: string) {
-    if (!round || solved || eliminated.has(occId)) return
+    if (phase !== 'test' || !round || solved || eliminated.has(occId)) return
     if (occId === round.person.occupationId) {
       setSolved(occId)
       setHint(null)
@@ -274,6 +328,8 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
     const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
+    setPhase('study')
+    setCanContinueEarly(false)
     setCurrentIndex(0)
     setEliminated(new Set())
     setSolved(null)
@@ -282,6 +338,8 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   }
   function replay() {
     setRoundKey((k) => k + 1)
+    setPhase('study')
+    setCanContinueEarly(false)
     setCurrentIndex(0)
     setEliminated(new Set())
     setSolved(null)
@@ -296,24 +354,70 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Elegí a qué se dedicaba cada persona</h2>
-        {!done && (
+        {phase === 'study' ? (
           <>
-            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
-            <p className="mt-2 text-base font-semibold text-slate-500">
-              Llevás {currentIndex} de {rounds.length}
-            </p>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Mirá a qué se dedicaba cada persona</h2>
+            <p className="mt-2 text-base text-slate-500">Leé con calma: después te voy a preguntar el oficio de cada una.</p>
             <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
               <div
-                className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-                style={{ width: `${(currentIndex / rounds.length) * 100}%` }}
+                key={`${levelIdx}-${roundKey}`}
+                className="study-progress-fill h-full rounded-full bg-tiam-green"
+                style={{ animationDuration: `${level.studySeconds}s` }}
               />
             </div>
+          </>
+        ) : (
+          <>
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Elegí a qué se dedicaba cada persona</h2>
+            {!done && (
+              <>
+                {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
+                <p className="mt-2 text-base font-semibold text-slate-500">
+                  Llevás {currentIndex} de {rounds.length}
+                </p>
+                <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
+                    style={{ width: `${(currentIndex / rounds.length) * 100}%` }}
+                  />
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
 
-      {!done && round && (
+      {/* Study phase: who did what — typography only, no photos (see module doc) */}
+      {phase === 'study' && (
+        <>
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {study.map((person) => (
+              <div key={person.id} className="rounded-2xl border-2 border-slate-100 bg-white p-4">
+                <p className="text-lg font-bold text-slate-900">{person.name}</p>
+                <p className="mt-0.5 text-base font-semibold text-tiam-blue">
+                  {capitalizeFirst(labelFor(OCCUPATION_BY_ID[person.occupationId], !!person.female))}
+                </p>
+                {person.fact && <p className="mt-1 text-base text-slate-500">{person.fact}</p>}
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              disabled={!canContinueEarly}
+              onClick={() => {
+                window.clearTimeout(autoTimerRef.current)
+                setPhase('test')
+              }}
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-green px-6 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Ya estoy list@, continuar
+            </button>
+          </div>
+        </>
+      )}
+
+      {phase === 'test' && !done && round && (
         <>
           {/* Name card */}
           <div className="mt-6 rounded-2xl border-2 border-slate-100 bg-slate-50 px-5 py-6 text-center">
@@ -333,7 +437,7 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
                   disabled={solved !== null || isEliminated}
                   onClick={() => guess(opt.id)}
                   className={[
-                    'min-h-[56px] rounded-2xl border-2 px-4 py-3 text-lg font-bold capitalize transition sm:text-xl',
+                    'min-h-[56px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition sm:text-xl',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
                     isSolved
                       ? 'border-tiam-green bg-tiam-green/10 text-slate-900 ring-2 ring-tiam-green/30'
@@ -344,7 +448,7 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
                 >
                   <span className="inline-flex items-center justify-center gap-1.5">
                     {isSolved && <Check className="h-4 w-4 shrink-0" strokeWidth={3} />}
-                    {labelFor(opt, !!round.person.female)}
+                    {capitalizeFirst(labelFor(opt, !!round.person.female))}
                   </span>
                 </button>
               )
