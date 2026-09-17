@@ -116,7 +116,7 @@ import { BanderasYSaludos } from './BanderasYSaludos'
 import { LasDiferencias } from './LasDiferencias'
 import { AnagramasPorCategoria } from './AnagramasPorCategoria'
 import { CandadosYLlaves } from './CandadosYLlaves'
-import { SoloUnPedacito } from './SoloUnPedacito'
+import { PuestoDeComida } from './PuestoDeComida'
 import { ComoSeLlamaba } from './ComoSeLlamaba'
 
 /**
@@ -259,7 +259,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     18: EliminaLaIntrusa,
     19: PalabraYDefinicion,
     20: LaberintoDeMultiplicaciones,
-    21: SoloUnPedacito,
+    21: PuestoDeComida,
     22: ArbolGenealogico,
     23: LasDiferencias,
     24: ComoSeLlamaba,
