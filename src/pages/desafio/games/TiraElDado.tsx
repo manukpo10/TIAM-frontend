@@ -50,9 +50,10 @@ interface Level {
   n: number
   name: string
   rounds: number
-  /** Candidate prompts this level draws 6 of (one per face) from, per roundKey
-   * — a pool bigger than the 6 faces so a replay doesn't always ask the exact
-   * same six things. */
+  /** Candidate prompts this level draws 6 of (one per face), once per level
+   * at mount — a pool bigger than the 6 faces so the day's opening draw
+   * doesn't always land on the exact same six things. Once drawn, that six
+   * stays fixed for the rest of the day, including through "Repetir". */
   pool: Prompt[]
 }
 
@@ -389,14 +390,13 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Six prompts assigned to the six faces, redrawn from the level's pool each
-  // time a level starts or is replayed — see the file header on why the pool
-  // is bigger than 6.
-  const facePrompts = useMemo(
-    () => shuffle(level.pool).slice(0, 6),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Six prompts assigned to the six faces, per level. Decided once — at
+  // mount — never re-drawn just because the player re-visits a level, so
+  // "Repetir" can hand back the exact same six prompts deterministically
+  // (which face the die actually lands on each roll stays random — see
+  // `roll` below, that's the mechanic).
+  const [epoch] = useState(() => LEVELS.map((lvl) => shuffle(lvl.pool).slice(0, 6)))
+  const facePrompts = epoch[levelIdx]
 
   const [usedFaces, setUsedFaces] = useState<Set<number>>(new Set())
   const [solvedCount, setSolvedCount] = useState(0)

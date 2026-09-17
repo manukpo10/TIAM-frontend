@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -250,11 +250,12 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const { study, rounds } = useMemo(
-    () => buildLevelSet(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Which people (and their distractor-laden question order) each level
+  // studies and asks about. Decided once — at mount — never re-rolled just
+  // because the player re-visits a level, so "Repetir" can hand back the
+  // exact same people and questions deterministically.
+  const [epoch] = useState(() => LEVELS.map((lvl) => buildLevelSet(lvl)))
+  const { study, rounds } = epoch[levelIdx]
 
   const [phase, setPhase] = useState<'study' | 'test'>('study')
   const [canContinueEarly, setCanContinueEarly] = useState(false)
@@ -320,9 +321,9 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   // Resets happen HERE, synchronously with the level/round change — NOT in
   // a useEffect keyed on levelIdx. An effect only catches up on the render
   // AFTER levelIdx changes, so `done` (currentIndex vs. the NEW level's
-  // rounds.length, already updated via useMemo) would read the previous
-  // level's stale currentIndex on the very render that arrives at the new
-  // level, and fire onComplete with garbage. Same reasoning as
+  // rounds.length, already updated via `epoch[levelIdx]`) would read the
+  // previous level's stale currentIndex on the very render that arrives at
+  // the new level, and fire onComplete with garbage. Same reasoning as
   // SumaHastaDiez.tsx / QueOficioEs.tsx.
   function nextLevel() {
     const isWrap = levelIdx === LEVELS.length - 1

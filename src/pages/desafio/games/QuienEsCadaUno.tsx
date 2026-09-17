@@ -83,9 +83,10 @@ interface Level {
   pool: Puzzle[]
 }
 
-// 2 hand-authored puzzles per level (so playing again differs) — each verified
-// offline (scratchpad, deleted) to have exactly one valid name-to-figure
-// assignment. Difficulty scales by headcount: 3 → 4 → 5 people.
+// 2 hand-authored puzzles per level (one is picked when the day opens and
+// "Repetir" replays it) — each verified offline (scratchpad, deleted) to have
+// exactly one valid name-to-figure assignment. Difficulty scales by
+// headcount: 3 → 4 → 5 people.
 const LEVELS: Level[] = [
   {
     n: 1,
@@ -270,11 +271,12 @@ export function QuienEsCadaUno({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Cycled by roundKey instead of drawn at random: with two puzzles per
-  // level a random pick repeats the same one half the time, and playing the
-  // day again should show the other group. roundKey also moves on every level
-  // advance and day restart, so those land on varying puzzles too.
-  const puzzle = level.pool[roundKey % level.pool.length]
+  // Which pool puzzle each level plays, picked once per level — at mount —
+  // never re-rolled just because the player re-visits a level or hits
+  // "Repetir", so a replay always brings back the same group and clues
+  // (same content-freezing convention as SumaHastaDiez.tsx's `epoch`).
+  const [epoch] = useState(() => LEVELS.map((lvl) => pickOne(lvl.pool)))
+  const puzzle = epoch[levelIdx]
   const bankOrder = useMemo(() => shuffleAwayFromSolution(puzzle.names), [puzzle])
   const maxFigureHeight = Math.max(...puzzle.figures.map(figureDrawHeight))
 

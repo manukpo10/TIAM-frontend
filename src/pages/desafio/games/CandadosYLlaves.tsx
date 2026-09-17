@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -298,13 +298,14 @@ export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // `level.rounds` rounds generated once per level/roundKey, not on every
-  // round advance — same pattern as EncontraLaFiguraIgual/QueObjetoEs.
-  const rounds = useMemo(
-    () => Array.from({ length: level.rounds }, () => makeRound(levelIdx)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+  // Every level's rounds, decided once — at mount — never re-rolled just
+  // because the player re-visits a level or hits "Repetir", so a replay
+  // always brings back the same padlocks (same content-freezing convention
+  // as SumaHastaDiez.tsx's `epoch`).
+  const [epoch] = useState(() =>
+    LEVELS.map((lvl, i) => Array.from({ length: lvl.rounds }, () => makeRound(i))),
   )
+  const rounds = epoch[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]

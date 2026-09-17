@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -140,11 +140,11 @@ export function SumaHastaDiez({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const board = useMemo(
-    () => buildBoard(level.cols, level.rows, level.pairs),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // One board per level. Decided once — at mount — never re-rolled just
+  // because the player re-visits a level, so "Repetir" can hand back the
+  // exact same grid deterministically.
+  const [epoch] = useState(() => LEVELS.map((lvl) => buildBoard(lvl.cols, lvl.rows, lvl.pairs)))
+  const board = epoch[levelIdx]
 
   const [claimed, setClaimed] = useState<Set<number>>(new Set())
   const [selected, setSelected] = useState<number | null>(null)

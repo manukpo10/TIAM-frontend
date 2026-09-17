@@ -148,13 +148,12 @@ export function PalabraYDefinicion({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // Cycled by roundKey, not sampled: a random pick over two sets would hand
-  // back the same one half the time, and "Repetir" should bring the other set.
-  const set = useMemo(
-    () => level.sets[roundKey % level.sets.length],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Which of each level's two authored sets this "época" plays, picked
+  // once at random per level — at mount — never re-rolled, so "Repetir"
+  // always brings back the same words and definitions (same content-
+  // freezing convention as QuienLoDijo.tsx).
+  const [epochSets] = useState(() => LEVELS.map((lvl) => pickOne(lvl.sets)))
+  const set = epochSets[levelIdx]
   const pool = useMemo(() => shuffle(set.entries.map((e) => e.word)), [set])
   const prompts = useMemo(() => shuffle(set.entries), [set])
 

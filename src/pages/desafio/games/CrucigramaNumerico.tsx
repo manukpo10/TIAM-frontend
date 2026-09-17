@@ -351,7 +351,13 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const [board, setBoard] = useState<Board>(() => generateBoard(LEVELS[0]))
+  // Un tablero por nivel, generado una sola vez al montar — nunca se vuelve
+  // a generar al revisitar un nivel ni tampoco en "Repetir" (misma
+  // convención de congelar contenido que epochEntries de CruceDeLetras.tsx),
+  // así que "Repetir" siempre plantea exactamente el mismo crucigrama por
+  // nivel.
+  const [epochBoards] = useState<Board[]>(() => LEVELS.map((lvl) => generateBoard(lvl)))
+  const board = epochBoards[levelIdx]
   const [entries, setEntries] = useState<Record<string, string>>({})
   const [focused, setFocused] = useState<string | null>(null)
   const [hint, setHint] = useState<string | null>(null)
@@ -439,7 +445,6 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
   // onComplete con datos basura. Mismo motivo que ElVuelto.tsx/SumaHastaDiez.tsx.
   function nextLevel() {
     const nextIdx = levelIdx + 1
-    setBoard(generateBoard(LEVELS[nextIdx]))
     setLevelIdx(nextIdx)
     setRoundKey((k) => k + 1)
     setEntries({})
@@ -451,9 +456,11 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
   // Sólo se llega acá desde la tarjeta final del último nivel (ver el botón
   // único más abajo), así que siempre es un reinicio real del día — los
   // errores vuelven a cero acá, nunca en una corrección dentro de la misma
-  // ronda. El botón dice "Repetir", como en el resto del catálogo.
+  // ronda. El botón dice "Repetir", como en el resto del catálogo. NO
+  // regenera el tablero — epochBoards queda intacto (ver más arriba), así
+  // que se replantea exactamente el mismo crucigrama que el jugador ya
+  // resolvió.
   function replay() {
-    setBoard(generateBoard(LEVELS[0]))
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
     setEntries({})

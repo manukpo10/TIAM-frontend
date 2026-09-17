@@ -119,11 +119,12 @@ export function ElColorDeLaPalabra({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const board = useMemo(
-    () => buildBoard(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Every level's board, decided once — at mount — never re-rolled just
+  // because the player re-visits a level or hits "Repetir", so a replay
+  // always shows the same tiles (same content-freezing convention as
+  // SumaHastaDiez.tsx's `epoch`).
+  const [epoch] = useState(() => LEVELS.map((lvl) => buildBoard(lvl)))
+  const board = epoch[levelIdx]
   const targetCount = useMemo(() => board.filter((t) => t.matches).length, [board])
 
   const [found, setFound] = useState<Set<number>>(new Set())

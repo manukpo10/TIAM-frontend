@@ -17,14 +17,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * a CORRECT tap, purely so the checkmark has a moment to register before the
  * next question replaces it.
  *
- * One text per round (level), drawn once at mount/round-change from a
- * level-specific pool of >=2 texts — same "epoch" (`roundKey`) pattern as
- * every other game here — so an immediate replay doesn't always retell the
- * same story. Difficulty climbs through text length and question type: L1 is
- * short with directly-stated facts, L2 is longer and several questions need
- * connecting two separate sentences, L3 is longest and includes a question
- * that requires a genuine inference (never stated outright, but strictly
- * derivable from what IS stated).
+ * One text per level, drawn once at mount from a level-specific pool of >=2
+ * texts and never redrawn afterward — not on revisiting a level, and not on
+ * "Repetir" either (same content-freezing convention as CruceDeLetras.tsx's
+ * epochEntries) — so "Repetir" always retells the exact same story; only
+ * each question's option order is free to reshuffle. Difficulty climbs
+ * through text length and question type: L1 is short with directly-stated
+ * facts, L2 is longer and several questions need connecting two separate
+ * sentences, L3 is longest and includes a question that requires a genuine
+ * inference (never stated outright, but strictly derivable from what IS
+ * stated).
  */
 
 interface QuestionOption {
@@ -407,8 +409,7 @@ interface PreparedRound {
 
 // One text per round, options shuffled once per round — never re-shuffled on
 // re-render, or the options would visibly jump around after a wrong tap.
-function buildRound(level: Level): PreparedRound {
-  const text = pickOne(level.texts)
+function buildRound(text: ReadingText): PreparedRound {
   return {
     text,
     questions: text.questions.map((q) => ({ ...q, options: shuffle(q.options) })),
@@ -422,8 +423,13 @@ export function LeerYResponder({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
+  // Which text plays each level — drawn once, at mount, never re-rolled on a
+  // level revisit or "Repetir" (see the file header for why). Each
+  // question's OPTION order stays free to reshuffle: `round` recomputes on
+  // every level/roundKey change from the frozen text.
+  const [epochTexts] = useState(() => LEVELS.map((lvl) => pickOne(lvl.texts)))
   const round = useMemo(
-    () => buildRound(level),
+    () => buildRound(epochTexts[levelIdx]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )

@@ -118,11 +118,12 @@ export function CalculoMental({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const rounds = useMemo(
-    () => buildRounds(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Every round's number and operation order, per level. Decided once — at
+  // mount — never re-rolled just because the player re-visits a level, so
+  // "Repetir" can hand back the exact same numbers deterministically (the
+  // option chips below may still reshuffle their on-screen position).
+  const [epoch] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
+  const rounds = epoch[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const [cellIdx, setCellIdx] = useState(0)

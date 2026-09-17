@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -158,11 +158,12 @@ export function ComoSeLlamaba({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const rounds = useMemo(
-    () => buildRounds(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Which items each level's rounds ask for — decided once, at mount, and
+  // never re-rolled afterward: not on revisiting a level, and not on
+  // "Repetir" either (same content-freezing convention as CruceDeLetras.tsx's
+  // epochEntries), so "Repetir" always names the exact same objects.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
+  const rounds = epochRounds[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]

@@ -96,10 +96,17 @@ interface SheetRow extends Row {
   shown: string[]
 }
 
-function buildSheet(level: Level): SheetRow[] {
-  return shuffle(level.pool)
-    .slice(0, level.rows)
-    .map((row) => ({ ...row, shown: shuffle([...row.words]) }))
+// Which `level.rows` rows this level plays — picked once per level, at
+// mount, and never re-rolled (see `epochRows` below), so "Repetir" always
+// shows the same intruders.
+function pickRows(level: Level): Row[] {
+  return shuffle(level.pool).slice(0, level.rows)
+}
+// On-screen row order plus each row's word order — free to reshuffle on
+// every round/level/roundKey change, since WHICH rows appear is already
+// fixed by `epochRows`.
+function buildSheet(rows: Row[]): SheetRow[] {
+  return shuffle(rows).map((row) => ({ ...row, shown: shuffle([...row.words]) }))
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!']
@@ -114,8 +121,14 @@ export function EliminaLaIntrusa({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
+  // Which rows each level plays, decided once — at mount — never re-rolled
+  // just because the player re-visits a level, so "Repetir" always shows
+  // the same intruders (same content-freezing convention as
+  // CruceDeLetras.tsx's epochEntries). Row order and each row's word order
+  // still rebuild on every round/level/roundKey change.
+  const [epochRows] = useState(() => LEVELS.map((lvl) => pickRows(lvl)))
   const sheet = useMemo(
-    () => buildSheet(level),
+    () => buildSheet(epochRows[levelIdx]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )

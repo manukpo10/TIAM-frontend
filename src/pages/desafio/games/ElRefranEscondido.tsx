@@ -122,13 +122,12 @@ export function ElRefranEscondido({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // `rounds` distinct sayings per level, drawn once per level/roundKey so a
-  // replay is deterministic and a saying never repeats within a level.
-  const roundSayings = useMemo(
-    () => shuffle(level.sayings).slice(0, level.rounds),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // `rounds` distinct sayings per level. Decided once — at mount — never
+  // re-rolled just because the player re-visits a level, so "Repetir" can
+  // hand back the exact same sayings deterministically (the on-screen
+  // fragment scatter below still reshuffles every round).
+  const [epoch] = useState(() => LEVELS.map((lvl) => shuffle(lvl.sayings).slice(0, lvl.rounds)))
+  const roundSayings = epoch[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const saying = roundSayings[roundIdx]

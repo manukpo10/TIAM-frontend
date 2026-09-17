@@ -49,11 +49,11 @@ interface WordSet {
 interface Level {
   n: number
   name: string
-  /** One round per level, two authored word sets. The day's first play uses
-   * sets[0] at every level and each "Repetir" restart switches to the
-   * other set, so a replay never asks for the words just found. Both sets of
-   * a level ask for the same number of words, so the star maths doesn't
-   * depend on which one was played. */
+  /** One round per level, two authored word sets. Which set a level plays is
+   * picked once per level, at mount (see the `wordSets` epoch below), and
+   * never re-rolled afterwards — including on "Repetir" — so a replay always
+   * asks for the same words. Both sets of a level ask for the same number of
+   * words, so the star maths doesn't depend on which one was picked. */
   sets: [WordSet, WordSet]
 }
 
@@ -166,15 +166,17 @@ const NUDGES_REPEAT = ['Esa ya la encontraste. Probá otra.', 'Ya la tenés. Bus
 
 export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
-  // Which of each level's two word sets this playthrough uses — bumped only
-  // by the day restart, see Level.sets.
-  const [playthrough, setPlaythrough] = useState(0)
+  // Which of each level's two word sets this DAY plays, one pick per level.
+  // Decided once — at mount — never re-rolled just because the player
+  // re-visits a level, so "Repetir" can hand back the exact same words
+  // deterministically. See Level.sets.
+  const [wordSets] = useState(() => LEVELS.map((lvl) => pickOne(lvl.sets)))
   // Epoch counter (house pattern): reshuffles the ring's on-screen letter
   // order on every level change and restart, and gates the onComplete guard
   // below so a genuine day restart can report again.
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
-  const wordSet = level.sets[playthrough % level.sets.length]
+  const wordSet = wordSets[levelIdx]
   const target = wordSet.words.length
 
   // Index permutation, not the letters themselves — keeps `building` (which
@@ -183,7 +185,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   const ringOrder = useMemo(
     () => shuffle(wordSet.letters.map((_, i) => i)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, playthrough, roundKey],
+    [levelIdx, roundKey],
   )
 
   const [building, setBuilding] = useState<number[]>([]) // indices into wordSet.letters, tap order
@@ -281,7 +283,6 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   }
   function replayDay() {
     setLevelIdx(0)
-    setPlaythrough((p) => p + 1)
     setRoundKey((k) => k + 1)
     setBuilding([])
     setFound([])

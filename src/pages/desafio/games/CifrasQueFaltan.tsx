@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -37,11 +37,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Generated PROCEDURALLY per round, not from an authored pool — same shape
  * as SumaHastaDiez's `buildBoard` (a generated board with a provable
- * invariant, re-drawn via `useMemo` keyed on `roundKey`), adapted here to a
- * multi-round-per-level structure (2 rounds × 3 levels, like
- * LaPiramide/CrucigramaDeCifras) instead of SumaHastaDiez's one-board-per-
- * level. Content is redrawn on every `roundKey`, so the final-level
- * "Repetir" button plays new additions, not the same ones again.
+ * invariant), adapted here to a multi-round-per-level structure (2 rounds ×
+ * 3 levels, like LaPiramide/CrucigramaDeCifras) instead of SumaHastaDiez's
+ * one-board-per-level. The whole epoch is drawn once, at mount (`useState`,
+ * never re-rolled), so the final-level "Repetir" button always plays back
+ * the exact same additions, never new ones.
  *
  * HOW THIS DIFFERS FROM LaPiramide (día 16, the other cálculo fill-the-
  * blank-number game): LaPiramide is RECOGNITION — pick the right value among
@@ -248,12 +248,11 @@ const HINTS = [
 export function CifrasQueFaltan({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  // The whole epoch (every level's rounds) is drawn together, once per
-  // roundKey — same "generate with a provable invariant" shape as
-  // SumaHastaDiez's buildBoard, just producing ROUNDS_PER_LEVEL puzzles per
-  // level instead of a single board. A fresh roundKey (only ever bumped by
-  // replay()) draws a brand new epoch — see replay()'s comment.
-  const epoch = useMemo(() => buildEpoch(), [roundKey])
+  // The whole epoch (every level's rounds) is drawn once, at mount — never
+  // re-rolled by "Repetir" — same "generate with a provable invariant, then
+  // freeze" shape as SumaHastaDiez's buildBoard, just producing
+  // ROUNDS_PER_LEVEL puzzles per level instead of a single board.
+  const [epoch] = useState(() => buildEpoch())
 
   const level = LEVELS[levelIdx]
   const roundsForLevel = ROUNDS_PER_LEVEL[levelIdx]
@@ -354,9 +353,10 @@ export function CifrasQueFaltan({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
   // Only ever called from the FINAL level's completion card ("Repetir"), so
-  // always a genuine day restart — zero the mistake accumulator. Bumps
-  // roundKey, which draws a brand new epoch (see the `epoch` useMemo above):
-  // every addition is freshly generated, never the same ones again.
+  // always a genuine day restart — zero the mistake accumulator and bump
+  // roundKey so the reportedRoundKeyRef guard below can fire onComplete
+  // again. `epoch` itself is untouched (see its declaration above), so the
+  // replay walks through the exact same additions drawn at mount.
   function replay() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)

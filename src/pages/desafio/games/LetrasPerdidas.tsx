@@ -147,11 +147,12 @@ export function LetrasPerdidas({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const rounds = useMemo(
-    () => buildRounds(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Which word, hole positions and letter bank each level's rounds use.
+  // Decided once — at mount — never re-rolled just because the player
+  // re-visits a level, so "Repetir" can hand back the exact same words and
+  // holes deterministically.
+  const [epoch] = useState(() => LEVELS.map((lvl) => buildRounds(lvl)))
+  const rounds = epoch[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]

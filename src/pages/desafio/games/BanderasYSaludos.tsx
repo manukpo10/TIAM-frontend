@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -390,8 +390,7 @@ function pickFlagDistractors(targetId: CountryId, levelIdx: number): CountryId[]
   return midDecoy ? [midDecoy, ...rest] : shuffle(others).slice(0, 3)
 }
 
-function makeFlagRound(levelIdx: number): FlagRound {
-  const targetId = pickOne(ALL_COUNTRY_IDS)
+function makeFlagRound(levelIdx: number, targetId: CountryId): FlagRound {
   const decoys = pickFlagDistractors(targetId, levelIdx)
   const options: FlagOption[] = shuffle([
     { key: targetId, id: targetId, correct: true },
@@ -400,8 +399,7 @@ function makeFlagRound(levelIdx: number): FlagRound {
   return { kind: 'flagToCountry', targetId, options }
 }
 
-function makeGreetingRound(): GreetingRound {
-  const targetId = pickOne(GREETING_COUNTRY_IDS)
+function makeGreetingRound(targetId: CountryId): GreetingRound {
   const decoys = shuffle(GREETING_COUNTRY_IDS.filter((id) => id !== targetId)).slice(0, 3)
   const options: GreetingOption[] = shuffle([
     { key: targetId, id: targetId, greeting: COUNTRIES[targetId].greeting!, correct: true },
@@ -410,12 +408,45 @@ function makeGreetingRound(): GreetingRound {
   return { kind: 'countryToGreeting', targetId, options }
 }
 
+// Returns `count` targets drawn from `pool` WITHOUT replacement, so the same
+// country is never asked twice within one level — the bug this fixes let
+// `pickOne` draw with replacement per round, so e.g. Japón could turn up as
+// the flag target in both round 1 and round 3 of the same level. Shuffles
+// `pool` once and takes it in order; if a level ever needs more of one kind
+// than the pool holds (never happens with today's LEVELS/ROUNDS numbers —
+// ALL_COUNTRY_IDS has 12, GREETING_COUNTRY_IDS has 6, and no level asks for
+// more than 3 of either), it falls back to drawing another fresh shuffle
+// instead of returning undefined or crashing.
+function distinctTargets<T>(pool: T[], count: number): T[] {
+  const out: T[] = []
+  while (out.length < count) {
+    out.push(...shuffle(pool).slice(0, Math.min(count - out.length, pool.length)))
+  }
+  return out
+}
+
 // Round TYPE alternates flag/greeting purely by position within the level
-// (starting with a flag round), independent of the content randomness above
-// — a level's rounds always read flag, greeting, flag, … and never e.g. two
-// greeting rounds in a row.
-function makeRound(levelIdx: number, indexInLevel: number): Round {
-  return indexInLevel % 2 === 0 ? makeFlagRound(levelIdx) : makeGreetingRound()
+// (starting with a flag round) — a level's rounds always read flag,
+// greeting, flag, … and never e.g. two greeting rounds in a row. Targets are
+// drawn distinct-within-the-level (see distinctTargets) before being handed
+// out in round order, so the alternation and the "no repeated country"
+// guarantee are independent of each other. Greeting targets come first
+// (smaller pool) and flag targets skip them, so a country never comes up
+// twice in one level whatever the round kind.
+function buildLevelRounds(levelIdx: number, roundsInLevel: number): Round[] {
+  const kinds: Array<'flag' | 'greeting'> = Array.from({ length: roundsInLevel }, (_, i) =>
+    i % 2 === 0 ? 'flag' : 'greeting',
+  )
+  const greetingTargets = distinctTargets(GREETING_COUNTRY_IDS, kinds.filter((k) => k === 'greeting').length)
+  const flagTargets = distinctTargets(
+    ALL_COUNTRY_IDS.filter((id) => !greetingTargets.includes(id)),
+    kinds.filter((k) => k === 'flag').length,
+  )
+  let flagI = 0
+  let greetingI = 0
+  return kinds.map((kind) =>
+    kind === 'flag' ? makeFlagRound(levelIdx, flagTargets[flagI++]) : makeGreetingRound(greetingTargets[greetingI++]),
+  )
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!']
@@ -435,14 +466,15 @@ export function BanderasYSaludos({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  // `level.rounds` rounds generated once per level/roundKey — same useMemo
-  // "epoch" shape as EncontraLaFiguraIgual/SumaHastaDiez, so "Repetir" (which
-  // only bumps roundKey) is deterministic and never reshuffles mid-level.
-  const rounds = useMemo(
-    () => Array.from({ length: level.rounds }, (_, i) => makeRound(levelIdx, i)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // `level.rounds` rounds generated once per level, at mount, and never
+  // re-rolled afterward: not on revisiting a level, and not on "Repetir"
+  // either (same content-freezing convention as CruceDeLetras.tsx's
+  // epochEntries), so "Repetir" always asks about the exact same countries
+  // in the exact same flag/greeting order. Targets are drawn without
+  // replacement within a level, across both round kinds (see
+  // buildLevelRounds), so no country is ever asked about twice in one level.
+  const [epochRounds] = useState(() => LEVELS.map((lvl, i) => buildLevelRounds(i, lvl.rounds)))
+  const rounds = epochRounds[levelIdx]
 
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]

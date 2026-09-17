@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, ArrowRight, Sparkles, Check } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -21,9 +21,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  *    procedural star-polygon. An arithmetic result-sequence can't be
  *    "rotated" for freshness the way UniendoPuntos' star can (rotating a
  *    hand-drawn house would just scatter its dots without changing the
- *    operations), so variety instead comes from moving through each
- *    level's 3 shapes, one per attempt, and re-rolling every dot's operands
- *    each time.
+ *    operations), so variety instead comes from picking one of each level's
+ *    3 shapes and rolling every dot's operands each time the day is opened.
  *  - Dots show a full EXPRESSION ("24 ÷ 8"), not a bare digit/letter, so
  *    they render as small rounded chips sized to fit that text rather than
  *    perfect circles.
@@ -31,10 +30,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  *    fill — instead of being swapped out for a text-only completion card.
  *    The reveal IS this game's payoff, so hiding it the instant it appears
  *    (as UniendoPuntos does) would undercut the whole point.
- *  - One drawing per level. The first version played each level twice (two
- *    shapes back to back), and one per level proved enough; the other
- *    shapes now come up on "Repetir" instead, and two consecutive
- *    attempts never repeat a level's drawing.
+ *  - One drawing per level, picked once per level at mount and kept for the
+ *    rest of the day — including through "Repetir" — so a replay always
+ *    shows the same drawing with the same operations (see the `epoch` state
+ *    below). The first version played each level twice (two shapes back to
+ *    back); one per level proved enough.
  *
  * HOW-TO SCREEN FIRST. The rule — each operation's result is that dot's
  * place in the order — isn't obvious from the board alone, so the day opens
@@ -305,13 +305,13 @@ function buildDots(level: Level, shape: Point[]): Dot[] {
   return shape.map((p, i) => ({ x: p.x, y: p.y, expression: exprFor(i + 1, level.ops) }))
 }
 
-// One full attempt: one shape per level, with fresh operations. `attempt`
-// walks each level's shapes in order from that level's starting shape, so two
-// consecutive attempts never draw the same picture at the same level.
-function buildEpoch(startShapes: number[], attempt: number): Stage[] {
-  return LEVELS.map((level, li) => {
+// One full playthrough: a random shape per level, with fresh operations.
+// Called once, at mount, so the same picture (and the same operations) comes
+// back on every "Repetir" within this opening of the day.
+function buildEpoch(): Stage[] {
+  return LEVELS.map((level) => {
     const shapes = SHAPES[level.n]
-    return { dots: buildDots(level, shapes[(startShapes[li] + attempt) % shapes.length]) }
+    return { dots: buildDots(level, pickOne(shapes)) }
   })
 }
 
@@ -395,14 +395,11 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
   // How-to screen, once per opening of the day (see the file header) —
   // "Repetir" never sets it back.
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
-  // Each level's first shape — random once per mount, so the day doesn't
-  // always open on the same drawings.
-  const [startShapes] = useState(() => LEVELS.map((level) => Math.floor(Math.random() * SHAPES[level.n].length)))
-
-  // Regenerated only on a genuine restart (roundKey bump) — moving between
-  // levels within the same attempt reuses this same plan, same reasoning as
-  // UniendoPuntos' epochPoints.
-  const epoch = useMemo(() => buildEpoch(startShapes, roundKey), [startShapes, roundKey])
+  // Picked once — at mount — never regenerated afterwards, including on
+  // "Repetir", so a replay always draws the same shape with the same
+  // operations, same reasoning as QuienEsQuien's epochLevels. A new opening
+  // of the day can land on other drawings.
+  const [epoch] = useState(() => buildEpoch())
   const level = LEVELS[levelIdx]
   const dots = epoch[levelIdx].dots
 
@@ -453,8 +450,9 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
     setWrongIdx(null)
     setWrongHint(null)
   }
-  // "Repetir" — the only true restart: back to level 1, mistakes
-  // cleared, and the next shape + fresh operations at every level.
+  // "Repetir" — the only true restart: back to level 1, mistakes cleared.
+  // The drawings themselves don't change (see `epoch` above) — roundKey only
+  // bumps so the onComplete guard below can fire again.
   function restartEpoch() {
     setLevelIdx(0)
     setFoundCount(0)

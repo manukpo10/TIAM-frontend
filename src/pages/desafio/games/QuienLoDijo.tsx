@@ -32,12 +32,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  *     fixed phrase count (guaranteed-eventual-success), same accounting.
  *
  * Differs from QuienEsQuien in two ways:
- *   1. Each level has TWO hand-authored character sets (`Level.sets`) but
- *      plays only ONE study→test pass: the first run uses the first set of
- *      every level and each "Repetir" swaps to the other one, so two
- *      playthroughs in a row never ask about the same people. One pass per
- *      level on purpose — two back-to-back rounds of the same mechanic made
- *      each level too long.
+ *   1. Each level has TWO hand-authored character sets (`Level.sets`), and
+ *      plays only ONE study→test pass: which set a level plays is picked at
+ *      random once, at mount (see `epochLevels`), and "Repetir" always
+ *      brings back that same set — same content-freezing convention as the
+ *      rest of the catalog. One pass per level on purpose — two back-to-back
+ *      rounds of the same mechanic made each level too long.
  *   2. The test phase never narrows to a small option subset: every question
  *      offers ALL of the round's studied names, in the same fixed order for
  *      every question in that round (shuffled once per round, not reshuffled
@@ -75,7 +75,7 @@ interface Level {
   characterCount: number
   studySeconds: number
   minEarlySeconds: number
-  /** Two authored character sets, one per playthrough — see module doc. */
+  /** Two authored character sets; one is picked at random per level, at mount — see module doc. */
   sets: RoundContent[]
 }
 
@@ -239,17 +239,16 @@ const PRAISE_OK = ['¡Buen intento! Con la práctica se recuerda cada vez más.'
 
 export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
-  // Which of each level's two character sets this playthrough uses — bumped
-  // only by the day restart, see Level.sets.
-  const [playthrough, setPlaythrough] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  // Drawn ONCE at mount — content is fully hand-authored (no pool to re-sample
-  // from), so all this "epoch" fixes is presentation order; doing it once
-  // means a set looks exactly the same every time "Repetir" brings it back,
-  // same rationale as QuienEsQuien.tsx.
-  const [epochLevels] = useState(() => LEVELS.map((lvl) => lvl.sets.map((s) => buildEpochRound(s))))
+  // Which of each level's two authored character sets this "época" plays,
+  // chosen once at random per level, at mount, plus that set's study/
+  // question/option order built at the same time — content is fully
+  // hand-authored (no pool to re-sample from), so freezing both here means a
+  // level looks exactly the same every time "Repetir" brings it back, same
+  // rationale as QuienEsQuien.tsx.
+  const [epochLevels] = useState(() => LEVELS.map((lvl) => buildEpochRound(pickOne(lvl.sets))))
   const level = LEVELS[levelIdx]
-  const epochRound = epochLevels[levelIdx][playthrough % level.sets.length]
+  const epochRound = epochLevels[levelIdx]
 
   const [phase, setPhase] = useState<'study' | 'test'>('study')
   const [canContinueEarly, setCanContinueEarly] = useState(false)
@@ -335,13 +334,12 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   // Only reachable from the FINAL level's completion card — a genuine day
   // restart, same idea as QuienEsQuien.tsx's restartEpoch(): back to level 1,
   // mistakes zeroed, and a bumped roundKey so the reportedRoundKeyRef guard
-  // below lets onComplete fire again. It also bumps playthrough, which swaps
-  // every level to its other character set so the replay asks about new
-  // people; epochLevels itself is never touched, so each set keeps the order
-  // it got at mount.
+  // below lets onComplete fire again (also re-arms the study timer, since
+  // that effect is keyed on roundKey too). epochLevels itself is never
+  // touched, so every level replays the exact same character set — and the
+  // same presentation order — it got at mount.
   function replay() {
     setLevelIdx(0)
-    setPlaythrough((p) => p + 1)
     setPhase('study')
     setCanContinueEarly(false)
     setPhraseIdx(0)

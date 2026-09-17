@@ -193,11 +193,15 @@ export function CuantoSuma({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
 
-  const round = useMemo(
-    () => buildRound(level),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
-  )
+  // Which quantities/shapes/parts each level pairs — decided once, at mount,
+  // and never re-rolled afterward: not on revisiting a level, and not on
+  // "Repetir" either (same content-freezing convention as CruceDeLetras.tsx's
+  // epochEntries), so "Repetir" always pairs the exact same numbers. The
+  // right-hand column order stays free to reshuffle: `numbers` recomputes
+  // whenever `round`'s reference changes, which happens every time levelIdx
+  // moves to a level with a different (but still frozen) epoch entry.
+  const [epochRounds] = useState(() => LEVELS.map((lvl) => buildRound(lvl)))
+  const round = epochRounds[levelIdx]
   const numbers = useMemo(() => shuffle(round.map((q) => q.value)), [round])
 
   const [matched, setMatched] = useState<Set<number>>(new Set())

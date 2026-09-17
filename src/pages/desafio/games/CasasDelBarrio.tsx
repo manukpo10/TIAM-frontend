@@ -197,10 +197,11 @@ function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-// ── Puzzles — hand-authored, 2 per level so playing the day again can serve
-// a different layout. Every puzzle in a level's pool has the SAME blank count
-// as every other (2 / 3 / 5) — that's what makes TOTAL_BLANKS below a valid
-// fixed constant regardless of which puzzle a round draws.
+// ── Puzzles — hand-authored, 2 per level; one is picked when the day opens
+// and "Repetir" replays that same layout. Every puzzle in a level's pool has
+// the SAME blank count as every other (2 / 3 / 5) — that's what makes
+// TOTAL_BLANKS below a valid fixed constant regardless of which puzzle a
+// round draws.
 
 const PUZZLE_L1_A: Puzzle = {
   rows: 2,
@@ -375,12 +376,12 @@ const HINTS = [
 export function CasasDelBarrio({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  // Which puzzle each level is playing THIS "epoch" (one full 1→2→3 pass) —
-  // decided once at mount, same pattern as Coordenadas' epochOrder. Only
-  // nextLevel()'s wrap branch (every level, fresh epoch) ever changes it —
-  // advancing forward mid-epoch leaves it alone, so a level not yet visited
-  // keeps its original mount-time pick.
-  const [puzzleIdx, setPuzzleIdx] = useState<number[]>(() =>
+  // Which puzzle each level plays — decided once, at random, at mount, and
+  // never re-rolled afterward: not on revisiting a level, and not on
+  // "Repetir" either (see nextLevel) — same content-freezing convention as
+  // CruceDeLetras.tsx's epochEntries, so "Repetir" always poses the exact
+  // same puzzle per level.
+  const [puzzleIdx] = useState<number[]>(() =>
     LEVELS.map((lvl) => Math.floor(Math.random() * lvl.pool.length)),
   )
   const level = LEVELS[levelIdx]
@@ -451,9 +452,9 @@ export function CasasDelBarrio({ day: _day, onComplete }: GameProps) {
     setHint(null)
     setSolved(false)
     if (isWrap) {
-      // Genuine day restart — fresh epoch, every level rerolls its puzzle,
-      // and the mistake counter zeroes.
-      setPuzzleIdx(LEVELS.map((lvl) => Math.floor(Math.random() * lvl.pool.length)))
+      // Genuine day restart — the mistake counter zeroes, but puzzleIdx is
+      // left untouched: "Repetir" replays the exact same puzzle per level,
+      // it never rerolls it (see puzzleIdx above).
       setMistakes(0)
     }
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))

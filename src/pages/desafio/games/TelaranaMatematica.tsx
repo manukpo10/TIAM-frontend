@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles, Pencil } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -316,13 +316,11 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // How-to screen, once per opening of the day — "Repetir" never sets it back.
   const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
-  // Redrawn whenever roundKey changes (every level change and the day
-  // restart), so "Repetir" plays new webs rather than the same ones.
-  const epochRounds = useMemo(
-    () => buildEpoch(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [roundKey],
-  )
+  // Every level's web, decided once — at mount — never re-rolled just
+  // because the player re-visits a level or hits "Repetir", so a replay
+  // always walks the exact same chain (same content-freezing convention as
+  // SumaHastaDiez.tsx's `epoch`).
+  const [epochRounds] = useState(() => buildEpoch())
 
   const level = LEVELS[levelIdx]
   const [stepIdx, setStepIdx] = useState(0)

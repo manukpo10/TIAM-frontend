@@ -30,8 +30,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * interchangeable slots anywhere, and the checker below does plain,
  * per-box exact matching (no set/group comparison needed).
  *
- * UNIQUENESS INVARIANT: each of the 6 families below (2 per level, so a
- * replay never repeats the same one twice in a row) was authored by hand
+ * UNIQUENESS INVARIANT: each of the 6 families below (2 per level; one is
+ * picked when the day opens and "Repetir" replays it) was authored by hand
  * and independently checked with a throwaway brute-force script — every
  * permutation of that family's names across its boxes, filtered by the
  * role-gender rule above, tested against every statement translated into a
@@ -356,13 +356,12 @@ function TreeL3({ placements, solved, onTapBox }: TreeProps) {
 export function ArbolGenealogico({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  // Which family plays at each level THIS epoch (one full pass through the
-  // 3 levels) — drawn at random once at mount, then switched to each level's
-  // other family on a genuine day restart, never re-rolled just by revisiting
-  // a level. Unlike QuienEsQuien's epochLevels (deliberately frozen forever,
-  // "Repetir" reruns the exact same faces), this DOES change on restart —
-  // see restartEpoch — so playing again brings the other families.
-  const [epochFamilies, setEpochFamilies] = useState(() => LEVELS.map((lvl) => pickOne(lvl.families)))
+  // Which family plays at each level — drawn at random once, at mount, and
+  // never re-rolled afterward: not on revisiting a level, and not on
+  // "Repetir" either (see restartEpoch) — same content-freezing convention
+  // as QuienEsQuien's epochLevels and CruceDeLetras.tsx's epochEntries, so
+  // "Repetir" always rebuilds the exact same family tree.
+  const [epochFamilies] = useState(() => LEVELS.map((lvl) => pickOne(lvl.families)))
   const level = LEVELS[levelIdx]
   const family = epochFamilies[levelIdx]
 
@@ -451,18 +450,15 @@ export function ArbolGenealogico({ day: _day, onComplete }: GameProps) {
     setHint(null)
   }
   // "Repetir" — only reachable from level 3's complete card, so always a
-  // genuine day restart: moves every level to its OTHER family (a fresh
-  // random pick from a pool of two would repeat the same family half the
-  // time) and zeroes the accumulators. roundKey always bumps here — the
-  // onComplete effect uses it to allow firing again on this new attempt.
+  // genuine day restart: resets placements/bank and zeroes the accumulators,
+  // but leaves epochFamilies untouched — Repetir replays the exact same
+  // families, it never switches to the other one (see epochFamilies above).
+  // roundKey always bumps here — the onComplete effect uses it to allow
+  // firing again on this new attempt.
   function restartEpoch() {
-    const newFamilies = LEVELS.map(
-      (lvl, i) => lvl.families[(lvl.families.indexOf(epochFamilies[i]) + 1) % lvl.families.length],
-    )
-    setEpochFamilies(newFamilies)
     setLevelIdx(0)
     setPlacements(emptyPlacements(LEVELS[0]))
-    setBank(freshBank(LEVELS[0], newFamilies[0]))
+    setBank(freshBank(LEVELS[0], epochFamilies[0]))
     setSelectedName(null)
     setSolved(false)
     setHint(null)
