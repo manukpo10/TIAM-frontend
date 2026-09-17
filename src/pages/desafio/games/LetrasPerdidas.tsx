@@ -9,7 +9,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * The category is the whole clue, exactly as in the paper sheet ("sólo
  * diremos que todas son nombres de emociones"). Without it a word with four
  * holes has too many readings; with it the search collapses to something a
- * person can actually reason through, which is the point.
+ * person can actually reason through, which is the point. The paper sheet
+ * shares one category across the whole list; here every word brings its own,
+ * so the clue speaks about that one word, in the singular ("es una fruta").
  *
  * Correctness is checked on the RECONSTRUCTED WORD, never on which tile went
  * where. Half these pools contain repeated letters (BANANA, MEJILLA,
@@ -22,6 +24,8 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 interface Category {
   label: string
+  /** The clue for a single word of this category, with its article. */
+  clue: string
   words: string[]
 }
 
@@ -31,22 +35,27 @@ interface Category {
 const CATEGORIES: Category[] = [
   {
     label: 'emociones',
+    clue: 'una emoción',
     words: ['ENOJO', 'MIEDO', 'CALMA', 'TRISTEZA', 'SORPRESA', 'ORGULLO', 'GRATITUD', 'ALEGRIA', 'FELICIDAD', 'CONFIANZA', 'NOSTALGIA', 'ESPERANZA'],
   },
   {
     label: 'frutas',
+    clue: 'una fruta',
     words: ['BANANA', 'SANDIA', 'MELON', 'CIRUELA', 'MANZANA', 'NARANJA', 'DURAZNO', 'FRUTILLA', 'CEREZA', 'MANDARINA'],
   },
   {
     label: 'animales',
+    clue: 'un animal',
     words: ['ZORRO', 'PERRO', 'CONEJO', 'JIRAFA', 'TORTUGA', 'CABALLO', 'ELEFANTE', 'CARPINCHO', 'LAGARTO', 'MULITA'],
   },
   {
     label: 'oficios',
+    clue: 'un oficio',
     words: ['MEDICO', 'PINTOR', 'CARTERO', 'HERRERO', 'PLOMERO', 'MAESTRA', 'PANADERO', 'COCINERO', 'MECANICO'],
   },
   {
     label: 'partes del cuerpo',
+    clue: 'una parte del cuerpo',
     // Words carrying an Ñ (muñeca, pestaña, albañil) are left out rather than
     // stripped: "MUNECA" is not a word anyone reads as muñeca, and the tiles
     // in this catalog are plain A-Z by convention.
@@ -54,6 +63,7 @@ const CATEGORIES: Category[] = [
   },
   {
     label: 'colores',
+    clue: 'un color',
     words: ['VERDE', 'NEGRO', 'BLANCO', 'MARRON', 'CELESTE', 'VIOLETA', 'AMARILLO', 'TURQUESA', 'DORADO', 'PLATEADO'],
   },
 ]
@@ -101,7 +111,8 @@ function pickOne<T>(arr: T[]): T {
 }
 
 interface Round {
-  category: string
+  /** Shown as "Pista: es {clue}." — e.g. "una fruta". */
+  clue: string
   word: string
   /** Indices of the hidden letters, ascending. */
   holes: number[]
@@ -120,7 +131,7 @@ function buildRounds(level: Level): Round[] {
     const needed = holes.map((i) => word[i])
     const spare = ALPHABET.filter((c) => !word.includes(c))
     const bank = shuffle([...needed, ...shuffle(spare).slice(0, level.decoys)])
-    return { category: cat.label, word, holes, bank }
+    return { clue: cat.clue, word, holes, bank }
   })
 }
 
@@ -248,7 +259,7 @@ export function LetrasPerdidas({ day: _day, onComplete }: GameProps) {
               Completá las letras que faltan
             </h2>
             <p className="mt-2 text-base text-slate-500">
-              Pista: todas son <span className="font-bold text-tiam-blue">{round.category}</span>.
+              Pista: es <span className="font-bold text-tiam-blue">{round.clue}</span>.
             </p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Palabra {roundIdx + 1} de {rounds.length}
