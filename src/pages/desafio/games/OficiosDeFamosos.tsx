@@ -264,7 +264,7 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [levelPraise, setLevelPraise] = useState(PRAISE[0])
   // Accumulates across levels 1→2→3, zeroed only on a genuine day restart
-  // (see nextLevel's wrap branch) — a same-level replay keeps it.
+  // (see nextLevel's wrap branch).
   const [mistakes, setMistakes] = useState(0)
 
   const round = rounds[currentIndex]
@@ -275,7 +275,7 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
   }, [done])
 
   // Timed study reveal + early-continue escape hatch — same shape as
-  // QuienLoDijo.tsx. Re-armed on every level change and replay (both bump
+  // QuienLoDijo.tsx. Re-armed on every level change and restart (both bump
   // roundKey), since each one brings a fresh set of people to study.
   const autoTimerRef = useRef<number | undefined>(undefined)
   useEffect(() => {
@@ -335,16 +335,6 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
     setSolved(null)
     setHint(null)
     if (isWrap) setMistakes(0)
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
-    setPhase('study')
-    setCanContinueEarly(false)
-    setCurrentIndex(0)
-    setEliminated(new Set())
-    setSolved(null)
-    setHint(null)
-    // NOT setMistakes(0) — a same-level replay must not wipe accumulated mistakes.
   }
 
   return (
@@ -472,25 +462,24 @@ export function OficiosDeFamosos({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Acertaste a las {rounds.length} personas — ¡completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
-            {levelIdx === LEVELS.length - 1 && (
-              <button
-                type="button"
-                onClick={replay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Otras personas
-              </button>
-            )}
           </div>
         </div>
       )}

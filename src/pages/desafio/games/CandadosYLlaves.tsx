@@ -329,16 +329,8 @@ export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
     setResolved(false)
     setHint(null)
     // Only a genuine day restart (wrapping from level 3 back to level 1)
-    // zeroes the mistake count — "Otra ronda" must NOT, even on level 1.
+    // zeroes the mistake count.
     if (isWrap) setMistakes(0)
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
-    setRoundIdx(0)
-    setEliminated(new Set())
-    setResolved(false)
-    setHint(null)
-    // NOT setMistakes(0) — a same-level replay must not wipe accumulated mistakes.
   }
 
   // Fires once per roundKey when level 3's last round resolves. A full day
@@ -446,25 +438,24 @@ export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Abriste los {level.rounds} candados — ¡completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
-            {levelIdx === LEVELS.length - 1 && (
-              <button
-                type="button"
-                onClick={replay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Otra ronda
-              </button>
-            )}
           </div>
         </div>
       )}

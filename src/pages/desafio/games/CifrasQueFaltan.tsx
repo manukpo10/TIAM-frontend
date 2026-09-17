@@ -40,9 +40,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * invariant, re-drawn via `useMemo` keyed on `roundKey`), adapted here to a
  * multi-round-per-level structure (2 rounds × 3 levels, like
  * LaPiramide/CrucigramaDeCifras) instead of SumaHastaDiez's one-board-per-
- * level. Because content is redrawn on every `roundKey`, "Repetir" would be
- * a lie — the final-level button reads "Otra cuenta" instead, matching
- * SumaHastaDiez's "Otra grilla" for the exact same reason.
+ * level. Content is redrawn on every `roundKey`, so the final-level
+ * "Repetir" button plays new additions, not the same ones again.
  *
  * HOW THIS DIFFERS FROM LaPiramide (día 16, the other cálculo fill-the-
  * blank-number game): LaPiramide is RECOGNITION — pick the right value among
@@ -354,11 +353,10 @@ export function CifrasQueFaltan({ day: _day, onComplete }: GameProps) {
     setResolving(false)
     setHint(null)
   }
-  // Only ever called from the FINAL level's completion card, so always a
-  // genuine day restart — zero the mistake accumulator. Bumps roundKey,
-  // which draws a brand new epoch (see the `epoch` useMemo above): every
-  // addition is freshly generated, never the same ones again — that's why
-  // the button below reads "Otra cuenta", not "Repetir".
+  // Only ever called from the FINAL level's completion card ("Repetir"), so
+  // always a genuine day restart — zero the mistake accumulator. Bumps
+  // roundKey, which draws a brand new epoch (see the `epoch` useMemo above):
+  // every addition is freshly generated, never the same ones again.
   function replay() {
     setLevelIdx(0)
     setRoundKey((k) => k + 1)
@@ -539,7 +537,7 @@ export function CifrasQueFaltan({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
-                Otra cuenta
+                Repetir
               </button>
             )}
           </div>

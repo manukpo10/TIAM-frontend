@@ -142,7 +142,7 @@ export function ElRefranEscondido({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   // Both accumulate across levels 1→2→3 and only zero on a genuine day
-  // restart (see nextLevel's wrap branch) — a same-level replay keeps them.
+  // restart (see nextLevel's wrap branch).
   const [mistakes, setMistakes] = useState(0)
   const [correctTaps, setCorrectTaps] = useState(0)
 
@@ -185,13 +185,6 @@ export function ElRefranEscondido({ day: _day, onComplete }: GameProps) {
       setMistakes(0)
       setCorrectTaps(0)
     }
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
-    setRoundIdx(0)
-    setRevealed(0)
-    setHint(null)
-    // NOT zeroing the accumulators — a same-level replay still counts.
   }
 
   // Fires once per roundKey when the last level's last round resolves. A
@@ -315,25 +308,24 @@ export function ElRefranEscondido({ day: _day, onComplete }: GameProps) {
           <p className="mt-2 text-slate-600">
             Armaste los {level.rounds} refranes — ¡completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
-            {levelIdx === LEVELS.length - 1 && (
-              <button
-                type="button"
-                onClick={replay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Otros refranes
-              </button>
-            )}
           </div>
         </div>
       )}

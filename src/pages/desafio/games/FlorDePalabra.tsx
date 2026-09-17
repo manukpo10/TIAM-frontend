@@ -50,7 +50,7 @@ interface Level {
   n: number
   name: string
   /** One round per level, two authored word sets. The day's first play uses
-   * sets[0] at every level and each "Otras palabras" restart switches to the
+   * sets[0] at every level and each "Repetir" restart switches to the
    * other set, so a replay never asks for the words just found. Both sets of
    * a level ask for the same number of words, so the star maths doesn't
    * depend on which one was played. */
@@ -471,7 +471,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
-                Otras palabras
+                Repetir
               </button>
             ) : (
               <button

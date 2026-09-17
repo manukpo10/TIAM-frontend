@@ -236,11 +236,8 @@ const HINTS = [
 export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
-  // Redrawn whenever roundKey changes, which is exactly when the player asks
-  // for a fresh set — the button says "Otra telaraña" and has to mean it.
-  // (CalculoEnCuadro keeps its epoch for the life of the mount instead, but
-  // its own replay button is worded as a repeat. Either is fine; the label
-  // and the behaviour just have to agree.)
+  // Redrawn whenever roundKey changes (every level change and the day
+  // restart), so "Repetir" plays new webs rather than the same ones.
   const epochRounds = useMemo(
     () => buildEpoch(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,7 +258,7 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   // Both accumulate across levels 1→2→3 and only zero on a genuine day
-  // restart (see nextLevel's wrap branch) — a same-level replay keeps them.
+  // restart (see nextLevel's wrap branch).
   const [mistakes, setMistakes] = useState(0)
 
   const stepsInLevel = ROUNDS_PER_LEVEL * level.chainLength
@@ -316,16 +313,6 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
     setResolving(false)
     setRoundKey((k) => k + 1)
     if (isWrap) setMistakes(0)
-  }
-  function replay() {
-    setRoundIdx(0)
-    setStepIdx(0)
-    setEliminated(new Set())
-    setJustCorrect(null)
-    setHint(null)
-    setResolving(false)
-    setRoundKey((k) => k + 1)
-    // NOT setMistakes(0) — a same-level replay must not wipe accumulated mistakes.
   }
 
   // Fires once per roundKey when the last level finishes. A genuine full-day
@@ -445,25 +432,24 @@ export function TelaranaMatematica({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Resolviste las {ROUNDS_PER_LEVEL} telarañas — ¡completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
-            {levelIdx === LEVELS.length - 1 && (
-              <button
-                type="button"
-                onClick={replay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Otra telaraña
-              </button>
-            )}
           </div>
         </div>
       )}

@@ -451,8 +451,7 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
   // Sólo se llega acá desde la tarjeta final del último nivel (ver el botón
   // único más abajo), así que siempre es un reinicio real del día — los
   // errores vuelven a cero acá, nunca en una corrección dentro de la misma
-  // ronda, y el botón dice lo que esto realmente hace ("Jugar de nuevo"),
-  // no un reordenamiento del mismo nivel.
+  // ronda. El botón dice "Repetir", como en el resto del catálogo.
   function replay() {
     setBoard(generateBoard(LEVELS[0]))
     setLevelIdx(0)
@@ -638,7 +637,7 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
-                Jugar de nuevo
+                Repetir
               </button>
             </div>
           )}

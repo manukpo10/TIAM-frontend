@@ -361,7 +361,7 @@ export function ArbolGenealogico({ day: _day, onComplete }: GameProps) {
   // other family on a genuine day restart, never re-rolled just by revisiting
   // a level. Unlike QuienEsQuien's epochLevels (deliberately frozen forever,
   // "Repetir" reruns the exact same faces), this DOES change on restart —
-  // see restartEpoch — because the button says so ("Otra familia").
+  // see restartEpoch — so playing again brings the other families.
   const [epochFamilies, setEpochFamilies] = useState(() => LEVELS.map((lvl) => pickOne(lvl.families)))
   const level = LEVELS[levelIdx]
   const family = epochFamilies[levelIdx]
@@ -450,12 +450,11 @@ export function ArbolGenealogico({ day: _day, onComplete }: GameProps) {
     setSolved(false)
     setHint(null)
   }
-  // "Otra familia" — only reachable from level 3's complete card, so
-  // always a genuine day restart: moves every level to its OTHER family
-  // (hence the button's name, not "Repetir" — a fresh random pick from a
-  // pool of two would repeat the same family half the time) and zeroes the
-  // accumulators. roundKey always bumps here — the onComplete effect uses
-  // it to allow firing again on this new attempt.
+  // "Repetir" — only reachable from level 3's complete card, so always a
+  // genuine day restart: moves every level to its OTHER family (a fresh
+  // random pick from a pool of two would repeat the same family half the
+  // time) and zeroes the accumulators. roundKey always bumps here — the
+  // onComplete effect uses it to allow firing again on this new attempt.
   function restartEpoch() {
     const newFamilies = LEVELS.map(
       (lvl, i) => lvl.families[(lvl.families.indexOf(epochFamilies[i]) + 1) % lvl.families.length],
@@ -567,7 +566,7 @@ export function ArbolGenealogico({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
-                Otra familia
+                Repetir
               </button>
             </div>
           )}

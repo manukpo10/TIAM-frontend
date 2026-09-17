@@ -29,10 +29,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * larger pool — because unambiguity has to be verified per ROUND (every
  * left item must have exactly one plausible right-side partner present),
  * and that check only stays valid if the round composition never changes.
- * "Replay" therefore only reshuffles the on-screen left/right order, never
- * the pairs themselves (see nextLevel/replay below) — the button label
- * says "Intentar de nuevo", not "Otras parejas", because the parejas
- * never change, only their arrangement.
+ * "Repetir" therefore only reshuffles the on-screen left/right order, never
+ * the pairs themselves (see nextLevel below) — the pairs never change, only
+ * their arrangement.
  *
  * Difficulty ramps by association tightness, not by pair count alone.
  * Nivel 1's four pairs are each from a totally different domain (mate,
@@ -136,7 +135,7 @@ export function CualEsCual({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // The SET of pairs per level is fixed content (see LEVELS above) — only
-  // the on-screen ORDER is reshuffled per level/replay, independently for
+  // the on-screen ORDER is reshuffled per level and restart, independently for
   // each column so a pair's left and right item never land in the same row.
   const leftOrder = useMemo(
     () => shuffle(level.pairs),
@@ -155,7 +154,7 @@ export function CualEsCual({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   // Accumulates across levels 1→2→3, only zeroed on a genuine day restart
-  // (see nextLevel's wrap branch) — a same-level replay keeps it.
+  // (see nextLevel's wrap branch).
   const [mistakes, setMistakes] = useState(0)
 
   const done = matched.size === level.pairs.length
@@ -210,14 +209,6 @@ export function CualEsCual({ day: _day, onComplete }: GameProps) {
     setPickedRight(null)
     setHint(null)
     if (isWrap) setMistakes(0)
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
-    setMatched(new Set())
-    setPickedLeft(null)
-    setPickedRight(null)
-    setHint(null)
-    // NOT setMistakes(0) — a same-level replay must not wipe accumulated mistakes.
   }
 
   // Fires once per roundKey when the last level finishes. A genuine full-day
@@ -328,25 +319,24 @@ export function CualEsCual({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Uniste las {level.pairs.length} parejas — ¡completaste el {level.name.toLowerCase()}!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
-            {levelIdx === LEVELS.length - 1 && (
-              <button
-                type="button"
-                onClick={replay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Intentar de nuevo
-              </button>
-            )}
           </div>
         </div>
       )}

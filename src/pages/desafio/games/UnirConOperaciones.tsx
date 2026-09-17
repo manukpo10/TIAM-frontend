@@ -33,7 +33,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  *    (as UniendoPuntos does) would undercut the whole point.
  *  - One drawing per level. The first version played each level twice (two
  *    shapes back to back), and one per level proved enough; the other
- *    shapes now come up on "Otros dibujos" instead, and two consecutive
+ *    shapes now come up on "Repetir" instead, and two consecutive
  *    attempts never repeat a level's drawing.
  *
  * Difficulty ramps by dot count AND operator set: L1 (7 dots) only uses
@@ -377,7 +377,7 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
     setWrongIdx(null)
     setWrongHint(null)
   }
-  // "Otros dibujos" — the only true restart: back to level 1, mistakes
+  // "Repetir" — the only true restart: back to level 1, mistakes
   // cleared, and the next shape + fresh operations at every level.
   function restartEpoch() {
     setLevelIdx(0)
@@ -520,7 +520,7 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
-                Otros dibujos
+                Repetir
               </button>
             </div>
           )}

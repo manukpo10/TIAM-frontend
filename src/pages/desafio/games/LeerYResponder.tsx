@@ -437,10 +437,9 @@ export function LeerYResponder({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GREAT[0])
 
-  // accMistakes accumulates across levels 1→2→3 (and across a same-level
-  // replay), zeroed only on a genuine day restart — see nextLevel()'s wrap
-  // branch. levelMistakes is purely cosmetic (picks the praise line below)
-  // and always resets with the level, replay included.
+  // accMistakes accumulates across levels 1→2→3, zeroed only on a genuine day
+  // restart — see nextLevel()'s wrap branch. levelMistakes is purely cosmetic
+  // (picks the praise line below) and always resets with the level.
   const [accMistakes, setAccMistakes] = useState(0)
   const [levelMistakes, setLevelMistakes] = useState(0)
 
@@ -492,16 +491,6 @@ export function LeerYResponder({ day: _day, onComplete }: GameProps) {
     if (isWrap) {
       setAccMistakes(0)
     }
-  }
-  function replay() {
-    setRoundKey((k) => k + 1)
-    setPhase('reading')
-    setQuestionIdx(0)
-    setWrongIds(new Set())
-    setHint(null)
-    setIsAdvancing(false)
-    setLevelMistakes(0)
-    // NOT accMistakes — a same-level replay must keep the accumulated total.
   }
 
   // Fires once per roundKey when the last level finishes. A genuine full-day
@@ -613,22 +602,23 @@ export function LeerYResponder({ day: _day, onComplete }: GameProps) {
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-slate-600">Contestaste las {round.questions.length} preguntas sobre "{round.text.title}".</p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={replay}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Leer otro texto
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
           </div>
         </div>

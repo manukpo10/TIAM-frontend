@@ -196,17 +196,9 @@ function shuffle<T>(arr: T[]): T[] {
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
-// Picks a pool index different from `exclude` when possible — backs the
-// replay button's "a different puzzle" behaviour (see nextLevel/replay).
-function pickDifferentIndex(poolLen: number, exclude: number): number {
-  if (poolLen <= 1) return 0
-  let idx = Math.floor(Math.random() * (poolLen - 1))
-  if (idx >= exclude) idx += 1
-  return idx
-}
 
-// ── Puzzles — hand-authored, 2 per level so a replay can serve a genuinely
-// different layout. Every puzzle in a level's pool has the SAME blank count
+// ── Puzzles — hand-authored, 2 per level so playing the day again can serve
+// a different layout. Every puzzle in a level's pool has the SAME blank count
 // as every other (2 / 3 / 5) — that's what makes TOTAL_BLANKS below a valid
 // fixed constant regardless of which puzzle a round draws.
 
@@ -385,9 +377,9 @@ export function CasasDelBarrio({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   // Which puzzle each level is playing THIS "epoch" (one full 1→2→3 pass) —
   // decided once at mount, same pattern as Coordenadas' epochOrder. Only
-  // replay() (this level only) and nextLevel()'s wrap branch (every level,
-  // fresh epoch) ever change it — advancing forward mid-epoch leaves it
-  // alone, so a level not yet visited keeps its original mount-time pick.
+  // nextLevel()'s wrap branch (every level, fresh epoch) ever changes it —
+  // advancing forward mid-epoch leaves it alone, so a level not yet visited
+  // keeps its original mount-time pick.
   const [puzzleIdx, setPuzzleIdx] = useState<number[]>(() =>
     LEVELS.map((lvl) => Math.floor(Math.random() * lvl.pool.length)),
   )
@@ -403,8 +395,8 @@ export function CasasDelBarrio({ day: _day, onComplete }: GameProps) {
   const [solved, setSolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
-  // Accumulates 1→2→3 across levels AND across a same-level replay; zeroed
-  // ONLY on the genuine day restart (wrap from level 3 back to level 1).
+  // Accumulates 1→2→3 across levels; zeroed ONLY on the genuine day restart
+  // (wrap from level 3 back to level 1).
   const [mistakes, setMistakes] = useState(0)
 
   const bankNames = shuffledNames.filter((name) => !Object.values(placements).includes(name))
@@ -460,29 +452,11 @@ export function CasasDelBarrio({ day: _day, onComplete }: GameProps) {
     setSolved(false)
     if (isWrap) {
       // Genuine day restart — fresh epoch, every level rerolls its puzzle,
-      // and the mistake counter zeroes. A same-level replay (below) must
-      // NEVER zero it.
+      // and the mistake counter zeroes.
       setPuzzleIdx(LEVELS.map((lvl) => Math.floor(Math.random() * lvl.pool.length)))
       setMistakes(0)
     }
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
-    setRoundKey((k) => k + 1)
-  }
-
-  // "Otro barrio" — same level, a DIFFERENT puzzle from its pool (there are
-  // 2, so this always changes layout+names when the pool has more than 1).
-  // Label reflects that behaviour, per the house rule: this is not
-  // "Repetir" because it does not repeat.
-  function replay() {
-    setPlacements({})
-    setSelectedName(null)
-    setHint(null)
-    setSolved(false)
-    setPuzzleIdx((prev) => {
-      const next = [...prev]
-      next[levelIdx] = pickDifferentIndex(level.pool.length, prev[levelIdx])
-      return next
-    })
     setRoundKey((k) => k + 1)
   }
 
@@ -631,25 +605,24 @@ export function CasasDelBarrio({ day: _day, onComplete }: GameProps) {
           <p className="mt-1 text-slate-600">
             Ubicaste las {puzzle.blankIds.length} casas del {level.name.toLowerCase()} — ¡buen ojo de vecino!
           </p>
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-5 flex justify-center">
             <button
               type="button"
               onClick={nextLevel}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
             >
-              {levelIdx < LEVELS.length - 1 ? 'Siguiente nivel' : 'Empezar de nuevo'}
-              <ArrowRight className="h-4 w-4" />
+              {levelIdx < LEVELS.length - 1 ? (
+                <>
+                  Siguiente nivel
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  Repetir
+                </>
+              )}
             </button>
-            {levelIdx === LEVELS.length - 1 && (
-              <button
-                type="button"
-                onClick={replay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Otro barrio
-              </button>
-            )}
           </div>
         </div>
       )}
