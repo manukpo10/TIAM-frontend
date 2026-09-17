@@ -374,7 +374,7 @@ const MONTH_3_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 1, type: 'game', area: 'lenguaje', title: 'Flor de palabra',
-    instructions: 'Un juego de lenguaje: tenés unas pocas letras en una flor y con ellas se arman varias palabras. Tocá las letras y descubrí cuántas encontrás. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: con las letras de la flor se arman varias palabras. Leé la pista, tocá las letras en orden y formá la palabra. Subís de dificultad a medida que avanzás.' },
   { day: 2, type: 'game', area: 'memoria', title: '¿A qué se dedicaba?',
     instructions: 'Un juego de memoria: primero leé a qué se dedicaba cada persona conocida y después, sin mirar, tocá el oficio de cada una. Subís de dificultad a medida que avanzás.' },
   { day: 3, type: 'game', area: 'calculo', title: 'Suma hasta 10',
