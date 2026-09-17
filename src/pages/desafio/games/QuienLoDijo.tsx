@@ -32,9 +32,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  *     fixed phrase count (guaranteed-eventual-success), same accounting.
  *
  * Differs from QuienEsQuien in two ways:
- *   1. A level here is TWO back-to-back study→test rounds (`ROUNDS_PER_LEVEL`),
- *      each introducing a fresh set of characters — QuienEsQuien has a single
- *      study→test pass per level.
+ *   1. Each level has TWO hand-authored character sets (`Level.sets`) but
+ *      plays only ONE study→test pass: the first run uses the first set of
+ *      every level and each "Repetir" swaps to the other one, so two
+ *      playthroughs in a row never ask about the same people. One pass per
+ *      level on purpose — two back-to-back rounds of the same mechanic made
+ *      each level too long.
  *   2. The test phase never narrows to a small option subset: every question
  *      offers ALL of the round's studied names, in the same fixed order for
  *      every question in that round (shuffled once per round, not reshuffled
@@ -43,11 +46,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Content is 100% hand-authored, not procedurally generated and not drawn
  * from a shared name pool (unlike QuienEsQuien's 8-face pool): 3 levels × 2
- * rounds = 6 character sets, each hand-checked so every phrase maps to
+ * sets = 6 character sets, each hand-checked so every phrase maps to
  * exactly one studied character and could not plausibly belong to another
- * (also checked by a throwaway invariant script at authoring time). Because
- * content is fixed rather than sampled, "Repetir" (`replay()`) reproduces the
- * exact same characters and phrase order every time, never a substitute set.
+ * (also checked by a throwaway invariant script at authoring time). Each
+ * set's card, phrase and button order is shuffled once at mount, so a set
+ * looks exactly the same every time "Repetir" brings it back.
  */
 
 interface Character {
@@ -72,7 +75,8 @@ interface Level {
   characterCount: number
   studySeconds: number
   minEarlySeconds: number
-  rounds: RoundContent[]
+  /** Two authored character sets, one per playthrough — see module doc. */
+  sets: RoundContent[]
 }
 
 const PORTRAITS = import.meta.glob('../../../assets/desafio/games/quien-lo-dijo/*.webp', {
@@ -83,8 +87,6 @@ function portraitFor(id: string): string | undefined {
   return Object.entries(PORTRAITS).find(([path]) => path.endsWith(`/${id}.webp`))?.[1]
 }
 
-const ROUNDS_PER_LEVEL = 2
-
 const LEVELS: Level[] = [
   {
     n: 1,
@@ -92,7 +94,7 @@ const LEVELS: Level[] = [
     characterCount: 3,
     studySeconds: 18,
     minEarlySeconds: 8,
-    rounds: [
+    sets: [
       {
         characters: [
           { id: 'marta', name: 'Marta', fact: 'Marta es jardinera y vive en Rosario.' },
@@ -125,7 +127,7 @@ const LEVELS: Level[] = [
     characterCount: 4,
     studySeconds: 22,
     minEarlySeconds: 10,
-    rounds: [
+    sets: [
       {
         characters: [
           { id: 'elsa', name: 'Elsa', fact: 'Elsa hace flanes caseros y los vende los domingos en la feria.' },
@@ -162,7 +164,7 @@ const LEVELS: Level[] = [
     characterCount: 4,
     studySeconds: 24,
     minEarlySeconds: 11,
-    rounds: [
+    sets: [
       {
         characters: [
           { id: 'hugo', name: 'Hugo', fact: 'Hugo organiza los torneos de bochas los martes en el club de jubilados.' },
@@ -195,7 +197,8 @@ const LEVELS: Level[] = [
   },
 ]
 
-const TOTAL_PHRASES = LEVELS.reduce((sum, l) => sum + l.rounds.reduce((s, r) => s + r.phrases.length, 0), 0)
+// One study→test pass per level, and every set has one phrase per character.
+const TOTAL_PHRASES = LEVELS.reduce((sum, l) => sum + l.characterCount, 0)
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -236,15 +239,17 @@ const PRAISE_OK = ['¡Buen intento! Con la práctica se recuerda cada vez más.'
 
 export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
-  const [roundIdx, setRoundIdx] = useState(0)
+  // Which of each level's two character sets this playthrough uses — bumped
+  // only by the day restart, see Level.sets.
+  const [playthrough, setPlaythrough] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Drawn ONCE at mount — content is fully hand-authored (no pool to re-sample
   // from), so all this "epoch" fixes is presentation order; doing it once
-  // keeps "Repetir" byte-for-byte deterministic, same rationale as
-  // QuienEsQuien.tsx.
-  const [epochLevels] = useState(() => LEVELS.map((lvl) => lvl.rounds.map((r) => buildEpochRound(r))))
+  // means a set looks exactly the same every time "Repetir" brings it back,
+  // same rationale as QuienEsQuien.tsx.
+  const [epochLevels] = useState(() => LEVELS.map((lvl) => lvl.sets.map((s) => buildEpochRound(s))))
   const level = LEVELS[levelIdx]
-  const epochRound = epochLevels[levelIdx][roundIdx]
+  const epochRound = epochLevels[levelIdx][playthrough % level.sets.length]
 
   const [phase, setPhase] = useState<'study' | 'test'>('study')
   const [canContinueEarly, setCanContinueEarly] = useState(false)
@@ -258,12 +263,10 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   // restart — see the comment there.
   const [mistakes, setMistakes] = useState(0)
 
-  // True only once the LAST round of the current level has been fully
-  // answered — an in-level round transition (see advanceToNext below) always
-  // resets phraseIdx together with roundIdx in the same batch, so this can
-  // never read true mid-level.
+  // True once every phrase of the level's single study→test pass has been
+  // answered.
   const done = phraseIdx >= epochRound.phraseOrder.length
-  const totalInLevel = level.characterCount * ROUNDS_PER_LEVEL
+  const totalInLevel = level.characterCount
 
   useEffect(() => {
     if (done) setLevelPraise(pickOne(correctInLevel / totalInLevel >= 0.6 ? PRAISE_GOOD : PRAISE_OK))
@@ -271,8 +274,8 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   }, [done])
 
   // Timed study reveal + early-continue escape hatch — same shape as
-  // QuienEsQuien.tsx, re-armed whenever levelIdx OR roundIdx changes (a new
-  // round means a freshly-introduced character set to study).
+  // QuienEsQuien.tsx, re-armed on every level change and on "Repetir" (both
+  // bring a fresh set of people to study).
   const autoTimerRef = useRef<number | undefined>(undefined)
   useEffect(() => {
     const floorTimer = window.setTimeout(() => setCanContinueEarly(true), level.minEarlySeconds * 1000)
@@ -282,26 +285,15 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
       window.clearTimeout(floorTimer)
       window.clearTimeout(autoTimer)
     }
-  }, [levelIdx, roundIdx, roundKey, level.minEarlySeconds, level.studySeconds])
+  }, [levelIdx, roundKey, level.minEarlySeconds, level.studySeconds])
 
-  // After a correct tap: either move to the next phrase, or — if that was the
-  // round's last phrase and another round remains in this level — go straight
-  // into the next round's study phase. Both branches reset every per-question
-  // piece of state together so nothing stale leaks into the new question (the
-  // round-transition branch resetting phraseIdx back to 0 is the part that is
-  // easy to forget, since the OTHER branch is the one that increments it).
+  // After a correct tap, move on to the next phrase (after the last one, that
+  // is the level card) once the green check has shown for a moment, resetting
+  // every per-question piece of state together so nothing stale leaks into
+  // the next question.
   function advanceToNext() {
-    const isLastPhraseOfRound = phraseIdx + 1 >= epochRound.phraseOrder.length
-    const hasNextRound = roundIdx < ROUNDS_PER_LEVEL - 1
     window.setTimeout(() => {
-      if (isLastPhraseOfRound && hasNextRound) {
-        setRoundIdx((r) => r + 1)
-        setPhase('study')
-        setCanContinueEarly(false)
-        setPhraseIdx(0)
-      } else {
-        setPhraseIdx((i) => i + 1)
-      }
+      setPhraseIdx((i) => i + 1)
       setEliminated(new Set())
       setSolved(false)
       setHint(null)
@@ -331,7 +323,6 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   // ElVuelto.tsx.
   function nextLevel() {
     setLevelIdx((i) => i + 1)
-    setRoundIdx(0)
     setPhase('study')
     setCanContinueEarly(false)
     setPhraseIdx(0)
@@ -344,12 +335,13 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
   // Only reachable from the FINAL level's completion card — a genuine day
   // restart, same idea as QuienEsQuien.tsx's restartEpoch(): back to level 1,
   // mistakes zeroed, and a bumped roundKey so the reportedRoundKeyRef guard
-  // below lets onComplete fire again. epochLevels itself is never touched —
-  // same characters, same phrase order as the very first run, because content
-  // is fixed, not sampled, so "Repetir" must reproduce it exactly.
+  // below lets onComplete fire again. It also bumps playthrough, which swaps
+  // every level to its other character set so the replay asks about new
+  // people; epochLevels itself is never touched, so each set keeps the order
+  // it got at mount.
   function replay() {
     setLevelIdx(0)
-    setRoundIdx(0)
+    setPlaythrough((p) => p + 1)
     setPhase('study')
     setCanContinueEarly(false)
     setPhraseIdx(0)
@@ -383,12 +375,10 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
         {phase === 'study' && (
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Conocé a esta gente</h2>
-            <p className="mt-2 text-base text-slate-500">
-              Ronda {roundIdx + 1} de {ROUNDS_PER_LEVEL} — después te voy a preguntar quién dijo cada frase.
-            </p>
+            <p className="mt-2 text-base text-slate-500">Después te voy a preguntar quién dijo cada frase.</p>
             <div className="mx-auto mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
               <div
-                key={`${levelIdx}-${roundIdx}-${roundKey}`}
+                key={`${levelIdx}-${roundKey}`}
                 className="study-progress-fill h-full rounded-full bg-tiam-green"
                 style={{ animationDuration: `${level.studySeconds}s` }}
               />
