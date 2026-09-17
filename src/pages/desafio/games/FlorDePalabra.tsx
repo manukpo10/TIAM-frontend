@@ -6,7 +6,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * "Flor de palabra" — día 1, lenguaje. A ring of 5-7 letters (a "flower")
  * around a centre hub, and a clue with one empty box per letter of the word
  * it describes. Tapping ring letters fills the boxes; once they're full,
- * "Listo" checks the word. The round ends once every clued word is found.
+ * "Listo" checks the word. A level ends once every clued word is found.
  *
  * CLUES, NOT AN OPEN SEARCH. The paper original asks for any word you can
  * spell from the ring, and the first version of this game did the same over
@@ -49,10 +49,11 @@ interface WordSet {
 interface Level {
   n: number
   name: string
-  /** Exactly 2 rounds per level (house spec) — always both played, in order,
-   * no pool to draw from. That is also why the day's final replay button can
-   * honestly say "Repetir" instead of "Otras letras": there is nothing else
-   * to resample, the content is fixed. */
+  /** One round per level, two authored word sets. The day's first play uses
+   * sets[0] at every level and each "Otras palabras" restart switches to the
+   * other set, so a replay never asks for the words just found. Both sets of
+   * a level ask for the same number of words, so the star maths doesn't
+   * depend on which one was played. */
   sets: [WordSet, WordSet]
 }
 
@@ -132,10 +133,11 @@ const LEVELS: Level[] = [
     ],
   },
 ]
-// Every round always resolves (the player must find every clued word to clear
+// Every level always resolves (the player must find every clued word to clear
 // it), so — same fixed-sum reasoning as ArmaLasPalabras' TOTAL_WORDS — the
-// success total is this constant, not a runtime counter.
-const TOTAL_WORDS = LEVELS.reduce((sum, l) => sum + l.sets.reduce((s, set) => s + set.words.length, 0), 0)
+// success total is this constant, not a runtime counter. sets[0] stands for
+// both sets of its level, which always ask for the same number of words.
+const TOTAL_WORDS = LEVELS.reduce((sum, l) => sum + l.sets[0].words.length, 0)
 
 // Distance (px) from the ring's centre to each letter tile's centre. Chosen
 // against the SMALLEST container size below (h-56/w-56 = 224px, 112px
@@ -164,16 +166,15 @@ const NUDGES_REPEAT = ['Esa ya la encontraste. Probá otra.', 'Ya la tenés. Bus
 
 export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
-  const [setIdx, setSetIdx] = useState<0 | 1>(0)
-  // Epoch counter (house pattern). Unlike ArmaLasPalabras' epochChoices —
-  // which randomly draws ONE word-set per level from a pool — there is no
-  // pool here to draw from; letters and words are fixed per level+round. So
-  // roundKey doesn't pick content, it only (a) reshuffles the ring's ON-SCREEN
-  // letter order for visual freshness on "Repetir", and (b) gates the
-  // onComplete guard below so a genuine day restart can report again.
+  // Which of each level's two word sets this playthrough uses — bumped only
+  // by the day restart, see Level.sets.
+  const [playthrough, setPlaythrough] = useState(0)
+  // Epoch counter (house pattern): reshuffles the ring's on-screen letter
+  // order on every level change and restart, and gates the onComplete guard
+  // below so a genuine day restart can report again.
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
-  const wordSet = level.sets[setIdx]
+  const wordSet = level.sets[playthrough % level.sets.length]
   const target = wordSet.words.length
 
   // Index permutation, not the letters themselves — keeps `building` (which
@@ -182,7 +183,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   const ringOrder = useMemo(
     () => shuffle(wordSet.letters.map((_, i) => i)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, setIdx, roundKey],
+    [levelIdx, playthrough, roundKey],
   )
 
   const [building, setBuilding] = useState<number[]>([]) // indices into wordSet.letters, tap order
@@ -199,9 +200,8 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
 
   const consumed = new Set(building) // letters already used by the word being built — cheap, no memo needed
   const roundDone = found.length >= target
-  const isLastRound = setIdx === 1
   const isLastLevel = levelIdx === LEVELS.length - 1
-  const dayDone = roundDone && isLastRound && isLastLevel
+  const dayDone = roundDone && isLastLevel
 
   let currentClue: ClueWord | null = null
   for (let k = 0; k < target; k++) {
@@ -266,22 +266,12 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   }
 
   // Resets happen HERE, synchronously with the transition, never in an effect
-  // keyed on levelIdx/setIdx — an effect lags one render behind, so
-  // `roundDone` (derived straight from `found`) would read the previous
-  // round's stale-true value on the very render that arrives at the new round
-  // and fire onComplete with garbage. Same reasoning as SumaHastaDiez.tsx and
-  // ArmaLasPalabras.tsx.
-  function nextRound() {
-    setSetIdx(1)
-    setBuilding([])
-    setFound([])
-    setClueIdx(0)
-    setHint(null)
-    setCorrectWord(null)
-  }
+  // keyed on levelIdx — an effect lags one render behind, so `roundDone`
+  // (derived straight from `found`) would read the previous level's stale-true
+  // value on the very render that arrives at the new level and fire onComplete
+  // with garbage. Same reasoning as SumaHastaDiez.tsx and ArmaLasPalabras.tsx.
   function nextLevel() {
     setLevelIdx((i) => i + 1)
-    setSetIdx(0)
     setRoundKey((k) => k + 1)
     setBuilding([])
     setFound([])
@@ -291,7 +281,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
   }
   function replayDay() {
     setLevelIdx(0)
-    setSetIdx(0)
+    setPlaythrough((p) => p + 1)
     setRoundKey((k) => k + 1)
     setBuilding([])
     setFound([])
@@ -301,7 +291,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
     setMistakes(0) // only zeroed here — the genuine day restart
   }
 
-  // Fires once per roundKey when the last round of the last level finishes. A
+  // Fires once per roundKey when the last level finishes. A
   // genuine day restart (replayDay) bumps roundKey, so it can report again;
   // re-rendering while already done cannot fire twice.
   const reportedRoundKeyRef = useRef<number | null>(null)
@@ -324,7 +314,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Formá la palabra de la pista</h2>
             <p className="mt-1 text-base font-semibold text-slate-500">
-              Ronda {setIdx + 1} de 2 · Llevás {found.length} de {target}
+              Llevás {found.length} de {target}
             </p>
           </>
         )}
@@ -462,7 +452,7 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
         </>
       )}
 
-      {/* Ronda / nivel / día completo */}
+      {/* Nivel / día completo */}
       {roundDone && (
         <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
@@ -471,22 +461,19 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
           <p className="mt-1 text-slate-600">
             Encontraste las {target} palabras: {found.join(', ')}.
-            {isLastRound && isLastLevel && ' ¡Completaste los 3 niveles de hoy!'}
-            {isLastRound && !isLastLevel && ` ¡Completaste el ${level.name.toLowerCase()}!`}
-            {!isLastRound && ' Vas por la mitad — seguí con la segunda ronda.'}
+            {isLastLevel ? ' ¡Completaste los 3 niveles de hoy!' : ` ¡Completaste el ${level.name.toLowerCase()}!`}
           </p>
           <div className="mt-5 flex justify-center">
-            {!isLastRound && (
+            {isLastLevel ? (
               <button
                 type="button"
-                onClick={nextRound}
+                onClick={replayDay}
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
-                Siguiente ronda
-                <ArrowRight className="h-4 w-4" />
+                <RotateCcw className="h-4 w-4" />
+                Otras palabras
               </button>
-            )}
-            {isLastRound && !isLastLevel && (
+            ) : (
               <button
                 type="button"
                 onClick={nextLevel}
@@ -494,16 +481,6 @@ export function FlorDePalabra({ day: _day, onComplete }: GameProps) {
               >
                 Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
-              </button>
-            )}
-            {isLastRound && isLastLevel && (
-              <button
-                type="button"
-                onClick={replayDay}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Repetir
               </button>
             )}
           </div>
