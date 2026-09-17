@@ -12,12 +12,25 @@ import type { GameProps } from '@/lib/challengeProgress'
  * DECIDABLE-FROM-THE-DRAWING RULE: every clue is checkable by looking ONLY
  * at what's drawn — the number badge on each figure, and its height
  * relative to the others (never a pixel-judgement call: heights step by a
- * fixed 15px per rank, see heightPx() below, so "más alto/más bajo" is
+ * fixed amount per rank, see heightPx() below, so "más alto/más bajo" is
  * unmistakable at 375px), plus, when present, one accessory. Position
  * words always resolve against the visible number badge ("número par",
  * "número 1", "último lugar"), never against an ambiguous "left/right"
- * reading. Every figure is drawn in the SAME neutral colour on purpose —
- * colour carries no meaning here, so it can never be mistaken for a clue.
+ * reading. Clothes colours vary but no clue ever mentions a colour.
+ *
+ * THE FIGURES ARE ILLUSTRATIONS (Flux, same flat line-art style as the
+ * quien-lo-dijo portraits), one per figure, standing and cropped from the
+ * top of the head (or hat) to the shoes, so scaling an image to
+ * heightPx(rank) makes the drawn person that tall. Three things keep them
+ * honest to the clues: each illustration carries exactly the accessory its
+ * data says and no other (generated with every other accessory in the
+ * negative prompt); a hat adds height above the head, so hatted figures get
+ * HAT_ALLOWANCE (both are the tallest of their group, so erring high can
+ * only make the tallest look taller); and "anteojos" became "bufanda",
+ * because glasses on a full-body figure this size are too small to see.
+ * Each illustration also shows the gender of the name that solves its
+ * position — a figure called Rosa can't look like a man — which makes some
+ * placements quicker without changing the one solution.
  *
  * UNIQUENESS INVARIANT: each puzzle's clue set was authored against a
  * fixed (figures, solution) pair and proven — by a throwaway brute-force
@@ -47,11 +60,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * only the wrong names return to the bank). No timers.
  */
 
-type Accessory = 'hat' | 'glasses' | 'bag'
+type Accessory = 'hat' | 'scarf' | 'bag'
 
 interface Figure {
   heightRank: number
   accessory?: Accessory
+  /** File name (without .webp) in assets/desafio/games/quien-es-cada-uno. */
+  art: string
 }
 
 interface Puzzle {
@@ -78,12 +93,12 @@ const LEVELS: Level[] = [
     headCount: 3,
     pool: [
       {
-        figures: [{ heightRank: 2 }, { heightRank: 3 }, { heightRank: 1 }],
+        figures: [{ heightRank: 2, art: 'l1p1-1' }, { heightRank: 3, art: 'l1p1-2' }, { heightRank: 1, art: 'l1p1-3' }],
         names: ['Juan', 'Alberto', 'Rosa'],
         clues: ['Juan está en el número 1.', 'Alberto es el más alto de los tres.', 'Rosa es la más baja de los tres.'],
       },
       {
-        figures: [{ heightRank: 1 }, { heightRank: 3 }, { heightRank: 2 }],
+        figures: [{ heightRank: 1, art: 'l1p2-1' }, { heightRank: 3, art: 'l1p2-2' }, { heightRank: 2, art: 'l1p2-3' }],
         names: ['Carmen', 'Enrique', 'Miguel'],
         clues: [
           'Carmen es la más baja de los tres.',
@@ -99,7 +114,7 @@ const LEVELS: Level[] = [
     headCount: 4,
     pool: [
       {
-        figures: [{ heightRank: 3 }, { heightRank: 1 }, { heightRank: 4, accessory: 'hat' }, { heightRank: 2 }],
+        figures: [{ heightRank: 3, art: 'l2p1-1' }, { heightRank: 1, art: 'l2p1-2' }, { heightRank: 4, accessory: 'hat', art: 'l2p1-3' }, { heightRank: 2, art: 'l2p1-4' }],
         names: ['Pedro', 'Lucía', 'Roberto', 'Susana'],
         clues: [
           'Pedro está en un número impar.',
@@ -109,13 +124,13 @@ const LEVELS: Level[] = [
         ],
       },
       {
-        figures: [{ heightRank: 2 }, { heightRank: 4 }, { heightRank: 1 }, { heightRank: 3, accessory: 'glasses' }],
+        figures: [{ heightRank: 2, art: 'l2p2-1' }, { heightRank: 4, art: 'l2p2-2' }, { heightRank: 1, art: 'l2p2-3' }, { heightRank: 3, accessory: 'scarf', art: 'l2p2-4' }],
         names: ['Marta', 'Oscar', 'Beatriz', 'Juan'],
         clues: [
           'Marta está en un número impar.',
           'Oscar es el más alto del grupo.',
           'Beatriz es la más baja del grupo.',
-          'Juan es el que usa anteojos.',
+          'Juan es el que usa bufanda.',
         ],
       },
     ],
@@ -127,11 +142,11 @@ const LEVELS: Level[] = [
     pool: [
       {
         figures: [
-          { heightRank: 3 },
-          { heightRank: 5, accessory: 'hat' },
-          { heightRank: 1 },
-          { heightRank: 4 },
-          { heightRank: 2 },
+          { heightRank: 3, art: 'l3p1-1' },
+          { heightRank: 5, accessory: 'hat', art: 'l3p1-2' },
+          { heightRank: 1, art: 'l3p1-3' },
+          { heightRank: 4, art: 'l3p1-4' },
+          { heightRank: 2, art: 'l3p1-5' },
         ],
         names: ['Alberto', 'Elena', 'Silvia', 'Ricardo', 'Teresa'],
         clues: [
@@ -143,11 +158,11 @@ const LEVELS: Level[] = [
       },
       {
         figures: [
-          { heightRank: 4 },
-          { heightRank: 2 },
-          { heightRank: 5 },
-          { heightRank: 1, accessory: 'bag' },
-          { heightRank: 3 },
+          { heightRank: 4, art: 'l3p2-1' },
+          { heightRank: 2, art: 'l3p2-2' },
+          { heightRank: 5, art: 'l3p2-3' },
+          { heightRank: 1, accessory: 'bag', art: 'l3p2-4' },
+          { heightRank: 3, art: 'l3p2-5' },
         ],
         names: ['Roberto', 'María', 'Carlos', 'Rosa', 'Hugo'],
         clues: [
@@ -175,7 +190,7 @@ const FIGURES_GRID_CLASS: Record<number, string> = {
 
 const ACCESSORY_LABEL: Record<Accessory, string> = {
   hat: 'con sombrero',
-  glasses: 'con anteojos',
+  scarf: 'con bufanda',
   bag: 'con bolso',
 }
 
@@ -205,11 +220,28 @@ function shuffleAwayFromSolution(names: string[]): string[] {
   return order
 }
 
-// Fixed 15px step per height rank — a gap wide enough that "más alto/más
-// bajo" reads as obvious rather than a judgement call, even at the
-// smallest column width (see the file's width arithmetic in the report).
+// Fixed step per height rank — a gap wide enough that "más alto/más bajo"
+// reads as obvious rather than a judgement call. Sized so the widest
+// illustration still fits a level-3 column (5 across at 375px) without
+// being shrunk, which would silently change its apparent height.
+const HEIGHT_BASE_PX = 72
+const HEIGHT_STEP_PX = 18
 function heightPx(rank: number): number {
-  return 42 + (rank - 1) * 15
+  return HEIGHT_BASE_PX + (rank - 1) * HEIGHT_STEP_PX
+}
+
+// A hat sits above the head, so a hatted figure is drawn taller by this
+// factor and its body still measures heightPx(rank). Both hats in the data
+// belong to the tallest figure of their group, so erring high can only make
+// the tallest look taller — it never flips an order.
+const HAT_ALLOWANCE = 1.16
+
+const FIGURE_ART = import.meta.glob('../../../assets/desafio/games/quien-es-cada-uno/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function artFor(id: string): string | undefined {
+  return Object.entries(FIGURE_ART).find(([path]) => path.endsWith(`/${id}.webp`))?.[1]
 }
 
 function heightDescription(rank: number, maxRank: number): string {
@@ -224,34 +256,13 @@ function figureAriaLabel(position: number, figure: Figure, maxRank: number): str
   return `Figura número ${position}, ${heightDescription(figure.heightRank, maxRank)}${accessoryDesc}`
 }
 
-const FIGURE_WIDTH = 30
+function figureDrawHeight(figure: Figure): number {
+  return Math.round(heightPx(figure.heightRank) * (figure.accessory === 'hat' ? HAT_ALLOWANCE : 1))
+}
 
-/** Simple warm silhouette — head + one elongated pill body whose length IS
- * the height signal. Deliberately the same fill on every figure (colour
- * carries no clue), with the accessory as the only optional extra mark. */
-function PersonFigure({ heightRank, accessory }: { heightRank: number; accessory?: Accessory }) {
-  const h = heightPx(heightRank)
-  const bodyHeight = h - 23
-  return (
-    <svg width={FIGURE_WIDTH} height={h} viewBox={`0 0 ${FIGURE_WIDTH} ${h}`} aria-hidden="true">
-      {accessory === 'hat' && <polygon points="8,9 15,1 22,9" className="fill-tiam-orange" />}
-      <circle cx={15} cy={16} r={7} className="fill-slate-500" />
-      {accessory === 'glasses' && (
-        <>
-          <circle cx={11} cy={16} r={2.4} className="fill-slate-800" />
-          <circle cx={19} cy={16} r={2.4} className="fill-slate-800" />
-          <rect x={13.2} y={15} width={3.6} height={1.4} className="fill-slate-800" />
-        </>
-      )}
-      <rect x={6} y={23} width={18} height={bodyHeight} rx={9} className="fill-slate-500" />
-      {accessory === 'bag' && (
-        <>
-          <line x1={16} y1={24} x2={27} y2={33} className="stroke-slate-400" strokeWidth={1.5} />
-          <rect x={23} y={32} width={7} height={9} rx={1.5} className="fill-tiam-green" />
-        </>
-      )}
-    </svg>
-  )
+/** The illustration, scaled so its height IS the height signal. */
+function PersonFigure({ figure }: { figure: Figure }) {
+  return <img src={artFor(figure.art)} alt="" style={{ height: figureDrawHeight(figure) }} className="w-auto max-w-none" />
 }
 
 export function QuienEsCadaUno({ day: _day, onComplete }: GameProps) {
@@ -265,7 +276,7 @@ export function QuienEsCadaUno({ day: _day, onComplete }: GameProps) {
   // advance and day restart, so those land on varying puzzles too.
   const puzzle = level.pool[roundKey % level.pool.length]
   const bankOrder = useMemo(() => shuffleAwayFromSolution(puzzle.names), [puzzle])
-  const maxFigureHeight = heightPx(level.headCount)
+  const maxFigureHeight = Math.max(...puzzle.figures.map(figureDrawHeight))
 
   const [placements, setPlacements] = useState<(string | null)[]>(() => Array(LEVELS[0].headCount).fill(null))
   const [selectedName, setSelectedName] = useState<string | null>(null)
@@ -406,7 +417,7 @@ export function QuienEsCadaUno({ day: _day, onComplete }: GameProps) {
                 {position + 1}
               </span>
               <div className="flex items-end justify-center" style={{ height: maxFigureHeight }}>
-                <PersonFigure heightRank={figure.heightRank} accessory={figure.accessory} />
+                <PersonFigure figure={figure} />
               </div>
               <span
                 className={[
