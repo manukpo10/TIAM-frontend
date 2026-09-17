@@ -36,6 +36,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  *    shapes now come up on "Repetir" instead, and two consecutive
  *    attempts never repeat a level's drawing.
  *
+ * HOW-TO SCREEN FIRST. The rule — each operation's result is that dot's
+ * place in the order — isn't obvious from the board alone, so the day opens
+ * on a short explanation: numbered steps plus a worked example (three
+ * operations and the order their results give). It shows once per opening of
+ * the day, like the "¿Listo?" screens of ClaveDeSimbolos / CalculoEnCuadro;
+ * "Repetir" goes straight back to the dots.
+ *
  * Difficulty ramps by dot count AND operator set: L1 (7 dots) only uses
  * +/−; L2 (10 dots) adds ×; L3 (12 dots) adds ÷. The brief suggested L3
  * could run up to 15 dots — reduced to 12 here and said so in the report:
@@ -314,11 +321,80 @@ const DOT_CLASS: Record<number, string> = {
   3: 'min-h-11 px-1.5 text-xs',
 }
 
+// Worked example for the how-to screen, written with the same − sign the
+// dots use. Results 1, 2, 3 are the tapping order.
+const HOW_TO_EXAMPLE = [
+  { expression: '3 − 2', result: 1 },
+  { expression: '1 + 1', result: 2 },
+  { expression: '5 − 2', result: 3 },
+]
+
+function HowToPlay({ onStart }: { onStart: () => void }) {
+  // Kept short on purpose: the whole screen, "Empezar" included, has to fit a
+  // phone without scrolling.
+  const steps = [
+    'Cada punto tiene una cuenta.',
+    'Hacé la cuenta: el resultado dice en qué orden va el punto.',
+    'Tocá primero el que da 1, después el que da 2, y así hasta el final.',
+    'Al unir todos los puntos, aparece un dibujo.',
+  ]
+  return (
+    <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-5 sm:p-6">
+      <p className="text-center text-xl font-bold text-slate-900">¿Cómo se juega?</p>
+
+      <ol className="mt-4 space-y-3">
+        {steps.map((step, i) => (
+          <li key={i} className="flex items-start gap-3 text-base leading-snug text-slate-700">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-sm font-bold text-white">
+              {i + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-4 rounded-2xl bg-white p-3">
+        <p className="text-center text-sm font-semibold text-slate-500">Por ejemplo:</p>
+        <div className="mt-2 flex items-start justify-center gap-2">
+          {HOW_TO_EXAMPLE.map((example, i) => (
+            <div key={example.expression} className="flex items-start gap-2">
+              {i > 0 && <ArrowRight className="mt-3.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />}
+              <div className="flex flex-col items-center gap-1">
+                <span className="flex min-h-11 items-center rounded-2xl border-2 border-slate-200 bg-white px-2.5 text-base font-bold text-slate-700">
+                  {example.expression}
+                </span>
+                <span className="text-sm font-semibold text-tiam-blue">da {example.result}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-center text-sm text-slate-500">Se tocan en ese orden: 1, 2, 3.</p>
+      </div>
+
+      <p className="mt-4 text-center text-base text-slate-600">Si tocás uno que no es, no pasa nada: probá con otro.</p>
+
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={onStart}
+          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+        >
+          Empezar
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen cálculo!', '¡Perfecto dibujo!']
 
 export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // How-to screen, once per opening of the day (see the file header) —
+  // "Repetir" never sets it back.
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   // Each level's first shape — random once per mount, so the day doesn't
   // always open on the same drawings.
   const [startShapes] = useState(() => LEVELS.map((level) => Math.floor(Math.random() * SHAPES[level.n].length)))
@@ -401,6 +477,19 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
   const trail = dots.slice(0, foundCount)
   const trailStr = trail.map((p) => `${p.x},${p.y}`).join(' ')
   const closedTrailStr = done && dots.length > 0 ? `${trailStr} ${dots[0].x},${dots[0].y}` : trailStr
+
+  if (phase === 'ready') {
+    return (
+      <div className="px-5 pb-5 pt-4 sm:p-7">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
+            {level.name}
+          </span>
+        </div>
+        <HowToPlay onStart={() => setPhase('playing')} />
+      </div>
+    )
+  }
 
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
