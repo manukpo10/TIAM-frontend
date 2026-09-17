@@ -29,7 +29,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  *      pool with no repeated letters (LetrasRevueltas' own file header
  *      explains why its word pairs were hand-picked to avoid repeats, for
  *      this same reason). A category word pool can't make that promise —
- *      BANANA, ELEFANTE, MANZANA, GUANABANA etc. all repeat a letter, and a
+ *      BANANA, ELEFANTE, MANZANA, FRAMBUESA etc. all repeat a letter, and a
  *      real category vocabulary means accepting that. So correctness here
  *      is checked the same way QuePalabraSeEsconde checks it: comparing the
  *      SPELLED STRING to the answer, never tile identity — the "other"
@@ -113,18 +113,20 @@ const CATEGORIES: Record<CategoryId, CategoryDef> = {
     wordsByLevel: [
       ['PERA', 'MELON', 'LIMON', 'MANGO', 'COCO', 'KIWI', 'DATIL', 'ANANA'],
       [
-        'NARANJA', 'CEREZA', 'SANDIA', 'DURAZNO', 'BANANA', 'CIRUELA',
-        'GRANADA', 'MANZANA', 'TORONJA', 'POMELO', 'DAMASCO', 'PAPAYA',
+        'CEREZA', 'SANDIA', 'DURAZNO', 'BANANA', 'CIRUELA',
+        'GRANADA', 'MANZANA', 'POMELO', 'DAMASCO', 'PAPAYA',
       ],
-      ['FRUTILLA', 'MEMBRILLO', 'MANDARINA', 'ARANDANO', 'MARACUYA', 'GUANABANA'],
+      ['FRUTILLA', 'MEMBRILLO', 'MANDARINA', 'ARANDANO', 'MARACUYA', 'FRAMBUESA'],
     ],
   },
   colores: {
     heading: 'COLORES',
     wordsByLevel: [
       ['ROJO', 'AZUL', 'VERDE', 'NEGRO', 'GRIS', 'ROSA', 'LILA', 'BEIGE', 'BORDO', 'OCRE'],
-      ['BLANCO', 'MARRON', 'VIOLETA', 'CELESTE', 'DORADO', 'MORADO', 'PURPURA'],
-      ['AMARILLO', 'ANARANJADO', 'TURQUESA', 'PLATEADO', 'GRISACEO', 'VIOLACEO'],
+      ['BLANCO', 'MARRON', 'DORADO', 'MORADO', 'PURPURA', 'ROSADO'],
+      // NARANJA, VIOLETA and CELESTE are 7 letters, one short of the L3 band,
+      // on purpose: easy color names beat a strict length ramp here.
+      ['AMARILLO', 'TURQUESA', 'PLATEADO', 'NARANJA', 'VIOLETA', 'CELESTE'],
     ],
   },
   ropa: {
@@ -139,7 +141,7 @@ const CATEGORIES: Record<CategoryId, CategoryDef> = {
     heading: 'COSAS DE LA COCINA',
     wordsByLevel: [
       ['OLLA', 'TAZA', 'PLATO', 'VASO', 'JARRA', 'MOLDE', 'TABLA', 'PAVA'],
-      ['CUCHARA', 'SARTEN', 'TENEDOR', 'FUENTE', 'BATIDOR', 'COLADOR', 'MORTERO', 'ASADERA'],
+      ['CUCHARA', 'SARTEN', 'TENEDOR', 'SALERO', 'BATIDOR', 'COLADOR', 'MORTERO', 'ASADERA'],
       ['CUCHILLO', 'ESPATULA', 'RALLADOR', 'HELADERA', 'LICUADORA', 'TOSTADORA', 'CAFETERA'],
     ],
   },
