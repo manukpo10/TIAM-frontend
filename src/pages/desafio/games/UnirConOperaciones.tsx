@@ -21,8 +21,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  *    procedural star-polygon. An arithmetic result-sequence can't be
  *    "rotated" for freshness the way UniendoPuntos' star can (rotating a
  *    hand-drawn house would just scatter its dots without changing the
- *    operations), so variety instead comes from picking 2 of each level's 3
- *    shapes per attempt and re-rolling every dot's operands each time.
+ *    operations), so variety instead comes from moving through each
+ *    level's 3 shapes, one per attempt, and re-rolling every dot's operands
+ *    each time.
  *  - Dots show a full EXPRESSION ("24 ÷ 8"), not a bare digit/letter, so
  *    they render as small rounded chips sized to fit that text rather than
  *    perfect circles.
@@ -30,9 +31,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  *    fill — instead of being swapped out for a text-only completion card.
  *    The reveal IS this game's payoff, so hiding it the instant it appears
  *    (as UniendoPuntos does) would undercut the whole point.
- *  - Adds a "rounds per level" tier UniendoPuntos doesn't have: each of the
- *    3 levels is played twice (2 different shapes) before advancing, so one
- *    full attempt draws 6 pictures, not 3.
+ *  - One drawing per level. The first version played each level twice (two
+ *    shapes back to back), and one per level proved enough; the other
+ *    shapes now come up on "Otros dibujos" instead, and two consecutive
+ *    attempts never repeat a level's drawing.
  *
  * Difficulty ramps by dot count AND operator set: L1 (7 dots) only uses
  * +/−; L2 (10 dots) adds ×; L3 (12 dots) adds ÷. The brief suggested L3
@@ -52,8 +54,6 @@ interface Level {
   ops: Op[]
 }
 
-const ROUNDS_PER_LEVEL = 2
-
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', dotCount: 7, ops: ['+', '−'] },
   { n: 2, name: 'Nivel 2', dotCount: 10, ops: ['+', '−', '×'] },
@@ -61,10 +61,10 @@ const LEVELS: Level[] = [
 ]
 
 // Fixed across the whole catalog's onComplete contract: mistakes plus every
-// dot in the attempt (3 levels × 2 rounds each), never a running tally —
-// every shape below has exactly its level's dotCount, so this is a
-// compile-time constant, not something that needs to be counted at runtime.
-const TOTAL_DOTS = LEVELS.reduce((sum, lvl) => sum + lvl.dotCount, 0) * ROUNDS_PER_LEVEL
+// dot in the attempt (one drawing per level), never a running tally — every
+// shape below has exactly its level's dotCount, so this is a compile-time
+// constant, not something that needs to be counted at runtime.
+const TOTAL_DOTS = LEVELS.reduce((sum, lvl) => sum + lvl.dotCount, 0)
 
 interface Point {
   x: number
@@ -298,12 +298,13 @@ function buildDots(level: Level, shape: Point[]): Dot[] {
   return shape.map((p, i) => ({ x: p.x, y: p.y, expression: exprFor(i + 1, level.ops) }))
 }
 
-// One full attempt: for every level, pick 2 of its 3 shapes (so a replay's
-// two rounds never repeat a drawing) and generate fresh operations for each.
-function buildEpoch(): Stage[][] {
-  return LEVELS.map((level) => {
-    const shapeIndices = shuffle([0, 1, 2]).slice(0, ROUNDS_PER_LEVEL)
-    return shapeIndices.map((idx) => ({ dots: buildDots(level, SHAPES[level.n][idx]) }))
+// One full attempt: one shape per level, with fresh operations. `attempt`
+// walks each level's shapes in order from that level's starting shape, so two
+// consecutive attempts never draw the same picture at the same level.
+function buildEpoch(startShapes: number[], attempt: number): Stage[] {
+  return LEVELS.map((level, li) => {
+    const shapes = SHAPES[level.n]
+    return { dots: buildDots(level, shapes[(startShapes[li] + attempt) % shapes.length]) }
   })
 }
 
@@ -317,26 +318,28 @@ const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Qué buen c
 
 export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
-  const [roundInLevel, setRoundInLevel] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
+  // Each level's first shape — random once per mount, so the day doesn't
+  // always open on the same drawings.
+  const [startShapes] = useState(() => LEVELS.map((level) => Math.floor(Math.random() * SHAPES[level.n].length)))
 
   // Regenerated only on a genuine restart (roundKey bump) — moving between
-  // rounds/levels within the same attempt reuses this same plan, same
-  // reasoning as UniendoPuntos' epochPoints.
-  const epoch = useMemo(() => buildEpoch(), [roundKey])
+  // levels within the same attempt reuses this same plan, same reasoning as
+  // UniendoPuntos' epochPoints.
+  const epoch = useMemo(() => buildEpoch(startShapes, roundKey), [startShapes, roundKey])
   const level = LEVELS[levelIdx]
-  const dots = epoch[levelIdx][roundInLevel].dots
+  const dots = epoch[levelIdx].dots
 
   const [foundCount, setFoundCount] = useState(0)
   const [wrongIdx, setWrongIdx] = useState<number | null>(null)
   const [wrongHint, setWrongHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
-  // Accumulates across every round of every level, zeroed only on a genuine
-  // restart (restartEpoch) — never just by advancing to the next drawing.
+  // Accumulates across every level, zeroed only on a genuine restart
+  // (restartEpoch) — never just by advancing to the next level.
   const [mistakes, setMistakes] = useState(0)
 
   const done = foundCount >= dots.length
-  const isFinalStage = levelIdx === LEVELS.length - 1 && roundInLevel === ROUNDS_PER_LEVEL - 1
+  const isFinalStage = levelIdx === LEVELS.length - 1
 
   useEffect(() => {
     if (done) setPraise(pickOne(PRAISE))
@@ -363,27 +366,21 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
   }
 
   // Resets happen synchronously HERE, in the same handler that changes
-  // levelIdx/roundInLevel/roundKey — never in a useEffect keyed on them. An
+  // levelIdx/roundKey — never in a useEffect keyed on them. An
   // effect lags one render behind, so `done` (derived straight from
   // foundCount) would read the previous stage's stale-true value on the very
   // render that arrives at the new stage and fire onComplete with garbage —
   // same hazard already fixed this way across every other game here.
   function advanceStage() {
-    if (roundInLevel < ROUNDS_PER_LEVEL - 1) {
-      setRoundInLevel((r) => r + 1)
-    } else {
-      setLevelIdx((i) => i + 1)
-      setRoundInLevel(0)
-    }
+    setLevelIdx((i) => i + 1)
     setFoundCount(0)
     setWrongIdx(null)
     setWrongHint(null)
   }
-  // "Repetir" — the only true restart: back to level 1 round 1, mistakes
-  // cleared, and a fresh shape pick + fresh operations for the whole attempt.
+  // "Otros dibujos" — the only true restart: back to level 1, mistakes
+  // cleared, and the next shape + fresh operations at every level.
   function restartEpoch() {
     setLevelIdx(0)
-    setRoundInLevel(0)
     setFoundCount(0)
     setWrongIdx(null)
     setWrongHint(null)
@@ -391,8 +388,7 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
     setRoundKey((k) => k + 1)
   }
 
-  // Fires once per roundKey, only once the very last round of the very last
-  // level is solved.
+  // Fires once per roundKey, only once the last level's drawing is solved.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
     if (done && isFinalStage && reportedRoundKeyRef.current !== roundKey) {
@@ -400,9 +396,7 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
       onComplete({ mistakes, totalAttempts: mistakes + TOTAL_DOTS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done, levelIdx, roundInLevel, roundKey])
-
-  const nextLabel = roundInLevel < ROUNDS_PER_LEVEL - 1 ? 'Siguiente dibujo' : 'Siguiente nivel'
+  }, [done, levelIdx, roundKey])
 
   const trail = dots.slice(0, foundCount)
   const trailStr = trail.map((p) => `${p.x},${p.y}`).join(' ')
@@ -416,9 +410,6 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
           {level.name}
         </span>
         <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Uní los puntos según el resultado</h2>
-        <p className="mt-1 text-sm font-semibold text-slate-400">
-          Dibujo {roundInLevel + 1} de {ROUNDS_PER_LEVEL}
-        </p>
       </div>
 
       {!done && (
@@ -517,7 +508,7 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
                 onClick={advanceStage}
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
-                {nextLabel}
+                Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
@@ -529,7 +520,7 @@ export function UnirConOperaciones({ day: _day, onComplete }: GameProps) {
                 className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
               >
                 <RotateCcw className="h-4 w-4" />
-                Repetir
+                Otros dibujos
               </button>
             </div>
           )}
