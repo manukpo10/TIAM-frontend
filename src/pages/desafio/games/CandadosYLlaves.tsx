@@ -4,50 +4,43 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Candados y llaves" — visuospatial matching, área orientación. Adapted from
- * a paper exercise: padlocks each showing a keyhole silhouette, and a pile of
- * loose keys; work out which key opens which lock. The touch version shows
- * ONE padlock and 4 keys per round — tap the key whose teeth match the
- * keyhole.
+ * a paper exercise: padlocks each showing a keyhole, and a pile of loose keys;
+ * work out which key opens which lock. The touch version shows ONE padlock and
+ * 4 keys per round — tap the key that fits.
  *
- * Shape model: a key's bit is an array of 4 tooth heights, each 0-3 (e.g.
- * [2, 0, 3, 1]) — see `ToothPattern`. The keyhole is drawn from the exact
- * same kind of array, just through a different container/fill: `ToothRow`
- * renders both, called once from `KeySvg` (solid teeth hanging off a shaft)
- * and once from `PadlockSvg` (notches hanging into a dark channel, same
- * positions). "Matches" is therefore literal array equality in code — the
- * correct option's `pattern` IS the round's `target` — never a pixel or
- * visual computation. This is a schematic, not a photo-real lock: the goal
- * is reading instantly at 375px wide, not physical plausibility.
+ * THE KEY IS THE INVERSE OF THE LOCK. A key's bit is an array of 4 tooth
+ * heights, each 0-3 (e.g. [2, 0, 3, 1]) — see `ToothPattern`. The padlock does
+ * not repeat that shape: its channel shows PINS rising from the floor, each
+ * one exactly as tall as the room the matching tooth leaves (`pinLength`), so
+ * a long tooth sits over a short pin and a short tooth over a tall one. The
+ * first version drew the lock with the same teeth as the key, which turned
+ * the round into "find the identical key" — not how a key fits a lock. In
+ * code the correct option's `pattern` is still the round's `target` (literal
+ * array equality, never a pixel computation); only the drawing inverts it.
+ * When the right key is tapped its teeth are drawn inside the padlock's
+ * channel, so the player sees it fit.
  *
  * Decoy construction (by construction, never generate-and-retry):
  * `ditherAt(base, positions)` copies `base` and forces a DIFFERENT height at
- * every index in `positions`, so the result's Hamming distance from `base`
- * is EXACTLY `positions.length` — never more (untouched teeth are copied
- * verbatim) and never less (every touched tooth is forced away from its
- * original value). Two decoys built from DIFFERENT position-sets against the
- * same base can therefore never collide: take any index where the two sets
- * disagree and exactly one decoy keeps the base's original value there. That
- * single fact is what lets every level below sample position-sets WITHOUT
- * replacement from `combinations(k)` and end up with 4 pairwise-distinct
- * options, with zero runtime collision checks anywhere in this file:
+ * every index in `positions`, so the result's Hamming distance from `base` is
+ * EXACTLY `positions.length`. Two decoys built from DIFFERENT position-sets
+ * against the same base can therefore never collide: take any index where the
+ * two sets disagree and exactly one decoy keeps the base's original value
+ * there. That is what lets every level sample position-sets WITHOUT
+ * replacement from `combinations(k)`:
  *   - L1: 3 decoys, each changing 3 of the 4 teeth — obviously wrong.
- *   - L2: 3 decoys, each changing exactly 2 teeth — needs a real look.
- *   - L3: 2 decoys changing exactly 1 tooth (the closest a wrong key can
- *     get) plus the classic trap — the target's own teeth, reversed. The
- *     reversed decoy can never collide with the target OR the two 1-tooth
- *     decoys: `makeBasePattern` always forces tooth 0 and the last tooth
- *     apart, which is enough on its own to guarantee the array is never a
- *     palindrome (a palindrome needs EVERY mirrored pair to match, so
- *     breaking just the outer one already breaks it) — so reversing the
- *     array always flips BOTH of those positions at once, while a genuine
- *     1-tooth decoy, by construction, only ever flips ONE. Two patterns that
- *     differ from the target in a different number of positions can't be
- *     equal to each other, so all 4 options stay distinct no matter which
- *     single tooth the other two decoys happened to change.
+ *   - L2: 2 decoys changing exactly 2 teeth, plus the trap: the key that
+ *     looks the SAME as the lock (`sameAsLock`, every tooth h → 3 − h).
+ *   - L3: 2 decoys changing exactly 1 tooth, plus the same trap.
+ * The trap differs from the target in all 4 teeth (h and 3 − h are never
+ * equal for whole heights), and every other decoy in its round differs in 1
+ * or 2, so all 4 options stay distinct: two patterns that differ from the
+ * target in a different number of positions can't be equal to each other.
  */
 
 const TOOTH_COUNT = 4
 const HEIGHTS: number[] = [0, 1, 2, 3]
+const MAX_HEIGHT = 3
 
 type ToothPattern = number[]
 
@@ -65,13 +58,32 @@ function toothLength(height: number): number {
   return TOOTH_BASE_PX + height * TOOTH_STEP_PX
 }
 
+// The padlock's keyway: teeth come down from the ceiling (y = 0), pins rise
+// from the floor, and a matching pair leaves a small gap between them.
+const CHANNEL_DEPTH = 28
+const FIT_GAP = 2
+
+// The pin under tooth `height`: the tallest tooth (22) gets the shortest pin
+// (4) and the shortest tooth (4) the tallest pin (22) — the same lengths in
+// reverse, which is exactly what makes the lock the key's inverse.
+function pinLength(height: number): number {
+  return CHANNEL_DEPTH - FIT_GAP - toothLength(height)
+}
+
+// The key whose teeth look identical to the lock's pins: toothLength(3 − h)
+// equals pinLength(h) for every height.
+function sameAsLock(pattern: ToothPattern): ToothPattern {
+  return pattern.map((h) => MAX_HEIGHT - h)
+}
+
 // Flat hex fills reusing the brand tokens from index.css's @theme block —
 // same hardcode-with-comment convention EncontraLaFiguraIgual/ElReloj use,
 // since an SVG `fill` needs a literal color, not a Tailwind class.
 const KEY_COLOR = '#1B6FC4' // tiam-blue
 const LOCK_BODY_COLOR = '#15436F' // tiam-blue-dark
 const LOCK_SHACKLE_COLOR = '#5A6B82' // tiam-gray
-const LOCK_SLOT_COLOR = '#0f172a' // slate-900 — recessed channel, dark enough that KEY_COLOR notches read clearly against it
+const LOCK_SLOT_COLOR = '#0f172a' // slate-900 — recessed channel
+const LOCK_PIN_COLOR = '#CBD5E1' // slate-300 — light against the dark channel, and never mistaken for a blue key tooth
 
 function ToothRow({ pattern, fill, top }: { pattern: ToothPattern; fill: string; top: number }) {
   return (
@@ -111,8 +123,9 @@ function KeySvg({ pattern }: { pattern: ToothPattern }) {
 
 // viewBox is taller than wide (shackle sits above the body), which fits the
 // target box's aspect-square shape the same way EncontraLaFiguraIgual's
-// target shape does.
-function PadlockSvg({ pattern }: { pattern: ToothPattern }) {
+// target shape does. `pattern` is the KEY that opens it: the lock draws the
+// pins that pattern needs, and `fitted` also draws the key's teeth in place.
+function PadlockSvg({ pattern, fitted }: { pattern: ToothPattern; fitted: boolean }) {
   return (
     <svg viewBox="-18 -36 66 78" className="h-full w-full" aria-hidden="true">
       {/* shackle */}
@@ -126,12 +139,21 @@ function PadlockSvg({ pattern }: { pattern: ToothPattern }) {
       {/* body */}
       <rect x="-14" y="-6" width="58" height="44" rx="10" fill={LOCK_BODY_COLOR} />
       {/* keyway channel */}
-      <rect x="-4" y="0" width="36" height="28" rx="4" fill={LOCK_SLOT_COLOR} />
-      {/* the required profile — same ToothRow as KeySvg, anchored at the
-          channel's ceiling (top=0) instead of a shaft's underside, so it
-          reads as notches hanging DOWN into the slot rather than teeth
-          hanging off a blade. Same array, same positions, different frame. */}
-      <ToothRow pattern={pattern} fill={KEY_COLOR} top={0} />
+      <rect x="-4" y="0" width="36" height={CHANNEL_DEPTH} rx="4" fill={LOCK_SLOT_COLOR} />
+      {/* pins, rising from the channel floor */}
+      {pattern.map((h, i) => (
+        <rect
+          key={i}
+          x={TOOTH_X[i] - TOOTH_WIDTH / 2}
+          y={CHANNEL_DEPTH - pinLength(h)}
+          width={TOOTH_WIDTH}
+          height={pinLength(h)}
+          rx={2}
+          fill={LOCK_PIN_COLOR}
+        />
+      ))}
+      {/* the right key's teeth, dropped in from the top once it's found */}
+      {fitted && <ToothRow pattern={pattern} fill={KEY_COLOR} top={0} />}
     </svg>
   )
 }
@@ -140,6 +162,8 @@ interface KeyOption {
   key: string
   pattern: ToothPattern
   correct: boolean
+  /** The trap key that looks identical to the lock (see the file header). */
+  sameAsLock: boolean
 }
 interface Round {
   target: ToothPattern
@@ -149,28 +173,27 @@ interface Level {
   n: number
   name: string
   rounds: number
-  hint?: string
+  hint: string
 }
 
 const LEVELS: Level[] = [
   {
     n: 1,
-    // No `hint`: at level 1 there's nothing to add the heading doesn't
-    // already say — same call EncontraLaFiguraIgual makes for its L1.
     name: 'Nivel 1',
     rounds: 3,
+    hint: 'La llave que abre es la inversa del candado: donde el candado es alto, la llave es corta.',
   },
   {
     n: 2,
     name: 'Nivel 2',
     rounds: 4,
-    hint: 'Ahora las llaves se parecen más — mirá diente por diente.',
+    hint: 'Cuidado: una de las llaves es igual al candado, y esa no entra.',
   },
   {
     n: 3,
     name: 'Nivel 3',
     rounds: 5,
-    hint: 'Ojo: una llave tiene los mismos dientes pero al revés. Esa no abre.',
+    hint: 'Ahora las llaves cambian de a un diente — mirá bien cada uno.',
   },
 ]
 
@@ -219,9 +242,8 @@ function ditherAt(pattern: ToothPattern, positions: number[]): ToothPattern {
   return next
 }
 
-// The round's correct pattern. Forcing tooth 0 and the last tooth apart is
-// enough to guarantee the array is never a palindrome (see file header) —
-// that's what keeps the L3 reversed decoy always distinct from the answer.
+// The round's correct key. The first and last teeth are forced apart so no
+// lock comes out flat (four pins of the same height give nothing to read).
 function makeBasePattern(): ToothPattern {
   const first = pickOne(HEIGHTS)
   const last = pickOne(HEIGHTS.filter((h) => h !== first))
@@ -233,41 +255,43 @@ function makeRound(levelIdx: number): Round {
   const target = makeBasePattern()
 
   let decoyPatterns: ToothPattern[]
+  let trap: ToothPattern | null = null
   if (levelIdx === 0) {
     // L1 — obviously wrong: 3 decoys, each built from a distinct 3-position
     // subset (4 possible, sampled without replacement), so each changes 3 of
     // the 4 teeth.
     const sets = shuffle(combinations(3)).slice(0, 3)
     decoyPatterns = sets.map((positions) => ditherAt(target, positions))
-  } else if (levelIdx === 1) {
-    // L2 — decoys differ in exactly 2 teeth: 3 distinct 2-position subsets
-    // out of the 6 possible.
-    const sets = shuffle(combinations(2)).slice(0, 3)
-    decoyPatterns = sets.map((positions) => ditherAt(target, positions))
   } else {
-    // L3 — the hard level. Two decoys change exactly ONE tooth (2 of the 4
-    // single-position subsets). The third is the reversed target — see the
-    // file header for why it can never equal the target or either 1-tooth decoy.
-    const sets = shuffle(combinations(1)).slice(0, 2)
-    const oneToothDecoys = sets.map((positions) => ditherAt(target, positions))
-    decoyPatterns = [...oneToothDecoys, [...target].reverse()]
+    // L2 changes 2 teeth, L3 only 1; both add the key that looks like the
+    // lock. See the file header for why the four options never collide.
+    const changed = levelIdx === 1 ? 2 : 1
+    const sets = shuffle(combinations(changed)).slice(0, 2)
+    decoyPatterns = sets.map((positions) => ditherAt(target, positions))
+    trap = sameAsLock(target)
   }
 
-  const correct: KeyOption = { key: target.join('-'), pattern: target, correct: true }
-  const decoys: KeyOption[] = decoyPatterns.map((pattern) => ({
+  const toOption = (pattern: ToothPattern, correct: boolean, isTrap: boolean): KeyOption => ({
     key: pattern.join('-'),
     pattern,
-    correct: false,
-  }))
-  return { target, options: shuffle([correct, ...decoys]) }
+    correct,
+    sameAsLock: isTrap,
+  })
+  const options = [
+    toOption(target, true, false),
+    ...decoyPatterns.map((pattern) => toOption(pattern, false, false)),
+    ...(trap ? [toOption(trap, false, true)] : []),
+  ]
+  return { target, options: shuffle(options) }
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!']
 const HINTS = [
   'Esa llave no entra — probá con otra.',
-  'Casi. Comparala diente por diente con el candado.',
-  'No es esa — fijate bien en la altura de cada diente.',
+  'Casi. Donde el candado es alto, la llave tiene que ser corta.',
+  'No es esa — buscá la llave que llena los huecos del candado.',
 ]
+const SAME_AS_LOCK_HINT = 'Esa es igual al candado, por eso no entra. Buscá la que es al revés.'
 
 export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
@@ -312,7 +336,7 @@ export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
     }
     setEliminated((prev) => new Set(prev).add(option.key))
     setMistakes((m) => m + 1)
-    setHint(pickOne(HINTS))
+    setHint(option.sameAsLock ? SAME_AS_LOCK_HINT : pickOne(HINTS))
   }
 
   // Resets happen HERE, synchronously with the level/round change, not in a
@@ -354,8 +378,8 @@ export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
         </span>
         {!done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tocá la llave que abre el candado</h2>
-            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tocá la llave que encaja en el candado</h2>
+            <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>
@@ -384,7 +408,7 @@ export function CandadosYLlaves({ day: _day, onComplete }: GameProps) {
               get — the two things the player has to compare were rendering at
               very different scales. Sizing up restores rough parity. */}
           <div className="relative mx-auto mt-3 aspect-square w-32 overflow-hidden rounded-3xl border-2 border-slate-100 bg-white p-1 sm:mt-6 sm:w-40 sm:p-2">
-            <PadlockSvg pattern={round.target} />
+            <PadlockSvg pattern={round.target} fitted={resolved} />
           </div>
 
           {/* Keys */}

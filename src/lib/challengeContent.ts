@@ -396,7 +396,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 11, type: 'game', area: 'calculo', title: 'Telaraña matemática',
     instructions: 'Un juego de cálculo: tenés un número de partida y una operación atrás de otra. Hacé la cuenta y tocá a dónde te lleva cada paso; si querés, usá lápiz y papel. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'game', area: 'orientacion', title: 'Candados y llaves',
-    instructions: 'Un juego visoespacial: mirá la forma de la cerradura y tocá cuál de las llaves encaja. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego visoespacial: mirá la cerradura y tocá la llave que encaja. La llave es al revés del candado: donde el candado es alto, la llave es corta. Subís de dificultad a medida que avanzás.' },
   { day: 13, type: 'game', area: 'lenguaje', title: 'Anagramas por categoría',
     instructions: 'Un juego de lenguaje: te damos una categoría y tres palabras con las letras revueltas. Tocá una, acomodá sus letras y seguí con la siguiente. Subís de dificultad a medida que avanzás.' },
   { day: 14, type: 'game', area: 'atencion', title: 'El color de la palabra',
