@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Check } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "¿Quién lo dijo?" — día 15 (Mes 2), memoria. Source memory: remembering not
- * just WHAT was said but WHO said it — a purer test of source attribution than
- * QuienEsQuien.tsx's face↔name recognition, because the test phase gives no
- * visual cue at all (no faces, no photos) and the sentence can't be matched by
- * looking at anything — the only way to answer is to have bound the phrase to
- * its speaker during study.
+ * "¿Quién lo dijo?" — día 15, memoria. Source memory: remembering not just
+ * WHAT was said but WHO said it — a purer test of source attribution than
+ * QuienEsQuien.tsx's face↔name recognition. Every character has an illustrated
+ * portrait (Flux-generated, same flat line-art style as the quien-es-quien
+ * faces), shown on the study cards and next to each name in the test phase.
+ * The portraits are NEUTRAL on purpose: no tools, plants, instruments or team
+ * colors, nothing that hints at what the person does. The phrases are about
+ * exactly that, so a portrait with a prop would let the player match the
+ * sentence to the picture instead of remembering — the only way to answer is
+ * still to have bound the phrase to its speaker during study.
  *
  * The paper exercise this is loosely inspired by attributes famous quotations
  * to historical figures. That is deliberately NOT what got built here: quote
@@ -69,6 +73,14 @@ interface Level {
   studySeconds: number
   minEarlySeconds: number
   rounds: RoundContent[]
+}
+
+const PORTRAITS = import.meta.glob('../../../assets/desafio/games/quien-lo-dijo/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>
+function portraitFor(id: string): string | undefined {
+  return Object.entries(PORTRAITS).find(([path]) => path.endsWith(`/${id}.webp`))?.[1]
 }
 
 const ROUNDS_PER_LEVEL = 2
@@ -402,13 +414,16 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
         )}
       </div>
 
-      {/* Study phase: character cards — typography only, no photos (see module doc) */}
+      {/* Study phase: character cards — neutral portrait + name + fact (see module doc) */}
       {phase === 'study' && (
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {epochRound.characters.map((c) => (
-            <div key={c.id} className="rounded-2xl border-2 border-slate-100 bg-white p-4">
-              <p className="text-lg font-bold text-slate-900">{c.name}</p>
-              <p className="mt-1 text-base text-slate-500">{c.fact}</p>
+            <div key={c.id} className="flex items-center gap-3 rounded-2xl border-2 border-slate-100 bg-white p-3">
+              <img src={portraitFor(c.id)} alt="" className="h-16 w-16 shrink-0 rounded-full bg-slate-50" />
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-slate-900">{c.name}</p>
+                <p className="mt-0.5 text-base leading-snug text-slate-500">{c.fact}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -440,6 +455,7 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
           <div className="mx-auto mt-5 flex max-w-sm flex-col gap-2.5">
             {epochRound.optionOrder.map((c) => {
               const isEliminated = eliminated.has(c.id)
+              const isCorrectShown = solved && c.id === currentPhrase.characterId
               return (
                 <button
                   key={c.id}
@@ -447,14 +463,26 @@ export function QuienLoDijo({ day: _day, onComplete }: GameProps) {
                   disabled={isEliminated || solved}
                   onClick={() => guess(c.id)}
                   className={[
-                    'min-h-[52px] rounded-2xl border-2 text-lg font-bold transition',
+                    'flex min-h-[56px] items-center gap-3 rounded-2xl border-2 px-3 py-1.5 text-left text-lg font-bold transition',
                     'focus:outline-none focus:ring-2 focus:ring-tiam-green/40',
-                    isEliminated
-                      ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
-                      : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-green/40 hover:shadow-md active:translate-y-0',
+                    isCorrectShown
+                      ? 'border-tiam-green bg-tiam-green/10 text-slate-900 ring-2 ring-tiam-green/30'
+                      : isEliminated
+                        ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
+                        : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-green/40 hover:shadow-md active:translate-y-0',
                   ].join(' ')}
                 >
-                  {c.name}
+                  <img
+                    src={portraitFor(c.id)}
+                    alt=""
+                    className={['h-11 w-11 shrink-0 rounded-full bg-slate-50', isEliminated ? 'opacity-40 grayscale' : ''].join(' ')}
+                  />
+                  <span className="flex-1">{c.name}</span>
+                  {isCorrectShown && (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-green text-white motion-safe:animate-[pop_0.3s_ease-out]">
+                      <Check className="h-4 w-4" strokeWidth={3} />
+                    </span>
+                  )}
                 </button>
               )
             })}
