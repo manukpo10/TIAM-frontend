@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RotateCcw, ArrowRight, Sparkles, Search } from 'lucide-react'
+import { RotateCcw, ArrowRight, Sparkles, Search, Hand } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -434,7 +434,8 @@ export function SopaDeMesesYDias({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">¿Listo?</p>
           <p className="mt-1 text-slate-600">
-            Buscá en la grilla las palabras de la lista de abajo. Tocá la primera letra, arrastrá hasta la última y soltá.
+            Buscá en la grilla las palabras de la lista de abajo. Apoyá el dedo en la primera letra de la palabra,
+            deslizalo sin levantarlo hasta la última y recién ahí soltá.
           </p>
           <button
             type="button"
@@ -478,6 +479,13 @@ export function SopaDeMesesYDias({ day: _day, onComplete }: GameProps) {
               )
             })}
           </div>
+
+          {/* Recordatorio fijo del gesto: la pantalla previa se ve una sola vez
+              por día y el arrastre no es obvio en un celular. */}
+          <p className="mx-auto mt-2 flex max-w-xs items-center justify-center gap-1.5 text-sm font-medium text-slate-500">
+            <Hand className="h-4 w-4 shrink-0" />
+            Deslizá el dedo de la primera letra a la última.
+          </p>
 
           <div className="mx-auto mt-3 flex max-w-xs flex-wrap justify-center gap-2">
             {level.words.map((w) => {

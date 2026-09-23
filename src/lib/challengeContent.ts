@@ -382,7 +382,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 4, type: 'game', area: 'praxias', title: 'Unir con operaciones',
     instructions: 'Un juego visoespacial y de cálculo: cada punto tiene una cuenta. Resolvelas y tocalos en orden, del uno en adelante, hasta que aparezca el dibujo. Subís de dificultad a medida que avanzás.' },
   { day: 5, type: 'game', area: 'atencion', title: 'Sopa de meses y días',
-    instructions: 'Un juego de atención: en la sopa de letras están escondidos los meses del año y los días de la semana. Tocá y arrastrá sobre las letras para encontrarlos. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de atención: en la sopa de letras están escondidos los meses del año y los días de la semana. Para marcar cada palabra, apoyá el dedo en su primera letra y deslizalo sin levantarlo hasta la última. Subís de dificultad a medida que avanzás.' },
   { day: 6, type: 'game', area: 'ejecutivas', title: '¿Cuál es cuál?',
     instructions: 'Un juego de asociación: hay dos columnas de palabras que van de a pares. Tocá una de cada lado para unirlas. Subís de dificultad a medida que avanzás.' },
   { day: 7, type: 'game', area: 'lenguaje', title: 'El refrán escondido',
