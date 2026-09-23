@@ -121,6 +121,19 @@ function shuffle<T>(arr: T[]): T[] {
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
+/** A shuffle of `pairs` in which no pair keeps the row it holds in
+ * `reference` — i.e. the right column never shows a pair's partner at the
+ * same height as the pair itself. A clean draw comes up roughly a third of
+ * the time for these round sizes, so the retry loop ends in a couple of
+ * passes; the fallback shifts `reference` by one row, which cannot collide
+ * because the ids are unique. */
+function shuffleOffRows(pairs: Pair[], reference: Pair[]): Pair[] {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const candidate = shuffle(pairs)
+    if (candidate.every((pair, i) => pair.id !== reference[i].id)) return candidate
+  }
+  return reference.map((_, i) => reference[(i + 1) % reference.length])
+}
 
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!']
 const HINTS = [
@@ -135,17 +148,21 @@ export function CualEsCual({ day: _day, onComplete }: GameProps) {
   const level = LEVELS[levelIdx]
 
   // The SET of pairs per level is fixed content (see LEVELS above) — only
-  // the on-screen ORDER is reshuffled per level and restart, independently for
-  // each column so a pair's left and right item never land in the same row.
+  // the on-screen ORDER is reshuffled per level and restart. Shuffling both
+  // columns independently was not enough: with four pairs, a pair landing on
+  // the same row as its partner happens more often than not, and a row that
+  // lines up gives the answer away without reading the words at all. The
+  // right column is now drawn AGAINST the left one, so no pair ever shares a
+  // row.
   const leftOrder = useMemo(
     () => shuffle(level.pairs),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [levelIdx, roundKey],
   )
   const rightOrder = useMemo(
-    () => shuffle(level.pairs),
+    () => shuffleOffRows(level.pairs, leftOrder),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey],
+    [levelIdx, roundKey, leftOrder],
   )
 
   const [matched, setMatched] = useState<Set<string>>(new Set())
