@@ -181,8 +181,9 @@ export function TalleresPage() {
             </h2>
             <div className="space-y-4 text-slate-600 leading-relaxed">
               <p>
-                Todo arrancó en un taller real. Desde principios de 2024, una terapeuta ocupacional
-                coordina encuentros de estimulación cognitiva para adultos mayores en La Plata: trabajo
+                Todo arrancó en un taller real. Desde principios de 2024, una tallerista cognitiva y
+                acompañante terapéutica coordina encuentros de estimulación cognitiva para adultos
+                mayores en La Plata: trabajo
                 de memoria, atención, funciones ejecutivas y, sobre todo, integración social.
               </p>
               <p>
