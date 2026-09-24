@@ -94,7 +94,7 @@ import { SumaHastaDiez } from './SumaHastaDiez'
 import { UnirConOperaciones } from './UnirConOperaciones'
 import { SopaDeMesesYDias } from './SopaDeMesesYDias'
 import { CualEsCual } from './CualEsCual'
-import { ElRefranEscondido } from './ElRefranEscondido'
+import { DetectivesDelParque } from './DetectivesDelParque'
 import { CalculoMental } from './CalculoMental'
 import { TiraElDado } from './TiraElDado'
 import { LetrasPerdidas } from './LetrasPerdidas'
@@ -245,7 +245,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     4: UnirConOperaciones,
     5: SopaDeMesesYDias,
     6: CualEsCual,
-    7: ElRefranEscondido,
+    7: DetectivesDelParque,
     8: CalculoMental,
     9: TiraElDado,
     10: LetrasPerdidas,
