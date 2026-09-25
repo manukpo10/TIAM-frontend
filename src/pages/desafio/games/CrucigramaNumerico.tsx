@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -510,9 +510,18 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
 
       {!levelDone && (
         <>
+          <p className="mx-auto mt-4 max-w-xs text-center text-sm text-slate-500">
+            Fijate en las flechas: <ArrowRight className="inline h-3.5 w-3.5 -translate-y-0.5 text-cyan-600" strokeWidth={3} aria-hidden="true" /> la cuenta va hacia la derecha, <ArrowDown className="inline h-3.5 w-3.5 -translate-y-0.5 text-cyan-600" strokeWidth={3} aria-hidden="true" /> hacia abajo.
+          </p>
+
           {/* Grilla — huella fija 5×5 (ver comentario de archivo), tamaño de
               celda fijo en rem para que los cruces alineen pixel a pixel sin
-              depender de cómo reparte el ancho `1fr`. */}
+              depender de cómo reparte el ancho `1fr`. Cada celda donde
+              arranca una ecuación (la (0,0) de la raíz, y la celda de cruce
+              de cada pata) lleva una flechita de dirección — sin eso, la
+              forma en cruz no deja claro qué grupo de celdas se lee para la
+              derecha y cuál para abajo, sobre todo en las celdas de cruce que
+              pertenecen a dos ecuaciones a la vez. */}
           <div className="mx-auto mt-5 w-fit rounded-3xl bg-slate-50 p-3">
             <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(5, 3.5rem)', gridTemplateRows: 'repeat(5, 3.5rem)' }}>
               {Object.values(board.cells).map((cell) => {
@@ -526,15 +535,54 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
                   )
                 }
 
+                // La raíz siempre arranca en (0,0) y se lee hacia la derecha;
+                // cada pata arranca en la celda de cruce de su columna (fila
+                // 0) y se lee hacia abajo — son hechos de la FORMA del
+                // tablero (ver buildShape), no de si la celda está en blanco,
+                // así que valen para las dos variantes de celda de abajo. Si
+                // una pata cuelga de la columna 0, esa celda es a la vez
+                // arranque de la raíz Y de esa pata — las dos flechitas
+                // conviven en esquinas distintas.
+                const startsRoot = cell.row === 0 && cell.col === 0
+                const startsLeg = cell.row === 0 && level.legCols.includes(cell.col)
+                const directionBadges = (
+                  <>
+                    {startsRoot && (
+                      <span
+                        className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-600 text-white shadow"
+                        aria-hidden="true"
+                      >
+                        <ArrowRight className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                    )}
+                    {startsLeg && (
+                      <span
+                        className="absolute -bottom-1.5 -left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-600 text-white shadow"
+                        aria-hidden="true"
+                      >
+                        <ArrowDown className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                    )}
+                  </>
+                )
+                const directionHint = startsRoot && startsLeg
+                  ? ', acá arrancan una cuenta hacia la derecha y otra hacia abajo'
+                  : startsRoot
+                    ? ', acá arranca la cuenta hacia la derecha'
+                    : startsLeg
+                      ? ', acá arranca una cuenta hacia abajo'
+                      : ''
+
                 const isBlank = board.blankKeys.includes(cell.key)
                 if (!isBlank) {
                   return (
                     <div
                       key={cell.key}
                       style={style}
-                      className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white text-lg font-extrabold text-slate-700"
+                      className="relative flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-slate-200 bg-white text-lg font-extrabold text-slate-700"
                     >
                       {cell.value}
+                      {directionBadges}
                     </div>
                   )
                 }
@@ -549,7 +597,7 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
                     type="button"
                     style={style}
                     onClick={() => selectCell(cell.key)}
-                    aria-label={cell.role === 'op' ? 'signo, celda vacía' : `número de ${cell.digits} cifras, celda vacía`}
+                    aria-label={(cell.role === 'op' ? 'signo, celda vacía' : `número de ${cell.digits} cifras, celda vacía`) + directionHint}
                     aria-pressed={isFocused}
                     className={[
                       'relative flex h-14 w-14 items-center justify-center rounded-2xl border-2 bg-white text-lg font-extrabold transition',
@@ -564,6 +612,7 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
                     ].join(' ')}
                   >
                     {display}
+                    {directionBadges}
                     {solved && (
                       <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow">
                         <Check className="h-3 w-3" strokeWidth={3} />
