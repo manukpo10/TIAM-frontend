@@ -88,11 +88,20 @@ interface Level {
  * from the whole pool independently, and ALEGRIA would show up in level 1 and
  * again in level 2 four rounds later, which reads as a bug even though both
  * rounds were internally fine.
+ *
+ * `blanks` is set to exactly `minLen - 2` for every level — the most holes
+ * `buildRounds`'s own `word.length - 2` floor (see its comment) allows the
+ * SHORTEST word in that level's range to take, so every round in a level
+ * hides the same number of letters no matter which word gets picked, never
+ * fewer just because a shorter word came up. Raised from 2/3/4 after the
+ * original counts played too easy: with only the first letter and the
+ * category clue, one or two more visible letters was often enough to read
+ * the whole word off the shape alone.
  */
 const LEVELS: Level[] = [
-  { n: 1, name: 'Nivel 1', blanks: 2, minLen: 5, maxLen: 7, decoys: 0, categories: [byLabel('colores'), byLabel('frutas')] },
-  { n: 2, name: 'Nivel 2', blanks: 3, minLen: 6, maxLen: 8, decoys: 0, categories: [byLabel('animales'), byLabel('partes del cuerpo')] },
-  { n: 3, name: 'Nivel 3', blanks: 4, minLen: 7, maxLen: 9, decoys: 2, categories: [byLabel('emociones'), byLabel('oficios')] },
+  { n: 1, name: 'Nivel 1', blanks: 3, minLen: 5, maxLen: 7, decoys: 0, categories: [byLabel('colores'), byLabel('frutas')] },
+  { n: 2, name: 'Nivel 2', blanks: 4, minLen: 6, maxLen: 8, decoys: 0, categories: [byLabel('animales'), byLabel('partes del cuerpo')] },
+  { n: 3, name: 'Nivel 3', blanks: 5, minLen: 7, maxLen: 9, decoys: 2, categories: [byLabel('emociones'), byLabel('oficios')] },
 ]
 
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.categories.length, 0)
