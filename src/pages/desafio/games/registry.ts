@@ -110,13 +110,13 @@ import { TelaranaMatematica } from './TelaranaMatematica'
 import { QuienLoDijo } from './QuienLoDijo'
 import { LeerYResponder } from './LeerYResponder'
 import { LaberintoDeMultiplicaciones } from './LaberintoDeMultiplicaciones'
-import { CarasYEmociones } from './CarasYEmociones'
 import { BanderasYSaludos } from './BanderasYSaludos'
 import { LasDiferencias } from './LasDiferencias'
 import { AnagramasPorCategoria } from './AnagramasPorCategoria'
 import { CandadosYLlaves } from './CandadosYLlaves'
 import { PuestoDeComida } from './PuestoDeComida'
 import { AViajar } from './AViajar'
+import { LosVecinos } from './LosVecinos'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -264,7 +264,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     23: LasDiferencias,
     24: AViajar,
     25: CuantoSuma,
-    26: CarasYEmociones,
+    26: LosVecinos,
     27: BanderasYSaludos,
     28: LeerYResponder,
     29: CasasDelBarrio,
