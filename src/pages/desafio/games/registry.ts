@@ -116,7 +116,7 @@ import { LasDiferencias } from './LasDiferencias'
 import { AnagramasPorCategoria } from './AnagramasPorCategoria'
 import { CandadosYLlaves } from './CandadosYLlaves'
 import { PuestoDeComida } from './PuestoDeComida'
-import { ComoSeLlamaba } from './ComoSeLlamaba'
+import { AViajar } from './AViajar'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -262,7 +262,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     21: PuestoDeComida,
     22: ArbolGenealogico,
     23: LasDiferencias,
-    24: ComoSeLlamaba,
+    24: AViajar,
     25: CuantoSuma,
     26: CarasYEmociones,
     27: BanderasYSaludos,
