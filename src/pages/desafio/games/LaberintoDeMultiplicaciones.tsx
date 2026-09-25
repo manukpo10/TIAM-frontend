@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { Check, RotateCcw, ArrowRight, Sparkles, Pencil } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -41,6 +41,17 @@ import type { GameProps } from '@/lib/challengeProgress'
  * step (see `tap()`). A wrong-but-legal detour only costs a couple of extra
  * taps, never the round — only an actually illegal tap (wrong direction, or
  * not a bigger result) counts as a mistake.
+ *
+ * HOW-TO SCREEN FIRST. The rule sounds simple in one line ("un resultado más
+ * grande") but hides two things a player has to notice on their own: every
+ * cell shows an EXPRESSION, never the number itself, and "más grande" means
+ * the CELL'S OWN PRODUCT, not the digits printed on it — someone who doesn't
+ * catch both gets stuck comparing "4 × 5" to "2 × 9" as if they were meant to
+ * be read literally. So the day opens on a worked example (mirrors
+ * TelaranaMatematica.tsx's HowToPlay: numbered steps, then a small mock grid
+ * that reuses the exact cell markup the real board uses) before the first
+ * real cell is ever shown — same `phase: 'ready' | 'playing'` pattern,
+ * "Repetir" never sets it back.
  */
 
 interface Level {
@@ -185,7 +196,96 @@ const NOT_GREATER_HINTS = [
 const STUCK_HINT = 'No te queda ningún paso válido desde acá. Tocá la celda anterior para volver.'
 const PRAISE = ['¡Muy bien!', '¡Excelente camino!', '¡Así se hace!', '¡Perfecto recorrido!']
 
+/** One cell of the worked example, drawn with the SAME markup as the real
+ * board (rounded card, `N × M`, the same current/visited/plain states) so
+ * recognizing a cell in the actual game means recognizing this screen. */
+function ExampleCell({ a, b, state }: { a: number; b: number; state: 'current' | 'valid' | 'invalid' }) {
+  return (
+    <div
+      className={[
+        'relative flex h-14 w-16 shrink-0 items-center justify-center rounded-2xl border-2 text-base font-extrabold',
+        state === 'current'
+          ? 'border-tiam-blue bg-tiam-blue/5 text-slate-700 ring-2 ring-tiam-blue/30'
+          : state === 'valid'
+            ? 'border-tiam-green bg-tiam-green/10 text-slate-700 ring-2 ring-tiam-green/30'
+            : 'border-slate-200 bg-slate-50 text-slate-400',
+      ].join(' ')}
+    >
+      {a} × {b}
+      {state === 'valid' && (
+        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow">
+          <Check className="h-3 w-3" strokeWidth={3} />
+        </span>
+      )}
+    </div>
+  )
+}
+
+function HowToPlay({ onStart }: { onStart: () => void }) {
+  const steps = [
+    'Empezás en la celda de arriba a la izquierda y tenés que llegar hasta la de abajo a la derecha.',
+    'En cada celda hay una multiplicación, no el resultado — la cuenta la hacés vos.',
+    'Desde tu celda sólo podés avanzar a la de la derecha o a la de abajo, y tiene que dar un resultado más grande que el de tu celda.',
+  ]
+  return (
+    <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-5 sm:p-6">
+      <p className="text-center text-xl font-bold text-slate-900">¿Cómo se juega?</p>
+
+      <ol className="mt-4 space-y-3">
+        {steps.map((step, i) => (
+          <li key={i} className="flex items-start gap-3 text-base leading-snug text-slate-700">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-sm font-bold text-white">
+              {i + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-4 rounded-2xl bg-white p-3">
+        <p className="text-center text-sm font-semibold text-slate-500">Por ejemplo, parado acá (3 × 2 da 6):</p>
+        {/* Same right/down layout as the real board: the current cell top-left,
+            its right neighbour beside it, its down neighbour below it — so
+            "a la derecha" / "de abajo" in the steps above map onto an actual
+            position here, not just isolated example cells. */}
+        <div className="mt-3 grid grid-cols-2 items-start justify-items-center gap-x-4 gap-y-2">
+          <ExampleCell a={3} b={2} state="current" />
+          <ExampleCell a={4} b={3} state="valid" />
+          <p className="max-w-[6.5rem] text-center text-xs leading-snug text-slate-500">Empezás acá</p>
+          <p className="max-w-[6.5rem] text-center text-xs leading-snug text-slate-500">
+            A la derecha: 4 × 3 da 12 — más grande, se puede avanzar ahí
+          </p>
+          <ExampleCell a={2} b={2} state="invalid" />
+          <span />
+          <p className="max-w-[6.5rem] text-center text-xs leading-snug text-slate-500">
+            Abajo: 2 × 2 da 4 — no es más grande, no sirve
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-tiam-blue/15 bg-white p-3">
+        <Pencil className="mt-0.5 h-5 w-5 shrink-0 text-tiam-blue" aria-hidden="true" />
+        <p className="text-base leading-snug text-slate-700">Tené a mano lápiz y papel: podés anotar las cuentas si te ayuda.</p>
+      </div>
+
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={onStart}
+          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+        >
+          Empezar
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function LaberintoDeMultiplicaciones({ day: _day, onComplete }: GameProps) {
+  // How-to screen, once per opening of the day — "Repetir" never sets it
+  // back, same convention as TelaranaMatematica.tsx.
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   // Built once at mount ("epoch" pattern, same as CalculoEnCuadro) so
@@ -266,6 +366,19 @@ export function LaberintoDeMultiplicaciones({ day: _day, onComplete }: GameProps
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, levelIdx, roundKey])
+
+  if (phase === 'ready') {
+    return (
+      <div className="px-5 pb-5 pt-4 sm:p-7">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
+            {level.name}
+          </span>
+        </div>
+        <HowToPlay onStart={() => setPhase('playing')} />
+      </div>
+    )
+  }
 
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
