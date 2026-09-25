@@ -1,6 +1,6 @@
 import type { Exercise, PagedResponse, User, Subscription, Patient, PatientSession, PatientPlaySession, HomeExerciseResult } from '@/types'
 import { COGNITIVE_AREAS } from '@/lib/utils'
-import { CHALLENGE_DAYS, CHALLENGE_TOTAL_DAYS, getChallengeDays, type ChallengeArea } from '@/lib/challengeContent'
+import { CHALLENGE_TOTAL_DAYS, getChallengeDays, type ChallengeArea } from '@/lib/challengeContent'
 import {
   computeStars,
   type AreaScore,
@@ -282,8 +282,16 @@ const MOCK_CHALLENGE_CURRENT_DAY = 30
  */
 const MOCK_CHALLENGE_MONTH = 1
 
-/** Days 1-30 minus the 5 static reflection cards — the denominator for badges. */
-const PLAYABLE_CHALLENGE_DAYS = CHALLENGE_DAYS.filter((d) => d.type === 'game').length
+/**
+ * Days 1-30 minus that month's static reflection cards — the denominator for
+ * badges. Reads MOCK_CHALLENGE_MONTH's own catalog, not the bare
+ * `CHALLENGE_DAYS` import — that's always month 1 specifically (see the
+ * comment on MOCK_CHALLENGE_MONTH above), so it silently stayed "correct" by
+ * coincidence for every month that happened to have zero card days, and only
+ * broke once month 4 got one (día 18): CHALLENGE_COMPLETE needed
+ * `results.length >= 30` when 29 was the real, playable maximum.
+ */
+const PLAYABLE_CHALLENGE_DAYS = getChallengeDays(MOCK_CHALLENGE_MONTH).filter((d) => d.type === 'game').length
 
 function paginatePatients(items: Patient[], page: number, size: number): PagedResponse<Patient> {
   const start = page * size
@@ -791,18 +799,20 @@ function buildChallengeProgress(results: DayResult[]): ChallengeProgress {
 
 /**
  * Walks the day chain in order (1→30, bounded by MOCK_CHALLENGE_CURRENT_DAY so
- * not-yet-unlocked days are never mistaken for missed ones). 'card' days (6, 15,
- * 23, 28, 30) have no completion event and always pass automatically — they must
- * never break a streak. 'game' days pass only if a result was recorded. `current`
- * is the run still active at the end of the walk (a gap resets it, so playing
- * later days out of order — easy to do in dev, where every day is unlocked —
- * correctly does NOT count towards it); `longest` is the best run seen anywhere.
+ * not-yet-unlocked days are never mistaken for missed ones). 'card' days (which
+ * ones depends on the month — see MOCK_CHALLENGE_MONTH's own catalog, never the
+ * bare month-1 CHALLENGE_DAYS import) have no completion event and always pass
+ * automatically — they must never break a streak. 'game' days pass only if a
+ * result was recorded. `current` is the run still active at the end of the
+ * walk (a gap resets it, so playing later days out of order — easy to do in
+ * dev, where every day is unlocked — correctly does NOT count towards it);
+ * `longest` is the best run seen anywhere.
  */
 function computeChallengeStreak(results: DayResult[]): StreakInfo {
   const playedDays = new Set(results.map((r) => r.day))
   let running = 0
   let longest = 0
-  for (const d of CHALLENGE_DAYS) {
+  for (const d of getChallengeDays(MOCK_CHALLENGE_MONTH)) {
     if (d.day > MOCK_CHALLENGE_CURRENT_DAY) break
     const passed = d.type === 'card' || playedDays.has(d.day)
     if (passed) {

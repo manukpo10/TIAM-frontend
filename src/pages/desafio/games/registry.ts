@@ -100,7 +100,6 @@ import { TiraElDado } from './TiraElDado'
 import { LetrasPerdidas } from './LetrasPerdidas'
 import { QuienEsCadaUno } from './QuienEsCadaUno'
 import { CifrasQueFaltan } from './CifrasQueFaltan'
-import { EliminaLaIntrusa } from './EliminaLaIntrusa'
 import { PalabraYDefinicion } from './PalabraYDefinicion'
 import { ArbolGenealogico } from './ArbolGenealogico'
 import { CasasDelBarrio } from './CasasDelBarrio'
@@ -256,7 +255,8 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     15: QuienLoDijo,
     16: QuienEsCadaUno,
     17: CifrasQueFaltan,
-    18: EliminaLaIntrusa,
+    // 18 is a lápiz-y-papel CARD day now (see challengeContent.ts) — no
+    // registry entry, same as month 3's card days.
     19: PalabraYDefinicion,
     20: LaberintoDeMultiplicaciones,
     21: PuestoDeComida,

@@ -407,8 +407,21 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de razonamiento: leé las pistas y descubrí quién es cada una de las figuras. Tocá un nombre y después la figura que le corresponde. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'game', area: 'calculo', title: 'Cifras que faltan',
     instructions: 'Un juego de cálculo: a la cuenta le faltan algunas cifras. Tocá un casillero vacío y elegí el número que va, hasta que la suma cierre. Subís de dificultad a medida que avanzás.' },
-  { day: 18, type: 'game', area: 'atencion', title: 'Elimina la intrusa',
-    instructions: 'Un juego de atención: en cada fila hay tres palabras y una no va con las otras dos. Tocala para sacarla. Subís de dificultad a medida que avanzás.' },
+  // Lápiz y papel: 6 open-ended exclusion prompts ("words that DON'T have
+  // this letter", "objects that DON'T fit this description") — like día14's
+  // syllable fluency, there's no closed answer set to validate against, so a
+  // CARD (see its comment in ChallengeDayCatalog.java) suits it better than
+  // forcing a tap-based multiple-choice onto an inherently open task.
+  { day: 18, type: 'card', area: 'atencion', title: 'Todo menos eso',
+    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada consigna con 5 palabras u objetos. Ojo, que en todas te piden lo que NO tiene que cumplir — pensalo al revés de lo habitual. No hay una sola respuesta correcta: cuantas más se te ocurran, mejor. 📝',
+    worksheet: [
+      { label: 'Escribí 5 palabras que NO contengan la letra A', lines: 5 },
+      { label: 'Escribí 5 objetos que una sola persona no pueda cargar', lines: 5 },
+      { label: 'Escribí 5 palabras que NO contengan la letra L', lines: 5 },
+      { label: 'Escribí 5 objetos que no se vendan en un supermercado', lines: 5 },
+      { label: 'Escribí 5 palabras que NO contengan la letra I', lines: 5 },
+      { label: 'Escribí 5 objetos que no tengan picos ni esquinas', lines: 5 },
+    ] },
   { day: 19, type: 'game', area: 'lenguaje', title: 'Palabra y definición',
     instructions: 'Un juego de vocabulario: tenés un grupo de palabras y sus definiciones mezcladas. Tocá una palabra y después la definición que le corresponde. Subís de dificultad a medida que avanzás.' },
   { day: 20, type: 'game', area: 'calculo', title: 'Laberinto de multiplicaciones',
