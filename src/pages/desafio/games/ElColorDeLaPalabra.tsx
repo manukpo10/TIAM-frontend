@@ -42,7 +42,7 @@ const HARD_INKS: Ink[] = [
   { name: 'CELESTE', hex: '#0288D1' },
   { name: 'GRIS', hex: '#616161' },
   { name: 'ROSA', hex: '#C2185B' },
-  { name: 'MARRÓN', hex: '#5D4037' },
+  { name: 'TURQUESA', hex: '#00796B' },
 ]
 
 interface Level {
