@@ -390,7 +390,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 8, type: 'game', area: 'calculo', title: 'Cálculo mental',
     instructions: 'Un juego de cálculo: tenés un número y hay que sumarle o restarle diez y cien. Lo importante no es la cuenta, es saber qué cifra se mueve. Subís de dificultad a medida que avanzás.' },
   { day: 9, type: 'game', area: 'memoria', title: 'Tirá el dado',
-    instructions: 'Un juego de memoria: tocá el dado y aparece un pedido, por ejemplo una fruta que empiece con D. Elegí entre las opciones la palabra que cumple las dos cosas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de memoria: tocá el dado y aparece un pedido, por ejemplo una fruta que empiece con D. Pensá una palabra que corresponda — podés decirla en voz alta o escribirla en un papel. Subís de dificultad a medida que avanzás.' },
   { day: 10, type: 'game', area: 'lenguaje', title: 'Letras perdidas',
     instructions: 'Un juego de deducción: a la palabra le faltan letras y la única pista es de qué familia es. Tocá las letras para completarla. Subís de dificultad a medida que avanzás.' },
   { day: 11, type: 'game', area: 'calculo', title: 'Telaraña matemática',

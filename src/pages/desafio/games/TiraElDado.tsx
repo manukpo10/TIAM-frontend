@@ -1,49 +1,45 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { RotateCcw, ArrowRight, Sparkles, Pencil } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Tirá el dado" — categorical word-retrieval with a starting-letter
  * constraint, from the paper exercise's six prompts (one per die face): "un
  * medio de transporte que empiece con C", "una verdura que empiece con Z"…
- * Writing isn't tap-validatable, so retrieval is converted to recognition:
- * the die decides the prompt, four words are offered, tap the one that fits.
  *
- * INVARIANT: for every prompt, exactly one of the 4 shown options satisfies
- * BOTH the category and the starting letter. Each of the 3 decoys is built
- * to break exactly one of the two rules — either the right category with
- * the wrong letter, or the right letter from the wrong category — never
- * both at once (which would make it a second correct answer) and never
- * neither. The `breaks` tag on each decoy is the single source of truth for
- * this: a wrong tap's hint is derived from that tag rather than hand-typed
- * per word, so the hint can never claim a rule was broken that wasn't.
+ * PENCIL AND PAPER, ON PURPOSE — not a second version of multiple-choice.
+ * The first build offered four tappable words (one correct, three decoys);
+ * too easy, since a rushed tap could win by elimination without really
+ * retrieving anything. The user's fix wasn't "harder decoys" — it was to
+ * take the digital answer step out entirely: the die shows the prompt, the
+ * player writes or says whatever word occurs to them on their own paper, and
+ * taps "Ya la tengo" to move on. Nothing here is graded, because there is no
+ * way to validate an open Spanish vocabulary from a tap, and because most of
+ * these prompts have many valid answers anyway ("un deporte que empiece con
+ * F" fits fútbol AND several others) — the retrieval effort in the player's
+ * own head is the exercise, same as a verbal-fluency task in real
+ * cognitive-stimulation practice. `mistakes` is hardcoded to 0, same house
+ * convention ElVuelto.tsx already uses for its change-making rounds ("this
+ * never scores or fails a round").
  *
- * Differs from the retired AnimalPorLetra (see that file's header) in three
- * ways. AnimalPorLetra fixed the category — always "animal" — and only the
- * letter varied; here the DIE chooses category AND letter together, so the
- * shape of the challenge changes every round. AnimalPorLetra's options were
- * illustrations of animals; these are words, because most of these
- * categories (país, oficio, mes) have no clean single-glyph illustration.
- * And AnimalPorLetra eliminated wrong taps into a shared decoy pool behind a
- * fixed, auto-advancing trial queue; here each die face is its own
- * independent round, gated by a roll rather than an index.
+ * The "¿Cómo se juega?" ready screen (same phase pattern and pencil note as
+ * TelaranaMatematica.tsx's HowToPlay) is what actually carries the pencil-
+ * and-paper idea to the player — nothing later in the flow mentions paper
+ * again, so a returning player who skips it isn't left confused, just back
+ * to a plain prompt-and-continue loop they've already seen once.
+ *
+ * `answer` on each prompt is NOT rendered or checked anywhere — it exists so
+ * anyone editing this pool can see, at a glance, that the category+letter
+ * pair has a real solution (the exact words verified when this pool was
+ * still multiple-choice).
  */
 
-type Break = { kind: 'letter' } | { kind: 'category'; label: string }
-
-interface Decoy {
-  word: string
-  /** Which single rule this word breaks relative to its prompt. */
-  breaks: Break
-}
-
 interface Prompt {
-  /** Category phrase WITH its article, e.g. 'una verdura' — used verbatim in
-   * both the big prompt sentence and any hint that names the right category. */
+  /** Category phrase WITH its article, e.g. 'una verdura'. */
   categoryLabel: string
   letter: string
+  /** Documentation only — see module doc. */
   answer: string
-  decoys: [Decoy, Decoy, Decoy]
 }
 
 interface Level {
@@ -57,256 +53,40 @@ interface Level {
   pool: Prompt[]
 }
 
-// ── Level 1 — common letters, far distractors ──────────────────────────────
+// ── Level 1 — common letters ────────────────────────────────────────────
 const L1_PROMPTS: Prompt[] = [
-  {
-    categoryLabel: 'un medio de transporte',
-    letter: 'C',
-    answer: 'colectivo',
-    decoys: [
-      { word: 'tren', breaks: { kind: 'letter' } },
-      { word: 'camisa', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-      { word: 'cuchara', breaks: { kind: 'category', label: 'algo de la cocina' } },
-    ],
-  },
-  {
-    categoryLabel: 'una verdura',
-    letter: 'Z',
-    answer: 'zapallo',
-    decoys: [
-      { word: 'papa', breaks: { kind: 'letter' } },
-      { word: 'zapatilla', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-      { word: 'cebolla', breaks: { kind: 'letter' } },
-    ],
-  },
-  {
-    categoryLabel: 'una fruta',
-    letter: 'D',
-    answer: 'durazno',
-    decoys: [
-      { word: 'banana', breaks: { kind: 'letter' } },
-      { word: 'delfín', breaks: { kind: 'category', label: 'un animal' } },
-      { word: 'manzana', breaks: { kind: 'letter' } },
-    ],
-  },
-  {
-    categoryLabel: 'un país',
-    letter: 'B',
-    answer: 'Bolivia',
-    decoys: [
-      { word: 'Chile', breaks: { kind: 'letter' } },
-      { word: 'banana', breaks: { kind: 'category', label: 'una fruta' } },
-      { word: 'Perú', breaks: { kind: 'letter' } },
-    ],
-  },
-  {
-    categoryLabel: 'un deporte',
-    letter: 'F',
-    answer: 'fútbol',
-    decoys: [
-      { word: 'tenis', breaks: { kind: 'letter' } },
-      { word: 'frutilla', breaks: { kind: 'category', label: 'una fruta' } },
-      { word: 'básquet', breaks: { kind: 'letter' } },
-    ],
-  },
-  {
-    categoryLabel: 'un mes',
-    letter: 'A',
-    answer: 'abril',
-    decoys: [
-      { word: 'julio', breaks: { kind: 'letter' } },
-      { word: 'auto', breaks: { kind: 'category', label: 'un medio de transporte' } },
-      { word: 'mayo', breaks: { kind: 'letter' } },
-    ],
-  },
-  {
-    categoryLabel: 'un animal',
-    letter: 'G',
-    answer: 'gato',
-    decoys: [
-      { word: 'perro', breaks: { kind: 'letter' } },
-      { word: 'guante', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-      { word: 'vaca', breaks: { kind: 'letter' } },
-    ],
-  },
-  {
-    categoryLabel: 'un color',
-    letter: 'N',
-    answer: 'negro',
-    decoys: [
-      { word: 'rojo', breaks: { kind: 'letter' } },
-      { word: 'nariz', breaks: { kind: 'category', label: 'una parte del cuerpo' } },
-      { word: 'verde', breaks: { kind: 'letter' } },
-    ],
-  },
+  { categoryLabel: 'un medio de transporte', letter: 'C', answer: 'colectivo' },
+  { categoryLabel: 'una verdura', letter: 'Z', answer: 'zapallo' },
+  { categoryLabel: 'una fruta', letter: 'D', answer: 'durazno' },
+  { categoryLabel: 'un país', letter: 'B', answer: 'Bolivia' },
+  { categoryLabel: 'un deporte', letter: 'F', answer: 'fútbol' },
+  { categoryLabel: 'un mes', letter: 'A', answer: 'abril' },
+  { categoryLabel: 'un animal', letter: 'G', answer: 'gato' },
+  { categoryLabel: 'un color', letter: 'N', answer: 'negro' },
 ]
 
-// ── Level 2 — medium letters, some same-family distractors ─────────────────
+// ── Level 2 — medium letters ─────────────────────────────────────────────
 const L2_PROMPTS: Prompt[] = [
-  {
-    categoryLabel: 'un medio de transporte',
-    letter: 'A',
-    answer: 'avión',
-    decoys: [
-      { word: 'barco', breaks: { kind: 'letter' } },
-      { word: 'arveja', breaks: { kind: 'category', label: 'una verdura' } },
-      { word: 'abrigo', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-    ],
-  },
-  {
-    categoryLabel: 'una verdura',
-    letter: 'P',
-    answer: 'papa',
-    decoys: [
-      { word: 'zapallo', breaks: { kind: 'letter' } },
-      { word: 'pollera', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-      { word: 'pera', breaks: { kind: 'category', label: 'una fruta' } },
-    ],
-  },
-  {
-    categoryLabel: 'una fruta',
-    letter: 'M',
-    answer: 'manzana',
-    decoys: [
-      { word: 'durazno', breaks: { kind: 'letter' } },
-      { word: 'mono', breaks: { kind: 'category', label: 'un animal' } },
-      { word: 'morrón', breaks: { kind: 'category', label: 'una verdura' } },
-    ],
-  },
-  {
-    categoryLabel: 'un país',
-    letter: 'P',
-    answer: 'Perú',
-    decoys: [
-      { word: 'Chile', breaks: { kind: 'letter' } },
-      { word: 'pulóver', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-      { word: 'papa', breaks: { kind: 'category', label: 'una verdura' } },
-    ],
-  },
-  {
-    categoryLabel: 'un deporte',
-    letter: 'N',
-    answer: 'natación',
-    decoys: [
-      { word: 'vóley', breaks: { kind: 'letter' } },
-      { word: 'nuez', breaks: { kind: 'category', label: 'algo de la cocina' } },
-      { word: 'nariz', breaks: { kind: 'category', label: 'una parte del cuerpo' } },
-    ],
-  },
-  {
-    categoryLabel: 'un mes',
-    letter: 'J',
-    answer: 'junio',
-    decoys: [
-      { word: 'marzo', breaks: { kind: 'letter' } },
-      { word: 'jirafa', breaks: { kind: 'category', label: 'un animal' } },
-      { word: 'jamón', breaks: { kind: 'category', label: 'algo de la cocina' } },
-    ],
-  },
-  {
-    categoryLabel: 'un animal',
-    letter: 'L',
-    answer: 'león',
-    decoys: [
-      { word: 'gato', breaks: { kind: 'letter' } },
-      { word: 'limón', breaks: { kind: 'category', label: 'una fruta' } },
-      { word: 'lechuga', breaks: { kind: 'category', label: 'una verdura' } },
-    ],
-  },
-  {
-    categoryLabel: 'un oficio',
-    letter: 'M',
-    answer: 'médico',
-    decoys: [
-      { word: 'plomero', breaks: { kind: 'letter' } },
-      { word: 'manzana', breaks: { kind: 'category', label: 'una fruta' } },
-      { word: 'muñeca', breaks: { kind: 'category', label: 'una parte del cuerpo' } },
-    ],
-  },
+  { categoryLabel: 'un medio de transporte', letter: 'A', answer: 'avión' },
+  { categoryLabel: 'una verdura', letter: 'P', answer: 'papa' },
+  { categoryLabel: 'una fruta', letter: 'M', answer: 'manzana' },
+  { categoryLabel: 'un país', letter: 'P', answer: 'Perú' },
+  { categoryLabel: 'un deporte', letter: 'N', answer: 'natación' },
+  { categoryLabel: 'un mes', letter: 'J', answer: 'junio' },
+  { categoryLabel: 'un animal', letter: 'L', answer: 'león' },
+  { categoryLabel: 'un oficio', letter: 'M', answer: 'médico' },
 ]
 
-// ── Level 3 — less common letters, distractors from neighbouring categories ─
+// ── Level 3 — less common letters ───────────────────────────────────────
 const L3_PROMPTS: Prompt[] = [
-  {
-    categoryLabel: 'una verdura',
-    letter: 'R',
-    answer: 'remolacha',
-    decoys: [
-      { word: 'berenjena', breaks: { kind: 'letter' } },
-      { word: 'remera', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-      { word: 'ratón', breaks: { kind: 'category', label: 'un animal' } },
-    ],
-  },
-  {
-    categoryLabel: 'una fruta',
-    letter: 'F',
-    answer: 'frutilla',
-    decoys: [
-      { word: 'banana', breaks: { kind: 'letter' } },
-      { word: 'fútbol', breaks: { kind: 'category', label: 'un deporte' } },
-      { word: 'fideos', breaks: { kind: 'category', label: 'algo de la cocina' } },
-    ],
-  },
-  {
-    categoryLabel: 'un país',
-    letter: 'U',
-    answer: 'Uruguay',
-    decoys: [
-      { word: 'Chile', breaks: { kind: 'letter' } },
-      { word: 'uva', breaks: { kind: 'category', label: 'una fruta' } },
-      { word: 'uniforme', breaks: { kind: 'category', label: 'una prenda de ropa' } },
-    ],
-  },
-  {
-    categoryLabel: 'un animal',
-    letter: 'J',
-    answer: 'jirafa',
-    decoys: [
-      { word: 'león', breaks: { kind: 'letter' } },
-      { word: 'junio', breaks: { kind: 'category', label: 'un mes' } },
-      { word: 'jamón', breaks: { kind: 'category', label: 'algo de la cocina' } },
-    ],
-  },
-  {
-    categoryLabel: 'una prenda de ropa',
-    letter: 'B',
-    answer: 'bufanda',
-    decoys: [
-      { word: 'pollera', breaks: { kind: 'letter' } },
-      { word: 'berenjena', breaks: { kind: 'category', label: 'una verdura' } },
-      { word: 'banana', breaks: { kind: 'category', label: 'una fruta' } },
-    ],
-  },
-  {
-    categoryLabel: 'un oficio',
-    letter: 'P',
-    answer: 'plomero',
-    decoys: [
-      { word: 'médico', breaks: { kind: 'letter' } },
-      { word: 'pepino', breaks: { kind: 'category', label: 'una verdura' } },
-      { word: 'pera', breaks: { kind: 'category', label: 'una fruta' } },
-    ],
-  },
-  {
-    categoryLabel: 'una parte del cuerpo',
-    letter: 'C',
-    answer: 'codo',
-    decoys: [
-      { word: 'brazo', breaks: { kind: 'letter' } },
-      { word: 'colectivo', breaks: { kind: 'category', label: 'un medio de transporte' } },
-      { word: 'cebolla', breaks: { kind: 'category', label: 'una verdura' } },
-    ],
-  },
-  {
-    categoryLabel: 'algo de la cocina',
-    letter: 'O',
-    answer: 'olla',
-    decoys: [
-      { word: 'cuchara', breaks: { kind: 'letter' } },
-      { word: 'oso', breaks: { kind: 'category', label: 'un animal' } },
-      { word: 'oreja', breaks: { kind: 'category', label: 'una parte del cuerpo' } },
-    ],
-  },
+  { categoryLabel: 'una verdura', letter: 'R', answer: 'remolacha' },
+  { categoryLabel: 'una fruta', letter: 'F', answer: 'frutilla' },
+  { categoryLabel: 'un país', letter: 'U', answer: 'Uruguay' },
+  { categoryLabel: 'un animal', letter: 'J', answer: 'jirafa' },
+  { categoryLabel: 'una prenda de ropa', letter: 'B', answer: 'bufanda' },
+  { categoryLabel: 'un oficio', letter: 'P', answer: 'plomero' },
+  { categoryLabel: 'una parte del cuerpo', letter: 'C', answer: 'codo' },
+  { categoryLabel: 'algo de la cocina', letter: 'O', answer: 'olla' },
 ]
 
 const LEVELS: Level[] = [
@@ -316,8 +96,8 @@ const LEVELS: Level[] = [
 ]
 
 // Fixed total of rounds across the whole day (3+4+6) — every round resolves
-// with exactly one correct tap no matter how many wrong taps happen first, so
-// this is a derivable constant rather than a piece of state.
+// on "Ya la tengo" (never wrong — see module doc), so this is a derivable
+// constant rather than a piece of state.
 const TOTAL_ROUNDS = LEVELS.reduce((sum, l) => sum + l.rounds, 0)
 
 const FACES = [1, 2, 3, 4, 5, 6]
@@ -336,24 +116,6 @@ function pickOne<T>(arr: T[]): T {
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
-/** A wrong tap's hint is derived from the decoy's own `breaks` tag rather
- * than hand-typed per word — the "no {category}" half always names the
- * ACTIVE prompt's real category, so a hint can never drift out of sync with
- * the prompt it belongs to. */
-function hintFor(decoy: Decoy, prompt: Prompt): string {
-  const word = `«${display(decoy.word)}»`
-  return decoy.breaks.kind === 'letter'
-    ? `${word} no empieza con ${prompt.letter}.`
-    : `${word} es ${decoy.breaks.label}, no ${prompt.categoryLabel}.`
-}
-
-// Countries are proper nouns, so written as-is they'd be the only capitalised
-// options and a "país" prompt would give itself away at a glance. Every option
-// gets a leading capital instead, so capitalisation carries no clue.
-function display(word: string): string {
-  return word.charAt(0).toUpperCase() + word.slice(1)
 }
 
 /** Big tappable die, pips on the classic 3×3 layout — same drawing approach
@@ -377,6 +139,51 @@ function Die({ face }: { face: number }) {
   )
 }
 
+/** Ready screen, once per opening of the day (see module doc) — same shape
+ * as TelaranaMatematica.tsx's HowToPlay: numbered steps, a worked example,
+ * the pencil-and-paper note, "Empezar". */
+function HowToPlay({ onStart }: { onStart: () => void }) {
+  const steps = [
+    'Tocá el dado. Va a aparecer una categoría y una letra, como «una verdura que empiece con Z».',
+    'Pensá una palabra que corresponda. Podés decirla en voz alta o escribirla en un papel.',
+    'Cuando la tengas, tocá «Ya la tengo» y sigue el próximo dado.',
+  ]
+  return (
+    <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-5 sm:p-6">
+      <p className="text-center text-xl font-bold text-slate-900">¿Cómo se juega?</p>
+
+      <ol className="mt-4 space-y-3">
+        {steps.map((step, i) => (
+          <li key={i} className="flex items-start gap-3 text-base leading-snug text-slate-700">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-sm font-bold text-white">
+              {i + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-tiam-blue/15 bg-white p-3">
+        <Pencil className="mt-0.5 h-5 w-5 shrink-0 text-tiam-blue" aria-hidden="true" />
+        <p className="text-base leading-snug text-slate-700">
+          Tené a mano lápiz y papel: podés anotar ahí cada palabra que se te ocurra.
+        </p>
+      </div>
+
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={onStart}
+          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+        >
+          Empezar
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const PRAISE = ['¡Muy bien!', '¡Excelente!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena memoria!']
 
 const ROLL_TICK_MS = 90
@@ -386,6 +193,9 @@ const ROLL_TICK_MS = 90
 const ROLL_TICKS = 6
 
 export function TiraElDado({ day: _day, onComplete }: GameProps) {
+  // How-to screen, once per opening of the day — "Repetir" never sets it
+  // back, same convention as TelaranaMatematica.tsx.
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -403,13 +213,7 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
   const [currentFace, setCurrentFace] = useState<number | null>(null)
   const [rolling, setRolling] = useState(false)
   const [displayFace, setDisplayFace] = useState(1)
-  const [eliminated, setEliminated] = useState<Set<string>>(new Set())
-  const [solved, setSolved] = useState(false)
-  const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
-  // Accumulates across levels 1→2→3 and only zeroes on a genuine day restart
-  // (see nextLevel's wrap branch).
-  const [mistakes, setMistakes] = useState(0)
 
   const rollIntervalRef = useRef<number | null>(null)
   useEffect(() => {
@@ -420,17 +224,6 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
 
   const activePrompt = currentFace !== null ? facePrompts[currentFace - 1] : null
   const done = solvedCount >= level.rounds
-
-  // Re-shuffled only when the active round actually changes (a new face
-  // lands, or a level/replay redraws the pool) — keyed on the PRIMITIVES that
-  // determine the active prompt, not on `activePrompt` itself, which is a
-  // fresh object reference every render and would reshuffle the options on
-  // every keystroke-unrelated re-render (e.g. a wrong tap) otherwise.
-  const options = useMemo(
-    () => (activePrompt ? shuffle([activePrompt.answer, ...activePrompt.decoys.map((d) => d.word)]) : []),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFace, roundKey, levelIdx],
-  )
 
   useEffect(() => {
     if (done) setPraise(pickOne(PRAISE))
@@ -454,9 +247,6 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
       setCurrentFace(finalFace)
       setDisplayFace(finalFace)
       setRolling(false)
-      setEliminated(new Set())
-      setHint(null)
-      setSolved(false)
       rollIntervalRef.current = null
     }
 
@@ -477,23 +267,12 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
     }, ROLL_TICK_MS)
   }
 
-  function guess(word: string) {
-    if (!activePrompt || solved || eliminated.has(word)) return
-    if (word === activePrompt.answer) {
-      setSolved(true)
-      setHint(null)
-      window.setTimeout(() => {
-        setSolvedCount((c) => c + 1)
-        setCurrentFace(null)
-        setEliminated(new Set())
-        setSolved(false)
-      }, 500)
-    } else {
-      const decoy = activePrompt.decoys.find((d) => d.word === word)
-      setMistakes((m) => m + 1)
-      setEliminated((prev) => new Set(prev).add(word))
-      setHint(decoy ? hintFor(decoy, activePrompt) : null)
-    }
+  // "Ya la tengo" closes the round straight away — see module doc for why
+  // there's nothing here to check.
+  function gotIt() {
+    if (!activePrompt) return
+    setSolvedCount((c) => c + 1)
+    setCurrentFace(null)
   }
 
   // Resets happen HERE, synchronously with the level/round change, not in a
@@ -503,7 +282,6 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
   // the new level and fire onComplete with garbage. Same reasoning as
   // ElVuelto.tsx / SumaHastaDiez.tsx.
   function nextLevel() {
-    const isWrap = levelIdx === LEVELS.length - 1
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
     setRoundKey((k) => k + 1)
     setUsedFaces(new Set())
@@ -511,10 +289,6 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
     setCurrentFace(null)
     setRolling(false)
     setDisplayFace(1)
-    setEliminated(new Set())
-    setHint(null)
-    setSolved(false)
-    if (isWrap) setMistakes(0)
   }
 
   // Fires once per roundKey when the last level's last round resolves. A
@@ -524,7 +298,8 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
   useEffect(() => {
     if (done && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {
       reportedRoundKeyRef.current = roundKey
-      onComplete({ mistakes, totalAttempts: mistakes + TOTAL_ROUNDS })
+      // Always 0 mistakes — see module doc: nothing here is ever graded.
+      onComplete({ mistakes: 0, totalAttempts: TOTAL_ROUNDS })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done, levelIdx, roundKey])
@@ -535,6 +310,20 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
       ? 'Tirar el dado'
       : `El dado mostró el número ${currentFace}`
 
+  if (phase === 'ready') {
+    return (
+      <div className="px-5 pb-5 pt-4 sm:p-7">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
+            {level.name}
+          </span>
+          <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tirá el dado y pensá una palabra</h2>
+        </div>
+        <HowToPlay onStart={() => setPhase('playing')} />
+      </div>
+    )
+  }
+
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
@@ -542,10 +331,10 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-green">
           {level.name}
         </span>
-        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tirá el dado y encontrá la palabra</h2>
+        <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Tirá el dado y pensá una palabra</h2>
         {!done && (
           <p className="mt-2 text-base font-medium text-tiam-blue">
-            {currentFace === null ? 'Tocá el dado para tirar.' : 'Elegí la palabra que corresponda.'}
+            {currentFace === null ? 'Tocá el dado para tirar.' : 'Decila en voz alta o escribila en un papel.'}
           </p>
         )}
         <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
@@ -583,7 +372,7 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
             </button>
           </div>
 
-          {/* Prompt + options */}
+          {/* Prompt + confirm */}
           {currentFace !== null && activePrompt && (
             <>
               <p className="mt-4 text-center text-xl font-bold text-slate-800 sm:text-2xl">
@@ -593,38 +382,15 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
                 </span>
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {options.map((word) => {
-                  const isEliminated = eliminated.has(word)
-                  const isSolved = solved && word === activePrompt.answer
-                  return (
-                    <button
-                      key={word}
-                      type="button"
-                      disabled={solved || isEliminated}
-                      onClick={() => guess(word)}
-                      className={[
-                        'relative min-h-[64px] rounded-2xl border-2 px-4 py-3 text-lg font-bold transition sm:text-xl',
-                        'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40',
-                        isSolved
-                          ? 'border-tiam-green bg-tiam-green/5 text-slate-900 ring-2 ring-tiam-green/30'
-                          : isEliminated
-                            ? 'border-slate-200 bg-slate-50 text-slate-300 line-through'
-                            : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
-                      ].join(' ')}
-                    >
-                      {display(word)}
-                      {isSolved && (
-                        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                          <Check className="h-3 w-3" strokeWidth={3} />
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
+              <div className="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={gotIt}
+                  className="inline-flex min-h-[56px] items-center justify-center rounded-2xl bg-tiam-green px-8 text-lg font-bold text-white transition hover:opacity-90 active:translate-y-0"
+                >
+                  Ya la tengo
+                </button>
               </div>
-
-              {hint && !solved && <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>}
             </>
           )}
         </>
@@ -638,7 +404,8 @@ export function TiraElDado({ day: _day, onComplete }: GameProps) {
           </div>
           <p className="mt-3 text-xl font-bold text-slate-900">{praise}</p>
           <p className="mt-1 text-slate-600">
-            Tiraste el dado {level.rounds} veces y encontraste todas las palabras — ¡completaste el {level.name.toLowerCase()}!
+            Tiraste el dado {level.rounds} veces y pensaste una palabra para cada una — ¡completaste el{' '}
+            {level.name.toLowerCase()}!
           </p>
           <div className="mt-5 flex justify-center">
             <button
