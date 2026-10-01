@@ -564,11 +564,17 @@ export function Desafio30DiasPage() {
               </p>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white p-2 shadow-sm">
+            {/* video-compra.mp4 is a portrait phone-screen recording (720×1568,
+                ~9:19.5) — matching that aspect ratio here (instead of a
+                landscape aspect-video box) is what makes the actual footage
+                fill the frame edge to edge rather than getting pillarboxed
+                down to a narrow strip with dark bars on both sides, which is
+                especially cramped on a phone screen. */}
+            <div className="mx-auto max-w-xs overflow-hidden rounded-3xl border border-slate-100 bg-white p-2 shadow-sm">
               <video
                 controls
                 preload="metadata"
-                className="aspect-video w-full rounded-2xl bg-slate-900"
+                className="aspect-[720/1568] w-full rounded-2xl bg-slate-900"
               >
                 <source src={videoCompra} type="video/mp4" />
               </video>
