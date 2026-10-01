@@ -46,6 +46,9 @@ export function PublicHeader() {
   // other public pages (hub, Desafío, Talleres, blog...) don't need an
   // account at all, so showing account UI there is just noise.
   const showAuthCtas = useLocation().pathname === '/plataforma'
+  // Until the platform launches, logged-out visitors get no account UI at all
+  // (no login, no sign-up); a logged-in user still gets the library shortcut.
+  const showLoginCtas = showAuthCtas && !user && PLATFORM_LAUNCHED
 
   return (
     <>
@@ -119,23 +122,20 @@ export function PublicHeader() {
 
           {/* Right: auth CTAs + mobile toggle */}
           <div className="flex items-center gap-2">
-            {showAuthCtas && (
-              user ? (
-                <Link to="/library">
-                  <Button size="md">Ir a la biblioteca</Button>
+            {showAuthCtas && user && (
+              <Link to="/library">
+                <Button size="md">Ir a la biblioteca</Button>
+              </Link>
+            )}
+            {showLoginCtas && (
+              <>
+                <Link to="/login" className="hidden sm:inline-flex">
+                  <Button variant="ghost" size="md">Iniciar sesión</Button>
                 </Link>
-              ) : (
-                <>
-                  <Link to="/login" className="hidden sm:inline-flex">
-                    <Button variant="ghost" size="md">Iniciar sesión</Button>
-                  </Link>
-                  {PLATFORM_LAUNCHED && (
-                    <Link to="/register" className="hidden sm:inline-flex">
-                      <Button size="md">Probá gratis</Button>
-                    </Link>
-                  )}
-                </>
-              )
+                <Link to="/register" className="hidden sm:inline-flex">
+                  <Button size="md">Probá gratis</Button>
+                </Link>
+              </>
             )}
 
             <button
@@ -194,7 +194,7 @@ export function PublicHeader() {
                 </li>
               ))}
 
-              {showAuthCtas && !user && (
+              {showLoginCtas && (
                 <li className="pt-2 mt-1 border-t border-slate-100 sm:hidden">
                   <Link
                     to="/login"
@@ -203,11 +203,9 @@ export function PublicHeader() {
                   >
                     Iniciar sesión
                   </Link>
-                  {PLATFORM_LAUNCHED && (
-                    <Link to="/register" onClick={() => setOpen(false)} className="block mt-1">
-                      <Button size="md" className="w-full">Probá gratis</Button>
-                    </Link>
-                  )}
+                  <Link to="/register" onClick={() => setOpen(false)} className="block mt-1">
+                    <Button size="md" className="w-full">Probá gratis</Button>
+                  </Link>
                 </li>
               )}
             </ul>

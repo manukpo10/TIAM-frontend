@@ -47,9 +47,11 @@ export function PublicFooter() {
               <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
               <li><Link to="/recursos" className="hover:text-white transition-colors">Fichas gratis</Link></li>
               <li><Link to="/preguntas-frecuentes" className="hover:text-white transition-colors">Preguntas frecuentes</Link></li>
-              <li><Link to="/login" className="hover:text-white transition-colors">Iniciar sesión</Link></li>
               {PLATFORM_LAUNCHED && (
-                <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>
+                <>
+                  <li><Link to="/login" className="hover:text-white transition-colors">Iniciar sesión</Link></li>
+                  <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>
+                </>
               )}
             </ul>
           </nav>
