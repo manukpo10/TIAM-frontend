@@ -41,6 +41,7 @@ const MANU_PERSONAL_WHATSAPP_DISPLAY = '+54 9 221 308-0532'
 // Ends on "Mi nombre es:" so the buyer sends their name along with the
 // receipt — the manual activation needs it.
 const TRANSFER_RECEIPT_TEXT = '¡Hola! Ya transferí para el Desafío 30 días, te mando el comprobante. Mi nombre es:'
+const HELP_REQUEST_TEXT = '¡Hola! Quiero el Desafío 30 días pero necesito ayuda para hacerlo.'
 
 // Buyer details collected BEFORE checkout — the phone is captured up front because
 // Mercado Pago Checkout Pro navigates away and we can't rely on the user coming back.
@@ -482,6 +483,24 @@ export function Desafio30DiasPage() {
                 <MessageCircle className="h-4 w-4" />
                 Mandar comprobante y nombre por WhatsApp
               </a>
+
+              <div className="mt-4 border-t border-dashed border-slate-200 pt-4">
+                <p className="text-sm font-semibold text-slate-800">
+                  ¿No podés hacerlo por tu cuenta? Lo hacemos por vos.
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  Escribinos por WhatsApp y te acompañamos paso a paso hasta dejar el desafío andando.
+                </p>
+                <a
+                  href={`https://wa.me/${MANU_PERSONAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(HELP_REQUEST_TEXT)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Pedir ayuda por WhatsApp
+                </a>
+              </div>
             </div>
           </div>
         </section>
