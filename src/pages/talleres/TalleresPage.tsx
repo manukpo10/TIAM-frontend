@@ -10,6 +10,8 @@ import tallerFoto3 from '@/assets/taller/taller-3.jpg'
 import tallerFoto4 from '@/assets/taller/taller-4.jpg'
 import tallerFoto5 from '@/assets/taller/taller-5.jpg'
 import tallerFoto6 from '@/assets/taller/taller-6.jpg'
+import tallerVideo from '@/assets/taller/video-tallerista.mp4'
+import tallerVideoPoster from '@/assets/taller/video-tallerista-poster.webp'
 
 // Número real de inscripciones del taller (del flyer impreso), NO el de
 // WhatsApp Business que usa el bot del Desafío — este lo atiende una persona.
@@ -205,25 +207,46 @@ export function TalleresPage() {
           </div>
         </section>
 
-        {/* Origin story */}
+        {/* Origin story + the tallerista on video. The video is a portrait
+            Instagram reel (720×1280), so it gets a phone-shaped 9:16 frame —
+            a landscape box would pillarbox it down to a thin strip. preload
+            none + poster: nothing downloads until someone hits play. */}
         <section className="py-16 md:py-24 bg-white">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-5">
-              De dónde viene el taller
-            </h2>
-            <div className="space-y-4 text-slate-600 leading-relaxed">
-              <p>
-                Todo arrancó en un taller real. Desde principios de 2024, una tallerista cognitiva y
-                acompañante terapéutica coordina encuentros de estimulación cognitiva para adultos
-                mayores en La Plata: trabajo
-                de memoria, atención, funciones ejecutivas y, sobre todo, integración social.
-              </p>
-              <p>
-                Cada semana, un grupo se reúne para ejercitar la mente y, de paso, pasar un buen rato
-                juntos. Con el tiempo, ese trabajo también dio origen a la plataforma digital que hoy
-                usan otros profesionales — pero el taller presencial sigue siendo el corazón de TIAM.
-              </p>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 grid gap-10 md:grid-cols-[1fr_auto] md:items-center md:gap-14">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-5">
+                De dónde viene el taller
+              </h2>
+              <div className="space-y-4 text-slate-600 leading-relaxed">
+                <p>
+                  Todo arrancó en un taller real. Desde principios de 2024, Claudia Romero, tallerista
+                  cognitiva y acompañante terapéutica, coordina encuentros de estimulación cognitiva para
+                  adultos mayores en La Plata: trabajo
+                  de memoria, atención, funciones ejecutivas y, sobre todo, integración social.
+                </p>
+                <p>
+                  Cada semana, un grupo se reúne para ejercitar la mente y, de paso, pasar un buen rato
+                  juntos. Con el tiempo, ese trabajo también dio origen a TIAM Digital y al Desafío 30
+                  días — pero el taller presencial sigue siendo el corazón de TIAM.
+                </p>
+              </div>
             </div>
+
+            <figure className="mx-auto w-full max-w-xs">
+              <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white p-2 shadow-sm">
+                <video
+                  controls
+                  preload="none"
+                  poster={tallerVideoPoster}
+                  className="aspect-[9/16] w-full rounded-2xl bg-slate-900 object-cover"
+                >
+                  <source src={tallerVideo} type="video/mp4" />
+                </video>
+              </div>
+              <figcaption className="mt-3 text-center text-sm text-slate-600">
+                Conocé a Claudia Romero, la tallerista cognitiva que coordina los encuentros.
+              </figcaption>
+            </figure>
           </div>
         </section>
 
