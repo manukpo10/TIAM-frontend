@@ -2,7 +2,7 @@ import { LegalPage, type LegalSection } from './LegalPage'
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '21 de junio de 2026'
+const LAST_UPDATED = '1 de octubre de 2026'
 
 const TERMS_SECTIONS: LegalSection[] = [
   {
@@ -322,8 +322,8 @@ const TERMS_SECTIONS: LegalSection[] = [
         Para consultas, reclamos o notificaciones relacionadas con los presentes Términos y
         Condiciones, puede comunicarse con TIAM Digital a través de la siguiente dirección de correo
         electrónico:{' '}
-        <a href="mailto:legal@tiam.com.ar" className="text-tiam-blue hover:underline">
-          legal@tiam.com.ar
+        <a href="mailto:manuu.robles@gmail.com" className="text-tiam-blue hover:underline">
+          manuu.robles@gmail.com
         </a>
         .
       </p>

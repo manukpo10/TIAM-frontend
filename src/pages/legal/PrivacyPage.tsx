@@ -2,7 +2,19 @@ import { LegalPage, type LegalSection } from './LegalPage'
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '21 de junio de 2026'
+const LAST_UPDATED = '1 de octubre de 2026'
+
+// Contact address for privacy requests and unsubscribes. Every clause that
+// mentions it renders this link, so changing it here updates the whole policy.
+const PRIVACY_EMAIL = 'manuu.robles@gmail.com'
+
+function PrivacyEmailLink() {
+  return (
+    <a href={`mailto:${PRIVACY_EMAIL}`} className="text-tiam-blue hover:underline">
+      {PRIVACY_EMAIL}
+    </a>
+  )
+}
 
 const PRIVACY_SECTIONS: LegalSection[] = [
   {
@@ -10,13 +22,10 @@ const PRIVACY_SECTIONS: LegalSection[] = [
     title: 'Responsable de los datos',
     content: (
       <p>
-        El responsable del tratamiento de los datos personales recopilados a través de la plataforma
-        TIAM Digital es TIAM Digital (en adelante, "TIAM" o "nosotros"). Para consultas relacionadas
-        con el tratamiento de sus datos personales, puede comunicarse a:{' '}
-        <a href="mailto:privacidad@tiam.com.ar" className="text-tiam-blue hover:underline">
-          privacidad@tiam.com.ar
-        </a>
-        .
+        El responsable del tratamiento de los datos personales recopilados a través del sitio web y
+        la plataforma TIAM Digital es TIAM Digital (en adelante, "TIAM" o "nosotros"). Para
+        consultas relacionadas con el tratamiento de sus datos personales, puede comunicarse a:{' '}
+        <PrivacyEmailLink />.
       </p>
     ),
   },
@@ -58,6 +67,13 @@ const PRIVACY_SECTIONS: LegalSection[] = [
           25.326 de Protección de los Datos Personales y son objeto de especial protección. Véase la
           cláusula 5 para mayor detalle.
         </p>
+        <p className="font-semibold text-slate-800 mt-4">c) Datos de contacto de personas interesadas</p>
+        <p className="mt-1">
+          Quienes dejan su correo electrónico en el sitio web —para descargar las fichas gratuitas o
+          para recibir un aviso cuando la plataforma para profesionales esté disponible— nos
+          proporcionan su dirección de correo electrónico y, de manera opcional, su nombre. También
+          registramos desde qué formulario lo hicieron y en qué fecha.
+        </p>
       </>
     ),
   },
@@ -84,6 +100,11 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             soporte técnico.
           </li>
           <li>
+            Enviar a las personas interesadas lo que solicitaron —las fichas gratuitas o el aviso de
+            lanzamiento de la plataforma— y, cuando lo hayan aceptado, novedades de TIAM Digital.
+            Pueden dejar de recibirlas en cualquier momento escribiendo a <PrivacyEmailLink />.
+          </li>
+          <li>
             Mejorar el Servicio a través del análisis de patrones de uso agregados y anonimizados.
           </li>
         </ul>
@@ -106,6 +127,11 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             Términos y Condiciones
           </a>{' '}
           y en el consentimiento prestado al momento del registro en la plataforma.
+        </p>
+        <p>
+          Los datos de contacto de las personas interesadas se tratan sobre la base del consentimiento
+          que prestan al enviar el formulario correspondiente, el cual pueden revocar en cualquier
+          momento.
         </p>
         <p>
           Respecto de los datos de salud de los pacientes, <strong>el profesional es el responsable
@@ -208,14 +234,20 @@ const PRIVACY_SECTIONS: LegalSection[] = [
     number: 8,
     title: 'Conservación de los datos',
     content: (
-      <p>
-        Los datos personales del profesional y los datos de sus pacientes se conservarán mientras la
-        cuenta permanezca activa. Una vez que el profesional solicite la eliminación de su cuenta,
-        TIAM Digital procederá a eliminar o anonimizar los datos personales en un plazo razonable,
-        salvo que su conservación sea necesaria para el cumplimiento de obligaciones legales, la
-        resolución de disputas o la defensa de reclamaciones legítimas, en cuyo caso se mantendrán
-        por el plazo legalmente exigible.
-      </p>
+      <>
+        <p>
+          Los datos personales del profesional y los datos de sus pacientes se conservarán mientras la
+          cuenta permanezca activa. Una vez que el profesional solicite la eliminación de su cuenta,
+          TIAM Digital procederá a eliminar o anonimizar los datos personales en un plazo razonable,
+          salvo que su conservación sea necesaria para el cumplimiento de obligaciones legales, la
+          resolución de disputas o la defensa de reclamaciones legítimas, en cuyo caso se mantendrán
+          por el plazo legalmente exigible.
+        </p>
+        <p>
+          Los datos de contacto de las personas interesadas se conservan hasta que soliciten la baja o
+          revoquen su consentimiento.
+        </p>
+      </>
     ),
   },
   {
@@ -246,10 +278,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
         </ul>
         <p>
           Para ejercer cualquiera de estos derechos, el usuario puede contactar a TIAM Digital en{' '}
-          <a href="mailto:privacidad@tiam.com.ar" className="text-tiam-blue hover:underline">
-            privacidad@tiam.com.ar
-          </a>
-          , indicando su nombre, el derecho que desea ejercer y adjuntando la documentación que
+          <PrivacyEmailLink />, indicando su nombre, el derecho que desea ejercer y adjuntando la documentación que
           acredite su identidad. TIAM Digital responderá en los plazos previstos por la normativa
           vigente.
         </p>
@@ -332,11 +361,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
     content: (
       <p>
         Para cualquier consulta, solicitud o reclamo relacionado con el tratamiento de sus datos
-        personales, puede contactarse con TIAM Digital en:{' '}
-        <a href="mailto:privacidad@tiam.com.ar" className="text-tiam-blue hover:underline">
-          privacidad@tiam.com.ar
-        </a>
-        .
+        personales, puede contactarse con TIAM Digital en: <PrivacyEmailLink />.
       </p>
     ),
   },
