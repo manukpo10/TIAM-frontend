@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import { PLATFORM_LAUNCHED } from '@/lib/platform'
 import faqIllustration from '@/assets/faq.webp'
 
 // ─── Educational, clinical FAQ — distinct from the commercial FAQ on the landing.
@@ -229,14 +230,20 @@ export function ClinicalFaqPage() {
             ))}
           </div>
 
-          <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
-            Sobre TIAM
-          </h2>
-          <div className="space-y-3">
-            {FAQ_SERVICIO.map((item) => (
-              <FaqAccordionItem key={item.question} item={item} />
-            ))}
-          </div>
+          {/* Every answer here describes the platform as live (free trial,
+              cancelling, fichas, own exercises) — hidden until it launches. */}
+          {PLATFORM_LAUNCHED && (
+            <>
+              <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
+                Sobre TIAM
+              </h2>
+              <div className="space-y-3">
+                {FAQ_SERVICIO.map((item) => (
+                  <FaqAccordionItem key={item.question} item={item} />
+                ))}
+              </div>
+            </>
+          )}
 
           {/* CTA */}
           <div className="mt-10 rounded-2xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">

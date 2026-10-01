@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/store/auth'
 import { api } from '@/lib/api'
+import { PLATFORM_LAUNCHED } from '@/lib/platform'
 import type { User, Subscription } from '@/types'
 
 const schema = z.object({
@@ -84,12 +85,14 @@ export function LoginPage() {
         Entrar
       </Button>
 
-      <p className="text-center text-sm text-slate-500">
-        ¿No tenés cuenta?{' '}
-        <Link to="/register" className="font-medium text-tiam-blue hover:underline">
-          Probá gratis 7 días
-        </Link>
-      </p>
+      {PLATFORM_LAUNCHED && (
+        <p className="text-center text-sm text-slate-500">
+          ¿No tenés cuenta?{' '}
+          <Link to="/register" className="font-medium text-tiam-blue hover:underline">
+            Probá gratis 7 días
+          </Link>
+        </p>
+      )}
     </form>
   )
 }

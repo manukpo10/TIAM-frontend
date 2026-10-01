@@ -5,6 +5,21 @@ import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Markdown } from '@/components/Markdown'
 import { getPost, formatPostDate } from '@/lib/blog'
+import { PLATFORM_LAUNCHED } from '@/lib/platform'
+
+// While the platform isn't launched, the end-of-post CTA points to its
+// coming-soon page (and waitlist) instead of the sign-up.
+const POST_CTA = PLATFORM_LAUNCHED
+  ? {
+      text: 'Accedé a la biblioteca completa de ejercicios, organizada por área y nivel.',
+      to: '/register',
+      label: 'Probá TIAM gratis 7 días',
+    }
+  : {
+      text: 'Estamos preparando la plataforma de TIAM para profesionales, con ejercicios por área cognitiva y fichas listas para imprimir.',
+      to: '/plataforma',
+      label: 'Conocé lo que viene',
+    }
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -78,14 +93,12 @@ export function BlogPostPage() {
             {/* CTA */}
             <div className="mt-12 rounded-2xl border border-tiam-blue/20 bg-tiam-blue/5 p-6 text-center">
               <p className="font-semibold text-slate-900">¿Querés aplicar esto con tus pacientes?</p>
-              <p className="mt-1 text-sm text-slate-600">
-                Accedé a la biblioteca completa de ejercicios, organizada por área y nivel.
-              </p>
+              <p className="mt-1 text-sm text-slate-600">{POST_CTA.text}</p>
               <Link
-                to="/register"
+                to={POST_CTA.to}
                 className="mt-4 inline-flex items-center justify-center rounded-lg bg-tiam-blue px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-tiam-blue-dark"
               >
-                Probá TIAM gratis 7 días
+                {POST_CTA.label}
               </Link>
             </div>
             </div>

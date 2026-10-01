@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
+import { PLATFORM_LAUNCHED } from '@/lib/platform'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
 /**
@@ -27,7 +28,9 @@ const NAV_LINKS: NavLink[] = [
     label: 'Plataforma',
     href: '/plataforma',
     route: true,
-    children: [{ label: 'Cómo funciona', href: '/demo', route: true }],
+    // The /demo tour ends in sign-up CTAs — hidden until launch, which leaves
+    // "Plataforma" as a plain link (no dropdown).
+    children: PLATFORM_LAUNCHED ? [{ label: 'Cómo funciona', href: '/demo', route: true }] : undefined,
   },
   { label: 'Desafío 30 días', href: '/desafio-30-dias', route: true },
   { label: 'Talleres', href: '/talleres', route: true },
@@ -126,9 +129,11 @@ export function PublicHeader() {
                   <Link to="/login" className="hidden sm:inline-flex">
                     <Button variant="ghost" size="md">Iniciar sesión</Button>
                   </Link>
-                  <Link to="/register" className="hidden sm:inline-flex">
-                    <Button size="md">Probá gratis</Button>
-                  </Link>
+                  {PLATFORM_LAUNCHED && (
+                    <Link to="/register" className="hidden sm:inline-flex">
+                      <Button size="md">Probá gratis</Button>
+                    </Link>
+                  )}
                 </>
               )
             )}
@@ -198,9 +203,11 @@ export function PublicHeader() {
                   >
                     Iniciar sesión
                   </Link>
-                  <Link to="/register" onClick={() => setOpen(false)} className="block mt-1">
-                    <Button size="md" className="w-full">Probá gratis</Button>
-                  </Link>
+                  {PLATFORM_LAUNCHED && (
+                    <Link to="/register" onClick={() => setOpen(false)} className="block mt-1">
+                      <Button size="md" className="w-full">Probá gratis</Button>
+                    </Link>
+                  )}
                 </li>
               )}
             </ul>

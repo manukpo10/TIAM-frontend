@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { PLATFORM_LAUNCHED } from '@/lib/platform'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
 /** Shared footer for the public-facing pages (landing, blog). */
@@ -17,7 +18,9 @@ export function PublicFooter() {
               <span className="font-bold text-white">TIAM Digital</span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
-              Estimulación cognitiva para cada momento: plataforma para profesionales, Desafío 30 días para familias y, pronto, formación para especializarte.
+              {PLATFORM_LAUNCHED
+                ? 'Estimulación cognitiva para cada momento: plataforma para profesionales, Desafío 30 días para familias y, pronto, formación para especializarte.'
+                : 'Estimulación cognitiva para cada momento: Desafío 30 días para familias y, pronto, una plataforma para profesionales y formación para especializarte.'}
             </p>
           </div>
 
@@ -26,8 +29,12 @@ export function PublicFooter() {
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Producto</p>
             <ul className="flex flex-col gap-3 text-sm">
               <li><Link to="/plataforma" className="hover:text-white transition-colors">Plataforma</Link></li>
-              <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
-              <li><a href="/plataforma#planes" className="hover:text-white transition-colors">Planes</a></li>
+              {PLATFORM_LAUNCHED && (
+                <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
+              )}
+              {PLATFORM_LAUNCHED && (
+                <li><a href="/plataforma#planes" className="hover:text-white transition-colors">Planes</a></li>
+              )}
               <li><Link to="/desafio-30-dias" className="hover:text-white transition-colors">Desafío 30 días</Link></li>
               <li><Link to="/talleres" className="hover:text-white transition-colors">Talleres</Link></li>
             </ul>
@@ -41,7 +48,9 @@ export function PublicFooter() {
               <li><Link to="/recursos" className="hover:text-white transition-colors">Fichas gratis</Link></li>
               <li><Link to="/preguntas-frecuentes" className="hover:text-white transition-colors">Preguntas frecuentes</Link></li>
               <li><Link to="/login" className="hover:text-white transition-colors">Iniciar sesión</Link></li>
-              <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>
+              {PLATFORM_LAUNCHED && (
+                <li><Link to="/register" className="hover:text-white transition-colors">Crear cuenta</Link></li>
+              )}
             </ul>
           </nav>
 
