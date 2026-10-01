@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle } from 'lucide-react'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -55,19 +54,6 @@ export function LegalPage({ title, lastUpdated, sections, crossLinkTo, crossLink
       {/* Content */}
       <main className="flex-1">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-          {/* Disclaimer */}
-          <div
-            role="note"
-            className="mb-10 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4"
-          >
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" aria-hidden="true" />
-            <p className="text-sm text-amber-800 leading-relaxed">
-              <strong className="font-semibold">Aviso importante:</strong>{' '}
-              Este es un documento base y debe ser revisado por un asesor legal antes de su uso definitivo.
-              No constituye asesoramiento jurídico.
-            </p>
-          </div>
-
           {/* Page title */}
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
             {title}
