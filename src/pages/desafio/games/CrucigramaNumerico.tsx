@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowRight, Check, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, Pencil, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -50,6 +50,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * último nivel exige al menos un blanco de operador), no por una grilla más
  * grande — así el nivel más cargado sigue entrando cómodo en el presupuesto
  * mobile.
+ *
+ * PANTALLA PREVIA "¿CÓMO SE JUEGA?" (`phase: 'ready' | 'playing'`, mismo
+ * patrón que LaberintoDeMultiplicaciones.tsx). Al probarlo con adultos
+ * mayores, hacer estas cuentas de cabeza resultó demasiado, así que antes del
+ * primer casillero hay un aviso grande y lo primero de la pantalla: agarrar
+ * papel y lápiz, hacer las cuentas en el papel y recién después completar los
+ * casilleros. Una línea corta lo repite durante el juego, para los niveles 2
+ * y 3. Se muestra una vez por apertura del día; "Repetir" nunca vuelve a
+ * 'ready'.
  */
 
 type Op = '+' | '−' | '×' | '÷'
@@ -346,7 +355,69 @@ const HINTS = [
 const CLOSING_MESSAGE =
   'Con este último cruce de cuentas, ¡cerraste los 30 días de ejercicios de este mes! Un logro para estar orgulloso.'
 
+// Pantalla previa, una sola vez por apertura del día. El aviso de papel y
+// lápiz va PRIMERO y con su propio recuadro (ícono + título grande): es lo que
+// más importa de esta pantalla, no un renglón más de la lista de pasos.
+function HowToPlay({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="mt-4 rounded-3xl border border-cyan-600/20 bg-cyan-600/5 p-5 sm:p-6">
+      <p className="text-center text-xl font-bold text-slate-900">¿Cómo se juega?</p>
+
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border-2 border-cyan-600/30 bg-white p-4">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-600/10">
+          <Pencil className="h-5 w-5 text-cyan-700" aria-hidden="true" />
+        </span>
+        <div>
+          <p className="text-lg font-bold leading-snug text-slate-900">Agarrá papel y lápiz</p>
+          <p className="mt-0.5 text-base leading-snug text-slate-700">
+            Hacé las cuentas en el papel y después completá los casilleros.
+          </p>
+        </div>
+      </div>
+
+      <ol className="mt-4 space-y-3">
+        <li className="flex items-start gap-3 text-base leading-snug text-slate-700">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-600 text-sm font-bold text-white">
+            1
+          </span>
+          <span className="pt-0.5">Cada tira de casilleros es una cuenta: un número, un signo, otro número y el resultado.</span>
+        </li>
+        <li className="flex items-start gap-3 text-base leading-snug text-slate-700">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-600 text-sm font-bold text-white">
+            2
+          </span>
+          <span className="pt-0.5">Algunos casilleros están vacíos. Tocá uno y elegí el número o el signo que falta.</span>
+        </li>
+        <li className="flex items-start gap-3 text-base leading-snug text-slate-700">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-600 text-sm font-bold text-white">
+            3
+          </span>
+          <span className="pt-0.5">
+            Las cuentas se cruzan: un casillero puede estar en dos cuentas a la vez. Las flechitas te muestran para dónde se lee cada una:{' '}
+            <ArrowRight className="inline h-3.5 w-3.5 -translate-y-0.5 text-cyan-600" strokeWidth={3} aria-hidden="true" /> hacia la derecha,{' '}
+            <ArrowDown className="inline h-3.5 w-3.5 -translate-y-0.5 text-cyan-600" strokeWidth={3} aria-hidden="true" /> hacia abajo.
+          </span>
+        </li>
+      </ol>
+
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={onStart}
+          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
+        >
+          Empezar
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
+  // Pantalla "¿Cómo se juega?" — una sola vez por apertura del día, "Repetir"
+  // nunca la vuelve a mostrar (mismo criterio que LaberintoDeMultiplicaciones).
+  const [phase, setPhase] = useState<'ready' | 'playing'>('ready')
   const [levelIdx, setLevelIdx] = useState(0)
   const [roundKey, setRoundKey] = useState(0)
   const level = LEVELS[levelIdx]
@@ -483,6 +554,19 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [levelDone, levelIdx, roundKey, mistakes])
 
+  if (phase === 'ready') {
+    return (
+      <div className="px-5 pb-5 pt-4 sm:p-7">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
+            {level.name}
+          </span>
+        </div>
+        <HowToPlay onStart={() => setPhase('playing')} />
+      </div>
+    )
+  }
+
   return (
     <div className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
@@ -512,6 +596,13 @@ export function CrucigramaNumerico({ day: _day, onComplete }: GameProps) {
         <>
           <p className="mx-auto mt-4 max-w-xs text-center text-sm text-slate-500">
             Fijate en las flechas: <ArrowRight className="inline h-3.5 w-3.5 -translate-y-0.5 text-cyan-600" strokeWidth={3} aria-hidden="true" /> la cuenta va hacia la derecha, <ArrowDown className="inline h-3.5 w-3.5 -translate-y-0.5 text-cyan-600" strokeWidth={3} aria-hidden="true" /> hacia abajo.
+          </p>
+          {/* Recordatorio corto de la pantalla previa — los niveles 2 y 3 son
+              los que más lo necesitan y para entonces el aviso inicial ya
+              quedó atrás. Una sola línea, para no sumar scroll en celulares. */}
+          <p className="mx-auto mt-1.5 flex max-w-xs items-center justify-center gap-1.5 text-sm font-semibold text-slate-600">
+            <Pencil className="h-4 w-4 shrink-0 text-cyan-700" aria-hidden="true" />
+            Usá papel y lápiz para las cuentas.
           </p>
 
           {/* Grilla — huella fija 5×5 (ver comentario de archivo), tamaño de

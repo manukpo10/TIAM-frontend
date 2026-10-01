@@ -13,13 +13,45 @@ import type { GameProps } from '@/lib/challengeProgress'
  * hice" — nothing is scored and nothing is tapped. This is the playable
  * version: the app can tell whether the ink actually won over the word.
  *
- * Difficulty ramps by palette confusability, not by board size alone: L1 uses
- * four inks nobody mixes up, L3 adds the pairs that genuinely collide at a
- * glance (azul/celeste, gris/negro, rojo/rosa, naranja/rojo). Hex values are
- * hand-picked rather than taken from the brand tokens because the ink IS the
- * content here and every one of them has to stay legible on white — the
- * catalog's own tiam-orange is documented as failing AA contrast, so it is
- * deliberately not used.
+ * Difficulty ramps with how many inks are in play (4 → 5 → 6) and with the
+ * size of the board (12 → 15 → 18 tiles) — NOT with lookalike colours. An
+ * earlier version added lookalikes on purpose (azul/celeste, gris/negro,
+ * rojo/rosa, naranja/rojo, verde/turquesa) and the facilitator, testing with
+ * older adults wearing glasses, could not tell several of them apart: she
+ * tapped NARANJA and was marked wrong because the ink was a red. Marrón had
+ * already gone the same way (it was swapped for turquesa). A task that
+ * punishes the player for how their eyes work is not an attention task, so
+ * the lookalikes are gone and every ink has a hue of its own.
+ *
+ * THE INKS ARE FAR APART, AND THAT WAS MEASURED, NOT EYEBALLED. Every pair of
+ * inks that can share a level is >= 35 apart in CIEDE2000 (the colour
+ * difference formula that tracks human vision best; a difference of about 2
+ * is barely noticeable). The closest pair is NEGRO/VIOLETA at 35.2 (level 1's
+ * closest is VERDE/NEGRO at 39.3, level 2's VERDE/DORADO at 37.3); in plain
+ * CIELAB the closest is 57.9. The palette this replaces bottomed out at 13.7
+ * (azul/celeste), with rojo/naranja at 14.8 and negro/gris at 21.2. Six inks
+ * is the ceiling: with a named hue per ink and the contrast floor below, a
+ * seventh (naranja, rosa, celeste, turquesa...) lands inside that margin of
+ * one already there.
+ *
+ * Every ink is also >= 3:1 against the white tile — the bar for large bold
+ * text — which is why the "yellow" is DORADO #B8860B (3.25:1): a plain bright
+ * yellow on white is about 1.1:1 and simply disappears. At that contrast it
+ * is honestly a gold, not a lemon yellow, so it is called what it looks like
+ * (and the shorter word lets the type stay larger). ROJO is the deeper
+ * #D0021B for a second reason too: it keeps rojo/verde and rojo/dorado
+ * further apart for red-green colour-blind players. Hex values are
+ * hand-picked, not the brand tokens, because the ink IS the content here; the
+ * catalog's tiam-orange (documented as failing AA contrast) is deliberately
+ * not used.
+ *
+ * THE WORD IS DRAWN LARGER AND HEAVIER than before, because the ink is the
+ * thing the player has to see. index.html only loads Plus Jakarta Sans at
+ * weights 400-700, so `font-extrabold` / `font-black` quietly render as plain
+ * bold; the extra weight comes from a thin text stroke in the ink's own
+ * colour (`WebkitTextStrokeWidth`, in em so it scales with the size). The
+ * board is three columns on every level — the old four-column levels left
+ * ~52px per tile at 311px, narrower than the old "TURQUESA" itself.
  */
 
 interface Ink {
@@ -27,23 +59,17 @@ interface Ink {
   hex: string
 }
 
+// Six hues, each far from every other — see the file header for the numbers.
+// The first four are level 1; levels 2 and 3 each add ONE new hue, never a
+// lookalike of anything already in play.
 const BASE_INKS: Ink[] = [
-  { name: 'ROJO', hex: '#D32F2F' },
-  { name: 'AZUL', hex: '#1565C0' },
-  { name: 'VERDE', hex: '#2E7D32' },
-  { name: 'NEGRO', hex: '#212121' },
+  { name: 'ROJO', hex: '#D0021B' },
+  { name: 'AZUL', hex: '#1678D4' },
+  { name: 'VERDE', hex: '#05741C' },
+  { name: 'NEGRO', hex: '#000000' },
 ]
-const MID_INKS: Ink[] = [
-  { name: 'NARANJA', hex: '#E65100' },
-  { name: 'VIOLETA', hex: '#6A1B9A' },
-]
-// The confusable tail: each of these sits close to a colour already in play.
-const HARD_INKS: Ink[] = [
-  { name: 'CELESTE', hex: '#0288D1' },
-  { name: 'GRIS', hex: '#616161' },
-  { name: 'ROSA', hex: '#C2185B' },
-  { name: 'TURQUESA', hex: '#00796B' },
-]
+const LEVEL_2_INK: Ink = { name: 'DORADO', hex: '#B8860B' }
+const LEVEL_3_INK: Ink = { name: 'VIOLETA', hex: '#7E0197' }
 
 interface Level {
   n: number
@@ -53,21 +79,24 @@ interface Level {
   matching: number
 }
 
+// Tiles are a multiple of 3 so every row of the 3-column board is full.
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', palette: BASE_INKS, tiles: 12, matching: 4 },
-  { n: 2, name: 'Nivel 2', palette: [...BASE_INKS, ...MID_INKS], tiles: 16, matching: 5 },
-  { n: 3, name: 'Nivel 3', palette: [...BASE_INKS, ...MID_INKS, ...HARD_INKS], tiles: 20, matching: 6 },
+  { n: 2, name: 'Nivel 2', palette: [...BASE_INKS, LEVEL_2_INK], tiles: 15, matching: 5 },
+  { n: 3, name: 'Nivel 3', palette: [...BASE_INKS, LEVEL_2_INK, LEVEL_3_INK], tiles: 18, matching: 6 },
 ]
 
-const GRID_CLASS: Record<number, string> = {
-  1: 'grid-cols-3 gap-2.5 sm:gap-3',
-  2: 'grid-cols-4 gap-2 sm:gap-3',
-  3: 'grid-cols-4 gap-2 sm:gap-3',
-}
+// Same 3 columns on every level. Word sizes were fitted to the real glyph
+// widths (Plus Jakarta Sans 700, in em: NEGRO 3.68, DORADO 4.61, VIOLETA
+// 4.20) against ~86px of room per tile at 311px: level 1's longest word is
+// NEGRO at 22px = 81px, levels 2-3's is DORADO at 18px = 83px. The
+// max-[350px] step down keeps the longest word inside its tile on the
+// narrowest phones; `sm:` scales up in the wide modal.
+const GRID_CLASS = 'grid-cols-3 gap-2 sm:gap-3'
 const TILE_CLASS: Record<number, string> = {
-  1: 'min-h-[60px] text-base sm:text-lg',
-  2: 'min-h-[56px] text-sm sm:text-base',
-  3: 'min-h-[56px] text-sm sm:text-base',
+  1: 'min-h-[68px] text-[22px] max-[350px]:text-base sm:text-3xl',
+  2: 'min-h-[60px] text-lg max-[350px]:text-sm sm:text-2xl',
+  3: 'min-h-[60px] text-lg max-[350px]:text-sm sm:text-2xl',
 }
 
 interface Tile {
@@ -215,7 +244,7 @@ export function ElColorDeLaPalabra({ day: _day, onComplete }: GameProps) {
       </div>
 
       {/* Board */}
-      <div className={`mt-5 grid ${GRID_CLASS[level.n]}`}>
+      <div className={`mt-5 grid ${GRID_CLASS}`}>
         {board.map((tile, i) => {
           const isFound = found.has(i)
           const isWrong = wrongIdx === i
@@ -228,7 +257,7 @@ export function ElColorDeLaPalabra({ day: _day, onComplete }: GameProps) {
               aria-label={`${tile.word}, escrita en color ${tile.ink.toLowerCase()}`}
               aria-pressed={isFound}
               className={[
-                'flex items-center justify-center rounded-2xl border-2 bg-white px-2 py-2 transition',
+                'relative flex items-center justify-center rounded-2xl border-2 bg-white px-1 py-2 transition',
                 'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                 TILE_CLASS[level.n],
                 isFound
@@ -240,14 +269,21 @@ export function ElColorDeLaPalabra({ day: _day, onComplete }: GameProps) {
                 isWrong ? 'motion-safe:animate-[wiggle_0.4s_ease-in-out]' : '',
               ].join(' ')}
             >
-              <span className="relative font-extrabold leading-none" style={{ color: tile.hex }}>
+              {/* The ink. font-black asks for the heaviest weight, but only
+                  400-700 are loaded (see file header), so the stroke — which
+                  defaults to the text's own colour — is what actually adds
+                  weight. */}
+              <span className="font-black leading-none" style={{ color: tile.hex, WebkitTextStrokeWidth: '0.045em' }}>
                 {tile.word}
-                {isFound && (
-                  <span className="absolute -right-3.5 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
-                    <Check className="h-3 w-3" strokeWidth={3} />
-                  </span>
-                )}
               </span>
+              {/* Anchored to the tile, not to the word: the words now nearly
+                  fill their tile, so a badge hanging off the word's corner
+                  could poke out of the board. */}
+              {isFound && (
+                <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-tiam-green text-white shadow motion-safe:animate-[pop_0.3s_ease-out]">
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </span>
+              )}
             </button>
           )
         })}

@@ -425,7 +425,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 19, type: 'game', area: 'lenguaje', title: 'Palabra y definición',
     instructions: 'Un juego de vocabulario: tenés un grupo de palabras y sus definiciones mezcladas. Tocá una palabra y después la definición que le corresponde. Subís de dificultad a medida que avanzás.' },
   { day: 20, type: 'game', area: 'calculo', title: 'Laberinto de multiplicaciones',
-    instructions: 'Un juego de cálculo: cruzá la grilla desde arriba a la izquierda hasta abajo a la derecha, pasando sólo a casilleros vecinos cuyo resultado sea mayor. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: cruzá la grilla desde el casillero marcado «Empezá acá» (arriba a la izquierda) hasta abajo a la derecha, pasando sólo a casilleros vecinos cuyo resultado sea mayor. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'calculo', title: 'El puesto de comida',
     instructions: 'Un juego de cálculo: mirá la lista de precios del puesto y calculá cuánto hay que pagar por cada pedido. Tocá el total correcto. Subís de dificultad a medida que avanzás.' },
   { day: 22, type: 'game', area: 'ejecutivas', title: 'El árbol de la familia',
@@ -437,7 +437,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 25, type: 'game', area: 'calculo', title: '¿Cuánto suma?',
     instructions: 'Un juego de cálculo: a la izquierda hay cantidades dibujadas con dados, sumas o marcas, y a la derecha los números. Tocá una de cada lado para unirlas. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'ejecutivas', title: 'Los vecinos',
-    instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué país, mascota, bebida y comida tiene cada vecino. Tocá una palabra de la lista y después la casilla donde creas que va, según las pistas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué país, mascota y bebida tiene cada vecino. Tocá una palabra de la lista y después la casilla donde creas que va, según las pistas. Subís de dificultad a medida que avanzás.' },
   { day: 27, type: 'game', area: 'orientacion', title: 'Banderas y saludos',
     instructions: 'Un juego de orientación y cultura general: reconocé la bandera de cada país y cómo se saluda la gente allá. Subís de dificultad a medida que avanzás.' },
   { day: 28, type: 'game', area: 'memoria', title: 'Leer y responder',
@@ -445,7 +445,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 29, type: 'game', area: 'orientacion', title: 'Las casas del barrio',
     instructions: 'Un juego de orientación: algunas casas del barrio ya tienen nombre y el resto hay que deducirlo con las pistas. Tocá un lugar y después la casa donde creés que está. Subís de dificultad a medida que avanzás.' },
   { day: 30, type: 'game', area: 'calculo', title: 'Crucigrama numérico',
-    instructions: 'Último día: un crucigrama donde en vez de palabras hay cuentas que se cruzan. Completá los casilleros vacíos hasta que todas cierren. 🎉' },
+    instructions: 'Último día: un crucigrama donde en vez de palabras hay cuentas que se cruzan. Agarrá papel y lápiz: hacé las cuentas en el papel y después completá los casilleros vacíos hasta que todas cierren. 🎉' },
 ]
 
 /** Content joined with its per-day illustration (matched by day number). */

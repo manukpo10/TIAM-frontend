@@ -65,6 +65,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * decoy, a step harder. L3 always includes the target's own cluster-mate
  * when it has one, filled out with more same-orientation decoys —
  * orientation stops helping and the actual colour order has to be read.
+ *
+ * LEVEL HINTS ARE PER ROUND KIND (`flagHint` / `greetingHint`). The header
+ * hint used to be a single string per level, so on levels 2 and 3 a greeting
+ * round showed the flag-similarity warning ("hay banderas parecidas…") with
+ * not a single flag on screen. Each kind now has its own hint, and the
+ * greeting one talks only about languages and greetings — never flags.
  */
 
 type CountryId =
@@ -319,7 +325,13 @@ interface Level {
   n: number
   name: string
   rounds: number
-  hint?: string
+  /** Shown under the heading ONLY on flag → country rounds. */
+  flagHint?: string
+  /** Shown under the heading ONLY on country → greeting rounds. It must never
+   * talk about flags: a greeting round has no flags anywhere on screen, and
+   * the one shared `hint` this replaced did exactly that (a flag-similarity
+   * warning popping up over a round about greetings). */
+  greetingHint?: string
 }
 
 const LEVELS: Level[] = [
@@ -332,13 +344,15 @@ const LEVELS: Level[] = [
     n: 2,
     name: 'Nivel 2',
     rounds: 4,
-    hint: 'Ahora hay banderas parecidas entre las opciones — fijate bien en los colores.',
+    flagHint: 'Ahora hay banderas parecidas entre las opciones — fijate bien en los colores.',
+    greetingHint: 'Cada saludo es de otro idioma — pensá qué idioma se habla en ese país.',
   },
   {
     n: 3,
     name: 'Nivel 3',
     rounds: 5,
-    hint: 'Ojo: hay banderas con los mismos colores en otro orden. Mirá bien las franjas.',
+    flagHint: 'Ojo: hay banderas con los mismos colores en otro orden. Mirá bien las franjas.',
+    greetingHint: 'Ojo: algunos saludos suenan parecidos. Pensá bien qué idioma se habla en ese país.',
   },
 ]
 
@@ -479,6 +493,9 @@ export function BanderasYSaludos({ day: _day, onComplete }: GameProps) {
   const [roundIdx, setRoundIdx] = useState(0)
   const round = rounds[roundIdx]
   const done = roundIdx >= level.rounds
+  // Each round kind gets ITS OWN level hint — a greeting round must never be
+  // shown the flag one (see the Level interface).
+  const levelHint = round?.kind === 'flagToCountry' ? level.flagHint : level.greetingHint
 
   const [eliminated, setEliminated] = useState<Set<string>>(new Set())
   const [resolved, setResolved] = useState(false)
@@ -554,7 +571,7 @@ export function BanderasYSaludos({ day: _day, onComplete }: GameProps) {
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">
               {round.kind === 'flagToCountry' ? 'Mirá la bandera y tocá el país' : 'Mirá el país y tocá cómo se saludan ahí'}
             </h2>
-            {level.hint && <p className="mt-2 text-base font-medium text-tiam-blue">{level.hint}</p>}
+            {levelHint && <p className="mt-2 text-base font-medium text-tiam-blue">{levelHint}</p>}
             <p className="mt-2 text-base font-semibold text-slate-500">
               Llevás {roundIdx} de {level.rounds}
             </p>

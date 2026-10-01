@@ -24,9 +24,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * each question's option order is free to reshuffle. Difficulty climbs
  * through text length and question type: L1 is short with directly-stated
  * facts, L2 is longer and several questions need connecting two separate
- * sentences, L3 is longest and includes a question that requires a genuine
- * inference (never stated outright, but strictly derivable from what IS
- * stated).
+ * sentences.
+ *
+ * TWO LEVELS ONLY. A third level (the longest texts, with a question that
+ * needed a genuine inference) was cut after the facilitator's testing with
+ * older adults. `LEVELS`, `TOTAL_QUESTIONS` and the wrap-around "Repetir" are
+ * all derived from the two levels that remain.
  */
 
 interface QuestionOption {
@@ -270,123 +273,9 @@ const TEXT_ROSANA: ReadingText = {
   ],
 }
 
-// ── Nivel 3 — textos más largos todavía; al menos una pregunta pide inferir ──
-
-const TEXT_FERIA_CIENCIAS: ReadingText = {
-  id: 'feria-ciencias-bruno',
-  title: 'La maqueta de Bruno',
-  body: 'Estela fue maestra de primaria durante treinta y cinco años, en la misma escuela de Boulogne. Se jubiló en dos mil dieciocho, pero todavía ayuda a su nieto Bruno con la tarea todas las tardes. Bruno tiene once años y cursa sexto grado en una escuela de Munro. Este cuatrimestre le tocó armar una maqueta del sistema solar para la feria de ciencias. Estela guarda en su casa una caja enorme con témperas, cartulinas y bolitas de telgopor de otros proyectos escolares. El miércoles pasado, Bruno y Estela pintaron los planetas hasta las nueve de la noche, mucho más tarde de lo habitual. Al otro día, Bruno le contó a su mamá que se había quedado dormido en la clase de matemática. La feria de ciencias es este sábado, y Estela ya separó su vestido más lindo para ir a verla. Bruno todavía no decidió si va a explicar la maqueta él solo o si va a pedirle ayuda a su compañero de banco, Ian.',
-  questions: [
-    {
-      id: 'feria-q1',
-      prompt: '¿En qué localidad está la escuela donde Estela trabajó como maestra?',
-      correctId: 'feria-q1-a',
-      options: [
-        { id: 'feria-q1-a', label: 'Boulogne' },
-        { id: 'feria-q1-b', label: 'Munro' },
-        { id: 'feria-q1-c', label: 'Vicente López' },
-        { id: 'feria-q1-d', label: 'San Isidro' },
-      ],
-    },
-    {
-      id: 'feria-q2',
-      prompt: '¿Qué tiene que armar Bruno para la feria de ciencias?',
-      correctId: 'feria-q2-a',
-      options: [
-        { id: 'feria-q2-a', label: 'Una maqueta del sistema solar' },
-        { id: 'feria-q2-b', label: 'Una maqueta del cuerpo humano' },
-        { id: 'feria-q2-c', label: 'Un experimento de volcanes' },
-        { id: 'feria-q2-d', label: 'Una línea de tiempo de próceres' },
-      ],
-    },
-    {
-      id: 'feria-q3',
-      prompt: '¿Por qué Bruno se quedó dormido en la clase de matemática?',
-      correctId: 'feria-q3-a',
-      options: [
-        { id: 'feria-q3-a', label: 'Porque la noche anterior se acostó más tarde de lo habitual pintando la maqueta' },
-        { id: 'feria-q3-b', label: 'Porque se enfermó esa semana' },
-        { id: 'feria-q3-c', label: 'Porque el profesor daba una clase muy larga' },
-        { id: 'feria-q3-d', label: 'Porque Ian lo despertó tarde esa mañana' },
-      ],
-    },
-    {
-      id: 'feria-q4',
-      prompt: 'Según lo que cuenta el texto, ¿quién es mayor, Estela o Bruno?',
-      correctId: 'feria-q4-a',
-      options: [
-        { id: 'feria-q4-a', label: 'Estela, porque Bruno es su nieto' },
-        { id: 'feria-q4-b', label: 'Bruno, porque ya cursa sexto grado' },
-        { id: 'feria-q4-c', label: 'Los dos tienen la misma edad' },
-        { id: 'feria-q4-d', label: 'No se puede saber con el texto' },
-      ],
-    },
-  ],
-}
-
-const TEXT_GRUPO_TEJIDO: ReadingText = {
-  id: 'grupo-tejido-marta',
-  title: 'El grupo de tejido de Marta',
-  // The count is worded as "además de ella" on purpose. An earlier draft said
-  // "van siete mujeres y un solo hombre", which leaves it genuinely arguable
-  // whether Marta is one of the seven — and "Nueve" is one of the options, so
-  // the honest reading of the text could lose. The addition is still there;
-  // only the ambiguity is gone. The draft also had Marta founding the group
-  // and, two sentences later, being the last to join it — that read as a
-  // contradiction and earned its place on the cutting-room floor.
-  body: 'Marta trabajó veintiocho años en el correo, repartiendo cartas en el barrio de Caballito. Hace seis años armó un grupo de tejido que se junta los martes en el club de jubilados. Además de ella van seis mujeres y un solo hombre, don Raúl, que aprendió a tejer para hacerle bufandas a sus bisnietos. Todos los sábados Marta arma un puesto en la feria del barrio y vende los tejidos que sobran. Su nieta Camila la ayuda a acomodar el puesto antes de que abra la feria a las nueve. El año pasado, Marta ganó un premio en un concurso de tejido artesanal organizado por la municipalidad. Con la plata del premio se compró dos ovillos de lana importada que todavía no se anima a usar. Don Raúl le dijo que la próxima bufanda tiene que ser para el hijo de Camila, que nació en marzo.',
-  questions: [
-    {
-      id: 'tejido-q1',
-      prompt: '¿En qué barrio repartía cartas Marta?',
-      correctId: 'tejido-q1-a',
-      options: [
-        { id: 'tejido-q1-a', label: 'Caballito' },
-        { id: 'tejido-q1-b', label: 'Floresta' },
-        { id: 'tejido-q1-c', label: 'Once' },
-        { id: 'tejido-q1-d', label: 'Boedo' },
-      ],
-    },
-    {
-      id: 'tejido-q2',
-      prompt: '¿Qué día de la semana se junta el grupo de tejido?',
-      correctId: 'tejido-q2-a',
-      options: [
-        { id: 'tejido-q2-a', label: 'Los martes' },
-        { id: 'tejido-q2-b', label: 'Los sábados' },
-        { id: 'tejido-q2-c', label: 'Los jueves' },
-        { id: 'tejido-q2-d', label: 'Los domingos' },
-      ],
-    },
-    {
-      id: 'tejido-q3',
-      prompt: '¿Cuántas personas van, en total, al grupo de tejido?',
-      correctId: 'tejido-q3-a',
-      options: [
-        { id: 'tejido-q3-a', label: 'Ocho' },
-        { id: 'tejido-q3-b', label: 'Siete' },
-        { id: 'tejido-q3-c', label: 'Nueve' },
-        { id: 'tejido-q3-d', label: 'Seis' },
-      ],
-    },
-    {
-      id: 'tejido-q4',
-      prompt: '¿Por qué Marta compró dos ovillos de lana importada?',
-      correctId: 'tejido-q4-a',
-      options: [
-        { id: 'tejido-q4-a', label: 'Porque ganó un premio en un concurso de tejido artesanal' },
-        { id: 'tejido-q4-b', label: 'Porque se los regaló don Raúl' },
-        { id: 'tejido-q4-c', label: 'Porque los encontró en la feria del barrio' },
-        { id: 'tejido-q4-d', label: 'Porque se los compró Camila de regalo' },
-      ],
-    },
-  ],
-}
-
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', texts: [TEXT_ALMACEN, TEXT_BIZCOCHUELO] },
   { n: 2, name: 'Nivel 2', texts: [TEXT_ANIBAL, TEXT_ROSANA] },
-  { n: 3, name: 'Nivel 3', texts: [TEXT_FERIA_CIENCIAS, TEXT_GRUPO_TEJIDO] },
 ]
 
 // Fixed regardless of which text gets drawn — every text has exactly 4
@@ -443,7 +332,7 @@ export function LeerYResponder({ day: _day, onComplete }: GameProps) {
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE_GREAT[0])
 
-  // accMistakes accumulates across levels 1→2→3, zeroed only on a genuine day
+  // accMistakes accumulates across levels 1→2, zeroed only on a genuine day
   // restart — see nextLevel()'s wrap branch. levelMistakes is purely cosmetic
   // (picks the praise line below) and always resets with the level.
   const [accMistakes, setAccMistakes] = useState(0)

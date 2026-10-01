@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, Sparkles, Pencil } from 'lucide-react'
+import { Check, RotateCcw, ArrowRight, ArrowDown, Sparkles, Pencil } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -52,6 +52,18 @@ import type { GameProps } from '@/lib/challengeProgress'
  * that reuses the exact cell markup the real board uses) before the first
  * real cell is ever shown — same `phase: 'ready' | 'playing'` pattern,
  * "Repetir" never sets it back.
+ *
+ * THE START CELL IS MARKED, ON EVERY LEVEL. Players kept asking where to
+ * begin: the top-left corner only ever looked like "the current cell" (a pale
+ * blue tint on a white board), which is not a signal anyone notices before
+ * their first tap. So, while the walk is still on its first cell, that cell
+ * is painted solid blue with white text, and an "Empezá acá" pill with a
+ * down arrow sits right above it (`StartLabel`, aligned to the board's first
+ * column by reusing the board's own column classes, so it works at every
+ * grid size without measuring anything). Only the START is marked — the
+ * route itself is never hinted at. The marker comes back if the player
+ * undoes all the way to the first cell, and the how-to screen shows the
+ * same blue cell and the same label so the two are recognised as one.
  */
 
 interface Level {
@@ -196,16 +208,35 @@ const NOT_GREATER_HINTS = [
 const STUCK_HINT = 'No te queda ningún paso válido desde acá. Tocá la celda anterior para volver.'
 const PRAISE = ['¡Muy bien!', '¡Excelente camino!', '¡Así se hace!', '¡Perfecto recorrido!']
 
+/** The "Empezá acá" pill + down arrow that points at the start cell. Used
+ * above the real board and in the how-to example, so both read the same.
+ * Dark blue (not the brand orange) on purpose: white on tiam-blue-dark is
+ * ~10:1, while white on tiam-orange fails AA at this size. The arrow is
+ * centred on its column (so it points at the start cell) while the pill is
+ * pinned to the column's left edge: on the 5×5 board a column is narrower
+ * than the pill, and a centred pill would stick out past the board's left
+ * edge, up against the modal's. */
+function StartLabel() {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="self-start whitespace-nowrap rounded-full bg-tiam-blue-dark px-2 py-0.5 text-xs font-bold text-white">
+        Empezá acá
+      </span>
+      <ArrowDown className="-mt-px h-4 w-4 text-tiam-blue-dark" strokeWidth={3} aria-hidden="true" />
+    </div>
+  )
+}
+
 /** One cell of the worked example, drawn with the SAME markup as the real
- * board (rounded card, `N × M`, the same current/visited/plain states) so
- * recognizing a cell in the actual game means recognizing this screen. */
-function ExampleCell({ a, b, state }: { a: number; b: number; state: 'current' | 'valid' | 'invalid' }) {
+ * board (rounded card, `N × M`, the same start/current/visited/plain states)
+ * so recognizing a cell in the actual game means recognizing this screen. */
+function ExampleCell({ a, b, state }: { a: number; b: number; state: 'start' | 'valid' | 'invalid' }) {
   return (
     <div
       className={[
         'relative flex h-14 w-16 shrink-0 items-center justify-center rounded-2xl border-2 text-base font-extrabold',
-        state === 'current'
-          ? 'border-tiam-blue bg-tiam-blue/5 text-slate-700 ring-2 ring-tiam-blue/30'
+        state === 'start'
+          ? 'border-tiam-blue-dark bg-tiam-blue text-white shadow-md ring-4 ring-tiam-blue/25'
           : state === 'valid'
             ? 'border-tiam-green bg-tiam-green/10 text-slate-700 ring-2 ring-tiam-green/30'
             : 'border-slate-200 bg-slate-50 text-slate-400',
@@ -223,7 +254,7 @@ function ExampleCell({ a, b, state }: { a: number; b: number; state: 'current' |
 
 function HowToPlay({ onStart }: { onStart: () => void }) {
   const steps = [
-    'Empezás en la celda de arriba a la izquierda y tenés que llegar hasta la de abajo a la derecha.',
+    'Empezás en la celda de arriba a la izquierda, la que está pintada de azul y dice «Empezá acá». Tenés que llegar hasta la de abajo a la derecha.',
     'En cada celda hay una multiplicación, no el resultado — la cuenta la hacés vos.',
     'Desde tu celda sólo podés avanzar a la de la derecha o a la de abajo, y tiene que dar un resultado más grande que el de tu celda.',
   ]
@@ -244,14 +275,17 @@ function HowToPlay({ onStart }: { onStart: () => void }) {
 
       <div className="mt-4 rounded-2xl bg-white p-3">
         <p className="text-center text-sm font-semibold text-slate-500">Por ejemplo, parado acá (3 × 2 da 6):</p>
-        {/* Same right/down layout as the real board: the current cell top-left,
+        {/* Same right/down layout as the real board: the start cell top-left,
             its right neighbour beside it, its down neighbour below it — so
             "a la derecha" / "de abajo" in the steps above map onto an actual
-            position here, not just isolated example cells. */}
+            position here, not just isolated example cells. The start cell
+            carries the same blue paint and "Empezá acá" label as the board. */}
         <div className="mt-3 grid grid-cols-2 items-start justify-items-center gap-x-4 gap-y-2">
-          <ExampleCell a={3} b={2} state="current" />
+          <StartLabel />
+          <span />
+          <ExampleCell a={3} b={2} state="start" />
           <ExampleCell a={4} b={3} state="valid" />
-          <p className="max-w-[6.5rem] text-center text-xs leading-snug text-slate-500">Empezás acá</p>
+          <p className="max-w-[6.5rem] text-center text-xs leading-snug text-slate-500">Tu celda de inicio</p>
           <p className="max-w-[6.5rem] text-center text-xs leading-snug text-slate-500">
             A la derecha: 4 × 3 da 12 — más grande, se puede avanzar ahí
           </p>
@@ -305,6 +339,10 @@ export function LaberintoDeMultiplicaciones({ day: _day, onComplete }: GameProps
 
   const currentIndex = path[path.length - 1]
   const done = currentIndex === lastIndex
+  // The walk is still sitting on the very first cell — the one moment where
+  // "where do I start?" is the open question, so the start marker shows only
+  // then (see file header).
+  const showStartMarker = !done && path.length === 1
   const visited = new Set(path)
   const stuck = !done && !hasForwardMove(currentIndex, grid)
   const stepsNeeded = grid.size * 2 - 2
@@ -408,31 +446,53 @@ export function LaberintoDeMultiplicaciones({ day: _day, onComplete }: GameProps
         )}
       </div>
 
+      {/* Start marker row — same column classes as the board below, so the
+          pill lands over the first cell whatever the grid size. Its space is
+          reserved (invisible, never removed) once the walk has moved on, so
+          the board doesn't jump after the first step. Purely visual: the
+          start cell's own aria-label says it is the start. */}
+      <div className={`mx-auto mt-4 grid w-full max-w-[360px] ${GRID_CLASS[level.n]}`} aria-hidden="true">
+        <div className={showStartMarker ? '' : 'invisible'}>
+          <StartLabel />
+        </div>
+      </div>
+
       {/* Grid */}
-      <div className={`mx-auto mt-5 grid w-full max-w-[360px] ${GRID_CLASS[level.n]}`}>
+      <div className={`mx-auto mt-1 grid w-full max-w-[360px] ${GRID_CLASS[level.n]}`}>
         {grid.cells.map((cell, i) => {
           const isVisited = visited.has(i)
           const isCurrent = !done && i === currentIndex
+          const isStart = i === 0 && showStartMarker
           return (
             <button
               key={i}
               type="button"
               disabled={done}
               onClick={() => tap(i)}
-              aria-label={`${cell.a} por ${cell.b}`}
+              aria-label={`${cell.a} por ${cell.b}${i === 0 ? ', celda de inicio' : ''}`}
               aria-pressed={isVisited}
               className={[
-                'relative flex items-center justify-center rounded-2xl border-2 bg-white transition',
+                'relative flex items-center justify-center rounded-2xl border-2 transition',
                 'focus:outline-none focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                 CELL_CLASS[level.n],
-                isCurrent
-                  ? 'border-tiam-blue bg-tiam-blue/5 ring-2 ring-tiam-blue/30'
-                  : isVisited
-                    ? 'border-tiam-green bg-tiam-green/10 ring-2 ring-tiam-green/30'
-                    : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
+                // The start cell gets its OWN background instead of stacking
+                // `bg-tiam-blue` on a shared `bg-white`: two bg-* utilities on
+                // one element are resolved by stylesheet order, and bg-white
+                // wins — which left white text on a white cell. Every other
+                // state keeps `bg-white` exactly as before.
+                isStart
+                  ? 'border-tiam-blue-dark bg-tiam-blue shadow-md ring-4 ring-tiam-blue/25'
+                  : [
+                      'bg-white',
+                      isCurrent
+                        ? 'border-tiam-blue bg-tiam-blue/5 ring-2 ring-tiam-blue/30'
+                        : isVisited
+                          ? 'border-tiam-green bg-tiam-green/10 ring-2 ring-tiam-green/30'
+                          : 'border-slate-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0',
+                    ].join(' '),
               ].join(' ')}
             >
-              <span className="font-extrabold leading-none text-slate-700">
+              <span className={['font-extrabold leading-none', isStart ? 'text-white' : 'text-slate-700'].join(' ')}>
                 {cell.a} × {cell.b}
               </span>
               {isVisited && !isCurrent && (

@@ -42,6 +42,22 @@ import type { GameProps } from '@/lib/challengeProgress'
  * permutation survived for all 6 families, matching what's encoded below.
  * The script lived only in the scratchpad and was deleted after use.
  *
+ * LEVEL 3 CARRIES TWO EXTRA DIRECT STATEMENTS PER FAMILY, listed first. In the
+ * facilitator's testing with older adults level 3 felt "medio confuso": five
+ * statements, four of them in-law kinship ("suegro", "cuñada", "sobrina",
+ * "suegra") that each have to be mapped onto the tree before anything can be
+ * placed. The two additions use everyday vocabulary and give the player
+ * somewhere to start without any other statement: "X es la hermana de Y"
+ * pins the two siblings (the only pair of sibling boxes in the tree), and
+ * "Y está casado con Z" then pins the son's wife. That settles three boxes
+ * before a single in-law word has to be read, and every original statement
+ * after them can be applied to names that are already placed. Like every
+ * other statement they never name a box's own role (see below), and the five
+ * originals are unchanged and still true. The uniqueness check above was
+ * re-run on the new statement sets under both the strict and the broad
+ * kinship readings: each level-3 family still has exactly one solution (one
+ * before the change as well).
+ *
  * STATEMENTS NEVER NAME A BOX'S OWN ROLE: every box already prints its
  * role, so "Marta es la hija mayor" would reduce the puzzle to matching
  * labels. Statements use relations the boxes don't print — mamá, tío,
@@ -146,6 +162,10 @@ const LEVELS: Level[] = [
           nieta: 'Julieta',
         },
         statements: [
+          // Two direct statements added for older adults, listed first (see
+          // the file header). The five below them are the original ones.
+          'Teresa es la hermana de Fernando.',
+          'Fernando está casado con Adriana.',
           'Osvaldo es el suegro de Adriana.',
           'Adriana es la mamá de Tomás.',
           'Teresa es la cuñada de Adriana.',
@@ -166,6 +186,10 @@ const LEVELS: Level[] = [
           nieta: 'Carla',
         },
         statements: [
+          // Two direct statements added for older adults, listed first (see
+          // the file header). The five below them are the original ones.
+          'Laura es la hermana de Sergio.',
+          'Sergio está casado con Marisa.',
           'Héctor y Mónica son los suegros de Marisa.',
           'Marisa es la cuñada de Laura.',
           'Julián es el sobrino de Laura.',

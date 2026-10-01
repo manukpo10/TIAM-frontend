@@ -7,7 +7,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * stays on disk unused per this catalog's convention — see registry.ts). A
  * classic logic-deduction puzzle ("acertijo de Einstein" / zebra puzzle): a
  * row of houses, each with a FIXED color, and a list of clues that let you
- * deduce which país/mascota/bebida/comida belongs to each house.
+ * deduce which país/mascota/bebida belongs to each house.
  *
  * SAME FAMILY AS AViajar.tsx (día 24) and CasasDelBarrio.tsx (día 29) — all
  * three are constraint-satisfaction puzzles where several clues have to be
@@ -15,14 +15,20 @@ import type { GameProps } from '@/lib/challengeProgress'
  * most general of the three: AViajar fixes exactly 2 categories (transporte/
  * destino) and CasasDelBarrio assigns a single attribute (a name) to a fixed
  * grid position; here the number of categories is DATA-DRIVEN and varies per
- * level (2 → 3 → 4), so the rendering code is one loop over
+ * level (2 → 3), so the rendering code is one loop over
  * `puzzle.categories` — never a hardcoded column count.
  *
+ * TWO LEVELS ONLY. The game used to end on a third level, the classic
+ * Einstein/zebra puzzle (5 houses × 4 categories, 14 clues). It was cut after
+ * the facilitator's testing with older adults, and nothing here refers to it
+ * any more: `LEVELS`, `TOTAL_BLANKS` and the wrap-around "Repetir" are all
+ * derived from the two puzzles that remain.
+ *
  * LAYOUT: rows are houses, not columns. The classic zebra-puzzle worksheet
- * lays houses out as columns, but that doesn't fit a 375px phone once nivel
- * 3 reaches 5 houses × 4 categories, so it's transposed here: each ROW is
- * one house (a fixed-color swatch + "Casa N", neither tappable — the color
- * is GIVEN, never guessed), each COLUMN is one category.
+ * lays houses out as columns, but that doesn't fit a 375px phone once a
+ * puzzle reaches 4 houses × 3 categories, so it's transposed here: each ROW
+ * is one house (a fixed-color swatch + "Casa N", neither tappable — the
+ * color is GIVEN, never guessed), each COLUMN is one category.
  *
  * INTERACTION: same tap-a-word-then-tap-a-cell flow as AViajar — pick a word
  * from a bank, tap the cell it belongs in; an already-filled cell is
@@ -35,38 +41,30 @@ import type { GameProps } from '@/lib/challengeProgress'
  * CONTENT: hand-authored, one puzzle per level, pre-verified by the
  * requester with a brute-force script over every permutation to have
  * exactly one solution — used here EXACTLY as given (clue wording, item
- * names and house colors are all verbatim, down to nivel 3's color-name
- * gender being slightly inconsistent with nivel 1's, e.g. "Rojo" here vs
- * "Roja" there — cosmetic only, it only ever surfaces in an aria-label,
- * never in on-screen text or clue wording). Each category's `items` array is
+ * names and house colors are all verbatim). Each category's `items` array is
  * stored in HOUSE ORDER (`items[h]` is the correct answer for house h) —
  * this doubles as the solution, so there's no separate solution map that
  * could drift out of sync with it (unlike AViajar's `solution` record). Only
  * the banks' DISPLAY order is shuffled (`useMemo`, cosmetic only, same
  * mechanism as AViajar's `shuffledModos`/`shuffledDestinos`) — the puzzle
- * itself never varies, so "Repetir" always replays the exact same 3
+ * itself never varies, so "Repetir" always replays the exact same 2
  * puzzles. `TOTAL_BLANKS` is derived from the data (houses × categories,
  * summed across levels), never a bare literal.
  *
- * NIVEL 3 is the classic Einstein/zebra puzzle (5 houses, 4 categories, 20
- * blanks, 14 clues) — the hardest single puzzle in the app's whole game
- * catalog, requiring genuine multi-step chained deduction. A "¿Cómo se
- * juega?" ready screen (`phase: 'ready' | 'playing'`, same pattern as
- * LaberintoDeMultiplicaciones.tsx) explains the three things a first-time
- * player needs before nivel 1 even starts — colors are fixed per house,
- * clues can point by color/position/adjacency, and how tapping works — plus
- * a worked 2-house example reusing the real cell markup, and a
+ * A "¿Cómo se juega?" ready screen (`phase: 'ready' | 'playing'`, same
+ * pattern as LaberintoDeMultiplicaciones.tsx) explains the three things a
+ * first-time player needs before nivel 1 even starts — colors are fixed per
+ * house, clues can point by color/position/adjacency, and how tapping works
+ * — plus a worked 2-house example reusing the real cell markup, and a
  * lápiz-y-papel note. Shown once per opening of the day; "Repetir" never
  * resets it back to 'ready'.
  *
- * MOBILE WIDTH at nivel 3 (5 rows × a house-color+label column × 4 tappable
- * cells) is the widest row in the app's whole game catalog. It fits at
- * 375px with a small font (`text-[10px]`, via CELL_TEXT_CLASS) and
- * `break-words` on each cell — the one genuinely long item name
- * ("Hamburguesa") wraps onto a second line inside its ~60px cell instead of
- * overflowing it, so the horizontal-scroll fallback used by
- * PalabrasEnClave.tsx / QueSigue.tsx isn't needed here. Verified in-browser
- * at a 375px viewport before shipping.
+ * MOBILE WIDTH: the widest row is nivel 2's (4 rows × a house-color+label
+ * column × 3 tappable cells). At 375px each cell gets ~86px and its longest
+ * item name ("Portugal", "Gaseosa", "Hámster") fits on one line at the small
+ * font picked by CELL_TEXT_CLASS; `break-words` stays on each cell as a
+ * safety net, so the horizontal-scroll fallback used by PalabrasEnClave.tsx /
+ * QueSigue.tsx isn't needed here.
  */
 
 interface HouseColor {
@@ -156,59 +154,25 @@ const PUZZLE_L2: Puzzle = {
   ],
 }
 
-const PUZZLE_L3: Puzzle = {
-  houses: [
-    { name: 'Naranja', hex: '#EA580C' },
-    { name: 'Celeste', hex: '#0EA5E9' },
-    { name: 'Rojo', hex: '#DC2626' },
-    { name: 'Verde', hex: '#16A34A' },
-    { name: 'Negro', hex: '#1F2937' },
-  ],
-  categories: [
-    { key: 'pais', label: 'Países', items: ['Noruega', 'Dinamarca', 'Reino Unido', 'Alemania', 'Suecia'] },
-    { key: 'mascota', label: 'Mascotas', items: ['Gato', 'Caballo', 'Pájaro', 'Pez', 'Perro'] },
-    { key: 'bebida', label: 'Bebidas', items: ['Agua', 'Té', 'Leche', 'Café', 'Cerveza'] },
-    { key: 'comida', label: 'Comidas', items: ['Puré', 'Ensalada', 'Croquetas', 'Pizza', 'Hamburguesa'] },
-  ],
-  clues: [
-    'El británico vive en la casa roja.',
-    'El sueco tiene un perro como mascota.',
-    'El danés toma té.',
-    'El noruego vive en la primera casa.',
-    'El alemán come pizza.',
-    'El dueño de la casa verde bebe café.',
-    'El propietario que come croquetas cría pájaros.',
-    'El dueño de la casa naranja come puré.',
-    'El hombre que vive en la casa del centro bebe leche.',
-    'El hombre que come ensalada vive al lado del que tiene un gato.',
-    'El hombre que tiene un caballo vive al lado del que come puré.',
-    'El hombre que come hamburguesas toma cerveza.',
-    'El hombre que come ensalada vive al lado del que toma agua.',
-    'El noruego vive al lado de la casa azul (la casa celeste).',
-  ],
-}
-
 const LEVELS: Level[] = [
   { n: 1, name: 'Nivel 1', puzzle: PUZZLE_L1 },
   { n: 2, name: 'Nivel 2', puzzle: PUZZLE_L2 },
-  { n: 3, name: 'Nivel 3', puzzle: PUZZLE_L3 },
 ]
 
-// Total tappable cells across all three levels ((3×2) + (4×3) + (5×4) = 38)
-// — derived from the data rather than a bare literal, so it can't silently
-// drift if a puzzle's house or category count ever changes.
+// Total tappable cells across both levels ((3×2) + (4×3) = 18) — derived
+// from the data rather than a bare literal, so it can't silently drift if a
+// puzzle's house or category count ever changes.
 const TOTAL_BLANKS = LEVELS.reduce((sum, lvl) => sum + lvl.puzzle.houses.length * lvl.puzzle.categories.length, 0)
 
 // Full class strings, never interpolated — Tailwind only emits classes it
 // can read literally in the source (same discipline as
 // LaberintoDeMultiplicaciones.tsx's GRID_CLASS/CELL_CLASS). Keyed by
-// category count (2/3/4), which is what actually drives each tappable
-// cell's width — nivel 3's 4 columns need the smallest text to fit
-// alongside the house-color+label column at 375px.
+// category count (2/3), which is what actually drives each tappable cell's
+// width — nivel 2's 3 columns need the smaller text to fit alongside the
+// house-color+label column at 375px.
 const CELL_TEXT_CLASS: Record<number, string> = {
   2: 'text-sm sm:text-base',
   3: 'text-xs sm:text-sm',
-  4: 'text-[10px] sm:text-sm',
 }
 
 const PRAISE = ['¡Muy bien!', '¡Excelente trabajo de detective!', '¡Así se deduce!', '¡Perfecto!']
@@ -244,7 +208,7 @@ function ExampleHouse({ hex, label, value, solved }: { hex: string; label: strin
 function HowToPlay({ onStart }: { onStart: () => void }) {
   const steps = [
     'Cada casa tiene un color fijo que no cambia.',
-    'Las pistas dicen qué país, mascota, bebida o comida va en cada casa — a veces por el color, a veces por la posición, y a veces por "vive al lado de".',
+    'Las pistas dicen qué país, mascota o bebida va en cada casa — a veces por el color, a veces por la posición, y a veces por "vive al lado de".',
     'Tocás una palabra de la lista de abajo y después la casilla donde creas que va.',
   ]
   return (
@@ -321,8 +285,8 @@ export function LosVecinos({ day: _day, onComplete }: GameProps) {
   const [solved, setSolved] = useState(false)
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
-  // Accumulates 1→2→3 across levels; zeroed ONLY on the genuine day restart
-  // (wrap from level 3 back to level 1).
+  // Accumulates 1→2 across levels; zeroed ONLY on the genuine day restart
+  // (wrap from level 2 back to level 1).
   const [mistakes, setMistakes] = useState(0)
 
   const banks = Object.fromEntries(
@@ -395,7 +359,7 @@ export function LosVecinos({ day: _day, onComplete }: GameProps) {
     if (isWrap) {
       // Genuine day restart — the mistake counter zeroes. Puzzle content
       // never varies by level anyway, so there's nothing to re-roll:
-      // "Repetir" always replays the exact same 3 puzzles.
+      // "Repetir" always replays the exact same 2 puzzles.
       setMistakes(0)
     }
     setLevelIdx((i) => (i < LEVELS.length - 1 ? i + 1 : 0))
@@ -405,7 +369,7 @@ export function LosVecinos({ day: _day, onComplete }: GameProps) {
   // Fires once per roundKey when the LAST level is solved. A genuine day
   // restart gets a new roundKey (via nextLevel's wrap branch), so a full
   // replay of the day can report again; re-rendering while already solved
-  // on level 3 cannot fire twice.
+  // on the last level cannot fire twice.
   const reportedRoundKeyRef = useRef<number | null>(null)
   useEffect(() => {
     if (solved && levelIdx === LEVELS.length - 1 && reportedRoundKeyRef.current !== roundKey) {

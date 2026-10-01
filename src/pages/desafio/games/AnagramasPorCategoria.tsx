@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -46,12 +46,19 @@ import type { GameProps } from '@/lib/challengeProgress'
  * six, and each round draws 3 distinct words from that category's own
  * per-level band. Every (category, level) pool keeps at least 6 candidates
  * on purpose — insurance in case a level's two rounds ever land on the same
- * category, and what gives "Repetir" (which reuses the same epoch, see
- * below) room to feel different across levels even though categories can
- * repeat across them. "Repetir" — only reachable after level 3 — replays
- * the SAME epoch (same categories/words) but bumps `roundKey`, which forces
- * `tilesByWord` to re-scramble: same words, fresh scrambles, same contract
- * as the other two anagram games.
+ * category, and what gives each level room to feel different even though
+ * categories can repeat across them.
+ *
+ * THE SCRAMBLES ARE PART OF THE EPOCH TOO. Each word's scrambled letters are
+ * drawn once, at mount, right next to the word itself (see `buildLevelPlan`).
+ * Here the scrambled string IS what the player sees of a word — it is the
+ * content, not a cosmetic arrangement of it — so re-rolling it on "Repetir"
+ * (as an earlier version did through `roundKey`) made the very same words
+ * look like a brand new set to the people playing. "Repetir" — only reachable
+ * after level 3 — now replays the exact same categories, the exact same
+ * words AND the exact same scrambles; it only resets the player's progress.
+ * `roundKey` still bumps on it, but only so the onComplete guard can fire
+ * again for the new attempt.
  *
  * Difficulty ramps by word length, not round count: L1 draws from each
  * category's 4-5 letter band, L2 from 6-7, L3 from 8+. Rounds per level are
@@ -176,6 +183,9 @@ const TOTAL_WORDS = TOTAL_ROUNDS * WORDS_PER_ROUND
 interface RoundPlan {
   categoryId: CategoryId
   words: string[]
+  /** scrambles[i] is the tile layout of words[i] — frozen with the plan so a
+   * replay shows the very same scrambled letters (see file header). */
+  scrambles: Tile[][]
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -199,7 +209,7 @@ function buildLevelPlan(levelIdx: number, roundsForLevel: number): RoundPlan[] {
   return categoryIds.map((categoryId) => {
     const pool = CATEGORIES[categoryId].wordsByLevel[levelIdx]
     const words = shuffle(pool).slice(0, WORDS_PER_ROUND)
-    return { categoryId, words }
+    return { categoryId, words, scrambles: words.map((w) => scrambleToTiles(w)) }
   })
 }
 
@@ -242,9 +252,9 @@ export function AnagramasPorCategoria({ day: _day, onComplete }: GameProps) {
   const [roundKey, setRoundKey] = useState(0)
   const [roundIdx, setRoundIdx] = useState(0)
 
-  // Categories + words for the whole day, decided once at mount and never
-  // re-rolled by "Repetir" (see file header) — same epoch pattern as
-  // QuePalabraSeEsconde/LetrasRevueltas.
+  // Categories, words AND their scrambles for the whole day, decided once at
+  // mount and never re-rolled by "Repetir" (see file header) — same epoch
+  // pattern as QuePalabraSeEsconde/LetrasRevueltas.
   const [epoch] = useState<RoundPlan[][]>(() => LEVELS.map((_, i) => buildLevelPlan(i, ROUNDS_PER_LEVEL[i])))
 
   const level = LEVELS[levelIdx]
@@ -252,14 +262,9 @@ export function AnagramasPorCategoria({ day: _day, onComplete }: GameProps) {
   const round = epoch[levelIdx][roundIdx]
   const category = CATEGORIES[round.categoryId]
 
-  // Scrambles for the 3 words of this round — fresh on every level/round
-  // change AND on "Repetir" (roundKey), even though the words themselves
-  // (the epoch) stay fixed.
-  const tilesByWord = useMemo(
-    () => round.words.map((w) => scrambleToTiles(w)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [levelIdx, roundKey, roundIdx],
-  )
+  // Scrambles for the 3 words of this round — read straight from the frozen
+  // epoch, so a level, a round or a "Repetir" always shows the same letters.
+  const tilesByWord = round.scrambles
 
   // Which tile ids are placed, per word (index 0-2), in tap order. Reset
   // SYNCHRONOUSLY in the transition handlers below, never in an effect.

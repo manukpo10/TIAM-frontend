@@ -31,19 +31,19 @@ import type { GameProps } from '@/lib/challengeProgress'
  * CONTENT: hand-authored, ONE puzzle per level — unlike CasasDelBarrio's
  * 2-puzzle pool per level, there is nothing to randomize level-to-level
  * here, since the difficulty ramp (3 people/4 clues → 4 people/6 clues → 4
- * people/7 clues) IS the content. Only the banks' DISPLAY order is shuffled
+ * people/9 clues) IS the content. Only the banks' DISPLAY order is shuffled
  * (cosmetic only, via `useMemo`, same mechanism as CasasDelBarrio's
  * `shuffledNames`) — which puzzle plays at each level never varies, so
  * "Repetir" always replays the exact same 3 puzzles.
  *
- * Nivel 3 is a faithful digitization of the requester's own reference
- * worksheet. Its source phrased two facts as one sentence ("Pedro va a
- * Salamanca, pero no va en moto."); they're split into two plain bullets
- * here for a shorter read at this reading level — same information, nothing
- * lost. Its closing line ("Uno de ellos va a Valencia.") renders AFTER the
- * deduction clues in a visibly softer/lighter style: it's true by
- * construction once the table is filled, not a fact needed to solve the
- * puzzle, and must never be mistaken for an 8th deduction clue.
+ * Nivel 3 started as a faithful digitization of the requester's own
+ * reference worksheet (7 clues; its "Pedro va a Salamanca, pero no va en
+ * moto." is split into two plain bullets for a shorter read). After the
+ * facilitator found it "medio confuso" with older adults, it got two direct
+ * clues listed first ("María va en bicicleta.", "Elisa va a Sevilla.") and
+ * the worksheet's decorative closing line ("Uno de ellos va a Valencia.")
+ * was dropped, since it kept reading as one more clue. Brute force: still
+ * exactly one solution.
  *
  * UNIQUENESS: all 3 puzzles were verified by the author with a brute-force
  * script over every permutation of modos × destinos before this file
@@ -67,9 +67,6 @@ interface Puzzle {
   /** person -> correct { modo, destino }. */
   solution: Record<string, { modo: string; destino: string }>
   clues: string[]
-  /** Nivel 3 only — a purely decorative line shown after the clues, true by
-   * construction once the table is filled, never needed to solve it. */
-  flavor?: string
 }
 
 interface Level {
@@ -143,6 +140,18 @@ const PUZZLE_L3: Puzzle = {
     Elisa: { modo: 'Avión', destino: 'Sevilla' },
   },
   clues: [
+    // Two direct clues added after the facilitator found level 3 "medio
+    // confuso" with older adults — first, so the player has a place to
+    // start. Each is true for the solution below and feeds one of the
+    // original clues in the forward direction (bicicleta → Aranjuez,
+    // Sevilla → avión), so the triple negation and the avión elimination
+    // are no longer needed to get going. Brute-forced over all 576 modo ×
+    // destino assignments: still exactly one solution, before and after.
+    'María va en bicicleta.',
+    'Elisa va a Sevilla.',
+    // The worksheet's original 7 clues, in their original order. The
+    // worksheet's decorative closing line ("Uno de ellos va a Valencia.")
+    // was dropped: true by construction, it only ever looked like a clue.
     'Ni Juan ni Pedro van en avión.',
     'Pedro va a Salamanca.',
     'Pedro no va en moto.',
@@ -151,9 +160,6 @@ const PUZZLE_L3: Puzzle = {
     'Ni Juan, ni Elisa ni Pedro van en bicicleta.',
     'A Sevilla se va en avión.',
   ],
-  // Decorative only — see file header. Rendered in a visibly softer style,
-  // never inside the clue <ul>, so it can't be mistaken for an 8th clue.
-  flavor: 'Uno de ellos va a Valencia.',
 }
 
 const LEVELS: Level[] = [
@@ -498,10 +504,6 @@ export function AViajar({ day: _day, onComplete }: GameProps) {
                 <li key={i}>{clue}</li>
               ))}
             </ul>
-            {/* Decorative flavor line (Nivel 3 only) — visibly softer than the
-                clues above, and deliberately OUTSIDE the <ul> so it never
-                reads as an 8th deduction clue. */}
-            {puzzle.flavor && <p className="mt-3 text-sm italic text-slate-400">{puzzle.flavor}</p>}
           </div>
         </>
       )}
