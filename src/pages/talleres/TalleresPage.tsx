@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, Heart, Brain, Puzzle, Lightbulb, X } from 'lucide-react'
+import { Users, Heart, Brain, Puzzle, Lightbulb, X, MapPin, Navigation } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
@@ -78,6 +78,38 @@ const VALUES = [
   { icon: Users, text: 'Compartimos, nos escuchamos y hacemos nuevos amigos' },
   { icon: Lightbulb, text: 'Activamos nuestra mente y mejoramos nuestra calidad de vida' },
 ]
+
+// Direcciones y horarios del Taller Cognitivo tal como están en el flyer
+// impreso — mismo formato de calle de La Plata ("30 e/35 y 36"), no
+// reescrito. No incluye el taller de dibujo/acuarela del mismo flyer: es
+// otra propuesta, con su propio número de contacto.
+//
+// `mapQuery` is separate from the displayed `address` on purpose: Google
+// misreads the flyer format ("N° 164" gets matched as part of business names
+// like "Registro Automotor N° 5" and returns a list of unrelated offices).
+// "Calle 30 164" geocodes to a single pin, checked against both corner
+// intersections to land inside the right block.
+const LOCATIONS = [
+  {
+    address: '30 e/35 y 36 N° 164',
+    schedule: 'Miércoles de 10 a 11:30 hs',
+    mapQuery: 'Calle 30 164, La Plata, Buenos Aires, Argentina',
+  },
+  {
+    address: '20 e/32 y 33 N° 20',
+    schedule: 'Miércoles de 17 a 18:30 hs',
+    mapQuery: 'Calle 20 20, La Plata, Buenos Aires, Argentina',
+  },
+]
+
+// The legacy `output=embed` form needs no API key, unlike the Maps Embed API.
+function mapsEmbedUrlFor(query: string) {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=16&output=embed`
+}
+
+function mapsDirectionsUrlFor(query: string) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
+}
 
 /** Lucide has no brand glyphs — WhatsApp's own mark, inlined (no new
  * dependency for one icon). */
@@ -253,6 +285,52 @@ export function TalleresPage() {
                   </div>
                 )
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Ubicación — right before the CTA on purpose: "where" is the last
+            practical question before booking a turno. */}
+        <section className="py-16 md:py-24 bg-slate-50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+                ¿Dónde nos encontramos?
+              </h2>
+              <p className="mt-3 text-slate-600 max-w-xl mx-auto">
+                Dos direcciones en La Plata — elegí el horario que mejor te quede.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {LOCATIONS.map(({ address, schedule, mapQuery }) => (
+                <div key={address} className="flex flex-col rounded-2xl bg-white p-6 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10 text-tiam-blue">
+                      <MapPin className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-slate-900">{address}</p>
+                      <p className="mt-0.5 text-slate-600">{schedule}</p>
+                    </div>
+                  </div>
+                  <iframe
+                    src={mapsEmbedUrlFor(mapQuery)}
+                    title={`Mapa de la ubicación del taller en ${address}, La Plata`}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="mt-5 aspect-[4/3] w-full rounded-xl border-0 bg-slate-100"
+                  />
+                  <a
+                    href={mapsDirectionsUrlFor(mapQuery)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 self-start font-semibold text-tiam-blue hover:text-tiam-blue-dark"
+                  >
+                    <Navigation className="h-4 w-4" />
+                    Cómo llegar
+                  </a>
+                </div>
+              ))}
             </div>
           </div>
         </section>
