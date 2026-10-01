@@ -104,7 +104,7 @@ const INCLUDES = [
 ]
 
 const AUDIENCE = [
-  'Querés ayudar a tu mamá, papá o abuelo a mantener la memoria activa',
+  'Querés ayudar a tu mamá, papá o abuelo a mantener la mente activa',
   'Buscás una rutina simple para hacer en casa, sin depender de un turno',
   'Preferís algo que llegue por WhatsApp y no una app más para aprender',
   'Te gustaría acompañar los ejercicios y compartir un momento juntos',
@@ -306,7 +306,7 @@ export function Desafio30DiasPage() {
           {/* Background image */}
           <img
             src={desafioHero}
-            alt="Una hija acompaña a su mamá mientras juega el ejercicio del día desde el celular, sentadas en el living de casa"
+            alt="Una hija se apoya en los hombros de su mamá mientras ella juega el ejercicio del día desde el celular, en el living de casa"
             className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
             fetchPriority="high"
           />
@@ -329,7 +329,7 @@ export function Desafio30DiasPage() {
                 id="hero-heading"
                 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-slate-900 leading-tight tracking-tight"
               >
-                30 días para cuidar la memoria de{' '}
+                30 días para mantener activa la mente de{' '}
                 <span className="text-tiam-blue">quien más querés.</span>
               </h1>
               <p className="mt-5 text-lg sm:text-xl text-slate-700 max-w-xl">
@@ -606,7 +606,7 @@ export function Desafio30DiasPage() {
         <section aria-labelledby="cta-heading" className="py-16 md:py-20 bg-gradient-to-br from-tiam-blue to-tiam-blue-dark">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
             <h2 id="cta-heading" className="text-3xl font-bold text-white">
-              Empezá hoy a cuidar su memoria
+              Empezá hoy a mantener su mente activa
             </h2>
             <p className="mt-3 text-lg text-white/85 max-w-xl mx-auto">
               30 días, un ejercicio por vez. Un hábito simple que hace la diferencia.
