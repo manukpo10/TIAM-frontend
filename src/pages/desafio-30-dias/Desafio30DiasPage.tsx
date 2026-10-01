@@ -22,12 +22,6 @@ import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 
 const PRICE_ARS = 20000
 
-// Transferencia manual = sin comisión de Mercado Pago, así que hay margen real
-// para pasarle parte de ese ahorro al comprador — a pedido explícito, mismo
-// patrón que Jugarnos (10% OFF por transferencia, ver COMPETITOR-ANALYSIS-jugarnos.md).
-const TRANSFER_DISCOUNT_PERCENT = 10
-const TRANSFER_PRICE_ARS = Math.round(PRICE_ARS * (1 - TRANSFER_DISCOUNT_PERCENT / 100))
-
 // How many independent 30-day catalogs exist today (mirrors the backend's
 // ChallengePurchaseService month allowlist). This is NOT a permanent ceiling
 // — more months ship over time — so every "van N meses"-style line on this
@@ -43,7 +37,10 @@ const formatPrice = (n: number) =>
 // post-purchase activation): that number is API-only, so manual-transfer
 // receipts need to land somewhere a person can actually read them.
 const MANU_PERSONAL_WHATSAPP_NUMBER = '5492213080532'
-const TRANSFER_RECEIPT_TEXT = '¡Hola! Quiero pagar el Desafío 30 días por transferencia, te paso el comprobante.'
+const MANU_PERSONAL_WHATSAPP_DISPLAY = '+54 9 221 308-0532'
+// Ends on "Mi nombre es:" so the buyer sends their name along with the
+// receipt — the manual activation needs it.
+const TRANSFER_RECEIPT_TEXT = '¡Hola! Ya transferí para el Desafío 30 días, te mando el comprobante. Mi nombre es:'
 
 // Buyer details collected BEFORE checkout — the phone is captured up front because
 // Mercado Pago Checkout Pro navigates away and we can't rely on the user coming back.
@@ -461,15 +458,21 @@ export function Desafio30DiasPage() {
             </p>
 
             <div className="mx-auto mt-8 max-w-lg rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left sm:p-6">
-              <p className="text-sm font-semibold text-slate-800">
-                ¿Preferís transferencia? Pagás {TRANSFER_DISCOUNT_PERCENT}% menos
-              </p>
-              <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-                Transferí {formatPrice(TRANSFER_PRICE_ARS)}{' '}
-                <span className="text-slate-400 line-through">{formatPrice(PRICE_ARS)}</span> al alias de
-                Mercado Pago <strong className="text-slate-900">manu.bata.it</strong> y mandanos el
-                comprobante por WhatsApp. Activamos tu acceso a mano, ni bien lo recibimos.
-              </p>
+              <p className="text-sm font-semibold text-slate-800">¿Preferís pagar por transferencia?</p>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-slate-600 marker:font-semibold marker:text-slate-800">
+                <li>
+                  Transferí <strong className="text-slate-900">{formatPrice(PRICE_ARS)}</strong> al alias de
+                  Mercado Pago <strong className="text-slate-900">manu.bata.it</strong>.
+                </li>
+                <li>
+                  Mandá el comprobante y tu nombre por WhatsApp al{' '}
+                  <strong className="whitespace-nowrap text-slate-900">{MANU_PERSONAL_WHATSAPP_DISPLAY}</strong>.
+                </li>
+                <li>
+                  Te damos de alta a mano y te mandamos el link de los juegos a ese mismo WhatsApp, ni
+                  bien lo recibimos.
+                </li>
+              </ol>
               <a
                 href={`https://wa.me/${MANU_PERSONAL_WHATSAPP_NUMBER}?text=${encodeURIComponent(TRANSFER_RECEIPT_TEXT)}`}
                 target="_blank"
@@ -477,7 +480,7 @@ export function Desafio30DiasPage() {
                 className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-tiam-blue hover:underline"
               >
                 <MessageCircle className="h-4 w-4" />
-                Mandar comprobante por WhatsApp
+                Mandar comprobante y nombre por WhatsApp
               </a>
             </div>
           </div>
