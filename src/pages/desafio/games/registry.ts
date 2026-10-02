@@ -117,18 +117,26 @@ import { CandadosYLlaves } from './CandadosYLlaves'
 import { PuestoDeComida } from './PuestoDeComida'
 import { AViajar } from './AViajar'
 import { LosVecinos } from './LosVecinos'
+import { OrdenaLaOracion } from './OrdenaLaOracion'
+import { LeeYRecorda } from './LeeYRecorda'
+import { ElNumeroSecreto } from './ElNumeroSecreto'
+import { LeeEnOrden } from './LeeEnOrden'
+import { DosDeCadaGrupo } from './DosDeCadaGrupo'
+import { FormaYColor } from './FormaYColor'
+import { RefranesSinVocales } from './RefranesSinVocales'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
  * and whose (month, day) pair has an entry here renders that component in the
  * modal instead of the static-card fallback (illustration/icon + instructions) —
  * see DesafioPlayPage.tsx, which falls back gracefully whenever a 'game' day has
- * no matching registry entry (kept as a defensive fallback, not because either
- * month currently relies on it — both months are fully wired below).
+ * no matching registry entry. Months 1-4 are fully wired (their lápiz-y-papel
+ * 'card' days have no entry on purpose); month 5 is being built in weekly
+ * batches, so its days that are still to come DO rely on that fallback.
  *
  * To add a game: write the component, add one line under the right month below,
- * and make sure the day's `type` is 'game' in challengeContent.ts (already true
- * for every day in both months as of this writing).
+ * and make sure the day's `type` is 'game' in challengeContent.ts (true for every
+ * day except the 'card' ones).
  *
  * Typed `ComponentType<GameProps>`, but games not yet retrofitted to accept
  * `{ day, onComplete }` still satisfy it — TS structural typing allows a
@@ -234,9 +242,8 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     29: ElGrupoCorrecto,
     30: CierreDeCuentas,
   },
-  // Month 4 ships in weekly batches of 7 — days 8-30 land in later batches and
-  // are absent from challengeContent.ts's MONTH_4_DAYS_CONTENT too, so they
-  // never render a tile in the first place.
+  // Month 4 shipped in weekly batches of 7 and is fully wired now (18 is the
+  // only lápiz-y-papel card day).
   4: {
     1: FlorDePalabra,
     2: OficiosDeFamosos,
@@ -269,6 +276,21 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     28: LeerYResponder,
     29: CasasDelBarrio,
     30: CrucigramaNumerico,
+  },
+  // Month 5 ships in weekly batches of 7: días 1-7 are built. All 30 days are
+  // declared in challengeContent.ts's MONTH_5_DAYS_CONTENT already, and the
+  // backend unlocks them by elapsed week, so a day with no entry here renders
+  // its static instructions card once its week unlocks — the month must not go
+  // on sale before the last batch lands. 14 is a lápiz-y-papel card day and
+  // will never have an entry.
+  5: {
+    1: OrdenaLaOracion,
+    2: LeeYRecorda,
+    3: ElNumeroSecreto,
+    4: LeeEnOrden,
+    5: DosDeCadaGrupo,
+    6: FormaYColor,
+    7: RefranesSinVocales,
   },
 }
 
