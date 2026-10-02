@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { ArrowRight, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -39,6 +39,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * (`epoch`), so "Repetir" replays exactly the same three tables. Per-level state
  * lives in <LevelView>, keyed by run + level. A "¿Cómo se juega?" screen with a
  * worked example opens the day; "Repetir" never brings it back.
+ *
+ * Double taps: every tap within SETTLE_MS of the tap that brought the level (judged by the
+ * click's own timeStamp) is ignored, so the second tap of a double tap on "Empezar",
+ * "Siguiente nivel" or "Repetir" never lands on a cell of the table. A cell that was just
+ * accepted is also ignored for SETTLE_MS: it is painted, not locked (a letter can be asked
+ * twice), and the step has already moved on, so a second tap on it would be judged against
+ * the NEXT letter. The card's button ignores a tap within SETTLE_MS of the letter that
+ * closed the word (the card takes the table's place, so it can end up under that finger). A
+ * new level opens at its top and the solved card is scrolled into view with its button.
  *
  * totalAttempts = mistakes + every letter of the day (TOTAL_LETTERS, derived).
  */
@@ -142,6 +151,13 @@ function buildEpoch(): LevelContent[] {
 
 const PRAISE = ['¡Muy bien!', '¡Excelente orientación!', '¡Así se hace!', '¡Perfecto!', '¡Qué buena vista!']
 
+/** A tap this soon after the tap that brought the level here ("Empezar", "Siguiente nivel", "Repetir") is the
+ * second tap of a double tap, and it must not be judged against the cell that sits where that button was; the
+ * same window protects the cell that was just accepted, and the card's button right after the letter that
+ * closed the word (the card takes the table's place). Long enough to swallow a double tap, short enough that
+ * nobody who means it notices. */
+const SETTLE_MS = 400
+
 const cellKey = (row: number, col: number) => `${row}-${col}`
 
 /**
@@ -149,12 +165,25 @@ const cellKey = (row: number, col: number) => `${row}-${col}`
  * only a row label in the table, so a grey outline can never be mistaken for a
  * colour (gris/negro is one of the pairs this catalog keeps apart).
  */
-function ShapeGlyph({ shape, fill, size, hollow }: { shape: ShapeId; fill: string; size: number; hollow?: boolean }) {
+function ShapeGlyph({
+  shape,
+  fill,
+  size,
+  hollow,
+  className = '',
+}: {
+  shape: ShapeId
+  fill: string
+  size: number
+  hollow?: boolean
+  /** Extra classes (a size override for a short phone: a class beats the width / height attributes). */
+  className?: string
+}) {
   const paint = hollow
     ? { fill: 'none', stroke: '#475569', strokeWidth: 3, strokeLinejoin: 'round' as const }
     : { fill }
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false" className="shrink-0">
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" focusable="false" className={`shrink-0 ${className}`}>
       {shape === 'circulo' && <circle cx="20" cy="20" r="15" {...paint} />}
       {shape === 'cuadrado' && <rect x="6" y="6" width="28" height="28" rx="2" {...paint} />}
       {shape === 'triangulo' && <polygon points="20,5 36,34 4,34" {...paint} />}
@@ -179,7 +208,8 @@ interface CellTableProps {
   wrongKey?: string | null
   /** A cell to show in green (the worked example). */
   markKey?: string | null
-  onTap?: (row: number, col: number) => void
+  /** `at` is the click's own timeStamp. */
+  onTap?: (row: number, col: number, at: number) => void
 }
 
 function CellTable({ shapes, colors, rows, small, activeRow, activeCol, usedKeys, wrongKey, markKey, onTap }: CellTableProps) {
@@ -189,27 +219,33 @@ function CellTable({ shapes, colors, rows, small, activeRow, activeCol, usedKeys
   // Cells never grow past this size: with only three columns the squares would
   // otherwise balloon and push the bottom of the screen below the fold. With
   // four columns the table fills the width and the cells shrink to ~54px too.
+  // On a short phone (the modal leaves 100dvh - 95px) the cap drops to 48px, so the
+  // four rows of the last two levels and the hint fit under the question.
   const maxCell = small ? 44 : 54
+  const shortCell = small ? 44 : 48
   return (
     <div
       className={[
-        'mx-auto grid w-full',
+        'mx-auto grid w-full max-w-(--table-w) [@media(max-height:700px)]:max-w-(--table-w-short)',
         // Four columns at 320px would squeeze the cells below 44px: let the table
         // borrow 8px of the screen padding on each side there.
         colors.length >= 4 && !small ? BLEED_CLASS : '',
       ].join(' ')}
-      style={{
-        gridTemplateColumns: `${headWidth}px repeat(${colors.length}, minmax(0, 1fr))`,
-        gap,
-        maxWidth: headWidth + colors.length * (maxCell + gap),
-      }}
+      style={
+        {
+          gridTemplateColumns: `${headWidth}px repeat(${colors.length}, minmax(0, 1fr))`,
+          gap,
+          '--table-w': `${headWidth + colors.length * (maxCell + gap)}px`,
+          '--table-w-short': `${headWidth + colors.length * (shortCell + gap)}px`,
+        } as CSSProperties
+      }
     >
       <div aria-hidden="true" />
       {colors.map((c, ci) => (
         <div
           key={c}
           className={[
-            'flex flex-col items-center justify-end gap-1 rounded-xl py-1',
+            'flex flex-col items-center justify-end gap-1 rounded-xl py-1 [@media(max-height:700px)]:py-0.5',
             activeCol === ci ? 'bg-tiam-blue/10 text-tiam-blue-dark' : 'text-slate-600',
           ].join(' ')}
         >
@@ -221,11 +257,19 @@ function CellTable({ shapes, colors, rows, small, activeRow, activeCol, usedKeys
         <div key={s} className="contents">
           <div
             className={[
-              'flex flex-col items-center justify-center gap-0.5 rounded-xl py-1',
+              'flex flex-col items-center justify-center gap-0.5 rounded-xl py-1 [@media(max-height:700px)]:py-0',
               activeRow === ri ? 'bg-tiam-blue/10 text-tiam-blue-dark' : 'text-slate-600',
             ].join(' ')}
           >
-            <ShapeGlyph shape={s} fill="none" hollow size={small ? 20 : 26} />
+            {/* The row label (glyph + name) is taller than a 44px cell, so on a short phone the glyph shrinks to 20px
+                and the label stops padding: the rows are then as tall as their cells. */}
+            <ShapeGlyph
+              shape={s}
+              fill="none"
+              hollow
+              size={small ? 20 : 26}
+              className={small ? '' : '[@media(max-height:700px)]:h-5 [@media(max-height:700px)]:w-5'}
+            />
             <span className="text-sm font-bold">{SHAPES[s].label}</span>
           </div>
           {colors.map((c, ci) => {
@@ -257,7 +301,7 @@ function CellTable({ shapes, colors, rows, small, activeRow, activeCol, usedKeys
               <button
                 key={key}
                 type="button"
-                onClick={() => onTap(ri, ci)}
+                onClick={(e) => onTap(ri, ci, e.timeStamp)}
                 aria-label={`${SHAPES[s].label} ${COLORS[c].label.toLowerCase()}: letra ${letter}`}
                 className={`${className} focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1`}
               >
@@ -271,7 +315,7 @@ function CellTable({ shapes, colors, rows, small, activeRow, activeCol, usedKeys
   )
 }
 
-function HowToPlay({ onStart }: { onStart: () => void }) {
+function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   // Two short steps and a worked example: this whole screen has to fit a phone
   // without scrolling, because the "Empezar" button is at the bottom of it.
   const steps = [
@@ -315,10 +359,10 @@ function HowToPlay({ onStart }: { onStart: () => void }) {
         </p>
       </div>
 
-      <div className="mt-4 text-center">
+      <div className="sticky bottom-3 z-10 mt-4 text-center">
         <button
           type="button"
-          onClick={onStart}
+          onClick={(e) => onStart(e.timeStamp)}
           className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
         >
           Empezar
@@ -332,13 +376,15 @@ function HowToPlay({ onStart }: { onStart: () => void }) {
 interface LevelViewProps {
   levelIdx: number
   content: LevelContent
+  /** The timeStamp of the tap that brought this level on screen (-Infinity when nothing did). */
+  since: number
   onMistake: () => void
   onSolved: () => void
-  onNext: () => void
-  onRepeat: () => void
+  onNext: (at: number) => void
+  onRepeat: (at: number) => void
 }
 
-function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
+function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
   const level = LEVELS[levelIdx]
   const isLast = levelIdx === LEVELS.length - 1
   const { puzzle, steps } = content
@@ -350,9 +396,30 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   const flashTimerRef = useRef<number | undefined>(undefined)
+  // The cell accepted last and when (the click's own timeStamp): a second tap on it right after is a double tap.
+  const acceptedRef = useRef<{ key: string; at: number } | null>(null)
+  // The tap that decoded the last letter, which closed the level: the result card takes the table's place.
+  const closedAtRef = useRef(Number.NEGATIVE_INFINITY)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const topRef = useRef<HTMLDivElement>(null)
   useEffect(() => () => window.clearTimeout(flashTimerRef.current), [])
 
   const solved = stepIdx >= steps.length
+
+  // A new level opens at its top, not wherever the how-to or the previous result card left the scroll (a short phone).
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ block: 'start' })
+  }, [])
+
+  // A solved level shows its result card and its button even on a short phone: the card first and,
+  // when the card is taller than the screen, the button (the part that must not stay below the fold).
+  useEffect(() => {
+    const card = resultRef.current
+    if (!solved || !card) return
+    card.scrollIntoView({ block: 'nearest' })
+    card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+  }, [solved])
+
   const current = solved ? null : steps[stepIdx]
   // A cell is painted "used" only once the word is done with it: PLAZA points at the
   // same cell for both A's, so it stays unpainted until the second one is found.
@@ -364,17 +431,24 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
       .filter((key) => !stillNeeded.has(key)),
   )
 
-  function handleTap(row: number, col: number) {
-    // A second tap on the cell that is still flashing as wrong is a double tap,
-    // not a second mistake.
-    if (!current || wrongKey === cellKey(row, col)) return
+  function handleTap(row: number, col: number, at: number) {
+    const key = cellKey(row, col)
+    // A second tap on the cell that is still flashing as wrong is a double tap, not a second mistake.
+    // So is the one that follows the button that brought the level (the table sits where it was).
+    if (!current || wrongKey === key || at - since < SETTLE_MS) return
+    // The cell just accepted is painted, not locked, and the step has already moved on: a second tap on it
+    // right after would be judged against the NEXT letter (a false mistake and a scaffold).
+    const last = acceptedRef.current
+    if (last !== null && last.key === key && at - last.at < SETTLE_MS) return
     if (row === current.row && col === current.col) {
+      acceptedRef.current = { key, at }
       const next = stepIdx + 1
       setStepIdx(next)
       setWrongKey(null)
       setScaffold(false)
       setHint(null)
       if (next >= steps.length) {
+        closedAtRef.current = at
         setPraise(pickOne(PRAISE))
         onSolved()
       }
@@ -382,7 +456,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
       const shape = SHAPES[level.shapes[current.row]]
       const color = COLORS[level.colors[current.col]]
       // Flash only — a cell that is wrong now can be the answer to a later step.
-      setWrongKey(cellKey(row, col))
+      setWrongKey(key)
       setScaffold(true)
       setHint(`Esa no es. Buscá la fila ${shape.article} y la columna ${color.article}.`)
       onMistake()
@@ -391,8 +465,19 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
     }
   }
 
+  // The card takes the table's place, so its button can end up right under the finger that closed the
+  // level: the second tap of that double tap must not skip the result.
+  function leave(go: (at: number) => void, at: number) {
+    if (at - closedAtRef.current < SETTLE_MS) return
+    go(at)
+  }
+
+  // On a short phone (the modal leaves 100dvh - 95px) the spacing, the coloured figures, the empty letter boxes (they are
+  // not targets) and the table cells (48px at most) give way, so ALL the rows of the table and the hint are on screen when a
+  // level opens: a player who does not see that the table goes on below the fold simply cannot play. Every cell stays
+  // 44px or more, the text 14px or more as before. Taller phones keep the roomy layout.
   return (
-    <div className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-3">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-700">
@@ -400,8 +485,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
         </span>
         {!solved && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Descubrí la palabra</h2>
-            <p className="mt-2 text-base text-slate-500">
+            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl [@media(max-height:700px)]:mt-2">Descubrí la palabra</h2>
+            <p className="mt-2 text-base text-slate-500 [@media(max-height:700px)]:mt-1">
               Pista: es <span className="font-bold text-amber-700">{puzzle.clue}</span>.
             </p>
           </>
@@ -409,7 +494,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
       </div>
 
       {/* The figures of the word, each with an empty box for its letter */}
-      <div className="mt-4 flex justify-center gap-1.5">
+      <div className="mt-4 flex justify-center gap-1.5 [@media(max-height:700px)]:mt-3">
         {steps.map((step, i) => {
           const shapeId = level.shapes[step.row]
           const color = COLORS[level.colors[step.col]]
@@ -421,15 +506,15 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
               role="group"
               aria-label={`Figura ${i + 1}: ${SHAPES[shapeId].label.toLowerCase()} ${color.label.toLowerCase()}`}
               className={[
-                'flex w-[52px] flex-col items-center gap-1 rounded-2xl px-1 py-2',
+                'flex w-[52px] flex-col items-center gap-1 rounded-2xl px-1 py-2 [@media(max-height:700px)]:gap-0.5 [@media(max-height:700px)]:py-1',
                 isCurrent ? 'bg-tiam-blue/10 ring-2 ring-tiam-blue' : 'bg-slate-50',
               ].join(' ')}
             >
-              <ShapeGlyph shape={shapeId} fill={color.hex} size={36} />
+              <ShapeGlyph shape={shapeId} fill={color.hex} size={36} className="[@media(max-height:700px)]:h-7 [@media(max-height:700px)]:w-7" />
               <span className="text-sm font-bold text-slate-600">{color.label}</span>
               <span
                 className={[
-                  'flex h-11 w-11 items-center justify-center rounded-lg border-2 text-2xl font-bold',
+                  'flex h-11 w-11 items-center justify-center rounded-lg border-2 text-2xl font-bold [@media(max-height:700px)]:h-9 [@media(max-height:700px)]:w-9',
                   isDone ? 'border-tiam-green bg-tiam-green/10 text-slate-900' : 'border-dashed border-slate-300 text-slate-300',
                 ].join(' ')}
               >
@@ -442,7 +527,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
 
       {!solved && (
         <>
-          <div className="mt-4">
+          <div className="mt-4 [@media(max-height:700px)]:mt-3">
             <CellTable
               shapes={level.shapes}
               colors={level.colors}
@@ -454,7 +539,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
               onTap={handleTap}
             />
           </div>
-          <p role="status" className="mt-4 min-h-[3rem] text-center text-base font-medium text-slate-500">
+          <p role="status" className="mt-4 min-h-[3rem] text-center text-base font-medium text-slate-500 [@media(max-height:700px)]:mt-2">
             {hint}
           </p>
         </>
@@ -462,7 +547,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
 
       {/* Level complete */}
       {solved && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+        <div ref={resultRef} className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
@@ -475,8 +560,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             {isLast ? (
               <button
                 type="button"
-                onClick={onRepeat}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onRepeat, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
@@ -484,8 +569,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             ) : (
               <button
                 type="button"
-                onClick={onNext}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onNext, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
@@ -508,6 +593,8 @@ export function FormaYColor({ onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [runKey, setRunKey] = useState(0)
   const [mistakes, setMistakes] = useState(0)
+  // The timeStamp of the tap that brought the current level on screen (see SETTLE_MS).
+  const [since, setSince] = useState(-Infinity)
   const reportedRunRef = useRef<number | null>(null)
 
   function handleSolved() {
@@ -515,7 +602,16 @@ export function FormaYColor({ onComplete }: GameProps) {
     reportedRunRef.current = runKey
     onComplete({ mistakes, totalAttempts: mistakes + TOTAL_LETTERS })
   }
-  function handleRepeat() {
+  function handleStart(at: number) {
+    setSince(at)
+    setPhase('playing')
+  }
+  function handleNext(at: number) {
+    setSince(at)
+    setLevelIdx((i) => i + 1)
+  }
+  function handleRepeat(at: number) {
+    setSince(at)
     setLevelIdx(0)
     setMistakes(0)
     setRunKey((k) => k + 1)
@@ -529,7 +625,7 @@ export function FormaYColor({ onComplete }: GameProps) {
             {LEVELS[0].name}
           </span>
         </div>
-        <HowToPlay onStart={() => setPhase('playing')} />
+        <HowToPlay onStart={handleStart} />
       </div>
     )
   }
@@ -539,9 +635,10 @@ export function FormaYColor({ onComplete }: GameProps) {
       key={`${runKey}-${levelIdx}`}
       levelIdx={levelIdx}
       content={epoch[levelIdx]}
+      since={since}
       onMistake={() => setMistakes((m) => m + 1)}
       onSolved={handleSolved}
-      onNext={() => setLevelIdx((i) => i + 1)}
+      onNext={handleNext}
       onRepeat={handleRepeat}
     />
   )

@@ -30,6 +30,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * order), so "Repetir" tells exactly the same three stories. Per-level state
  * lives in <LevelView>, keyed by run + level, so it resets without any effect.
  *
+ * Double taps: every tap within SETTLE_MS of the tap that changed the screen (judged by the
+ * click's own timeStamp) is ignored, so the second tap of a double tap on "Siguiente nivel"
+ * or "Repetir" never lands on "Ya lo leí" (the story would vanish unread) and the second
+ * tap on "Ya lo leí" never answers the first question. The result card shows up only after
+ * the pause that follows the last answer (every option is off meanwhile), so its button is
+ * never under that double tap. A new level, and the questions that follow the story, open
+ * at the top; the solved card is scrolled into view with its button.
+ *
  * totalAttempts = mistakes + every question of the day (TOTAL_QUESTIONS).
  */
 
@@ -180,16 +188,24 @@ const NUDGES = ['Esa no era. Pensá de nuevo en la historia.', 'Todavía no. Pro
 
 type Phase = 'reading' | 'questions' | 'done'
 
+/** A tap this soon after the screen changed is the second tap of a double tap on the button that brought the
+ * player here ("Siguiente nivel", "Repetir", "Ya lo leí"): it must not be judged against what is now under the
+ * finger (the "Ya lo leí" of the next story, an option of the first question). Long enough to swallow a double
+ * tap, short enough that nobody who means it notices. */
+const SETTLE_MS = 400
+
 interface LevelViewProps {
   levelIdx: number
   content: PreparedLevel
+  /** The timeStamp of the tap that brought this level on screen (-Infinity when nothing did). */
+  since: number
   onMistake: () => void
   onSolved: () => void
-  onNext: () => void
-  onRepeat: () => void
+  onNext: (at: number) => void
+  onRepeat: (at: number) => void
 }
 
-function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
+function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
   const level = LEVELS[levelIdx]
   const isLast = levelIdx === LEVELS.length - 1
   const { questions } = content
@@ -201,13 +217,43 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
   const [hint, setHint] = useState<string | null>(null)
   const [levelMistakes, setLevelMistakes] = useState(0)
   const [praise, setPraise] = useState(PRAISE_GREAT[0])
+  // When the screen last changed because of a tap (that tap's own timeStamp): every tap within SETTLE_MS of
+  // it is ignored. It moves to the "Ya lo leí" tap when the questions appear.
+  const settleFromRef = useRef(since)
   const advanceTimerRef = useRef<number | undefined>(undefined)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const topRef = useRef<HTMLDivElement>(null)
   useEffect(() => () => window.clearTimeout(advanceTimerRef.current), [])
+
+  // A new level, and the questions that follow the story, open at the top, not wherever the previous
+  // button left the scroll (a short phone).
+  useEffect(() => {
+    if (phase !== 'done') topRef.current?.scrollIntoView({ block: 'start' })
+  }, [phase])
+
+  // A solved level shows its result card and its button even on a short phone: the card first and,
+  // when the card is taller than the screen, the button (the part that must not stay below the fold).
+  useEffect(() => {
+    const card = resultRef.current
+    if (phase !== 'done' || !card) return
+    card.scrollIntoView({ block: 'nearest' })
+    card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+  }, [phase])
 
   const question = questions[questionIdx]
 
-  function handleTap(option: string) {
+  function startQuestions(at: number) {
+    // The second tap of a double tap on "Siguiente nivel" or "Repetir" can land on this button: it is not
+    // a "Ya lo leí" (the story would vanish before it was read).
+    if (at - settleFromRef.current < SETTLE_MS) return
+    settleFromRef.current = at
+    setPhase('questions')
+  }
+
+  function handleTap(option: string, at: number) {
     if (isAdvancing || phase !== 'questions') return
+    // The second tap of a double tap on "Ya lo leí" lands on an option: not an answer.
+    if (at - settleFromRef.current < SETTLE_MS) return
     if (option === question.correct) {
       setIsAdvancing(true)
       // The only timer in the game: a short pause so the checkmark registers.
@@ -232,7 +278,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
   }
 
   return (
-    <div className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
@@ -274,10 +320,11 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             <h3 className="text-base font-bold text-tiam-blue-dark">{content.title}</h3>
             <p className="mt-3 text-lg leading-relaxed text-slate-700">{content.body}</p>
           </div>
-          <div className="mt-5 text-center">
+          {/* Pinned to the bottom edge when the story is taller than the screen (320x640, 375x667). */}
+          <div className="sticky bottom-3 z-10 mt-5 text-center">
             <button
               type="button"
-              onClick={() => setPhase('questions')}
+              onClick={(e) => startQuestions(e.timeStamp)}
               className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
             >
               Ya lo leí
@@ -300,7 +347,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
                   key={option}
                   type="button"
                   disabled={isWrong || isAdvancing}
-                  onClick={() => handleTap(option)}
+                  onClick={(e) => handleTap(option, e.timeStamp)}
                   className={[
                     'flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 text-left text-lg font-semibold transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
@@ -329,7 +376,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
 
       {/* Level complete */}
       {phase === 'done' && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+        <div ref={resultRef} className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
@@ -340,8 +387,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             {isLast ? (
               <button
                 type="button"
-                onClick={onRepeat}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => onRepeat(e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
@@ -349,8 +396,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             ) : (
               <button
                 type="button"
-                onClick={onNext}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => onNext(e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
@@ -370,6 +417,8 @@ export function LeeYRecorda({ onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [runKey, setRunKey] = useState(0)
   const [mistakes, setMistakes] = useState(0)
+  // The timeStamp of the tap that brought the current level on screen (see SETTLE_MS).
+  const [since, setSince] = useState(-Infinity)
   const reportedRunRef = useRef<number | null>(null)
 
   function handleSolved() {
@@ -377,7 +426,12 @@ export function LeeYRecorda({ onComplete }: GameProps) {
     reportedRunRef.current = runKey
     onComplete({ mistakes, totalAttempts: mistakes + TOTAL_QUESTIONS })
   }
-  function handleRepeat() {
+  function handleNext(at: number) {
+    setSince(at)
+    setLevelIdx((i) => i + 1)
+  }
+  function handleRepeat(at: number) {
+    setSince(at)
     setLevelIdx(0)
     setMistakes(0)
     setRunKey((k) => k + 1)
@@ -388,9 +442,10 @@ export function LeeYRecorda({ onComplete }: GameProps) {
       key={`${runKey}-${levelIdx}`}
       levelIdx={levelIdx}
       content={epoch[levelIdx]}
+      since={since}
       onMistake={() => setMistakes((m) => m + 1)}
       onSolved={handleSolved}
-      onNext={() => setLevelIdx((i) => i + 1)}
+      onNext={handleNext}
       onRepeat={handleRepeat}
     />
   )

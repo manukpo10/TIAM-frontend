@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
@@ -16,6 +16,17 @@ import type { GameProps } from '@/lib/challengeProgress'
  * blanks already give each word's length and shape. A vowel the saying does not
  * have there greys out for that blank (the choices shrink instead of repeating
  * the same mistake) and costs one mistake — at most four per blank.
+ *
+ * Double taps (SETTLE_MS, judged by the click's own timeStamp): a quick second
+ * tap on the vowel that was JUST accepted is not an answer for the next blank
+ * (which usually wants another vowel and used to cost a false mistake, a greyed
+ * key and a "Casi…"), so that key is ignored for a moment. Every key is, within
+ * SETTLE_MS of the tap that brought the level, so the second tap of a double tap
+ * on "Siguiente nivel" or "Repetir" never lands on the keys that sit where that
+ * button was; and the card's button is, within SETTLE_MS of the vowel that closed
+ * the item (the card takes the keys' place, so it can end up under that finger). A
+ * new level opens at its top and the solved card is scrolled into view with its
+ * button.
  *
  * Ramp by number of blanks: 6 (two short words) → 10 (a five-word refrán) → 14
  * (a longer refrán). Every refrán is traditional and written WITHOUT accents on
@@ -91,6 +102,12 @@ function blanksOf(item: ItemSet): string[] {
 const TOTAL_BLANKS = LEVELS.reduce((sum, lvl) => sum + lvl.blanks, 0)
 // ── data:end ──
 
+/** How long the vowel that was just accepted is ignored, how long every key is ignored after the tap that
+ * brought the level here ("Siguiente nivel", "Repetir"), and how long the card's button is ignored after the
+ * vowel that closed the item: long enough to swallow a double tap, short enough that nobody who really needs
+ * the same vowel twice in a row, or who means the first tap, notices. */
+const SETTLE_MS = 400
+
 function pickOne<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
@@ -152,13 +169,15 @@ const CELL_CLASS = [
 interface LevelViewProps {
   levelIdx: number
   content: LevelContent
+  /** The timeStamp of the tap that brought this level on screen (-Infinity when nothing did). */
+  since: number
   onMistake: () => void
   onSolved: () => void
-  onNext: () => void
-  onRepeat: () => void
+  onNext: (at: number) => void
+  onRepeat: (at: number) => void
 }
 
-function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
+function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
   const level = LEVELS[levelIdx]
   const isLast = levelIdx === LEVELS.length - 1
   const { item, rows, answers } = content
@@ -169,17 +188,45 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
   const [wrongVowels, setWrongVowels] = useState<string[]>([])
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
+  // The vowel accepted last and when (the click's own timeStamp): a second tap on it
+  // right after is a double tap.
+  const acceptedRef = useRef<{ vowel: string; at: number } | null>(null)
+  // The tap that filled the last blank, which closed the level: the result card takes the keys' place.
+  const closedAtRef = useRef(Number.NEGATIVE_INFINITY)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const topRef = useRef<HTMLDivElement>(null)
 
   const solved = filled >= total
   const cellClass = CELL_CLASS[levelIdx]
 
-  function handlePick(vowel: string) {
-    if (solved || wrongVowels.includes(vowel)) return
+  // A new level opens at its top, not wherever the previous result card left the scroll (a short phone).
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ block: 'start' })
+  }, [])
+
+  // A solved level shows its result card and its button even on a short phone: the card first and,
+  // when the card is taller than the screen, the button (the part that must not stay below the fold).
+  useEffect(() => {
+    const card = resultRef.current
+    if (!solved || !card) return
+    card.scrollIntoView({ block: 'nearest' })
+    card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+  }, [solved])
+
+  function handlePick(vowel: string, at: number) {
+    // The second tap of a double tap on the button that brought the level lands on a key: not an answer.
+    if (solved || wrongVowels.includes(vowel) || at - since < SETTLE_MS) return
+    // The highlight has already moved on to the next blank: judging a double tap on the
+    // vowel just accepted against it would be a false mistake.
+    const last = acceptedRef.current
+    if (last !== null && last.vowel === vowel && at - last.at < SETTLE_MS) return
     if (vowel === answers[filled]) {
+      acceptedRef.current = { vowel, at }
       setFilled(filled + 1)
       setWrongVowels([])
       setHint(null)
       if (filled + 1 >= total) {
+        closedAtRef.current = at
         setPraise(pickOne(PRAISE))
         onSolved()
       }
@@ -190,8 +237,15 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
     }
   }
 
+  // The card takes the keys' place, so its button can end up right under the finger that closed the
+  // level: the second tap of that double tap must not skip the result.
+  function leave(go: (at: number) => void, at: number) {
+    if (at - closedAtRef.current < SETTLE_MS) return
+    go(at)
+  }
+
   return (
-    <div className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-green/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-green-700">
@@ -286,7 +340,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
                   key={v}
                   type="button"
                   disabled={isWrong}
-                  onClick={() => handlePick(v)}
+                  onClick={(e) => handlePick(v, e.timeStamp)}
                   className={[
                     'min-h-[56px] rounded-xl border-2 text-2xl font-bold transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40',
@@ -308,7 +362,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
 
       {/* Level complete */}
       {solved && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+        <div ref={resultRef} className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
@@ -320,8 +374,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             {isLast ? (
               <button
                 type="button"
-                onClick={onRepeat}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onRepeat, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
@@ -329,8 +383,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             ) : (
               <button
                 type="button"
-                onClick={onNext}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onNext, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
@@ -350,6 +404,8 @@ export function RefranesSinVocales({ onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [runKey, setRunKey] = useState(0)
   const [mistakes, setMistakes] = useState(0)
+  // The timeStamp of the tap that brought the current level on screen (see SETTLE_MS).
+  const [since, setSince] = useState(-Infinity)
   const reportedRunRef = useRef<number | null>(null)
 
   function handleSolved() {
@@ -357,7 +413,12 @@ export function RefranesSinVocales({ onComplete }: GameProps) {
     reportedRunRef.current = runKey
     onComplete({ mistakes, totalAttempts: mistakes + TOTAL_BLANKS })
   }
-  function handleRepeat() {
+  function handleNext(at: number) {
+    setSince(at)
+    setLevelIdx((i) => i + 1)
+  }
+  function handleRepeat(at: number) {
+    setSince(at)
     setLevelIdx(0)
     setMistakes(0)
     setRunKey((k) => k + 1)
@@ -368,9 +429,10 @@ export function RefranesSinVocales({ onComplete }: GameProps) {
       key={`${runKey}-${levelIdx}`}
       levelIdx={levelIdx}
       content={epoch[levelIdx]}
+      since={since}
       onMistake={() => setMistakes((m) => m + 1)}
       onSolved={handleSolved}
-      onNext={() => setLevelIdx((i) => i + 1)}
+      onNext={handleNext}
       onRepeat={handleRepeat}
     />
   )

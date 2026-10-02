@@ -24,6 +24,14 @@ import type { GameProps } from '@/lib/challengeProgress'
  * level. Words are kept apart across levels on purpose, so an object never
  * flips from "doesn't fit" to "fits" between two levels of the same run.
  *
+ * Double taps: every tap within SETTLE_MS of the tap that brought the level (judged by the
+ * click's own timeStamp) is ignored, so the second tap of a double tap on "Siguiente nivel"
+ * or "Repetir" never lands on an object of the new level (the grid sits right where that
+ * button was). Nothing else needs it while playing: an object that is found or ruled out
+ * stays put, disabled. The card's button ignores a tap within SETTLE_MS of the object that
+ * closed the level (the card takes the grid's place, so it can end up under that finger). A
+ * new level opens at its top and the solved card is scrolled into view with its button.
+ *
  * totalAttempts = mistakes + the two objects of every level (TOTAL_PICKS).
  */
 
@@ -136,16 +144,24 @@ function buildEpoch(): LevelContent[] {
 
 const PRAISE = ['¡Muy bien!', '¡Excelente razonamiento!', '¡Así se hace!', '¡Perfecto!']
 
+/** A tap this soon after the tap that brought the level here ("Siguiente nivel", "Repetir") is the second tap
+ * of a double tap, and it must not be judged against the object that sits where that button was. The same
+ * window covers the card's button right after the object that closed the level (the card takes the grid's
+ * place). Long enough to swallow a double tap, short enough that nobody who means it notices. */
+const SETTLE_MS = 400
+
 interface LevelViewProps {
   levelIdx: number
   content: LevelContent
+  /** The timeStamp of the tap that brought this level on screen (-Infinity when nothing did). */
+  since: number
   onMistake: () => void
   onSolved: () => void
-  onNext: () => void
-  onRepeat: () => void
+  onNext: (at: number) => void
+  onRepeat: (at: number) => void
 }
 
-function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
+function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
   const level = LEVELS[levelIdx]
   const isLast = levelIdx === LEVELS.length - 1
   const { set, options } = content
@@ -156,16 +172,36 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
   const [praise, setPraise] = useState(PRAISE[0])
   const flashTimerRef = useRef<number | undefined>(undefined)
   const [flash, setFlash] = useState<string | null>(null)
+  // The tap that found the second object, which closed the level: the result card takes the grid's place.
+  const closedAtRef = useRef(Number.NEGATIVE_INFINITY)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const topRef = useRef<HTMLDivElement>(null)
   useEffect(() => () => window.clearTimeout(flashTimerRef.current), [])
 
   const solved = found.length >= PICKS_PER_LEVEL
 
-  function handleTap(option: string) {
-    if (solved || found.includes(option) || ruledOut.includes(option)) return
+  // A new level opens at its top, not wherever the previous result card left the scroll (a short phone).
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ block: 'start' })
+  }, [])
+
+  // A solved level shows its result card and its button even on a short phone: the card first and,
+  // when the card is taller than the screen, the button (the part that must not stay below the fold).
+  useEffect(() => {
+    const card = resultRef.current
+    if (!solved || !card) return
+    card.scrollIntoView({ block: 'nearest' })
+    card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+  }, [solved])
+
+  function handleTap(option: string, at: number) {
+    // The second tap of a double tap on the button that brought the level lands on an object: not an answer.
+    if (solved || found.includes(option) || ruledOut.includes(option) || at - since < SETTLE_MS) return
     if (set.correct.includes(option)) {
       setFound((f) => [...f, option])
       setHint(null)
       if (found.length + 1 >= PICKS_PER_LEVEL) {
+        closedAtRef.current = at
         setPraise(pickOne(PRAISE))
         onSolved()
       }
@@ -179,8 +215,15 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
     }
   }
 
+  // The card takes the grid's place, so its button can end up right under the finger that closed the
+  // level: the second tap of that double tap must not skip the result.
+  function leave(go: (at: number) => void, at: number) {
+    if (at - closedAtRef.current < SETTLE_MS) return
+    go(at)
+  }
+
   return (
-    <div className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-indigo-700">
@@ -218,7 +261,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
                   key={option}
                   type="button"
                   disabled={isFound || isRuledOut}
-                  onClick={() => handleTap(option)}
+                  onClick={(e) => handleTap(option, e.timeStamp)}
                   className={[
                     'relative flex min-h-[56px] items-center justify-center rounded-2xl border-2 px-2 py-3 text-xl font-bold capitalize transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
@@ -248,7 +291,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
 
       {/* Level complete */}
       {solved && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+        <div ref={resultRef} className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
@@ -260,8 +303,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             {isLast ? (
               <button
                 type="button"
-                onClick={onRepeat}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onRepeat, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
@@ -269,8 +312,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             ) : (
               <button
                 type="button"
-                onClick={onNext}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onNext, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
@@ -290,6 +333,8 @@ export function DosDeCadaGrupo({ onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [runKey, setRunKey] = useState(0)
   const [mistakes, setMistakes] = useState(0)
+  // The timeStamp of the tap that brought the current level on screen (see SETTLE_MS).
+  const [since, setSince] = useState(-Infinity)
   const reportedRunRef = useRef<number | null>(null)
 
   function handleSolved() {
@@ -297,7 +342,12 @@ export function DosDeCadaGrupo({ onComplete }: GameProps) {
     reportedRunRef.current = runKey
     onComplete({ mistakes, totalAttempts: mistakes + TOTAL_PICKS })
   }
-  function handleRepeat() {
+  function handleNext(at: number) {
+    setSince(at)
+    setLevelIdx((i) => i + 1)
+  }
+  function handleRepeat(at: number) {
+    setSince(at)
     setLevelIdx(0)
     setMistakes(0)
     setRunKey((k) => k + 1)
@@ -308,9 +358,10 @@ export function DosDeCadaGrupo({ onComplete }: GameProps) {
       key={`${runKey}-${levelIdx}`}
       levelIdx={levelIdx}
       content={epoch[levelIdx]}
+      since={since}
       onMistake={() => setMistakes((m) => m + 1)}
       onSolved={handleSolved}
-      onNext={() => setLevelIdx((i) => i + 1)}
+      onNext={handleNext}
       onRepeat={handleRepeat}
     />
   )

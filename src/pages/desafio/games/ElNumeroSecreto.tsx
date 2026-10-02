@@ -34,6 +34,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * plays exactly the same three boards. Per-level state lives in <LevelView>,
  * keyed by run + level.
  *
+ * Double taps: every tap within SETTLE_MS of the tap that brought the level (judged by the
+ * click's own timeStamp) is ignored, so the second tap of a double tap on "Empezar",
+ * "Siguiente nivel" or "Repetir" never lands on a number of the grid; the same window follows
+ * every number found, because the next clue can be a line taller or shorter and the grid
+ * moves under the finger, and the card's button ignores a tap within SETTLE_MS of the number
+ * that closed the level (the card takes the grid's place, so it can end up under that
+ * finger). A new level opens at its top and the solved card is scrolled into view with its
+ * button.
+ *
  * totalAttempts = mistakes + every clue of the day (TOTAL_CLUES, derived).
  */
 
@@ -196,6 +205,13 @@ function buildEpoch(): LevelContent[] {
 
 const PRAISE = ['¡Muy bien!', '¡Excelente cálculo!', '¡Así se hace!', '¡Perfecto!', '¡Qué buen ojo para los números!']
 
+/** A tap this soon after the tap that brought the level here ("Empezar", "Siguiente nivel", "Repetir"), or after
+ * a number was found, is the second tap of a double tap: the grid sits right where that button was (or has just
+ * moved with the next clue) and the tap must not be judged against the number under the finger now. The same
+ * window covers the card's button right after the number that closed the level (the card takes the grid's
+ * place). Long enough to swallow a double tap, short enough that nobody who means it notices. */
+const SETTLE_MS = 400
+
 // Full class strings, never interpolated: Tailwind only emits classes it can
 // read literally in the source.
 const GRID_CLASS: Record<2 | 3, string> = {
@@ -228,7 +244,7 @@ function PlaceValueExample() {
   )
 }
 
-function HowToPlay({ onStart }: { onStart: () => void }) {
+function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   const steps = [
     'Vas a ver una pista y una grilla de números.',
     'Tocá el número que cumple la pista. Hay uno solo.',
@@ -254,7 +270,7 @@ function HowToPlay({ onStart }: { onStart: () => void }) {
       <div className="mt-5 text-center">
         <button
           type="button"
-          onClick={onStart}
+          onClick={(e) => onStart(e.timeStamp)}
           className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark"
         >
           Empezar
@@ -268,13 +284,15 @@ function HowToPlay({ onStart }: { onStart: () => void }) {
 interface LevelViewProps {
   levelIdx: number
   content: LevelContent
+  /** The timeStamp of the tap that brought this level on screen (-Infinity when nothing did). */
+  since: number
   onMistake: () => void
   onSolved: () => void
-  onNext: () => void
-  onRepeat: () => void
+  onNext: (at: number) => void
+  onRepeat: (at: number) => void
 }
 
-function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
+function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRepeat }: LevelViewProps) {
   const level = LEVELS[levelIdx]
   const isLast = levelIdx === LEVELS.length - 1
   const { numbers, clues } = content
@@ -284,21 +302,45 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
   const [hint, setHint] = useState<string | null>(null)
   const [praise, setPraise] = useState(PRAISE[0])
   const flashTimerRef = useRef<number | undefined>(undefined)
+  // When the last number was found (the click's own timeStamp): the next clue may change the height of the
+  // clue box, so a double tap on that spot must not be judged against whatever number the grid moved under it.
+  const acceptedAtRef = useRef(Number.NEGATIVE_INFINITY)
+  // The tap that found the last number, which closed the level: the result card takes the grid's place.
+  const closedAtRef = useRef(Number.NEGATIVE_INFINITY)
+  const resultRef = useRef<HTMLDivElement>(null)
+  const topRef = useRef<HTMLDivElement>(null)
   useEffect(() => () => window.clearTimeout(flashTimerRef.current), [])
 
   const clueIdx = found.length
   const solved = clueIdx >= clues.length
   const clue = clues[clueIdx]
 
-  function handleTap(n: number) {
-    // A second tap on the number that is still flashing as wrong is a double
-    // tap, not a second mistake.
-    if (solved || found.includes(n) || wrongNumber === n) return
+  // A new level opens at its top, not wherever the previous result card left the scroll (a short phone).
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ block: 'start' })
+  }, [])
+
+  // A solved level shows its result card and its button even on a short phone: the card first and,
+  // when the card is taller than the screen, the button (the part that must not stay below the fold).
+  useEffect(() => {
+    const card = resultRef.current
+    if (!solved || !card) return
+    card.scrollIntoView({ block: 'nearest' })
+    card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+  }, [solved])
+
+  function handleTap(n: number, at: number) {
+    // A second tap on the number that is still flashing as wrong is a double tap, not a second mistake.
+    // So is the one that follows the button that brought the level (the grid sits where it was) and
+    // the one that follows a number found (the grid moves with the next clue).
+    if (solved || found.includes(n) || wrongNumber === n || at - since < SETTLE_MS || at - acceptedAtRef.current < SETTLE_MS) return
     if (clue.test(n)) {
+      acceptedAtRef.current = at
       setFound((f) => [...f, n])
       setWrongNumber(null)
       setHint(null)
       if (clueIdx === clues.length - 1) {
+        closedAtRef.current = at
         setPraise(pickOne(PRAISE))
         onSolved()
       }
@@ -311,8 +353,15 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
     }
   }
 
+  // The card takes the grid's place, so its button can end up right under the finger that closed the
+  // level: the second tap of that double tap must not skip the result.
+  function leave(go: (at: number) => void, at: number) {
+    if (at - closedAtRef.current < SETTLE_MS) return
+    go(at)
+  }
+
   return (
-    <div className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-600/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cyan-700">
@@ -341,7 +390,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
                   key={n}
                   type="button"
                   disabled={isFound}
-                  onClick={() => handleTap(n)}
+                  onClick={(e) => handleTap(n, e.timeStamp)}
                   aria-label={`Número ${n}`}
                   className={[
                     'relative flex items-center justify-center rounded-2xl border-2 font-bold transition',
@@ -372,7 +421,7 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
 
       {/* Level complete */}
       {solved && (
-        <div className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
+        <div ref={resultRef} className="mt-6 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
@@ -384,8 +433,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             {isLast ? (
               <button
                 type="button"
-                onClick={onRepeat}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onRepeat, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 <RotateCcw className="h-4 w-4" />
                 Repetir
@@ -393,8 +442,8 @@ function LevelView({ levelIdx, content, onMistake, onSolved, onNext, onRepeat }:
             ) : (
               <button
                 type="button"
-                onClick={onNext}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark"
+                onClick={(e) => leave(onNext, e.timeStamp)}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark scroll-mb-5"
               >
                 Siguiente nivel
                 <ArrowRight className="h-4 w-4" />
@@ -417,6 +466,8 @@ export function ElNumeroSecreto({ onComplete }: GameProps) {
   const [levelIdx, setLevelIdx] = useState(0)
   const [runKey, setRunKey] = useState(0)
   const [mistakes, setMistakes] = useState(0)
+  // The timeStamp of the tap that brought the current level on screen (see SETTLE_MS).
+  const [since, setSince] = useState(-Infinity)
   const reportedRunRef = useRef<number | null>(null)
 
   function handleSolved() {
@@ -424,7 +475,16 @@ export function ElNumeroSecreto({ onComplete }: GameProps) {
     reportedRunRef.current = runKey
     onComplete({ mistakes, totalAttempts: mistakes + TOTAL_CLUES })
   }
-  function handleRepeat() {
+  function handleStart(at: number) {
+    setSince(at)
+    setPhase('playing')
+  }
+  function handleNext(at: number) {
+    setSince(at)
+    setLevelIdx((i) => i + 1)
+  }
+  function handleRepeat(at: number) {
+    setSince(at)
     setLevelIdx(0)
     setMistakes(0)
     setRunKey((k) => k + 1)
@@ -438,7 +498,7 @@ export function ElNumeroSecreto({ onComplete }: GameProps) {
             {LEVELS[0].name}
           </span>
         </div>
-        <HowToPlay onStart={() => setPhase('playing')} />
+        <HowToPlay onStart={handleStart} />
       </div>
     )
   }
@@ -448,9 +508,10 @@ export function ElNumeroSecreto({ onComplete }: GameProps) {
       key={`${runKey}-${levelIdx}`}
       levelIdx={levelIdx}
       content={epoch[levelIdx]}
+      since={since}
       onMistake={() => setMistakes((m) => m + 1)}
       onSolved={handleSolved}
-      onNext={() => setLevelIdx((i) => i + 1)}
+      onNext={handleNext}
       onRepeat={handleRepeat}
     />
   )
