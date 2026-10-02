@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Brain, Eye, MessageCircle, Hand, Calculator, Compass, Lightbulb, Puzzle,
@@ -41,18 +41,33 @@ const AREA_META: Record<ChallengeArea, { label: string; color: string; icon: Luc
 
 type Phase = 'loading' | 'error' | 'ready'
 
+/** How long the card ignores taps after one that changed it from outside the
+ *  game (see shieldRef) — long enough to swallow a double tap, short enough
+ *  that nobody who means the next tap notices. Same value the games use. */
+const SHIELD_MS = 400
+
 export function DesafioPlayPage() {
   const { token } = useParams<{ token: string }>()
   const [phase, setPhase] = useState<Phase>('loading')
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  // timeStamp of the last tap inside the day card. The card is vertically
+  // centred and shrinks when a game moves to a shorter screen, so the second
+  // tap of a double tap (Siguiente nivel, Repetir…) can land on the backdrop
+  // — which must not close the game under the player.
+  const lastCardTapRef = useRef(-Infinity)
+  // timeStamp of the last tap that changed what the card shows from OUTSIDE
+  // the game: opening a day, the tap that finished it (the stars screen
+  // appears under the finger) and taps while an overlay is up (dismissing it
+  // uncovers the game's own Repetir). The card swallows any click within
+  // SHIELD_MS of it, so the second tap of a double tap does nothing.
+  const shieldRef = useRef(-Infinity)
   // A big worksheet (currently just día28's card grid) gets its own step
   // instead of sharing scroll space with the instructions paragraph above
-  // it — reset on every day change so a previous day's 'sheet' step never
-  // leaks into the next one opened.
+  // it — reset whenever a day is opened so a previous day's 'sheet' step
+  // never leaks into the next one.
   const [worksheetStep, setWorksheetStep] = useState<'intro' | 'sheet'>('intro')
-  useEffect(() => setWorksheetStep('intro'), [selectedDay])
   const [dayResult, setDayResult] = useState<{ day: number; stars: 1 | 2 | 3; message: string | null } | null>(null)
   // Newly-earned badges, shown one at a time (rare, but more than one can
   // unlock off a single completion — e.g. first day played landing on 3
@@ -117,6 +132,10 @@ export function DesafioPlayPage() {
     const previousResult = progress?.days.find((d) => d.day === day)
     const daysPlayedSoFar = progress?.days.length ?? 0
     const previouslyEarned = new Set(progress?.badges.filter((b) => b.earned).map((b) => b.code) ?? [])
+
+    // The tap that finished the game is the last one that went through the
+    // card (games report from inside that tap's handler or right after it).
+    shieldRef.current = lastCardTapRef.current
 
     const stars = computeStars(result.mistakes, result.totalAttempts)
     const isEarlyDay = daysPlayedSoFar < STAR_EXPLAINER_DAY_COUNT
@@ -237,7 +256,11 @@ export function DesafioPlayPage() {
                 key={d.day}
                 type="button"
                 disabled={locked}
-                onClick={() => setSelectedDay(d.day)}
+                onClick={(e) => {
+                  shieldRef.current = e.timeStamp
+                  setWorksheetStep('intro')
+                  setSelectedDay(d.day)
+                }}
                 aria-label={
                   locked
                     ? `Día ${d.day}, bloqueado`
@@ -293,8 +316,13 @@ export function DesafioPlayPage() {
       {/* Day card modal */}
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-3 py-3"
-          onClick={closeDayModal}
+          // touch-manipulation: a double tap must never zoom the page (iOS
+          // Safari does unless told otherwise) — this audience double-taps a lot.
+          className="fixed inset-0 z-50 flex touch-manipulation items-center justify-center bg-slate-900/50 px-3 py-3"
+          onClick={(e) => {
+            if (e.timeStamp - lastCardTapRef.current < 700 || e.timeStamp - shieldRef.current < 700) return
+            closeDayModal()
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="day-card-title"
@@ -312,6 +340,16 @@ export function DesafioPlayPage() {
               Game ? 'max-w-2xl' : selected?.worksheetShape === 'cards' && worksheetStep === 'sheet' ? 'max-w-xl' : 'max-w-md',
             ].join(' ')}
             onClick={(e) => e.stopPropagation()}
+            onClickCapture={(e) => {
+              if (e.timeStamp - shieldRef.current < SHIELD_MS) {
+                // Stopped in the capture phase, so neither the game nor the
+                // backdrop ever sees it.
+                e.stopPropagation()
+                return
+              }
+              lastCardTapRef.current = e.timeStamp
+              if (dayResult || badgeQueue.length > 0) shieldRef.current = e.timeStamp
+            }}
           >
             {Game ? (
               <>
@@ -332,7 +370,7 @@ export function DesafioPlayPage() {
                     type="button"
                     onClick={closeDayModal}
                     aria-label="Cerrar"
-                    className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                    className="-m-1.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -377,7 +415,7 @@ export function DesafioPlayPage() {
                       <button
                         type="button"
                         onClick={() => setWorksheetStep('intro')}
-                        className="-ml-1.5 flex items-center gap-1.5 rounded-lg px-1.5 py-1 text-sm font-bold text-slate-500 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                        className="-my-2 -ml-1.5 flex min-h-11 items-center gap-1.5 rounded-lg px-1.5 text-sm font-bold text-slate-500 hover:text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         Volver
@@ -386,7 +424,7 @@ export function DesafioPlayPage() {
                         type="button"
                         onClick={closeDayModal}
                         aria-label="Cerrar"
-                        className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                        className="-m-1.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40"
                       >
                         <X className="h-5 w-5" />
                       </button>
@@ -439,7 +477,7 @@ export function DesafioPlayPage() {
                           type="button"
                           onClick={closeDayModal}
                           aria-label="Cerrar"
-                          className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-tiam-blue/40"
+                          className="-m-1.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40"
                         >
                           <X className="h-5 w-5" />
                         </button>
