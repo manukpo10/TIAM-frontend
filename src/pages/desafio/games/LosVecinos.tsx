@@ -209,7 +209,7 @@ function HowToPlay({ onStart }: { onStart: () => void }) {
   const steps = [
     'Cada casa tiene un color fijo que no cambia.',
     'Las pistas dicen qué país, mascota o bebida va en cada casa — a veces por el color, a veces por la posición, y a veces por "vive al lado de".',
-    'Tocás una palabra de la lista de abajo y después la casilla donde creas que va.',
+    'Tocás una palabra de la lista de abajo y después la casilla donde creés que va.',
   ]
   return (
     <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-5 sm:p-6">
@@ -407,7 +407,7 @@ export function LosVecinos({ day: _day, onComplete }: GameProps) {
           <>
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Los vecinos</h2>
             <p className="mt-2 text-base text-slate-500">
-              Tocá una palabra de la lista y después la casilla donde creas que va, según las pistas.
+              Tocá una palabra de la lista y después la casilla donde creés que va, según las pistas.
             </p>
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
               <p className="shrink-0 text-base font-semibold text-slate-500">

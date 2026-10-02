@@ -124,15 +124,36 @@ import { LeeEnOrden } from './LeeEnOrden'
 import { DosDeCadaGrupo } from './DosDeCadaGrupo'
 import { FormaYColor } from './FormaYColor'
 import { RefranesSinVocales } from './RefranesSinVocales'
+import { SumaHastaTreinta } from './SumaHastaTreinta'
+import { LaRuletaDeLetras } from './LaRuletaDeLetras'
+import { MensajeCifrado } from './MensajeCifrado'
+import { QueNumeroEs } from './QueNumeroEs'
+import { FrasesAlReves } from './FrasesAlReves'
+import { DiagramasQueSuman } from './DiagramasQueSuman'
+import { LasFloresDelJardin } from './LasFloresDelJardin'
+import { CuadradosMagicos } from './CuadradosMagicos'
+import { ColoresEnLaGrilla } from './ColoresEnLaGrilla'
+import { PartesDelCuerpo } from './PartesDelCuerpo'
+import { PalabrasDesordenadas } from './PalabrasDesordenadas'
+import { LaPanaderia } from './LaPanaderia'
+import { LaFlorQueMasSeRepite } from './LaFlorQueMasSeRepite'
+import { PalabrasConCondiciones } from './PalabrasConCondiciones'
+import { LaPiramideDeLetras } from './LaPiramideDeLetras'
+import { DaleColorALosNumeros } from './DaleColorALosNumeros'
+import { ArmaLaMariposa } from './ArmaLaMariposa'
+import { LosDepartamentos } from './LosDepartamentos'
+import { ElPanalDeLetras } from './ElPanalDeLetras'
+import { CuentasEnLaTabla } from './CuentasEnLaTabla'
+import { PintaSegunElCodigo } from './PintaSegunElCodigo'
+import { LaEstrellaDeSumas } from './LaEstrellaDeSumas'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
  * and whose (month, day) pair has an entry here renders that component in the
  * modal instead of the static-card fallback (illustration/icon + instructions) —
  * see DesafioPlayPage.tsx, which falls back gracefully whenever a 'game' day has
- * no matching registry entry. Months 1-4 are fully wired (their lápiz-y-papel
- * 'card' days have no entry on purpose); month 5 is being built in weekly
- * batches, so its days that are still to come DO rely on that fallback.
+ * no matching registry entry. Months 1-5 are fully wired (their lápiz-y-papel
+ * 'card' days have no entry on purpose).
  *
  * To add a game: write the component, add one line under the right month below,
  * and make sure the day's `type` is 'game' in challengeContent.ts (true for every
@@ -277,12 +298,10 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     29: CasasDelBarrio,
     30: CrucigramaNumerico,
   },
-  // Month 5 ships in weekly batches of 7: días 1-7 are built. All 30 days are
-  // declared in challengeContent.ts's MONTH_5_DAYS_CONTENT already, and the
-  // backend unlocks them by elapsed week, so a day with no entry here renders
-  // its static instructions card once its week unlocks — the month must not go
-  // on sale before the last batch lands. 14 is a lápiz-y-papel card day and
-  // will never have an entry.
+  // Month 5 shipped in weekly batches of 7 and every game is built now: días 1-13
+  // and 15-30 have an entry, and 14 is a lápiz-y-papel card day that never will.
+  // All 30 days are declared in challengeContent.ts's MONTH_5_DAYS_CONTENT, and the
+  // backend unlocks them by elapsed week.
   5: {
     1: OrdenaLaOracion,
     2: LeeYRecorda,
@@ -291,6 +310,29 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     5: DosDeCadaGrupo,
     6: FormaYColor,
     7: RefranesSinVocales,
+    8: SumaHastaTreinta,
+    9: LaRuletaDeLetras,
+    10: MensajeCifrado,
+    11: QueNumeroEs,
+    12: FrasesAlReves,
+    13: DiagramasQueSuman,
+    // 14 sin entrada: día 'card' (lápiz y papel), no tiene componente.
+    15: LasFloresDelJardin,
+    16: CuadradosMagicos,
+    17: ColoresEnLaGrilla,
+    18: PartesDelCuerpo,
+    19: PalabrasDesordenadas,
+    20: LaPanaderia,
+    21: LaFlorQueMasSeRepite,
+    22: PalabrasConCondiciones,
+    23: LaPiramideDeLetras,
+    24: DaleColorALosNumeros,
+    25: ArmaLaMariposa,
+    26: LosDepartamentos,
+    27: ElPanalDeLetras,
+    28: CuentasEnLaTabla,
+    29: PintaSegunElCodigo,
+    30: LaEstrellaDeSumas,
   },
 }
 

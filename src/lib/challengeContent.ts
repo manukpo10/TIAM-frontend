@@ -437,7 +437,7 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 25, type: 'game', area: 'calculo', title: '¿Cuánto suma?',
     instructions: 'Un juego de cálculo: a la izquierda hay cantidades dibujadas con dados, sumas o marcas, y a la derecha los números. Tocá una de cada lado para unirlas. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'ejecutivas', title: 'Los vecinos',
-    instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué país, mascota y bebida tiene cada vecino. Tocá una palabra de la lista y después la casilla donde creas que va, según las pistas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: leé las pistas y descubrí qué país, mascota y bebida tiene cada vecino. Tocá una palabra de la lista y después la casilla donde creés que va, según las pistas. Subís de dificultad a medida que avanzás.' },
   { day: 27, type: 'game', area: 'orientacion', title: 'Banderas y saludos',
     instructions: 'Un juego de orientación y cultura general: reconocé la bandera de cada país y cómo se saluda la gente allá. Subís de dificultad a medida que avanzás.' },
   { day: 28, type: 'game', area: 'memoria', title: 'Leer y responder',
@@ -460,13 +460,11 @@ const MONTH_4_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
 // batches of 7, but nothing in the app hides the days still to be built: the
 // backend unlocks days purely by elapsed 7-day batches since the purchase, and
 // a 'game' day with no entry in registry.ts's GAMES_BY_MONTH[5] renders as a
-// plain instructions card as soon as its week unlocks. So the month must NOT
-// go on sale (backend MONTHS_ON_SALE, frontend CHALLENGE_MONTHS_AVAILABLE)
-// until every batch has shipped, and a month-5 test link older than a week
-// already shows the next batch's days as fallback cards.
-//   Batch 1 (días 1-7) is built: the instructions below describe the real games.
-//   Días 8-30 are PROVISIONAL: written from the planned title and mechanic, to be
-//   revised when each batch's games exist (keep type/area/title as they are).
+// plain instructions card as soon as its week unlocks. That is why the month
+// could not go on sale (backend MONTHS_ON_SALE, frontend CHALLENGE_MONTHS_AVAILABLE)
+// until every batch had shipped.
+//   All 29 games are built now (días 1-13 and 15-30; 14 is the card), so every
+//   instruction below describes the real game (keep type/area/title as they are).
 // ─────────────────────────────────────────────────────────────────────────────
 const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 1 — built ──────────────────────────────────────────────────────
@@ -485,19 +483,19 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 7, type: 'game', area: 'lenguaje', title: 'Refranes sin vocales',
     instructions: 'Un juego de lenguaje: a las palabras y a los refranes les faltan todas las vocales. Elegí entre A, E, I, O y U la vocal que falta en cada casillero y completalos. Subís de dificultad a medida que avanzás.' },
 
-  // ── Días 8-30 — provisional copy, see the comment above ───────────────────
+  // ── Semana 2 — built (14 is the card below) ───────────────────────────────
   { day: 8, type: 'game', area: 'calculo', title: 'Suma hasta 30',
-    instructions: 'Un juego de cálculo: recorré la grilla y encontrá los números que, sumados, dan 30. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: en la grilla hay parejas de números vecinos (uno al lado del otro o uno arriba del otro) que suman 30. Tocá los dos números de cada pareja hasta encontrarlas todas. Subís de dificultad a medida que avanzás.' },
   { day: 9, type: 'game', area: 'memoria', title: 'La ruleta de letras',
-    instructions: 'Un juego de memoria: mirá con atención la ruleta de letras y después contestá sobre lo que viste. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de memoria: girá la ruleta, mirá en qué letra se detiene y pensá palabras que empiecen con ella, por ejemplo una fruta o un nombre. Podés decirlas en voz alta o anotarlas en un papel. Subís de dificultad a medida que avanzás.' },
   { day: 10, type: 'game', area: 'atencion', title: 'Mensaje cifrado',
-    instructions: 'Un juego de atención: cada símbolo esconde una letra. Seguí la clave y descubrí el mensaje escondido. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de atención: en el mensaje, algunas letras se cambiaron por números. Mirá la clave, buscá el número resaltado y tocá la letra que le corresponde hasta descifrar el mensaje. Subís de dificultad a medida que avanzás.' },
   { day: 11, type: 'game', area: 'calculo', title: '¿Qué número es?',
-    instructions: 'Un juego de cálculo: leé las pistas y descubrí qué número es. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: a la izquierda hay números escritos con letras y a la derecha, números con cifras, todos parecidos entre sí. Tocá uno de cada lado para unir cada número con sus cifras. Subís de dificultad a medida que avanzás.' },
   { day: 12, type: 'game', area: 'lenguaje', title: 'Frases al revés',
-    instructions: 'Un juego de lenguaje: las frases aparecen al revés. Ponelas en orden y descubrí qué dicen. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: cada palabra de la frase está escrita al revés, de atrás para adelante. Leela con calma y tocá cómo se lee de verdad, palabra por palabra, hasta armar la frase. Subís de dificultad a medida que avanzás.' },
   { day: 13, type: 'game', area: 'ejecutivas', title: 'Diagramas que suman',
-    instructions: 'Un juego de razonamiento: completá los diagramas para que todas las sumas cierren. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: en un diagrama de círculos unidos por líneas faltan algunos números. Tocá un número de abajo y después un círculo vacío para ponerlo, hasta que todas las líneas sumen lo mismo. Subís de dificultad a medida que avanzás.' },
   // Lápiz y papel: writing a sentence around a given word has no closed answer
   // set to validate, so — like month 3's día 14 and month 4's día 18 — it is a
   // CARD, not a tap game.
@@ -511,38 +509,44 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
       { label: 'Una oración con un mes del año' },
       { label: 'Una oración con un color' },
     ] },
+
+  // ── Semana 3 — built (días 15-21) ─────────────────────────────────────────
   { day: 15, type: 'game', area: 'memoria', title: 'Las flores del jardín',
-    instructions: 'Un juego de memoria: mirá con calma las flores del jardín y después recordá cuáles había y dónde estaban. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de memoria: mirá con calma las flores del jardín y fijate cómo es cada una. Cuando estés listo, tocá «Ya las miré»: las flores desaparecen y tenés que reconocer, entre otras, las que estaban. Subís de dificultad a medida que avanzás.' },
   { day: 16, type: 'game', area: 'calculo', title: 'Cuadrados mágicos',
-    instructions: 'Un juego de cálculo: completá el cuadrado para que todas las filas y todas las columnas sumen lo mismo. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: en un cuadrado de tres por tres faltan algunos números. Tocá uno de los de abajo y después un casillero vacío para ponerlo, hasta que todas las filas y todas las columnas sumen lo mismo; las diagonales no cuentan. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'game', area: 'orientacion', title: 'Colores en la grilla',
-    instructions: 'Un ejercicio de orientación: seguí las indicaciones para ubicar los casilleros de la grilla y pintarlos del color que corresponde. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un ejercicio de orientación: en una grilla de cuadraditos de colores, cada fila tiene una letra y cada columna un número. Te preguntamos de qué color es una casilla, por ejemplo C4: buscá dónde se cruzan la fila C y la columna 4 y tocá el color que corresponde. Subís de dificultad a medida que avanzás.' },
   { day: 18, type: 'game', area: 'agnosias', title: 'Partes del cuerpo',
-    instructions: 'Un juego de reconocimiento: mirá la imagen y tocá la parte del cuerpo que te pedimos. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de reconocimiento: te pedimos una parte del cuerpo, por ejemplo la rodilla, y la tocás sobre el dibujo de una persona. Al final la vemos de espaldas. Subís de dificultad a medida que avanzás.' },
   { day: 19, type: 'game', area: 'lenguaje', title: 'Palabras desordenadas',
-    instructions: 'Un juego de lenguaje: las letras de cada palabra están desordenadas. Acomodalas para descubrir de qué palabra se trata. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: las letras de cada palabra están desordenadas. Con la pista y la cantidad de letras, tocalas en orden para armar la palabra. Subís de dificultad a medida que avanzás.' },
   { day: 20, type: 'game', area: 'calculo', title: 'La panadería',
-    instructions: 'Un juego de cálculo: ayudá a atender la panadería con precios, cantidades y vueltos. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: en la panadería hay una lista de precios y llegan clientes con su pedido. Calculá cuánto tiene que pagar cada uno y tocá el total correcto. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'atencion', title: 'La flor que más se repite',
-    instructions: 'Un juego de atención: mirá las flores con cuidado y tocá la que más veces aparece. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de atención: mirá el tablero lleno de flores y respondé dos preguntas: cuál es la flor que más se repite y cuál aparece una sola vez. Subís de dificultad a medida que avanzás.' },
+
+  // ── Días 22-26 — built ────────────────────────────────────────────────────
   { day: 22, type: 'game', area: 'ejecutivas', title: 'Palabras con condiciones',
-    instructions: 'Un juego de razonamiento: encontrá las palabras que cumplen todas las condiciones pedidas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: leé la condición, como «termina en L» o «rima con coche», y tocá la única palabra, entre cuatro, que la cumple. Subís de dificultad a medida que avanzás.' },
   { day: 23, type: 'game', area: 'lenguaje', title: 'La pirámide de letras',
-    instructions: 'Un juego de lenguaje: armá palabras sumando una letra por piso hasta completar la pirámide. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: armá una pirámide de palabras donde cada fila es la de arriba con una letra más, guiándote por las pistas. Subís de dificultad a medida que avanzás.' },
   { day: 24, type: 'game', area: 'calculo', title: 'Dale color a los números',
-    instructions: 'Un juego de cálculo: pintá cada número del color que le toca según la regla. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: hacé la cuenta de cada pista y pintá, del color que te piden, el número que da el resultado. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'praxias', title: 'Armá la mariposa',
-    instructions: 'Un juego visoespacial: armá la mariposa colocando cada pieza en su lugar. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego visoespacial: encajá las piezas de colores, sin girarlas, hasta llenar el dibujo sin que sobre ni falte ningún cuadradito. Vas a armar distintos dibujos, y el último es la mariposa. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'ejecutivas', title: 'Los departamentos',
-    instructions: 'Un juego de razonamiento: leé las pistas y deducí quién vive en cada departamento. Tocá una palabra de la lista y después la casilla donde creas que va. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: leé las pistas y deducí quién vive en cada piso del edificio y qué mascota tiene. Tocá una palabra de la lista y después la casilla donde creés que va. En el segundo nivel se suma la afición de cada vecino, y es un poco más difícil.' },
+
+  // ── Días 27-30 — built (the last four) ────────────────────────────────────
   { day: 27, type: 'game', area: 'lenguaje', title: 'El panal de letras',
-    instructions: 'Un juego de lenguaje: con las letras del panal, armá las palabras que te pedimos. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: leé la pista, fijate cuántas letras tiene la palabra y armala tocando las letras del panal. Podés repetir una letra, y la letra dorada del medio va en todas las palabras. Subís de dificultad a medida que avanzás.' },
   { day: 28, type: 'game', area: 'calculo', title: 'Cuentas en la tabla',
-    instructions: 'Un juego de cálculo: completá la tabla con los resultados de las cuentas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de cálculo: cada fila de la tabla arranca con un número y hay que sumarle 100, restarle 50, calcular su mitad y su doble. Tocá el resultado correcto entre cuatro opciones parecidas. Subís de dificultad a medida que avanzás.' },
   { day: 29, type: 'game', area: 'atencion', title: 'Pintá según el código',
-    instructions: 'Un juego de atención: seguí el código de colores y pintá cada casillero como corresponde. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de atención: el código te dice qué formas se pintan y de qué color, por ejemplo «triángulos = rojo». Recorré el tablero y tocá cada forma del código para pintarla. Subís de dificultad a medida que avanzás.' },
   { day: 30, type: 'game', area: 'calculo', title: 'La estrella de sumas',
-    instructions: 'Un juego de cálculo: completá la estrella para que todas las sumas cierren. ¡Un cierre a la altura del Mes 5! 🎉' },
+    instructions: 'Último día: una estrella con un total en el centro, donde los dos números de cada rama suman ese total. Descubrí cuál falta en cada una y tocalo entre las opciones. Subís de dificultad a medida que avanzás.' },
 ]
 
 /** Content joined with its per-day illustration (matched by day number). */
