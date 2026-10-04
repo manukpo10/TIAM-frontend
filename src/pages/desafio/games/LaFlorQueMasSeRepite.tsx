@@ -4,7 +4,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "La flor que más se repite" — día 21, mes 5, atención. A field of flowers
- * scattered over a white board: 12 flowers of 4 kinds → 18 of 5 → 24 of 6.
+ * scattered over a white board: 12 flowers of 4 kinds → 20 of 5 → 25 of 6.
  * Two questions about the SAME field, one after the other: "¿Cuál es la flor que
  * más se repite?" and "¿Cuál aparece una sola vez?". The answer is one tap on
  * the kinds of flower shown as options (the flower AND its name). Looking over a
@@ -24,8 +24,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * each flower sits a little off the middle of its cell (up to 0.08 of a cell
  * every way) and tilted a few degrees, so it reads as scattered while it can never
  * touch a neighbour: the flower is 0.84 of a cell, so two flowers that lean toward
- * each other are still 0.84 apart, centre to centre, with their boxes just touching. Levels with more cells than
- * flowers (18 in 20, 24 in 25) leave a random few empty. Which kind goes in which
+ * each other are still 0.84 apart, centre to centre, with their boxes just touching. Every cell holds a flower:
+ * an empty cell in an otherwise full grid reads as a picture that failed to load. Which kind goes in which
  * cell is random but decided ONCE, at mount, together with the order of the
  * options (never sorted by count, or the first one would always be right), so
  * "Repetir" replays exactly the same fields in the same places. A throwaway Node
@@ -101,10 +101,11 @@ interface LevelDef {
   fields: FieldDef[]
 }
 
-// Every field of a level has the same number of flowers, so the board is always
-// the same size. Within a field: one kind has the most, exactly one kind appears
-// once and every other kind appears at least twice. The one look-alike pair of
-// level 3 sits among the middle counts (4/3 and 6/3), never on an answer.
+// Every field of a level has exactly as many flowers as the board has cells
+// (cols × rows), so no cell is left empty. Within a field: one kind has the most,
+// exactly one kind appears once and every other kind appears at least twice. The
+// one look-alike pair of level 3 sits among the middle counts (5/3 and 6/3),
+// never on an answer.
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
@@ -120,8 +121,8 @@ const LEVELS: LevelDef[] = [
     cols: 5,
     rows: 4,
     fields: [
-      { counts: [['girasol', 7], ['rosa', 5], ['lavanda', 3], ['hortensia', 2], ['margarita', 1]] },
-      { counts: [['hortensia', 7], ['tulipan', 5], ['clavel', 3], ['orquidea', 2], ['jazmin', 1]] },
+      { counts: [['girasol', 7], ['rosa', 5], ['lavanda', 4], ['hortensia', 3], ['margarita', 1]] },
+      { counts: [['hortensia', 7], ['tulipan', 5], ['clavel', 4], ['orquidea', 3], ['jazmin', 1]] },
     ],
   },
   {
@@ -129,8 +130,8 @@ const LEVELS: LevelDef[] = [
     cols: 5,
     rows: 5,
     fields: [
-      { counts: [['girasol', 8], ['margarita', 6], ['rosa', 4], ['clavel', 3], ['lavanda', 2], ['hortensia', 1]] },
-      { counts: [['clavel', 8], ['tulipan', 6], ['orquidea', 4], ['girasol', 3], ['hortensia', 2], ['margarita', 1]] },
+      { counts: [['girasol', 8], ['margarita', 6], ['rosa', 5], ['clavel', 3], ['lavanda', 2], ['hortensia', 1]] },
+      { counts: [['clavel', 8], ['tulipan', 6], ['orquidea', 5], ['girasol', 3], ['hortensia', 2], ['margarita', 1]] },
     ],
   },
 ]
