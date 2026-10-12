@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Users, Heart, Brain, Puzzle, Lightbulb, X, MapPin, Navigation } from 'lucide-react'
+import { Users, Heart, Brain, Puzzle, Lightbulb, X, MapPin, Navigation, ArrowDown } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
-import { Button } from '@/components/ui/Button'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import { WhatsAppCta } from '@/pages/talleres/WhatsAppCta'
+import { TalleresPersonalizadosSection } from '@/pages/talleres/TalleresPersonalizadosSection'
 import tallerFoto1 from '@/assets/taller/taller-1.jpg'
 import tallerFoto2 from '@/assets/taller/taller-2.jpg'
 import tallerFoto3 from '@/assets/taller/taller-3.jpg'
@@ -13,9 +14,6 @@ import tallerFoto6 from '@/assets/taller/taller-6.jpg'
 import tallerVideo from '@/assets/taller/video-tallerista.mp4'
 import tallerVideoPoster from '@/assets/taller/video-tallerista-poster.webp'
 
-// Número real de inscripciones del taller (del flyer impreso), NO el de
-// WhatsApp Business que usa el bot del Desafío — este lo atiende una persona.
-const TALLER_WHATSAPP = '5492215226725'
 const TALLER_INQUIRY_TEXT = '¡Hola! Quiero sacar un turno para el taller presencial de TIAM.'
 
 // Fotos reales del Taller Interactivo para Adultos Mayores en La Plata — el
@@ -113,37 +111,32 @@ function mapsDirectionsUrlFor(query: string) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`
 }
 
-/** Lucide has no brand glyphs — WhatsApp's own mark, inlined (no new
- * dependency for one icon). */
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
-      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C22 6.45 17.56 2.01 12.04 2zm5.87 14.05c-.25.7-1.45 1.34-2 1.42-.51.08-1.15.11-1.86-.12-.43-.14-.98-.32-1.69-.62-2.97-1.28-4.91-4.28-5.06-4.48-.15-.2-1.21-1.61-1.21-3.07 0-1.46.77-2.18 1.04-2.48.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.18.01.44-.07.68.53.25.6.85 2.07.92 2.22.07.15.12.33.02.53-.1.2-.15.33-.3.5-.15.18-.31.4-.45.53-.15.15-.3.31-.13.6.17.3.75 1.24 1.62 2.01 1.11.99 2.05 1.3 2.35 1.44.3.15.47.13.65-.08.18-.2.75-.87.95-1.17.2-.3.4-.25.68-.15.28.1 1.77.84 2.08.99.31.15.51.23.59.36.08.13.08.75-.17 1.45z" />
-    </svg>
-  )
-}
-
-function WhatsAppCta({ label }: { label: string }) {
-  return (
-    <a
-      href={`https://wa.me/${TALLER_WHATSAPP}?text=${encodeURIComponent(TALLER_INQUIRY_TEXT)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <Button size="lg" className="min-h-[44px] px-8 bg-[#25D366] text-white hover:bg-[#1ebe5b]">
-        <WhatsAppIcon className="h-4 w-4" />
-        {label}
-      </Button>
-    </a>
-  )
-}
-
 export function TalleresPage() {
   const [lightboxPhoto, setLightboxPhoto] = useState<(typeof TALLER_PHOTOS)[number] | null>(null)
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-    document.title = 'Talleres presenciales — TIAM Digital'
+    document.title = 'Talleres presenciales y personalizados — TIAM Digital'
+    const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null
+    if (!target) {
+      window.scrollTo(0, 0)
+      return
+    }
+    // A shared link such as /talleres#personalizados lands on that section.
+    // 'instant' because the site sets `scroll-behavior: smooth`, which would
+    // animate the whole page past on load.
+    target.scrollIntoView({ behavior: 'instant' })
+    const landedAt = window.scrollY
+    // The web fonts arrive after React has rendered, and swapping from the fallback
+    // font moves the section (Safari, unlike Chrome, doesn't compensate). Align
+    // again once they are in — unless the page has moved since, because the
+    // visitor scrolled or the browser already compensated.
+    let cancelled = false
+    document.fonts?.ready.then(() => {
+      if (!cancelled && window.scrollY === landedAt) target.scrollIntoView({ behavior: 'instant' })
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return (
@@ -159,7 +152,7 @@ export function TalleresPage() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-4">
                   <Heart className="h-3.5 w-3.5 text-tiam-blue" />
                   <span className="text-xs font-semibold uppercase tracking-wide text-tiam-blue">
-                    Talleres personalizados
+                    Taller presencial
                   </span>
                 </div>
                 <p className="font-semibold text-tiam-orange mb-2">Tu mente activa, tu vida plena.</p>
@@ -172,8 +165,15 @@ export function TalleresPage() {
                   Hoy seguimos coordinando esos mismos encuentros, cara a cara, semana a semana.
                 </p>
                 <div className="mt-8">
-                  <WhatsAppCta label="Sacar turno por WhatsApp" />
+                  <WhatsAppCta label="Sacar turno por WhatsApp" text={TALLER_INQUIRY_TEXT} />
                 </div>
+                <a
+                  href="#personalizados"
+                  className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 font-semibold text-tiam-blue hover:text-tiam-blue-dark"
+                >
+                  ¿Preferís algo a tu medida? Mirá los talleres personalizados
+                  <ArrowDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </a>
                 <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-500">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm">
                     <Users className="h-3.5 w-3.5 text-tiam-blue" />
@@ -193,7 +193,7 @@ export function TalleresPage() {
                 <img
                   src={tallerFoto3}
                   alt="Seis personas escriben en cuadernos durante un encuentro del taller, con una consigna de lenguaje anotada en el pizarrón de fondo"
-                  className="w-full rounded-2xl shadow-sm"
+                  className="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm"
                 />
                 <div className="absolute -bottom-4 -left-4 -rotate-6 rounded-full bg-tiam-orange px-5 py-3 text-center shadow-lg">
                   <p className="text-sm font-bold text-white leading-tight">
@@ -368,10 +368,11 @@ export function TalleresPage() {
               Sacá tu turno por WhatsApp y te contamos cómo funciona, los horarios y el valor.
             </p>
             <div className="mt-8">
-              <WhatsAppCta label="Sacar turno por WhatsApp" />
+              <WhatsAppCta label="Sacar turno por WhatsApp" text={TALLER_INQUIRY_TEXT} />
             </div>
           </div>
         </section>
+        <TalleresPersonalizadosSection />
       </main>
 
       <PublicFooter />
