@@ -22,7 +22,7 @@
     <meta property="og:image" content="https://tiamdigital.com/pack/og-familias.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Cuadernillos A4 impresos sobre una mesa de madera, con las tapas del Pack Básico de TIAM, y el título 15 minutos para compartir con tu mamá" />
+    <meta property="og:image:alt" content="Ilustración de una mujer mayor y su hija mirando juntas un álbum, con el Pack Básico de TIAM y sus cuadernillos, y el título 15 minutos para compartir con tu mamá" />
 
     <link rel="preload" href="/pack/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/pack/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -45,18 +45,30 @@
           <h1 id="titulo" class="t-h1 hero-h1"><mark>15&nbsp;minutos</mark> para compartir con tu mamá</h1>
 
           <figure class="hero-photo">
-            <img
-              src="/pack/img/hero-familias-480.webp"
-              srcset="/pack/img/hero-familias-480.webp 480w, /pack/img/hero-familias-800.webp 800w, /pack/img/hero-familias-1200.webp 1200w"
-              sizes="(min-width: 1024px) 540px, (min-width: 640px) 544px, 92vw"
-              width="800"
-              height="600"
-              alt="Cuadernillos A4 impresos y engrapados sobre una mesa de madera: el del Pack Básico adelante y los de Memoria, Atención, Lenguaje y Cálculo atrás. Maqueta con las tapas reales del pack, edición para familias."
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-            />
-            <!-- Honestidad: lo que se vende es un PDF para imprimir en casa; la foto muestra cómo queda impreso. Este cartel va siempre pegado a la imagen. -->
+            <!-- Dirección de arte: recorte 1:1 hasta 1023 px y 4:3 desde 1024 px (scripts/pack-landings/make_hero_final.py). Cada recorte con su ancho y alto: sin saltos de diseño.
+                 Lo importante de la imagen queda por encima del cartel de abajo (el 15 % inferior en 1:1 y el 11 % en 4:3). -->
+            <picture>
+              <source
+                media="(min-width: 1024px)"
+                type="image/webp"
+                srcset="/pack/img/hero-familias-4x3-480.webp 480w, /pack/img/hero-familias-4x3-800.webp 800w, /pack/img/hero-familias-4x3-1200.webp 1200w"
+                sizes="540px"
+                width="1200"
+                height="900"
+              />
+              <img
+                src="/pack/img/hero-familias-1x1-480.webp"
+                srcset="/pack/img/hero-familias-1x1-480.webp 480w, /pack/img/hero-familias-1x1-800.webp 800w, /pack/img/hero-familias-1x1-1200.webp 1200w"
+                sizes="(min-width: 640px) 544px, 92vw"
+                width="1200"
+                height="1200"
+                alt="Ilustración en tinta de una mujer mayor y su hija mirando juntas un álbum de fotos, con la tapa del Pack Básico y los cuadernillos de Memoria, Atención, Lenguaje y Cálculo, y la cifra 120 fichas. Tapas reales del pack, edición para familias."
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </picture>
+            <!-- Honestidad: lo que se vende es un PDF para imprimir en casa; la imagen muestra las tapas reales y cómo queda impreso. Este cartel va siempre pegado a la imagen. -->
             <figcaption class="hero-tag"><svg class="i text-tiam-blue" aria-hidden="true"><use href="#i-printer" /></svg>Producto digital: PDF para imprimir en casa</figcaption>
           </figure>
 

@@ -364,6 +364,9 @@
     max-width: 34rem;
     min-width: 0;
   }
+  .hero-photo picture {
+    display: block;
+  }
   .hero-photo img {
     display: block;
     height: auto;
