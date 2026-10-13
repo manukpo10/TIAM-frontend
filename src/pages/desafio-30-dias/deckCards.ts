@@ -36,3 +36,6 @@ export const DECK_CARDS: DeckCard[] = [
   { src: dia7, label: 'Atención', color: '#E8531E' },
   { src: dia30, label: '¡Lo lograste!', color: '#C98A00' },
 ]
+
+/** The eight cognitive areas: every card but the trophy, which always closes the deck. */
+export const AREA_CARDS = DECK_CARDS.slice(0, -1)

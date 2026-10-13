@@ -30,7 +30,9 @@ export function useBodyScrollLock(active: boolean) {
       style.top = prev.top
       style.width = prev.width
       style.overflow = prev.overflow
-      window.scrollTo(0, scrollY)
+      // `instant`: the page's CSS sets `scroll-behavior: smooth`, and the unlock leaves the scroll
+      // at the top, so a plain scrollTo would replay a long smooth scroll back down to `scrollY`.
+      window.scrollTo({ top: scrollY, behavior: 'instant' })
     }
   }, [active])
 }

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import tallerGrupal from '@/assets/taller/taller-grupal.webp'
+import materialMesa from '@/assets/material-digital/material-mesa.webp'
 import { HeroMoments } from '@/pages/landing/HeroMoments'
 
 // Links styled as buttons rather than <Link><Button/></Link>: a button nested
@@ -68,6 +69,15 @@ const PATHS: Path[] = [
     link: { cta: 'Conocer el taller', to: '/talleres', variant: 'blue' },
   },
   {
+    eyebrow: 'Material digital',
+    title: 'Fichas para imprimir',
+    description: 'Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas.',
+    bullets: ['Pack Básico: 120 fichas en 4 áreas y 3 niveles', 'Letra grande, listas para imprimir', 'Para familias y para profesionales'],
+    image: materialMesa,
+    imagePosition: '50% 50%',
+    link: { cta: 'Ver el material', to: '/material-digital', variant: 'blue' },
+  },
+  {
     eyebrow: 'Para profesionales',
     title: 'Plataforma para tu consultorio',
     description: 'Las herramientas para planificar y llevar tus sesiones de estimulación cognitiva.',
@@ -89,7 +99,7 @@ function PathCard({ path }: { path: Path }) {
         !comingSoon && (path.featured ? 'ring-2 ring-tiam-orange/60' : 'ring-1 ring-slate-200'),
       )}
     >
-      <div className="relative h-52 overflow-hidden">
+      <div className="relative h-52 overflow-hidden lg:h-64">
         <img
           src={path.image}
           alt=""
@@ -154,8 +164,10 @@ function PathCard({ path }: { path: Path }) {
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
-// TIAM es una marca con 4 patas: el Desafío 30 días (/desafio-30-dias), los
-// talleres presenciales (/talleres, el origen de TIAM), la plataforma para
+// TIAM es una marca con 5 patas: el Desafío 30 días (/desafio-30-dias), los
+// talleres presenciales (/talleres, el origen de TIAM), el material digital
+// (/material-digital: la biblioteca de productos para imprimir; cada producto
+// tiene su propia landing, fuera de esta app), la plataforma para
 // profesionales (/plataforma — próximamente, por eso su tarjeta no tiene link
 // y no hay botón "Soy profesional" en el hero) y un curso futuro (sin
 // contenido todavía, por eso va como una línea y no como una tarjeta). El
@@ -263,7 +275,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="mx-auto grid max-w-xl gap-6 lg:max-w-none lg:grid-cols-3">
+            <div className="mx-auto grid max-w-xl gap-6 md:max-w-none md:grid-cols-2">
               {PATHS.map((path) => (
                 <PathCard key={path.title} path={path} />
               ))}

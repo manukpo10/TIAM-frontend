@@ -6,7 +6,8 @@ import { DECK_CARDS } from '@/pages/desafio-30-dias/deckCards'
 
 /**
  * A deck of the Desafío's illustrated cards that flips through the cognitive
- * areas the Desafío works, one at a time. It sits in the Desafío page's hero: to
+ * areas the Desafío works, one at a time. It sits in the Desafío page's hero (a
+ * navy band, which is why the disc, the dots and the focus ring are white): to
  * the right of the headline on a wide screen, below it on a phone. What each card
  * may and may not say is in deckCards.ts.
  *
@@ -75,11 +76,8 @@ export function AreasDeck() {
     >
       {/* Room for the back cards, which are offset up and to the right. */}
       <div className="relative pr-[14%] pt-[10%]">
-        {/* Soft disc behind the deck, in the logo's blue. */}
-        <div
-          aria-hidden="true"
-          className="absolute -right-[4%] top-[2%] h-[78%] w-[78%] rounded-full bg-tiam-blue/10 blur-2xl"
-        />
+        {/* Soft light disc behind the deck, to lift it off the navy. */}
+        <div aria-hidden="true" className="absolute -right-[4%] top-[2%] h-[78%] w-[78%] rounded-full bg-white/10 blur-2xl" />
 
         <div className="relative aspect-[900/616] w-full">
           {DECK_CARDS.map((card, i) => {
@@ -148,7 +146,7 @@ export function AreasDeck() {
           type="button"
           onClick={togglePaused}
           aria-label={paused ? 'Reanudar las tarjetas' : 'Pausar las tarjetas'}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tiam-navy"
         >
           {paused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
         </button>
@@ -157,7 +155,7 @@ export function AreasDeck() {
             <span
               key={card.src}
               className={cn(
-                'block rounded-full bg-tiam-blue motion-safe:transition-all',
+                'block rounded-full bg-white motion-safe:transition-all',
                 i === active ? 'h-2.5 w-6' : 'h-2 w-2 opacity-30',
               )}
             />

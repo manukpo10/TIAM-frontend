@@ -34,6 +34,7 @@ import { ClinicalFaqPage } from '@/pages/faq/ClinicalFaqPage'
 import { DemoTourPage } from '@/pages/demo/DemoTourPage'
 import { RecursosPage } from '@/pages/recursos/RecursosPage'
 import { TalleresPage } from '@/pages/talleres/TalleresPage'
+import { MaterialDigitalPage } from '@/pages/material-digital/MaterialDigitalPage'
 import { Desafio30DiasPage } from '@/pages/desafio-30-dias/Desafio30DiasPage'
 import { DesafioExitoPage } from '@/pages/desafio-30-dias/DesafioExitoPage'
 import { DesafioPlayPage } from '@/pages/desafio/DesafioPlayPage'
@@ -71,6 +72,10 @@ export default function App() {
             <Route path="/demo" element={<DemoTourPage />} />
             <Route path="/recursos" element={<RecursosPage />} />
             <Route path="/talleres" element={<TalleresPage />} />
+            {/* /pack/familias and /pack/profesionales are the Pack's static landings (pack/ at the
+                repo root, served through vercel.json rewrites, outside this app): don't build
+                routes under /pack here, and link to them with a plain <a>, never <Link>. */}
+            <Route path="/material-digital" element={<MaterialDigitalPage />} />
             <Route path="/desafio-30-dias" element={<Desafio30DiasPage />} />
             <Route path="/desafio-30-dias/exito" element={<DesafioExitoPage />} />
 
