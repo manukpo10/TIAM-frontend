@@ -304,14 +304,17 @@ export function Desafio30DiasPage() {
           {/* Background image */}
           <img
             src={desafioHero}
-            alt="Una hija se apoya en los hombros de su mamá mientras ella juega el ejercicio del día desde el celular, en el living de casa"
-            className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+            alt="Ilustración de una hija que se apoya en los hombros de su mamá mientras ella juega el ejercicio del día desde el celular, en el living de casa"
+            // On a phone only ~28% of the picture's width is visible: 56% keeps both faces in view.
+            className="absolute inset-0 h-full w-full object-cover object-[56%_30%] sm:object-[center_30%]"
             fetchPriority="high"
           />
-          {/* Readability wash — white from the left so the text reads over the photo */}
+          {/* Readability wash — white from the left so the text reads over the illustration.
+              From lg up the text column ends at ~50% of the width and the two people stand at
+              50-75%, so the wash has to be gone by ~60% or it ghosts the mother's face. */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30 sm:via-white/80 sm:to-transparent lg:from-white/95 lg:via-white/65"
+            className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30 sm:via-white/80 sm:to-transparent lg:bg-[linear-gradient(to_right,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.8)_38%,rgba(255,255,255,0.25)_52%,rgba(255,255,255,0)_62%)]"
           />
 
           <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16">
@@ -555,7 +558,7 @@ export function Desafio30DiasPage() {
             <div className="overflow-hidden rounded-3xl border border-tiam-blue/15 bg-tiam-blue/5">
               <img
                 src={desafioAbuelo}
-                alt="Un adulto mayor sonríe mientras mira el celular en la mesa de su cocina, recibiendo el ejercicio del día"
+                alt="Ilustración de un adulto mayor que sonríe mientras mira el celular en la mesa de su cocina, recibiendo el ejercicio del día"
                 className="h-64 w-full object-cover sm:h-72"
               />
               <div className="p-8">
