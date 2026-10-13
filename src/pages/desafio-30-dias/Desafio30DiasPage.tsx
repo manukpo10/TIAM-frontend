@@ -12,11 +12,11 @@ import { Input } from '@/components/ui/Input'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { api } from '@/lib/api'
-import desafioHero from '@/assets/desafio-hero.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import mercadoPagoLogo from '@/assets/mercadopago-logo.svg'
 import videoCompra from '@/assets/video-compra.mp4'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
+import { AreasDeck } from '@/pages/desafio-30-dias/AreasDeck'
 
 // ─── Static data (hoisted outside component) ────────────────────────────────
 
@@ -297,27 +297,21 @@ export function Desafio30DiasPage() {
 
       <main id="main-content">
         {/* ── 2. Hero ──────────────────────────────────────────────────────── */}
+        {/* overflow-clip, not overflow-hidden: the background blobs overhang the section,
+            and overflow-hidden still makes it a (scrollbar-less) scroll container.
+            The visual is the deck of the Desafío's illustrated cards, to the right of the text. */}
         <section
           aria-labelledby="hero-heading"
-          className="relative overflow-hidden bg-gradient-to-br from-tiam-blue/5 to-slate-50 min-h-[460px] sm:min-h-[540px] lg:min-h-[620px] flex items-center"
+          className="relative overflow-clip bg-gradient-to-br from-tiam-blue/[0.07] via-slate-50 to-white pt-12 pb-24 md:pt-16 md:pb-28"
         >
-          {/* Background image */}
-          <img
-            src={desafioHero}
-            alt="Ilustración de una hija que se apoya en los hombros de su mamá mientras ella juega el ejercicio del día desde el celular, en el living de casa"
-            // On a phone only ~28% of the picture's width is visible: 56% keeps both faces in view.
-            className="absolute inset-0 h-full w-full object-cover object-[56%_30%] sm:object-[center_30%]"
-            fetchPriority="high"
-          />
-          {/* Readability wash — white from the left so the text reads over the illustration.
-              From lg up the text column ends at ~50% of the width and the two people stand at
-              50-75%, so the wash has to be gone by ~60% or it ghosts the mother's face. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30 sm:via-white/80 sm:to-transparent lg:bg-[linear-gradient(to_right,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.8)_38%,rgba(255,255,255,0.25)_52%,rgba(255,255,255,0)_62%)]"
-          />
+          {/* The three colors of the logo's figures, blurred into the background. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-tiam-orange/15 blur-3xl" />
+            <div className="absolute -left-32 top-1/3 h-96 w-96 rounded-full bg-tiam-blue/10 blur-3xl" />
+            <div className="absolute bottom-0 right-1/3 h-64 w-64 rounded-full bg-tiam-green/10 blur-3xl" />
+          </div>
 
-          <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16">
+          <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12">
             <div className="max-w-xl text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 backdrop-blur px-4 py-1.5 mb-6">
                 <span className="h-2 w-2 rounded-full bg-tiam-orange" />
@@ -328,7 +322,9 @@ export function Desafio30DiasPage() {
 
               <h1
                 id="hero-heading"
-                className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-slate-900 leading-tight tracking-tight"
+                // Smaller from lg to xl: next to the deck the text column is only ~480px wide,
+                // and at 48px the headline took 4 lines there (3 from xl up, 3 stacked below lg).
+                className="text-4xl sm:text-5xl lg:text-[2.5rem] xl:text-5xl font-bold text-slate-900 leading-tight tracking-tight text-balance"
               >
                 30 días para mantener activa la mente de{' '}
                 <span className="text-tiam-blue">quien más querés.</span>
@@ -354,6 +350,7 @@ export function Desafio30DiasPage() {
               <div className="mt-8 flex flex-wrap items-center gap-2">
                 {[
                   { icon: CalendarCheck, text: '7 ejercicios por semana' },
+                  { icon: Brain, text: '8 áreas cognitivas' },
                   { icon: MessageCircle, text: 'Por WhatsApp' },
                   { icon: ShieldCheck, text: 'Un solo pago' },
                 ].map(({ icon: Icon, text }) => (
@@ -364,7 +361,19 @@ export function Desafio30DiasPage() {
                 ))}
               </div>
             </div>
+
+            <AreasDeck />
           </div>
+
+          {/* A soft curve into the next section: the hero doesn't end on a hard edge. */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 1440 64"
+            preserveAspectRatio="none"
+            className="pointer-events-none absolute inset-x-0 bottom-0 block h-8 w-full fill-white sm:h-12 md:h-16"
+          >
+            <path d="M0 40 C240 72 480 8 720 32 C960 56 1200 12 1440 40 L1440 64 L0 64 Z" />
+          </svg>
         </section>
 
         {/* ── 3. How it works ──────────────────────────────────────────────── */}
