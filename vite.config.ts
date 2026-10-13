@@ -279,8 +279,15 @@ function packLandingsBuild(): Plugin {
       const message = `[pack-landings] ${blocking ? 'Las landings todavía no están listas para publicarse' : 'Las landings se pueden publicar; quedan recomendaciones'}:\n${lines.join('\n')}`
       // En el entorno de producción de Vercel el modo estricto se prende solo: así un merge a main con datos provisorios
       // hace fallar el build (y sigue en línea la versión anterior) aunque nadie haya cargado PACK_STRICT.
-      const strict = process.env.PACK_STRICT === '1' || process.env.VERCEL_ENV === 'production'
+      // Excepción: VITE_PACK_PUBLISH_PREVIEW deja publicar la vista previa en producción. El dueño lo decidió el 2026-10-13
+      // para tener las páginas en el sitio antes de que exista el cobro. Hay que sacar esa variable cuando el cobro esté
+      // listo, así este control vuelve a proteger producción. PACK_STRICT=1 siempre gana.
+      const publishPreview = isOn(env.VITE_PACK_PUBLISH_PREVIEW)
+      const strict = process.env.PACK_STRICT === '1' || (process.env.VERCEL_ENV === 'production' && !publishPreview)
       if (strict && blocking) throw new Error(`${message}\n(modo estricto: el build falla a propósito)`)
+      if (publishPreview && blocking && process.env.VERCEL_ENV === 'production') {
+        config.logger.warn('\n[pack-landings] ATENCIÓN: se publica la VISTA PREVIA en producción (VITE_PACK_PUBLISH_PREVIEW).')
+      }
       config.logger.warn(`\n${message}\n`)
     },
   }
