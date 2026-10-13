@@ -1,0 +1,83 @@
+<!-- Niveles con parámetros reales. Verificados contra la escalera del código de TIAM-pack (src/types/*/core.ts) el 2026-10-07 (sopa de letras, cuentas con cifras que faltan,
+     palabras desordenadas, lista para recordar y tabla de símbolos). Las duraciones (10 a 15, 15 a 20 y 20 a 25 minutos) salen del encabezado de cada ficha y están pendientes de la tallerista.
+     La cuadrícula chica de cada nivel solo ilustra el tamaño de la sopa de letras (8, 10 y 12 casilleros por lado): no es una ficha. -->
+<section id="niveles" class="band band--soft scroll-mt-4" aria-labelledby="t-niveles">
+  <div class="wrap">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow">Niveles</p>
+      <h2 id="t-niveles" class="t-h2 mt-4">
+        <!--if:PACK_FAMILIAS-->3&nbsp;niveles para ir de a poco<!--endif-->
+        <!--if:PACK_PROFESIONALES-->Niveles reales, no una etiqueta<!--endif-->
+      </h2>
+      <p class="lead mt-4">
+        <!--if:PACK_FAMILIAS-->Empezás por el nivel&nbsp;1 y subís cuando la ficha le resulte cómoda. Los niveles miden qué tan exigente es el ejercicio, no a la persona.<!--endif-->
+        <!--if:PACK_PROFESIONALES-->Cada cuadernillo sube la exigencia con medidas concretas del ejercicio, no con un cartel que dice «difícil». Empezás por el nivel&nbsp;1 y subís según cómo responda cada persona.<!--endif-->
+      </p>
+    </div>
+
+    <ul class="mt-10 grid gap-5 md:grid-cols-3">
+      <li class="lvl lvl--1">
+        <div class="lvl-head">
+          <div>
+            <p class="font-display text-2xl font-extrabold leading-tight">Nivel&nbsp;1</p>
+            <p class="text-base font-semibold">Para empezar · 10 a 15&nbsp;min</p>
+            <span class="dots mt-2" role="img" aria-label="Un punto de tres"><span class="on"></span><span></span><span></span></span>
+          </div>
+          <div class="mini-grid" style="--n: 8" aria-hidden="true"></div>
+        </div>
+        <dl class="px-5 pb-2">
+          <div><dt>Sopa de letras</dt><dd>8×8, 6&nbsp;palabras</dd></div>
+          <div><dt>Cuentas con cifras que faltan</dt><dd>2&nbsp;sumandos, 2&nbsp;cifras borradas</dd></div>
+          <div><dt>Palabras desordenadas</dt><dd>6&nbsp;palabras de 4 a 5&nbsp;letras</dd></div>
+          <div><dt>Lista para recordar</dt><dd>Mirar 4&nbsp;palabras y reconocerlas entre 8</dd></div>
+          <div><dt>Tabla de símbolos</dt><dd>Clave de 5&nbsp;símbolos</dd></div>
+        </dl>
+      </li>
+      <li class="lvl lvl--2">
+        <div class="lvl-head">
+          <div>
+            <p class="font-display text-2xl font-extrabold leading-tight">Nivel&nbsp;2</p>
+            <p class="text-base font-semibold">Un paso más · 15 a 20&nbsp;min</p>
+            <span class="dots mt-2" role="img" aria-label="Dos puntos de tres"><span class="on"></span><span class="on"></span><span></span></span>
+          </div>
+          <div class="mini-grid" style="--n: 10" aria-hidden="true"></div>
+        </div>
+        <dl class="px-5 pb-2">
+          <div><dt>Sopa de letras</dt><dd>10×10, 8&nbsp;palabras</dd></div>
+          <div><dt>Cuentas con cifras que faltan</dt><dd>2&nbsp;sumandos, 3&nbsp;cifras borradas</dd></div>
+          <div><dt>Palabras desordenadas</dt><dd>6&nbsp;palabras de 6 a 7&nbsp;letras</dd></div>
+          <div><dt>Lista para recordar</dt><dd>Mirar 6&nbsp;palabras y reconocerlas entre 12</dd></div>
+          <div><dt>Tabla de símbolos</dt><dd>Clave de 6&nbsp;símbolos</dd></div>
+        </dl>
+      </li>
+      <li class="lvl lvl--3">
+        <div class="lvl-head">
+          <div>
+            <p class="font-display text-2xl font-extrabold leading-tight">Nivel&nbsp;3</p>
+            <p class="text-base font-semibold">Para desafiarse · 20 a 25&nbsp;min</p>
+            <span class="dots mt-2" role="img" aria-label="Tres puntos de tres"><span class="on"></span><span class="on"></span><span class="on"></span></span>
+          </div>
+          <div class="mini-grid" style="--n: 12" aria-hidden="true"></div>
+        </div>
+        <dl class="px-5 pb-2">
+          <div><dt>Sopa de letras</dt><dd>12×12, 10&nbsp;palabras y diagonales</dd></div>
+          <div><dt>Cuentas con cifras que faltan</dt><dd>3&nbsp;sumandos, 4&nbsp;cifras borradas</dd></div>
+          <div><dt>Palabras desordenadas</dt><dd>6&nbsp;palabras de 8&nbsp;letras o más</dd></div>
+          <div><dt>Lista para recordar</dt><dd>Mirar 8&nbsp;palabras y escribirlas de memoria</dd></div>
+          <div><dt>Tabla de símbolos</dt><dd>Clave de 7&nbsp;símbolos</dd></div>
+        </dl>
+      </li>
+    </ul>
+
+    <div class="mx-auto mt-8 grid max-w-4xl gap-4 md:grid-cols-2">
+      <p class="flex gap-3 rounded-2xl bg-white p-5 text-base text-slate-700 shadow-sm ring-1 ring-slate-100">
+        <svg class="i mt-1 flex-none text-tiam-blue" aria-hidden="true"><use href="#i-sliders-horizontal" /></svg>
+        <span>Además, cada guía trae ajustes «más fácil» y «más difícil» para cambiar la ficha en el momento.</span>
+      </p>
+      <p class="flex gap-3 rounded-2xl bg-white p-5 text-base text-slate-700 shadow-sm ring-1 ring-slate-100">
+        <svg class="i mt-1 flex-none text-tiam-blue" aria-hidden="true"><use href="#i-shield-check" /></svg>
+        <span>Cada ejercicio se verifica antes de entrar al pack: el solucionario está comprobado y, cuando el ejercicio lo permite, la respuesta es única.</span>
+      </p>
+    </div>
+  </div>
+</section>

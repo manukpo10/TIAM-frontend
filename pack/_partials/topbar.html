@@ -1,0 +1,20 @@
+<!-- Cinta de vista previa (solo con VITE_PACK_PREVIEW), barra de pago/entrega/garantía y encabezado. Sin menú: en una página de campaña todo lleva al mismo botón.
+     "Cuotas con Mercado Pago": confirmar que las cuotas estén habilitadas en la cuenta (ver pack/landings-pendientes.md). -->
+<!--if:VITE_PACK_PREVIEW-->
+<div class="preview-ribbon" role="note">Vista previa: datos provisorios</div>
+<!--endif-->
+<div class="topbar">
+  <ul aria-label="Pago, entrega y garantía">
+    <li><svg class="i" aria-hidden="true"><use href="#i-credit-card" /></svg><span>Cuotas con Mercado&nbsp;Pago</span></li>
+    <li><svg class="i" aria-hidden="true"><use href="#i-mail" /></svg><span>Acceso inmediato por&nbsp;email</span></li>
+    <!--if:PACK_GUARANTEE-->
+    <li><svg class="i" aria-hidden="true"><use href="#i-shield-check" /></svg><span>Garantía de %PACK_GUARANTEE_DAYS%&nbsp;días</span></li>
+    <!--endif-->
+  </ul>
+</div>
+<header class="border-b border-slate-100 bg-white">
+  <div class="wrap flex h-14 items-center justify-between gap-4">
+    <img src="/pack/img/logo-144.webp" width="144" height="81" alt="TIAM Digital" class="h-8 w-auto" />
+    <a href="%PACK_BUY_URL%" data-buy class="btn btn-cta btn-sm">Quiero mi pack</a>
+  </div>
+</header>

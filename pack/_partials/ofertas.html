@@ -1,0 +1,119 @@
+<!-- Ofertas: "Todo lo que recibís" + tarjeta de precio con las ofertas al pagar. TODOS los números salen de la configuración (.env / variables de Vercel), vía los
+     tokens de vite.config.ts: %PACK_PRICE%, %PACK_GAMES_PRICE%, %PACK_GAMES_REGULAR% (PRICE_ARS del Desafío), %PACK_EXTRA_PRICE%, %PACK_GUARANTEE_DAYS%. Nada está escrito acá.
+     Reglas: solo lleva valor en pesos lo que tiene un precio real (el mes de juegos); no hay "valor total" inventado. El cuadernillo extra todavía NO existe: se muestra "Próximamente" y no
+     se puede elegir hasta que VITE_PACK_EXTRA_AVAILABLE tenga un valor. Las casillas elegidas suben al total y viajan al checkout como ?extras=juegos (ver pack/landing.ts). -->
+<section id="comprar" class="band scroll-mt-4 bg-gradient-to-b from-white to-[#e6f0fb]" aria-labelledby="t-precio">
+  <div class="wrap">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow">Tu pack</p>
+      <h2 id="t-precio" class="t-h2 mt-4">Un solo pago, todo adentro</h2>
+      <!--if:PACK_PROMO-->
+      <p class="promo" data-promo-end="%PACK_PROMO_END_ISO%">Precio de lanzamiento hasta el %PACK_PROMO_END_TEXT%.</p>
+      <!--endif-->
+    </div>
+
+    <div class="offer-grid">
+      <!-- ── Todo lo que recibís ── -->
+      <section class="stack" aria-labelledby="t-recibis">
+        <h3 id="t-recibis" class="t-h3 text-2xl font-extrabold">Todo lo que recibís</h3>
+        <ul class="stack-list mt-5">
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>12 cuadernillos en PDF</b><span>120 fichas y 303 páginas: 4 áreas, 3 niveles, 10 fichas en cada cuadernillo.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Una hoja de trabajo en cada ficha</b><span>Letra grande, desde 16 puntos, pensada para blanco y negro.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b><!--if:PACK_FAMILIAS-->Una guía para acompañar en cada ficha<!--endif--><!--if:PACK_PROFESIONALES-->Una guía para el profesional en cada ficha<!--endif--></b><span>Objetivo, pasos, cuándo pausar y un consejo de tallerista.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Ajustes «más fácil» y «más difícil»</b><span>Para adaptar la ficha en el momento.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Solucionario comprobado</b><span>Un verificador revisa cada ficha antes de armar el pack.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b><!--if:PACK_FAMILIAS-->El registro «Cómo nos fue hoy»<!--endif--><!--if:PACK_PROFESIONALES-->El registro de la sesión<!--endif--></b><span>En la misma hoja de la guía: fecha, tiempo y ayuda necesaria.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>«Empezá acá»</b><span>Un PDF de 3 páginas: qué trae, por dónde empezar y cómo imprimir.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>PDF en A4 y en Carta</b><span>Para imprimir en casa o en una librería.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Entrega por email</b><span>Te llega apenas se acredita el pago.</span></div></li>
+        </ul>
+
+        <p class="stack-sub">Opcional, al pagar</p>
+        <ul class="stack-list stack-list--opt">
+          <li>
+            <svg class="i" aria-hidden="true"><use href="#i-plus" /></svg>
+            <div>
+              <b>Un mes de juegos interactivos</b>
+              <span>El Desafío de 30&nbsp;días: 30 ejercicios interactivos, 7 nuevos por semana, que se activan por WhatsApp.</span>
+              <!--if:PACK_GAMES_DISCOUNT--><span class="tag">Vale $&nbsp;%PACK_GAMES_REGULAR% · con tu pack, +&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span><!--endif-->
+            </div>
+          </li>
+          <!--if:PACK_EXTRA_PRICE_SET-->
+          <li>
+            <svg class="i" aria-hidden="true"><use href="#i-plus" /></svg>
+            <div>
+              <b>Cuadernillo extra: 40 fichas más</b>
+              <span>Un cuadernillo más, para sumar a las 120.</span>
+              <!--ifnot:VITE_PACK_EXTRA_AVAILABLE--><span class="tag tag--soon">Próximamente · +&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span><!--endif-->
+              <!--if:VITE_PACK_EXTRA_AVAILABLE--><span class="tag">+&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span><!--endif-->
+            </div>
+          </li>
+          <!--endif-->
+        </ul>
+      </section>
+
+      <!-- ── Precio y compra ── -->
+      <div class="price-card" data-offer data-base="%PACK_PRICE_NUM%">
+        <div class="price-head">
+          <p class="inline-flex rounded-full bg-white/15 px-3.5 py-1 text-base font-semibold">Pack Básico · <!--if:PACK_FAMILIAS-->edición familias<!--endif--><!--if:PACK_PROFESIONALES-->edición profesionales<!--endif--></p>
+          <p class="price-amount"><small>$</small><b>%PACK_PRICE%</b></p>
+          <p class="mt-3 font-semibold">Pago único · precio final en pesos argentinos</p>
+          <p class="mt-1 text-white">Son unos $&nbsp;%PACK_PER_SHEET% por ficha, con guía, solucionario y registro.</p>
+        </div>
+
+        <div class="price-body">
+          <fieldset>
+            <legend class="text-lg font-extrabold">Sumá al pagar <span class="font-semibold text-slate-600">(opcional)</span></legend>
+            <div class="mt-3 flex flex-col gap-3">
+              <label class="addon <!--if:PACK_FAMILIAS-->order-1<!--endif--><!--if:PACK_PROFESIONALES--><!--ifnot:VITE_PACK_EXTRA_AVAILABLE-->order-1<!--endif--><!--if:VITE_PACK_EXTRA_AVAILABLE-->order-2<!--endif--><!--endif-->">
+                <input type="checkbox" name="extras" value="juegos" data-price="%PACK_GAMES_PRICE_NUM%" />
+                <span class="min-w-0 flex-1">
+                  <span class="addon-top"><b>Un mes de juegos interactivos</b><span class="addon-price">+&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span></span>
+                  <small>El Desafío de 30&nbsp;días, que se activa por WhatsApp.<!--if:PACK_GAMES_DISCOUNT--> Suelto cuesta <span class="strike">$&nbsp;%PACK_GAMES_REGULAR%</span>.<!--endif--></small>
+                  <!--if:PACK_GAMES_DISCOUNT--><span class="tag">Ahorrás $&nbsp;%PACK_GAMES_SAVING%</span><!--endif-->
+                </span>
+              </label>
+
+              <!--if:PACK_EXTRA_PRICE_SET-->
+              <!--if:VITE_PACK_EXTRA_AVAILABLE-->
+              <label class="addon <!--if:PACK_FAMILIAS-->order-2<!--endif--><!--if:PACK_PROFESIONALES-->order-1<!--endif-->">
+                <input type="checkbox" name="extras" value="cuadernillo" data-price="%PACK_EXTRA_PRICE_NUM%" />
+                <span class="min-w-0 flex-1">
+                  <span class="addon-top"><b>Cuadernillo extra: 40 fichas más</b><span class="addon-price">+&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span></span>
+                  <small>Un cuadernillo más, para sumar a las 120.</small>
+                </span>
+              </label>
+              <!--endif-->
+              <!--ifnot:VITE_PACK_EXTRA_AVAILABLE-->
+              <div class="addon addon--soon order-2">
+                <input type="checkbox" disabled aria-label="Cuadernillo extra: próximamente" />
+                <span class="min-w-0 flex-1">
+                  <span class="addon-top"><b>Cuadernillo extra: 40 fichas más</b><span class="addon-price addon-price--soon">+&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span></span>
+                  <small>Un cuadernillo más, para sumar a las 120. Todavía no está disponible.</small>
+                  <span class="tag tag--soon">Próximamente</span>
+                </span>
+              </div>
+              <!--endif-->
+              <!--endif-->
+            </div>
+          </fieldset>
+
+          <p class="total"><span>Total</span><strong data-total aria-live="polite">$&nbsp;%PACK_PRICE%</strong></p>
+
+          <a href="%PACK_BUY_URL%" data-buy data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
+            Quiero mi pack
+            <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+          </a>
+          <p class="mt-4 text-center text-[0.9375rem] text-slate-600">Pagás con Mercado Pago, en cuotas. TIAM no guarda los datos de tu tarjeta.</p>
+
+          <!--if:PACK_GUARANTEE-->
+          <p class="mt-5 flex gap-3 rounded-2xl bg-slate-50 p-4 text-base text-slate-700">
+            <svg class="i mt-0.5 flex-none text-tiam-blue" aria-hidden="true"><use href="#i-shield-check" /></svg>
+            <span><strong>Garantía de %PACK_GUARANTEE_DAYS% días.</strong> Si el pack no es lo que esperabas, escribinos dentro de esos días y te devolvemos el pago.</span>
+          </p>
+          <!--endif-->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

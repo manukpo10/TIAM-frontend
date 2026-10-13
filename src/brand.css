@@ -1,0 +1,46 @@
+/* Tokens de marca de TIAM. Fuente única: la importan src/index.css (el sitio) y
+   pack/landing.css (landings del pack), así los dos se ven de la misma marca. */
+
+@theme {
+  /* ── Brand colors (del logo TIAM) ── */
+  --color-tiam-blue: #1B6FC4;       /* azul primario */
+  --color-tiam-blue-dark: #15436F;  /* azul oscuro — hover/fondos sólidos */
+  --color-tiam-navy: #16263F;       /* navy texto */
+  --color-tiam-orange: #E8531E;     /* naranja — CTAs secundarios, badges */
+  --color-tiam-green: #4CA52E;      /* verde — éxito, checks, confirmaciones */
+  --color-tiam-gray: #5A6B82;       /* gris texto secundario */
+
+  /* ── Neutros: escala slate remapeada a grises fríos (tinte azulado) ──
+     El sitio usa slate-* semánticamente: 900=títulos, 600=texto secundario,
+     50=fondos suaves, 100=bordes. Anclada en los neutros de marca. */
+  --color-slate-50:  #F5F8FC;  /* gris fondo — secciones alternadas */
+  --color-slate-100: #E4EBF3;  /* gris líneas — bordes y divisores */
+  --color-slate-200: #D4DEEA;
+  --color-slate-300: #B6C4D6;
+  --color-slate-400: #8E9DB4;
+  --color-slate-500: #6E7E96;
+  --color-slate-600: #5A6B82;  /* gris texto — subtítulos, texto secundario */
+  --color-slate-700: #3D4F68;
+  --color-slate-800: #27384F;
+  --color-slate-900: #16263F;  /* navy texto — títulos y texto principal */
+
+  /* ── Tokens semánticos ──
+     Interfaz recomendada para componentes (bg-primary, text-text-muted, etc.).
+     Cambiar la marca = cambiar estas referencias en un solo lugar. */
+  --color-primary: var(--color-tiam-blue);
+  --color-primary-hover: var(--color-tiam-blue-dark);
+  --color-primary-active: #103658;          /* un paso más oscuro que hover */
+  --color-accent: var(--color-tiam-orange); /* naranja — solo CTAs/badges grandes */
+  --color-accent-hover: #CC4516;
+  --color-success: var(--color-tiam-green);
+  --color-success-hover: #3C8A24;
+  --color-text: var(--color-tiam-navy);     /* texto principal */
+  --color-text-muted: var(--color-slate-600); /* texto secundario */
+  --color-bg: #FFFFFF;                       /* fondo principal */
+  --color-surface: var(--color-slate-50);    /* secciones alternadas */
+  --color-border: var(--color-slate-100);    /* bordes y divisores */
+
+  /* ── Tipografía ── */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
+}

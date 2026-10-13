@@ -1,0 +1,1416 @@
+/* Hoja de estilos de las landings del pack (pack/familias y pack/profesionales).
+   Tailwind v4 con detección de clases solo en pack/: no mezcla las del sitio (React). */
+@import "tailwindcss" source(none);
+@import "../src/brand.css";
+@source "./";
+
+/* Colores propios de las landings: los de las cuatro áreas son los de las tapas reales del pack
+   (TIAM-pack: banda azul, naranja, verde y violeta), y el crema es el papel de las tapas. Todos llegan a AA con texto blanco. */
+@theme {
+  --color-paper: #fdf9eb;
+  --color-night: #0d1828;
+  --color-area-memoria: #1b6fc4;
+  --color-area-atencion: #cc4610;
+  --color-area-lenguaje: #2c801c;
+  --color-area-calculo: #5b3c9e;
+  --color-cta: #cc4610; /* botón de compra: 5:1 con texto blanco */
+  --color-cta-hover: #a8370b;
+}
+
+/* Tipografías propias (subconjunto latino, ver scripts/pack-landings/make_fonts.py):
+   mismo dominio, sin pasar por Google Fonts. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("./fonts/jakarta-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sora";
+  src: url("./fonts/sora-latin.woff2") format("woff2");
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 1rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1.125rem; /* 18 px: el comprador y el profesional pueden tener 50+ */
+    line-height: 1.65;
+    color: var(--color-text);
+    background: #fff;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-wrap: break-word;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.2em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-tiam-blue);
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+@layer components {
+  /* ── Contenedor y ritmo vertical ───────────────────────────────────────────── */
+  .wrap {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) {
+    .wrap {
+      padding-inline: 1.5rem;
+    }
+  }
+  .band {
+    padding-block: 3.5rem;
+  }
+  @media (min-width: 768px) {
+    .band {
+      padding-block: 5.5rem;
+    }
+  }
+  .band--paper {
+    background: var(--color-paper);
+  }
+  .band--soft {
+    background: var(--color-slate-50);
+  }
+  .band--navy {
+    background: var(--color-tiam-navy);
+    color: #fff;
+  }
+  .band--navy .lead,
+  .band--navy .t-sub {
+    color: var(--color-slate-200);
+  }
+
+  /* Franja de las cuatro áreas, como el pie de las tapas del pack */
+  .stripe {
+    height: 0.5rem;
+    background: linear-gradient(
+      90deg,
+      var(--color-area-memoria) 0 25%,
+      var(--color-area-atencion) 25% 50%,
+      var(--color-area-lenguaje) 50% 75%,
+      var(--color-area-calculo) 75% 100%
+    );
+  }
+
+  /* ── Títulos ───────────────────────────────────────────────────────────────── */
+  .t-h1 {
+    font-size: clamp(2.125rem, 1.55rem + 3vw, 3.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  .t-h2 {
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 2.75rem);
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+  .t-h3 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+  .lead {
+    font-size: 1.1875rem;
+    line-height: 1.6;
+    color: var(--color-slate-700);
+  }
+  @media (min-width: 768px) {
+    .lead {
+      font-size: 1.3125rem;
+    }
+  }
+  /* Resaltado de la frase clave del titular */
+  mark {
+    background: var(--color-cta);
+    color: #fff;
+    padding: 0 0.22em;
+    border-radius: 0.25em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* Etiqueta de sección: texto navy sobre fondo tenue (el naranja sobre blanco no llega a AA) */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    border: 1px solid rgb(27 111 196 / 0.2);
+    background: rgb(27 111 196 / 0.06);
+    padding: 0.375rem 1rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-tiam-blue-dark);
+  }
+  .eyebrow--dark {
+    border-color: rgb(255 255 255 / 0.28);
+    background: rgb(255 255 255 / 0.1);
+    color: #fff;
+  }
+
+  /* ── Botones: 52 px de alto como mínimo (el mínimo recomendado es 44) ───────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    min-height: 3.25rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.875rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.15s ease;
+  }
+  .btn-primary {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow:
+      0 1px 2px rgb(22 38 63 / 0.15),
+      0 10px 22px -10px rgb(27 111 196 / 0.7);
+  }
+  .btn-primary:hover {
+    background: var(--color-primary-hover);
+  }
+  .btn-primary:active {
+    background: var(--color-primary-active);
+    transform: translateY(1px);
+  }
+  /* El botón de compra: naranja, el único de ese color en cada pantalla */
+  .btn-cta {
+    background: var(--color-cta);
+    color: #fff;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.25),
+      0 14px 26px -10px rgb(204 70 16 / 0.75);
+  }
+  .btn-cta:hover {
+    background: var(--color-cta-hover);
+  }
+  .btn-cta:active {
+    transform: translateY(1px);
+  }
+  .btn-white {
+    background: #fff;
+    color: var(--color-tiam-blue-dark);
+    box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.5);
+  }
+  .btn-white:hover {
+    background: var(--color-slate-50);
+  }
+  .btn-link {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    color: var(--color-tiam-blue-dark);
+    text-decoration: underline;
+    text-decoration-color: rgb(27 111 196 / 0.4);
+    text-underline-offset: 0.25em;
+  }
+  .btn-link:hover {
+    text-decoration-color: var(--color-tiam-blue);
+  }
+  .btn-link--light {
+    color: #fff;
+    text-decoration-color: rgb(255 255 255 / 0.5);
+  }
+  .btn-lg {
+    min-height: 3.5rem;
+    padding: 0.875rem 1.75rem;
+    font-size: 1.125rem;
+  }
+  .btn-sm {
+    min-height: 2.75rem;
+    padding: 0.5rem 1.125rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Íconos de trazo (sprite en pack/_partials/sprite.html) */
+  .i {
+    width: 1.25em;
+    height: 1.25em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ── Cinta de vista previa (solo con VITE_PACK_PREVIEW) ─────────────────────── */
+  .preview-ribbon {
+    background: #ffd23f;
+    color: var(--color-tiam-navy);
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.3;
+    padding: 0.3rem 0.75rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Barra superior: pago, entrega y garantía ──────────────────────────────── */
+  .topbar {
+    background: var(--color-night);
+    color: #fff;
+  }
+  .topbar ul {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 0.5rem 0.5rem;
+  }
+  .topbar li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .topbar .i {
+    color: #ffd23f;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  @media (min-width: 640px) {
+    .topbar li {
+      flex-direction: row;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.9375rem;
+    }
+  }
+
+  /* ── Hero ──────────────────────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    color: #fff;
+    background: radial-gradient(90% 60% at 85% 0%, #1d4f86 0%, #16263f 70%) #16263f;
+  }
+  .hero-grid {
+    display: grid;
+    row-gap: 0.875rem;
+    padding-block: 1.25rem 2rem;
+  }
+  .hero-eyebrow {
+    justify-self: start;
+  }
+  .hero-lead {
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color: var(--color-slate-200);
+  }
+  .hero-photo {
+    position: relative;
+    margin-inline: auto;
+    width: 100%;
+    max-width: 34rem;
+    min-width: 0;
+  }
+  .hero-photo img {
+    display: block;
+    height: auto;
+    width: 100%;
+    border-radius: 1.25rem;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.12),
+      0 30px 50px -24px rgb(0 0 0 / 0.8);
+  }
+  /* Honestidad: lo que se vende es un PDF para imprimir; el cartel va siempre pegado a la foto. */
+  .hero-tag {
+    position: absolute;
+    left: 0.625rem;
+    bottom: 0.625rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 9999px;
+    background: #fff;
+    color: var(--color-tiam-navy);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.5);
+  }
+  .hero-buy {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .hero-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+  }
+  .hero-price strong {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .hero-price span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-slate-200);
+  }
+  @media (min-width: 1024px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      column-gap: 3.5rem;
+      padding-block: 3.5rem 4.5rem;
+    }
+    .hero-eyebrow,
+    .hero-h1,
+    .hero-lead,
+    .hero-buy {
+      grid-column: 1;
+    }
+    .hero-photo {
+      grid-column: 2;
+      grid-row: 1 / span 4;
+      align-self: center;
+      max-width: none;
+    }
+    .hero-stats {
+      grid-column: 1 / -1;
+      margin-top: 1.5rem;
+    }
+    .hero-lead {
+      font-size: 1.3125rem;
+      max-width: 36rem;
+    }
+  }
+
+  /* Cifras reales del pack, en los colores de las cuatro áreas */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+  }
+  .stat {
+    border-radius: 1.25rem;
+    background: var(--c);
+    padding: 0.875rem 1rem 1rem;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.2);
+  }
+  .stat b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .stat span {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .stat--memoria,
+  .area--memoria {
+    --c: var(--color-area-memoria);
+  }
+  .stat--atencion,
+  .area--atencion {
+    --c: var(--color-area-atencion);
+  }
+  .stat--lenguaje,
+  .area--lenguaje {
+    --c: var(--color-area-lenguaje);
+  }
+  .stat--calculo,
+  .area--calculo {
+    --c: var(--color-area-calculo);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 9999px;
+    border: 1px solid rgb(255 255 255 / 0.28);
+    background: rgb(255 255 255 / 0.08);
+    padding: 0.35rem 0.85rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* ── Tarjetas ──────────────────────────────────────────────────────────────── */
+  .card {
+    border-radius: 1.5rem;
+    border: 1px solid var(--color-slate-100);
+    background: #fff;
+    box-shadow:
+      0 1px 2px rgb(22 38 63 / 0.04),
+      0 8px 24px -12px rgb(22 38 63 / 0.12);
+  }
+  .icon-tile {
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: rgb(27 111 196 / 0.1);
+    color: var(--color-tiam-blue);
+  }
+  .icon-tile--warm {
+    background: rgb(232 83 30 / 0.12);
+    color: #a8370b;
+  }
+  .icon-tile--light {
+    background: rgb(255 255 255 / 0.12);
+    color: #fff;
+  }
+  .icon-tile--green {
+    background: rgb(76 165 46 / 0.14);
+    color: #2c701a;
+  }
+
+  /* Lista con tildes */
+  .ticks > li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .ticks > li > .i {
+    margin-top: 0.3em;
+    color: var(--color-tiam-green);
+    stroke-width: 3;
+  }
+  .ticks--no > li > .i {
+    color: var(--color-slate-400);
+    stroke-width: 2.5;
+  }
+
+  /* ── Lo que duele (la situación del comprador) ─────────────────────────────── */
+  .pain {
+    display: flex;
+    gap: 1rem;
+    border-radius: 1.5rem;
+    background: #fff;
+    padding: 1.25rem;
+    border: 1px solid rgb(204 70 16 / 0.18);
+    border-left: 0.5rem solid var(--color-area-atencion);
+    box-shadow: 0 10px 24px -16px rgb(22 38 63 / 0.35);
+  }
+  .pain h3 {
+    font-size: 1.3125rem;
+    line-height: 1.25;
+    font-weight: 800;
+  }
+  .pain p {
+    margin-top: 0.35rem;
+    color: var(--color-slate-700);
+  }
+
+  /* El remedio, en azul, para que se note el contraste con la columna de dolores */
+  .remedy {
+    display: grid;
+    align-items: center;
+    gap: 1.25rem;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    background: var(--color-tiam-blue);
+    color: #fff;
+    padding: 1.5rem;
+    box-shadow: 0 24px 40px -24px rgb(21 67 111 / 0.8);
+  }
+  .remedy img {
+    border-radius: 1.25rem;
+    background: #fff;
+  }
+  @media (min-width: 768px) {
+    .remedy {
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2rem;
+      padding: 2.25rem;
+    }
+  }
+
+  /* ── Papel + pantalla ──────────────────────────────────────────────────────── */
+  .duo {
+    background: radial-gradient(80% 45% at 50% 0%, #1d4f86 0%, #16263f 75%) #16263f;
+    color: #fff;
+  }
+  .duo .lead {
+    color: var(--color-slate-200);
+  }
+  .phones {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-inline: auto;
+    width: 100%;
+    max-width: 30rem;
+    padding: 0 0.5rem 0.5rem;
+  }
+  /* Teléfono dibujado con CSS: marco, muesca y barra de inicio; adentro, la captura real */
+  .phone {
+    position: relative;
+    flex: none;
+    aspect-ratio: 9 / 19;
+    border-radius: 1.75rem;
+    background: #0a111d;
+    padding: 0.4rem;
+    box-shadow:
+      0 0 0 2px #2a384f,
+      0 28px 40px -18px rgb(0 0 0 / 0.85);
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: 0.65rem;
+    left: 50%;
+    width: 26%;
+    height: 0.3rem;
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    background: #2a384f;
+  }
+  .phone::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    bottom: 0.6rem;
+    left: 50%;
+    width: 30%;
+    height: 0.2rem;
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.55);
+  }
+  .phone-screen {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 1.4rem;
+    padding: 0.5rem;
+    background: linear-gradient(180deg, #8591ab, #6b7792);
+  }
+  .phone-screen--light {
+    align-items: flex-start;
+    padding: 1.4rem 0 0;
+    background: #f2f7fc;
+  }
+  .phone-screen img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+  }
+  .phone-screen--light img {
+    width: 100%;
+    max-height: none;
+  }
+  .phones .phone--main {
+    z-index: 2;
+    width: 48%;
+  }
+  .phones .phone--side {
+    width: 35%;
+    margin-bottom: 1.25rem;
+  }
+  .phones .phone--l {
+    transform: rotate(-5deg);
+    margin-right: -8%;
+  }
+  .phones .phone--r {
+    transform: rotate(5deg);
+    margin-left: -8%;
+  }
+  .duo-price {
+    border-radius: 1.5rem;
+    background: #fff;
+    color: var(--color-tiam-navy);
+    padding: 1.25rem;
+    box-shadow: 0 24px 40px -24px rgb(0 0 0 / 0.8);
+  }
+  .strike {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    color: var(--color-slate-600);
+  }
+
+  /* ── La colección: una tarjeta por área ────────────────────────────────────── */
+  .area {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background: #fff;
+    border: 1px solid var(--color-slate-100);
+    box-shadow:
+      0 1px 2px rgb(22 38 63 / 0.04),
+      0 14px 30px -16px rgb(22 38 63 / 0.25);
+  }
+  .area-head {
+    background: var(--c, var(--color-tiam-blue));
+    color: #fff;
+    padding: 1.1rem 1.25rem 1rem;
+  }
+  .area-head h3 {
+    font-size: 1.875rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .area-head p {
+    margin-top: 0.3rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: #fff;
+  }
+  .area-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 0 1.25rem 1.25rem;
+  }
+  .area-count {
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    color: var(--color-slate-700);
+  }
+  .area-count strong {
+    color: var(--c, var(--color-tiam-blue));
+  }
+  /* Abanico: la tapa real al frente y dos hojas reales de adentro */
+  .fan {
+    position: relative;
+    aspect-ratio: 1.55;
+    margin: 1.25rem auto 1rem;
+    width: 100%;
+    max-width: 22rem;
+  }
+  .fan img {
+    position: absolute;
+    display: block;
+    height: auto;
+    border-radius: 0.375rem;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(22 38 63 / 0.12),
+      0 14px 26px -12px rgb(22 38 63 / 0.55);
+  }
+  .fan-a {
+    left: 6%;
+    top: 9%;
+    width: 44%;
+    transform: rotate(-5deg);
+  }
+  .fan-b {
+    right: 6%;
+    top: 3%;
+    width: 44%;
+    transform: rotate(4deg);
+  }
+  .fan-cover {
+    left: 50%;
+    bottom: 0;
+    width: 38%;
+    transform: translateX(-50%);
+  }
+  .tipos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tipos li {
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--c, var(--color-tiam-blue)) 11%, white);
+    color: var(--color-tiam-navy);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* ── Cada ficha incluye ────────────────────────────────────────────────────── */
+  .sheets {
+    position: relative;
+    margin-inline: auto;
+    width: 100%;
+    max-width: 30rem;
+    aspect-ratio: 1 / 0.98;
+  }
+  .sheet {
+    position: absolute;
+    width: 62%;
+  }
+  .sheet img {
+    display: block;
+    height: auto;
+    width: 100%;
+    border-radius: 0.375rem;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(22 38 63 / 0.12),
+      0 22px 34px -14px rgb(22 38 63 / 0.55);
+  }
+  .sheet-pin {
+    z-index: 3;
+    position: absolute;
+    top: -0.75rem;
+    left: -0.5rem;
+    display: grid;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    place-items: center;
+    border-radius: 9999px;
+    background: var(--color-cta);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    box-shadow: 0 6px 14px -4px rgb(0 0 0 / 0.5);
+  }
+  .sheet figcaption {
+    z-index: 3;
+    position: absolute;
+    bottom: -0.8rem;
+    left: 0.75rem;
+    border-radius: 9999px;
+    background: var(--color-tiam-navy);
+    color: #fff;
+    padding: 0.2rem 0.8rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.5);
+  }
+  .parts {
+    counter-reset: part;
+    display: grid;
+    gap: 1rem;
+  }
+  .parts > li {
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+  }
+  .parts > li::before {
+    counter-increment: part;
+    content: counter(part);
+    display: grid;
+    flex: none;
+    height: 2.25rem;
+    width: 2.25rem;
+    place-items: center;
+    border-radius: 9999px;
+    background: var(--color-cta);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+  }
+  .parts b {
+    display: block;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+  }
+  .parts span {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--color-slate-700);
+  }
+
+  /* ── Niveles ───────────────────────────────────────────────────────────────── */
+  .lvl {
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background: #fff;
+    border: 1px solid var(--color-slate-100);
+    box-shadow:
+      0 1px 2px rgb(22 38 63 / 0.04),
+      0 14px 30px -16px rgb(22 38 63 / 0.25);
+  }
+  .lvl-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+  }
+  .lvl--1 .lvl-head {
+    background: #d9e9f9;
+    color: var(--color-tiam-navy);
+  }
+  .lvl--2 .lvl-head {
+    background: var(--color-tiam-blue);
+    color: #fff;
+  }
+  .lvl--3 .lvl-head {
+    background: var(--color-tiam-navy);
+    color: #fff;
+  }
+  .lvl-head .dots > span {
+    border-color: currentColor;
+  }
+  .lvl-head .dots > span.on {
+    background: currentColor;
+  }
+  .lvl-head .mini-grid {
+    width: 3.75rem;
+    flex: none;
+    border-color: currentColor;
+  }
+  .lvl dl > div {
+    padding-block: 0.7rem;
+    border-top: 1px solid var(--color-slate-100);
+  }
+  .lvl dl > div:first-child {
+    border-top: 0;
+  }
+  .lvl dt {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-slate-600);
+  }
+  .lvl dd {
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-tiam-navy);
+  }
+
+  /* Cuadrícula de ejemplo en los niveles (solo ilustra el tamaño, no es una ficha) */
+  .mini-grid {
+    --n: 8;
+    aspect-ratio: 1;
+    border: 2px solid var(--color-tiam-navy);
+    border-radius: 0.5rem;
+    background-color: #fff;
+    background-image:
+      linear-gradient(to right, var(--color-slate-300) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-slate-300) 1px, transparent 1px);
+    background-size: calc(100% / var(--n)) calc(100% / var(--n));
+  }
+
+  /* Puntos de nivel, como en las fichas ("Nivel 2 de 3 ●●○") */
+  .dots {
+    display: inline-flex;
+    gap: 0.3rem;
+  }
+  .dots > span {
+    height: 0.75rem;
+    width: 0.75rem;
+    border-radius: 9999px;
+    border: 2px solid var(--color-tiam-navy);
+  }
+  .dots > span.on {
+    background: var(--color-tiam-navy);
+  }
+
+  /* ── Cómo funciona ─────────────────────────────────────────────────────────── */
+  .step {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    border-radius: 1.5rem;
+    background: #fff;
+    border: 1px solid var(--color-slate-100);
+    padding: 1.25rem;
+    box-shadow:
+      0 1px 2px rgb(22 38 63 / 0.04),
+      0 14px 30px -16px rgb(22 38 63 / 0.25);
+  }
+  .step-n {
+    position: absolute;
+    top: -0.8rem;
+    left: -0.35rem;
+    z-index: 2;
+    box-shadow: 0 6px 14px -4px rgb(21 67 111 / 0.6);
+    display: grid;
+    height: 2.5rem;
+    width: 2.5rem;
+    flex: none;
+    place-items: center;
+    border-radius: 9999px;
+    background: var(--color-tiam-blue);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+
+  /* ── Comparación honesta ───────────────────────────────────────────────────── */
+  .cmp {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background: #fff;
+    color: var(--color-tiam-navy);
+    box-shadow: 0 30px 50px -28px rgb(0 0 0 / 0.8);
+  }
+  .cmp th,
+  .cmp td {
+    padding: 0.8rem 0.65rem;
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    border-top: 1px solid var(--color-slate-100);
+  }
+  .cmp thead th {
+    border-top: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    vertical-align: middle;
+    background: var(--color-slate-100);
+  }
+  .cmp thead th.us {
+    background: var(--color-tiam-blue);
+    color: #fff;
+    font-size: 1.125rem;
+  }
+  .cmp tbody th {
+    width: 38%;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .cmp td.us {
+    background: #eaf3fc;
+    font-weight: 700;
+  }
+  .cmp td .i {
+    margin-bottom: 0.15rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .cmp td.them .i {
+    color: var(--color-slate-500);
+  }
+  .cmp td.us .i {
+    color: #2c701a;
+    stroke-width: 3;
+  }
+  @media (max-width: 22.4rem) {
+    .cmp thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .cmp,
+    .cmp tbody,
+    .cmp tr,
+    .cmp th,
+    .cmp td {
+      display: block;
+    }
+    .cmp tbody th {
+      width: auto;
+      background: var(--color-slate-100);
+      border-top: 0;
+    }
+    .cmp tr + tr th {
+      border-top: 2px solid var(--color-slate-200);
+    }
+    .cmp td {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+    .cmp td::before {
+      content: attr(data-label);
+      flex: none;
+      width: 5.25rem;
+      font-weight: 800;
+    }
+    .cmp td .i {
+      margin: 0.1rem 0 0;
+    }
+  }
+  @media (min-width: 768px) {
+    .cmp th,
+    .cmp td {
+      padding: 1rem 1.25rem;
+      font-size: 1.0625rem;
+    }
+    .cmp td .i {
+      display: inline;
+      margin: 0 0.4rem 0 0;
+      vertical-align: -0.2em;
+    }
+  }
+
+  /* ── Ofertas ───────────────────────────────────────────────────────────────── */
+  .promo {
+    display: inline-block;
+    margin-top: 1rem;
+    border-radius: 9999px;
+    background: #fff1d6;
+    color: #6a3b00;
+    padding: 0.35rem 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .offer-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    align-items: start;
+  }
+  @media (min-width: 1024px) {
+    .offer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+  .stack {
+    border-radius: 1.75rem;
+    background: #fff;
+    border: 1px solid var(--color-slate-100);
+    padding: 1.5rem;
+    box-shadow: 0 14px 30px -16px rgb(22 38 63 / 0.25);
+  }
+  .stack-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .stack-list > li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .stack-list > li > .i {
+    margin-top: 0.3em;
+    color: var(--color-tiam-green);
+    stroke-width: 3;
+  }
+  .stack-list b {
+    display: block;
+    line-height: 1.3;
+  }
+  .stack-list span {
+    display: block;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--color-slate-600);
+  }
+  .stack-sub {
+    margin: 1.25rem 0 0.75rem;
+    padding-top: 1rem;
+    border-top: 2px dashed var(--color-slate-200);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-slate-600);
+  }
+  .stack-list--opt > li > .i {
+    color: var(--color-tiam-blue);
+  }
+  .tag {
+    display: inline-block;
+    margin-top: 0.3rem;
+    border-radius: 0.5rem;
+    background: #eaf3fc;
+    color: var(--color-tiam-blue-dark);
+    padding: 0.1rem 0.55rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+  .tag--soon {
+    background: var(--color-slate-100);
+    color: var(--color-slate-700);
+  }
+
+  .price-card {
+    overflow: hidden;
+    border-radius: 1.75rem;
+    background: #fff;
+    box-shadow:
+      0 0 0 3px var(--color-tiam-blue),
+      0 30px 50px -24px rgb(27 111 196 / 0.55);
+  }
+  .price-head {
+    background: linear-gradient(135deg, var(--color-tiam-blue), var(--color-tiam-blue-dark));
+    color: #fff;
+    padding: 1.75rem 1.5rem 1.5rem;
+    text-align: center;
+  }
+  .price-amount {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.25rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .price-amount small {
+    margin-top: 0.4rem;
+    font-size: 1.75rem;
+  }
+  .price-amount b {
+    font-size: clamp(3.25rem, 2.2rem + 5vw, 4.75rem);
+  }
+  .price-body {
+    padding: 1.5rem;
+  }
+  /* Ofertas al pagar: la tarjeta entera es el objetivo táctil de la casilla */
+  .addon {
+    position: relative;
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+    cursor: pointer;
+    border-radius: 1.1rem;
+    border: 2px solid var(--color-slate-200);
+    background: #fff;
+    padding: 0.9rem 1rem;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .addon:has(input:checked) {
+    border-color: var(--color-tiam-blue);
+    background: #eaf3fc;
+  }
+  .addon:has(input:focus-visible) {
+    outline: 3px solid var(--color-tiam-blue);
+    outline-offset: 2px;
+  }
+  .addon--soon {
+    cursor: default;
+    border-style: dashed;
+    background: var(--color-slate-50);
+  }
+  .addon input {
+    appearance: none;
+    flex: none;
+    height: 1.75rem;
+    width: 1.75rem;
+    margin-top: 0.1rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--color-slate-400);
+    background: #fff center / 1.2rem no-repeat;
+    cursor: inherit;
+  }
+  .addon input:checked {
+    border-color: var(--color-tiam-blue);
+    background-color: var(--color-tiam-blue);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  }
+  .addon input:disabled {
+    background: var(--color-slate-100);
+    border-color: var(--color-slate-300);
+  }
+  .addon-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.1rem 0.75rem;
+  }
+  .addon b {
+    display: block;
+    flex: 1 1 7.5rem;
+    line-height: 1.3;
+  }
+  .addon small {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--color-slate-700);
+  }
+  .addon-price {
+    flex: none;
+    text-align: right;
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--color-tiam-blue-dark);
+  }
+  .addon-price--soon {
+    color: var(--color-slate-600);
+  }
+  .total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--color-slate-100);
+    font-weight: 700;
+  }
+  .total strong {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  /* Preguntas frecuentes (details nativo: cero JavaScript) */
+  .faq {
+    border-radius: 1rem;
+    border: 1px solid var(--color-slate-100);
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(22 38 63 / 0.04);
+  }
+  .faq > summary {
+    display: flex;
+    min-height: 3.5rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .faq > summary .i {
+    color: var(--color-tiam-blue);
+    transition: transform 0.2s ease;
+  }
+  .faq[open] > summary .i {
+    transform: rotate(180deg);
+  }
+  .faq > div {
+    padding: 0 1.25rem 1.25rem;
+    color: var(--color-slate-700);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .faq > summary .i {
+      transition: none;
+    }
+  }
+
+  /* ── Barra de compra pegada abajo (solo celular). Aparece al pasar el primer botón. ── */
+  .sticky-cta {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid var(--color-slate-100);
+    box-shadow: 0 -10px 28px -14px rgb(22 38 63 / 0.35);
+    visibility: hidden;
+    transform: translateY(100%);
+    transition:
+      transform 0.25s ease,
+      visibility 0s linear 0.25s;
+  }
+  .sticky-cta[data-on] {
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+  @media (min-width: 768px) {
+    .sticky-cta {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sticky-cta {
+      transition: none;
+    }
+  }
+
+  /* Enlace para saltar al contenido */
+  .skip {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 60;
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: var(--color-tiam-blue-dark);
+    box-shadow: 0 4px 16px rgb(22 38 63 / 0.25);
+  }
+  .skip:focus {
+    top: 1rem;
+  }
+}

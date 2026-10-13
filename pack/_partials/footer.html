@@ -1,0 +1,48 @@
+<!-- Pie compartido por las dos landings. Contacto, botón de arrepentimiento y razón social salen de la configuración (variables VITE_PACK_*, ver .env).
+     Mientras una de esas variables esté vacía, su renglón no se muestra (sin marcadores); para publicar hacen falta todas: PACK_STRICT=1 falla el build si falta alguna. -->
+<footer class="border-t border-slate-100 bg-slate-50 pb-28 pt-12 md:py-12" data-watch-cta>
+  <div class="wrap">
+    <div class="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
+      <div>
+        <img src="/pack/img/logo-144.webp" width="144" height="81" alt="TIAM Digital" class="h-10 w-auto" loading="lazy" decoding="async">
+        <p class="mt-4 max-w-sm text-[0.9375rem] leading-relaxed text-slate-600">
+          TIAM Digital: estimulación cognitiva para cada momento. Nacido en un taller presencial de La Plata, Argentina.
+        </p>
+      </div>
+
+      <nav aria-label="Legal">
+        <p class="text-sm font-bold uppercase tracking-wider text-slate-700">Legal</p>
+        <ul class="mt-4 space-y-1 text-[0.9375rem]">
+          <li><a class="inline-flex min-h-11 items-center text-slate-700 underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue" href="/terms">Términos y condiciones</a></li>
+          <li><a class="inline-flex min-h-11 items-center text-slate-700 underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue" href="/privacy">Política de privacidad</a></li>
+          <!--if:VITE_PACK_REGRET_URL-->
+          <li><a class="inline-flex min-h-11 items-center text-slate-700 underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue" href="%VITE_PACK_REGRET_URL%">Botón de arrepentimiento</a></li>
+          <!--endif-->
+        </ul>
+      </nav>
+
+      <!--if:VITE_PACK_CONTACT_URL-->
+      <div>
+        <p class="text-sm font-bold uppercase tracking-wider text-slate-700">Contacto</p>
+        <ul class="mt-4 space-y-1 text-[0.9375rem] text-slate-700">
+          <li><a class="inline-flex min-h-11 items-center underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue" href="%VITE_PACK_CONTACT_URL%"><!--if:VITE_PACK_CONTACT_TEXT-->%VITE_PACK_CONTACT_TEXT%<!--endif--><!--ifnot:VITE_PACK_CONTACT_TEXT-->Escribinos<!--endif--></a></li>
+          <!--if:VITE_PACK_LEGAL_ENTITY-->
+          <li class="pt-1 text-slate-600">%VITE_PACK_LEGAL_ENTITY%</li>
+          <!--endif-->
+        </ul>
+      </div>
+      <!--endif-->
+    </div>
+
+    <!--ifnot:VITE_PACK_CONTACT_URL-->
+    <!--if:VITE_PACK_LEGAL_ENTITY-->
+    <p class="mt-8 text-[0.9375rem] text-slate-600">%VITE_PACK_LEGAL_ENTITY%</p>
+    <!--endif-->
+    <!--endif-->
+
+    <div class="mt-10 space-y-2 border-t border-slate-200 pt-6 text-sm leading-relaxed text-slate-600">
+      <p>Material de estimulación cognitiva. No reemplaza la evaluación ni el tratamiento de un profesional de la salud.</p>
+      <p>© 2026 TIAM Digital. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>

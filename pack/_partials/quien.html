@@ -1,0 +1,60 @@
+<!-- Quién está detrás: el taller real de La Plata (datos copiados de /talleres: src/pages/talleres/TalleresPage.tsx). Si falta el nombre de la tallerista, la página no
+     dice quién revisa las guías: usa un texto neutro. Con VITE_PACK_TALLERISTA_NAME afirma que ella las escribe y revisa: poner el nombre solo cuando esa revisión sea cierta.
+     Las dos fotos son recortes SIN rostros de las fotos de /talleres: provisorias hasta tener fotos propias, con consentimiento para publicidad. -->
+<section class="band band--soft" aria-labelledby="t-quien">
+  <div class="wrap grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+    <div class="min-w-0">
+      <p class="eyebrow">Quiénes están detrás</p>
+      <h2 id="t-quien" class="t-h2 mt-4">
+        <!--if:PACK_FAMILIAS-->Nació en un taller de La&nbsp;Plata<!--endif-->
+        <!--if:PACK_PROFESIONALES-->Hecho por quien coordina un taller<!--endif-->
+      </h2>
+      <ul class="mt-5 flex flex-wrap gap-2.5">
+        <li class="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-base font-semibold text-slate-800 ring-1 ring-slate-200"><svg class="i text-tiam-blue" aria-hidden="true"><use href="#i-map-pin" /></svg>La Plata, Buenos Aires</li>
+        <li class="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-base font-semibold text-slate-800 ring-1 ring-slate-200"><svg class="i text-tiam-blue" aria-hidden="true"><use href="#i-calendar-check" /></svg>Desde 2024</li>
+        <li class="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-base font-semibold text-slate-800 ring-1 ring-slate-200"><svg class="i text-tiam-blue" aria-hidden="true"><use href="#i-users" /></svg>Grupo reducido, cada semana</li>
+      </ul>
+      <div class="mt-5 space-y-4 text-slate-700">
+        <p>
+          <!--if:PACK_FAMILIAS-->TIAM nació en el Taller Interactivo para Adultos Mayores: un grupo reducido que se junta cada semana a ejercitar la mente y pasar un buen rato. Estas fichas llevan esa forma de trabajar al papel.<!--endif-->
+          <!--if:PACK_PROFESIONALES-->El pack sale del trabajo del Taller Interactivo para Adultos Mayores: un grupo reducido que se junta cada semana a ejercitar la mente. Las fichas llevan esa forma de trabajar al papel.<!--endif-->
+        </p>
+        <!--if:VITE_PACK_TALLERISTA_NAME-->
+        <p>Las guías y los consejos de cada ficha están escritos y revisados por %VITE_PACK_TALLERISTA_NAME%, tallerista cognitiva y acompañante terapéutica.</p>
+        <!--endif-->
+        <!--ifnot:VITE_PACK_TALLERISTA_NAME-->
+        <p>Cada guía incluye un consejo de tallerista, para conversar un rato cuando terminan.</p>
+        <!--endif-->
+      </div>
+      <!--if:VITE_PACK_TALLERISTA_NAME-->
+      <!--if:VITE_PACK_TALLERISTA_PHOTO-->
+      <div class="mt-6 flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+        <img src="%VITE_PACK_TALLERISTA_PHOTO%" width="64" height="64" alt="%VITE_PACK_TALLERISTA_NAME%" loading="lazy" decoding="async" class="h-16 w-16 flex-none rounded-full object-cover" />
+        <div class="min-w-0">
+          <p class="font-bold [overflow-wrap:anywhere]">%VITE_PACK_TALLERISTA_NAME%</p>
+          <p class="text-base text-slate-600">Tallerista cognitiva y acompañante terapéutica</p>
+        </div>
+      </div>
+      <!--endif-->
+      <!--endif-->
+      <p class="mt-5">
+        <a href="/talleres" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center gap-2 font-semibold text-tiam-blue-dark underline decoration-tiam-blue/40 hover:decoration-tiam-blue">
+          Conocé el taller
+          <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+        </a>
+      </p>
+    </div>
+
+    <div class="min-w-0">
+      <div class="grid grid-cols-2 gap-3">
+        <figure>
+          <img src="/pack/img/taller-mesa-480.webp" width="480" height="360" alt="Mesa del taller con cuadernos, hojas con ejercicios, estuches y manos que escriben" loading="lazy" decoding="async" class="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm lg:aspect-[4/5]" />
+        </figure>
+        <figure>
+          <img src="/pack/img/taller-cafe-480.webp" width="480" height="360" alt="Manos que escriben con lápiz en cuadernos, junto a una taza de café y una bandeja con galletitas" loading="lazy" decoding="async" class="aspect-[4/3] w-full rounded-2xl object-cover shadow-sm lg:aspect-[4/5]" />
+        </figure>
+        <p class="col-span-2 text-center text-base text-slate-600">Lápiz, papel y un café: así se trabaja en el taller.</p>
+      </div>
+    </div>
+  </div>
+</section>

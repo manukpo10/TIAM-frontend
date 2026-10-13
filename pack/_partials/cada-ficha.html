@@ -1,0 +1,78 @@
+<!-- Cada ficha incluye: las dos hojas REALES de una ficha (hoja de trabajo y guía, edición de la landing) y el desglose de lo que trae.
+     Cada ficha son dos hojas (la de la persona y la guía con solucionario y registro): lo dice el README de TIAM-pack. -->
+<section id="incluye" class="band scroll-mt-4" aria-labelledby="t-incluye">
+  <div class="wrap">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow">Cada ficha incluye</p>
+      <h2 id="t-incluye" class="t-h2 mt-4">Dos hojas por ficha, y no hay que armar nada</h2>
+      <p class="lead mt-4">
+        <!--if:PACK_FAMILIAS-->Una hoja para quien la resuelve y otra para quien acompaña. Páginas reales del pack, edición familias.<!--endif-->
+        <!--if:PACK_PROFESIONALES-->Una hoja para quien participa y otra, tuya, para la sesión. Páginas reales del pack, edición profesionales.<!--endif-->
+      </p>
+    </div>
+
+    <div class="mt-14 grid items-center gap-14 lg:grid-cols-[1fr_1fr] lg:gap-16">
+      <div class="sheets">
+        <figure class="sheet left-0 top-0 -rotate-2">
+          <span class="sheet-pin" aria-hidden="true">1</span>
+          <!--if:PACK_FAMILIAS-->
+          <img src="/pack/img/hoja-trabajo-familia-480.webp" srcset="/pack/img/hoja-trabajo-familia-480.webp 480w, /pack/img/hoja-trabajo-familia-720.webp 720w" sizes="(min-width: 1024px) 300px, 56vw" width="480" height="621" alt="Hoja de trabajo de una sopa de letras de países de América, con letra grande y la lista de palabras para tachar" loading="lazy" decoding="async" />
+          <!--endif-->
+          <!--if:PACK_PROFESIONALES-->
+          <img src="/pack/img/hoja-trabajo-pro-480.webp" srcset="/pack/img/hoja-trabajo-pro-480.webp 480w, /pack/img/hoja-trabajo-pro-720.webp 720w" sizes="(min-width: 1024px) 300px, 56vw" width="480" height="679" alt="Hoja de trabajo de una sopa de letras de cosas de la cocina, con letra grande y la lista de palabras para tachar" loading="lazy" decoding="async" />
+          <!--endif-->
+          <figcaption>Hoja de trabajo</figcaption>
+        </figure>
+        <figure class="sheet right-0 top-[8%] rotate-2">
+          <span class="sheet-pin" aria-hidden="true">2</span>
+          <!--if:PACK_FAMILIAS-->
+          <img src="/pack/img/hoja-guia-familia-480.webp" srcset="/pack/img/hoja-guia-familia-480.webp 480w, /pack/img/hoja-guia-familia-720.webp 720w" sizes="(min-width: 1024px) 300px, 56vw" width="480" height="621" alt="Guía para acompañar la misma ficha: objetivo, cómo aplicarla, adaptaciones, cuándo pausar, solucionario y registro de cómo les fue" loading="lazy" decoding="async" />
+          <!--endif-->
+          <!--if:PACK_PROFESIONALES-->
+          <img src="/pack/img/hoja-guia-pro-480.webp" srcset="/pack/img/hoja-guia-pro-480.webp 480w, /pack/img/hoja-guia-pro-720.webp 720w" sizes="(min-width: 1024px) 300px, 56vw" width="480" height="679" alt="Guía para el profesional de la misma ficha: objetivo, cómo aplicarla, adaptaciones, cuándo pausar, solucionario y registro de la sesión" loading="lazy" decoding="async" />
+          <!--endif-->
+          <figcaption><!--if:PACK_FAMILIAS-->Guía para acompañar<!--endif--><!--if:PACK_PROFESIONALES-->Guía para el profesional<!--endif--></figcaption>
+        </figure>
+      </div>
+
+      <div>
+        <ol class="parts">
+          <li>
+            <div>
+              <b>La hoja de trabajo</b>
+              <span>Para quien la resuelve. Letra grande, desde 16&nbsp;puntos, y pensada para verse bien en blanco y negro.</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <b><!--if:PACK_FAMILIAS-->La guía para acompañar<!--endif--><!--if:PACK_PROFESIONALES-->La guía para el profesional<!--endif--></b>
+              <span>Qué se ejercita, cómo proponerla en tres pasos y cuándo hacer una pausa. Con un consejo de tallerista para conversar al terminar.</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <b>Versión más fácil y más difícil</b>
+              <span>Ajustes para adaptar la ficha en el momento, sin buscar otra.</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <b>El solucionario</b>
+              <span>Las respuestas, comprobadas antes de armar el pack, para revisar juntos sin dudas.</span>
+            </div>
+          </li>
+          <li>
+            <div>
+              <b><!--if:PACK_FAMILIAS-->El registro «Cómo nos fue hoy»<!--endif--><!--if:PACK_PROFESIONALES-->El registro de la sesión<!--endif--></b>
+              <span><!--if:PACK_FAMILIAS-->Fecha, tiempo, cuánta ayuda hizo falta y un lugar para anotar lo que quieran.<!--endif--><!--if:PACK_PROFESIONALES-->Fecha, tiempo, resultado, ayuda necesaria y observaciones, en la misma hoja.<!--endif--></span>
+            </div>
+          </li>
+        </ol>
+        <p class="mt-7 rounded-2xl bg-slate-50 p-4 text-base text-slate-700 ring-1 ring-slate-100">
+          <!--if:PACK_FAMILIAS-->El objetivo es estimular, no evaluar: si aparece cansancio, se hace una pausa y se sigue otro día.<!--endif-->
+          <!--if:PACK_PROFESIONALES-->El objetivo es estimular, no evaluar. Es material de apoyo para tus sesiones: no reemplaza tu criterio profesional.<!--endif-->
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

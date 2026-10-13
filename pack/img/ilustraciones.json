@@ -1,0 +1,271 @@
+{
+  "note": "Ilustraciones hechas en local con FLUX.2 klein 4B fp8 (ComfyUI). Solo decorativas y explicativas: no reemplazan fotos reales, testimonios ni vistas del producto.",
+  "generation": {
+    "model": "flux-2-klein-4b-fp8.safetensors",
+    "textEncoder": "qwen_3_4b.safetensors (type flux2)",
+    "vae": "flux2-vae.safetensors",
+    "steps": 4,
+    "cfg": 1,
+    "sampler": "euler"
+  },
+  "style": "Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+  "items": [
+    {
+      "id": "compartir-familia",
+      "files": [
+        "compartir-familia-480.webp",
+        "compartir-familia-800.webp"
+      ],
+      "style": "tinta-firme",
+      "seed": 20270202,
+      "size": "1536x1024",
+      "prompt": "Two women sitting close side by side behind a wooden table, seen from the front in a close medium shot from the chest up: on the left an older Latin American woman in her seventies with short wavy silver-gray hair, warm light olive skin and a dusty light-blue cardigan over a cream blouse; on the right her adult daughter in her thirties with long straight dark brown hair and a light gray cardigan over a cream top. Both faces are large, fully visible and evenly lit, with warm gentle smiles, both looking down at a big open photo album lying on the table between them, their relaxed hands with five natural fingers each resting on its pages. A white mug on each side. The pages of the album hold only a few small sepia photographs of landscapes, houses and flowers, with no people in the photographs, no captions and no writing. Plain warm cream paper background, the two women fill the wide horizontal frame. Only these two people. Style: hand-drawn editorial illustration with confident dark navy ink contour lines of medium weight around the faces, eyes, hands, hair and clothes, light flat gouache washes on warm cream paper, very little shading, restrained palette of dusty blue, light gray, warm tan and cream, faces with gentle fine wrinkles, calm and dignified, refined magazine illustration, never childish, never cartoonish, no text, no letters, no numbers.",
+      "source": "TIAM-pack/assets/ilustraciones/portadas/memoria-print.png (portada de Memoria: la misma imagen, sin recortar)"
+    },
+    {
+      "id": "paso-recibir",
+      "files": [
+        "paso-recibir-240.webp",
+        "paso-recibir-400.webp"
+      ],
+      "seed": 20264102,
+      "size": "1024x1024",
+      "prompt": "A laptop open on a wooden desk with a small paper envelope floating above its screen, a soft glow around the envelope, a small potted plant beside the laptop, no people. Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+      "candidate": "paso-recibir-s20264102.png"
+    },
+    {
+      "id": "paso-imprimir",
+      "files": [
+        "paso-imprimir-240.webp",
+        "paso-imprimir-400.webp"
+      ],
+      "seed": 20264203,
+      "size": "1024x1024",
+      "prompt": "A small home inkjet printer on a wooden desk with one blank white sheet of paper coming out of it, a mug and a pencil cup beside it, no people. Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+      "candidate": "paso-imprimir-s20264203.png"
+    },
+    {
+      "id": "paso-compartir",
+      "files": [
+        "paso-compartir-240.webp",
+        "paso-compartir-400.webp"
+      ],
+      "seed": 20264301,
+      "size": "1024x1024",
+      "prompt": "A small round kitchen timer next to two cups of tea on a pale wooden table, with a pencil and one blank sheet of paper, warm afternoon light, no people. Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+      "candidate": "paso-compartir-s20264301.png"
+    },
+    {
+      "id": "sesion-profesional",
+      "files": [
+        "sesion-profesional-480.webp",
+        "sesion-profesional-800.webp"
+      ],
+      "style": "tinta-firme",
+      "seed": 20264607,
+      "round": 1,
+      "size": "1536x1024",
+      "prompt": "Three people sitting close together behind a round wooden table, seen from the front in a close medium shot from the chest up: in the middle a woman professional in her forties with dark brown shoulder-length hair and warm light brown skin, wearing a plain light blue button-up shirt with the sleeves rolled up; on the left an older Latin American man in his seventies with short white hair, a neat gray mustache and warm olive skin, wearing a light gray cardigan over a white shirt; on the right an older Latin American woman in her seventies with a silver-gray bun, thin round glasses and tan skin, wearing a pale sage-green cardigan over a cream blouse. All three faces are large, fully visible and evenly lit. The two older adults look down with calm smiles at a plain blank white sheet of paper each, holding a pencil in a relaxed hand with five natural fingers, while the professional looks straight at the viewer with a warm friendly smile, her relaxed hands resting on the table. The sheets are completely blank, with no lines, no writing and no marks. Plain warm cream paper background, the three people fill the wide horizontal frame. Only these three people. Style: hand-drawn editorial illustration with confident dark navy ink contour lines of medium weight around the faces, eyes, hands, hair and clothes, light flat gouache washes on warm cream paper, very little shading, restrained palette of dusty blue, light gray, warm tan and cream, faces with gentle fine wrinkles, calm and dignified, refined magazine illustration, never childish, never cartoonish, no text, no letters, no numbers.",
+      "candidate": "sesion-profesional-s20264607.png",
+      "background": {
+        "method": "papel del fondo a blanco puro (inundación desde el borde, solo semillas rodeadas de fondo); sin otro retoque de color",
+        "paper": [
+          253,
+          248,
+          232
+        ],
+        "tolerance": 7,
+        "whitePercent": 30.2
+      },
+      "webp": {
+        "quality": 58,
+        "method": 6,
+        "bytes": [
+          20526,
+          47320
+        ]
+      },
+      "seedsTried": [
+        20264601,
+        20264602,
+        20264603,
+        20264604,
+        20264605,
+        20264606,
+        20264607,
+        20264608
+      ],
+      "rejected": "Ronda 1, 8 semillas, todas con las tres personas y el estilo bien. Descartadas: 20264606 (dos lápices cruzados en las manos de la señora); 20264601 (respaldo de silla gris pegado al borde derecho y la hoja de la señora cortada por sus manos); 20264602 y 20264604 (la mesa redonda casi no se ve); 20264603 (la señora sin lápiz); 20264605 (el lápiz de la profesional queda tapado por la camisa); 20264608 (buena, pero con las figuras más recortadas por los bordes). Elegida la 20264607: mesa redonda a la vista, las tres caras y las seis manos sin defectos, hojas en blanco, figuras casi enteras."
+    },
+    {
+      "id": "paso-registrar",
+      "files": [
+        "paso-registrar-240.webp",
+        "paso-registrar-400.webp"
+      ],
+      "style": "tinta-firme",
+      "seed": 20264703,
+      "round": 1,
+      "size": "1024x1024",
+      "prompt": "Two people sitting close side by side behind a wooden table, seen from the front in a close medium shot from the chest up: on the left a woman professional in her forties with dark brown hair tied back in a low bun and warm light brown skin, wearing a plain cream knit sweater over a white collared shirt, holding a clipboard with a plain blank white sheet in both hands in front of her; on the right an older Latin American man in his seventies with short white hair, a neat gray mustache and warm olive skin, wearing a pale gray sweater over a white shirt, holding a pencil in a relaxed hand over a plain blank white sheet of paper lying on the table. Both faces are large, fully visible and evenly lit, with warm gentle smiles: she looks at him and he looks down at his sheet. Their relaxed hands have five natural fingers each. The sheets are completely blank, with no lines, no writing and no marks. Plain warm cream paper background, the two people fill the square frame. Only these two people. Style: hand-drawn editorial illustration with confident dark navy ink contour lines of medium weight around the faces, eyes, hands, hair and clothes, light flat gouache washes on warm cream paper, very little shading, restrained palette of dusty blue, light gray, warm tan and cream, faces with gentle fine wrinkles, calm and dignified, refined magazine illustration, never childish, never cartoonish, no text, no letters, no numbers.",
+      "candidate": "paso-registrar-s20264703.png",
+      "background": {
+        "method": "papel del fondo a blanco puro (inundación desde el borde, solo semillas rodeadas de fondo); sin otro retoque de color",
+        "paper": [
+          246,
+          240,
+          221
+        ],
+        "tolerance": 7,
+        "whitePercent": 28.9
+      },
+      "webp": {
+        "quality": 58,
+        "method": 6,
+        "bytes": [
+          7018,
+          16110
+        ]
+      },
+      "seedsTried": [
+        20264701,
+        20264702,
+        20264703,
+        20264704,
+        20264705,
+        20264706,
+        20264707,
+        20264708
+      ],
+      "rejected": "Ronda 1, 8 semillas, todas con las dos personas y el estilo bien. Se miraron también recortadas a 4:3 con object-position 50% 40% (escritorio) y a 96 px (celular). Descartadas: 20264707 (un lápiz en cada mano de él); 20264702 (una segunda tablilla debajo de la que sostiene ella); 20264705 (una tablilla beige tapa el pie de la que sostiene ella); 20264706 (franja oscura en el borde de abajo); 20264701, 20264704 y 20264708 (buenas, pero el pelo queda pegado al borde de arriba y el recorte de escritorio se lo come, o hay un respaldo de silla en el borde). Elegida la 20264703: es la que deja más aire arriba de las cabezas, las dos caras enteras en la ventana de 4:3, la tablilla con hoja en blanco y las manos sin defectos."
+    }
+  ],
+  "mockups": {
+    "note": "Fotos fotorrealistas SIN personas (ni manos ni caras) para la maqueta del cuadernillo impreso del hero y de los anuncios. El cuadernillo de la foto sale con la tapa en blanco: la tapa REAL (PDF de TIAM-pack) se compone encima con scripts/pack-landings/make_mockup.py. Muestran cómo queda impreso el PDF (A4 engrapado, como de impresora hogareña o copistería); no son fotos del producto real ni de clientes. Al lado de la imagen va siempre el cartel 'Producto digital: PDF para imprimir en casa'.",
+    "generation": {
+      "model": "flux-2-klein-4b-fp8.safetensors",
+      "textEncoder": "qwen_3_4b.safetensors (type flux2)",
+      "vae": "flux2-vae.safetensors",
+      "steps": 4,
+      "cfg": 1,
+      "sampler": "euler",
+      "license": "FLUX.2 klein 4B, Apache 2.0 (uso comercial permitido)",
+      "resolution": "1344x1344",
+      "promptSuffixes": "ver SHOT y SHOT_PLATE en scripts/pack-landings/make_mockup_stills.mjs (ya van dentro de cada prompt)"
+    },
+    "items": [
+      {
+        "id": "cuadernillo-en-blanco",
+        "role": "base de los cuadernillos de la maqueta (tapa en blanco, grapas en el borde izquierdo)",
+        "seed": 20265503,
+        "size": "1344x1344",
+        "prompt": "A rectangular printed A4 paper booklet, perfectly flat with straight clean edges and sharp corners, held together by exactly two small silver staples along its left edge, the front cover is a completely plain matte white sheet with nothing printed on it, lying on a light oak wooden table, seen from above at a gentle angle and slightly rotated, a white ceramic cup of tea sits far in the upper right corner of the picture, the booklet is large in the frame and sits in the middle of the picture. Professional product photograph, photorealistic, shot with a 50mm lens, soft diffused natural daylight from a window on the left, gentle shadows, shallow depth of field, calm warm home atmosphere, sharp focus on the booklet, high resolution, absolutely no text, no letters, no numbers, no logos, no writing anywhere, no people, no hands.",
+        "file": "scripts/pack-landings/plates/still-grapas-s20265503.png",
+        "candidates": {
+          "id": "left-staples",
+          "seedsTried": [
+            20265501,
+            20265502,
+            20265503,
+            20265504,
+            20265505,
+            20265506,
+            20265507,
+            20265508
+          ],
+          "rejected": "los otros 7: formas deformes, una sola grapa o aros en vez de grapas"
+        },
+        "usedBy": [
+          "hero-familias-*",
+          "hero-profesionales-*",
+          "mockup-pack-*"
+        ]
+      },
+      {
+        "id": "mesa-vacia",
+        "role": "fondo: mesa de roble vacía con luz de ventana",
+        "seed": 20265903,
+        "size": "1344x1344",
+        "prompt": "A close-up photograph of a completely empty light oak wooden table surface seen from above at a gentle angle, the wood grain fills the whole frame edge to edge, nothing at all on the table, no objects, no cup, no paper, soft warm window light from the upper left casting gentle gradients, shallow depth of field. Professional photograph, photorealistic, shot with a 50mm lens, soft diffused natural daylight from a window at the upper left, gentle gradients, shallow depth of field, calm warm home atmosphere, high resolution, absolutely no text, no letters, no numbers, no logos, no writing anywhere, no people, no hands.",
+        "file": "scripts/pack-landings/plates/table-s20265903.png",
+        "candidates": {
+          "id": "table-bare",
+          "seedsTried": [
+            20265901,
+            20265902,
+            20265903,
+            20265904,
+            20265905,
+            20265906,
+            20265907,
+            20265908
+          ],
+          "note": "la mesa se aprieta con un desenfoque de 1,1 px al componer (profundidad de campo y menos peso en WebP)"
+        },
+        "usedBy": [
+          "hero-familias-*",
+          "hero-profesionales-*",
+          "mockup-pack-*"
+        ]
+      }
+    ],
+    "discarded": [
+      {
+        "approach": "anillado en espiral (spiral-a, semillas 20265301-20265308)",
+        "reason": "los aros de FLUX tapan 12 a 16 mm de la tapa y cortan el logo; la ficha real dejaría ver aros sobre el contenido"
+      },
+      {
+        "approach": "grapa en la esquina superior izquierda (corner-staple, 20265201-20265203)",
+        "reason": "la grapa que dibuja FLUX cae a ~36 mm de la esquina, justo sobre el logo"
+      },
+      {
+        "approach": "sacar el cuadernillo de la foto con edición de FLUX (ReferenceLatent)",
+        "reason": "dejó fantasmas lilas y zonas posterizadas; se prefirió generar la mesa vacía directo (sin la palabra 'booklet', que hace aparecer uno)"
+      }
+    ]
+  },
+  "retired": [
+    {
+      "id": "compartir-familia",
+      "files": [
+        "compartir-familia-480.webp",
+        "compartir-familia-800.webp"
+      ],
+      "seed": 20264002,
+      "size": "1536x1024",
+      "prompt": "An older Latin American woman in her seventies with short gray hair and a soft blue cardigan, and her adult daughter with dark hair tied back, sitting side by side at a pale wooden kitchen table in warm daylight, smiling and relaxed, two cups of tea and one blank sheet of paper on the table. Natural faces and correct hands. Only the people described appear in the picture, nobody else. Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+      "candidate": "compartir-familia-s20264002.png",
+      "retiredOn": "2026-10-11",
+      "reason": "Estilo plano anterior de las tapas. Reemplazada por la escena aprobada de la portada de Memoria (opción C2, estilo tinta firme): ver el item compartir-familia.",
+      "how": "Se puede volver a generar con la consigna y la semilla de acá (node scripts/pack-landings/make_illustrations.mjs generar --out <carpeta> --solo=compartir-familia; misma consigna y semilla dan la misma imagen). Los WebP viejos no se guardaron antes de pisarlos (nunca se habían commiteado)."
+    },
+    {
+      "id": "sesion-profesional",
+      "files": [
+        "sesion-profesional-480.webp",
+        "sesion-profesional-800.webp"
+      ],
+      "seed": 20264403,
+      "size": "1536x1024",
+      "prompt": "A friendly woman facilitator in her thirties with a lanyard sitting at a round table with three older Latin American adults, everyone holding a pencil over a blank sheet of paper, calm and focused, a bright room with a window and a plant, only these four people. Natural faces and correct hands. Only the people described appear in the picture, nobody else. Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+      "candidate": "sesion-profesional-s20264403.png",
+      "retiredOn": "2026-10-11",
+      "reason": "Estilo plano anterior (el de los objetos de 'cómo funciona'). Reemplazada por la escena en el estilo 'tinta firme' de las tapas (opción C2): ver el item sesion-profesional.",
+      "how": "Se puede volver a generar con la consigna y la semilla de acá (node scripts/pack-landings/make_illustrations.mjs generar --out <carpeta> --solo=sesion-profesional-plano; misma consigna, tamaño y semilla dan la misma imagen). Los WebP anteriores están en pack/img/anteriores/ (respaldados antes de pisarlos)."
+    },
+    {
+      "id": "paso-registrar",
+      "files": [
+        "paso-registrar-240.webp",
+        "paso-registrar-400.webp"
+      ],
+      "seed": 20264502,
+      "size": "1024x1024",
+      "prompt": "A woman professional in her thirties with a lanyard holding a clipboard with a blank form, standing beside an older Latin American man sitting at a table with a pencil and a blank sheet of paper, a friendly quiet moment, only these two people. Natural faces and correct hands. Only the people described appear in the picture, nobody else. Clean editorial illustration, simple shapes with dark navy outlines, flat muted fills in navy, soft blue, warm beige and light gray, plain light background, generous white space, dignified adult style, never childish or cartoonish, no text, no letters, no numbers.",
+      "candidate": "paso-registrar-s20264502.png",
+      "retiredOn": "2026-10-11",
+      "reason": "Estilo plano anterior (el de los objetos de 'cómo funciona'). Reemplazada por la escena en el estilo 'tinta firme' de las tapas (opción C2): ver el item paso-registrar.",
+      "how": "Se puede volver a generar con la consigna y la semilla de acá (node scripts/pack-landings/make_illustrations.mjs generar --out <carpeta> --solo=paso-registrar-plano; misma consigna, tamaño y semilla dan la misma imagen). Los WebP anteriores están en pack/img/anteriores/ (respaldados antes de pisarlos)."
+    }
+  ]
+}

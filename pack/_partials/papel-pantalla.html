@@ -1,0 +1,73 @@
+<!-- "Papel + pantalla": las fichas se imprimen y, como opción, TIAM suma el Desafío de 30 días (juegos interactivos que ya funcionan en el sitio: src/pages/desafio*).
+     Las tres pantallas son capturas REALES de la app (scripts/pack-landings/capture_games.mjs): el juego, su contenido y sus estilos son los de producción; el marco del teléfono es CSS.
+     El precio de lista y el de la oferta salen de la configuración (%PACK_GAMES_REGULAR% sale de PRICE_ARS en Desafio30DiasPage.tsx). -->
+<section id="papel-pantalla" class="band duo" aria-labelledby="t-duo">
+  <div class="wrap">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow eyebrow--dark">Papel + pantalla</p>
+      <h2 id="t-duo" class="t-h2 mt-4">Papel para la mesa, pantalla para jugar</h2>
+      <p class="lead mt-4">
+        <!--if:PACK_FAMILIAS-->Las fichas se imprimen y se comparten. Y si querés sumar un rato de juego, el Desafío de 30&nbsp;días de TIAM ya funciona en el celular: juegos interactivos de memoria, atención, lenguaje, cálculo y más.<!--endif-->
+        <!--if:PACK_PROFESIONALES-->Las fichas se imprimen para trabajar en la sesión. Y si querés sumar pantalla, el Desafío de 30&nbsp;días de TIAM ya funciona en el celular: juegos interactivos para compartir con tus participantes o con sus familias.<!--endif-->
+      </p>
+    </div>
+
+    <div class="mt-12 grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+      <div>
+        <div class="phones">
+          <figure class="phone phone--side phone--l">
+            <div class="phone-screen">
+              <img src="/pack/img/juego-lista-mercado-400.webp" width="400" height="741" alt="Juego de Memoria «La lista del mercado»: productos con foto para memorizar y un botón para continuar" loading="lazy" decoding="async" />
+            </div>
+          </figure>
+          <figure class="phone phone--main">
+            <div class="phone-screen phone-screen--light">
+              <img src="/pack/img/desafio-grilla-400.webp" width="400" height="895" alt="Pantalla del Desafío de 30 días: los 30 días en una grilla, cada uno con el color de su área" loading="lazy" decoding="async" />
+            </div>
+          </figure>
+          <figure class="phone phone--side phone--r">
+            <div class="phone-screen">
+              <img src="/pack/img/juego-vuelto-400.webp" width="400" height="881" alt="Juego de Cálculo «El vuelto»: una compra, el pago con billete y los billetes para armar el vuelto" loading="lazy" decoding="async" />
+            </div>
+          </figure>
+        </div>
+        <p class="mt-4 text-center text-base text-slate-300">Pantallas reales del Desafío de 30&nbsp;días.</p>
+      </div>
+
+      <div>
+        <ul class="grid gap-4 text-white">
+          <li class="flex gap-3.5">
+            <span class="icon-tile icon-tile--light"><svg class="i" aria-hidden="true"><use href="#i-smartphone" /></svg></span>
+            <div><p class="font-bold">Se juega desde el celular</p><p class="text-base text-slate-200">Sin instalar nada: se activa por WhatsApp con un toque.</p></div>
+          </li>
+          <li class="flex gap-3.5">
+            <span class="icon-tile icon-tile--light"><svg class="i" aria-hidden="true"><use href="#i-calendar-check" /></svg></span>
+            <div><p class="font-bold">30 ejercicios, 7 nuevos por semana</p><p class="text-base text-slate-200">Uno por día o varios juntos: de 10 a 15&nbsp;minutos cada uno.</p></div>
+          </li>
+          <li class="flex gap-3.5">
+            <span class="icon-tile icon-tile--light"><svg class="i" aria-hidden="true"><use href="#i-star" /></svg></span>
+            <div><p class="font-bold">Estrellas por la precisión</p><p class="text-base text-slate-200">Miden qué tan preciso fuiste, no qué tan rápido.</p></div>
+          </li>
+        </ul>
+
+        <div class="duo-price mt-8">
+          <p class="font-bold">Un mes de juegos interactivos</p>
+          <p class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span class="text-base text-slate-600">Suelto cuesta <span class="strike">$&nbsp;%PACK_GAMES_REGULAR%</span></span>
+          </p>
+          <p class="mt-2 flex flex-wrap items-baseline gap-x-3">
+            <span class="font-display text-4xl font-extrabold leading-none tracking-tight text-tiam-blue-dark">+&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span>
+            <span class="text-base font-semibold text-slate-700">sumándolo a tu pack</span>
+          </p>
+          <!--if:PACK_GAMES_DISCOUNT-->
+          <p class="mt-3 inline-block rounded-lg bg-tiam-green/15 px-3 py-1 text-base font-bold text-[#245c15]">Ahorrás $&nbsp;%PACK_GAMES_SAVING%</p>
+          <!--endif-->
+          <a href="#comprar" class="btn btn-primary btn-lg mt-5 w-full">
+            Sumalo al pagar
+            <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
