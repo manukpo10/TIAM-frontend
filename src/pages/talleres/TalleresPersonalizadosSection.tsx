@@ -15,8 +15,8 @@ import espacioImg from '@/assets/taller/personalizado-espacio.webp'
  * these must never pass as real sessions — keep "Ilustración" in their alt text.
  *
  * Everything the tallerista may want to change is in the data block: prices
- * (per session), the minimum group size for home visits and the message each
- * button opens WhatsApp with.
+ * (per session), the minimum group size and the message each button opens
+ * WhatsApp with.
  */
 
 // ── data:start ──
@@ -27,8 +27,16 @@ const PRICE_SPACE = '$35.000'
 const PRICE_HOME = '$45.000'
 /** What a price covers. */
 const PRICE_UNIT = 'por sesión, para todo el grupo'
-/** Smallest group the tallerista goes to a home for. */
-const HOME_MIN_PEOPLE = 7
+/**
+ * Smallest group the listed prices are for, at the space AND at home (the owner
+ * confirmed on 2026-10-13 that it is not a home-only rule; the first release put
+ * it on the home card only). An individual session is quoted on request.
+ */
+const MIN_PEOPLE = 7
+
+// The group line goes last on each card so it is the one right above the price: the listed
+// price is the group's, so an individual session has to be quoted on request.
+const GROUP_CONDITIONS = ['Individual: consultanos el valor', `Grupo de ${MIN_PEOPLE} personas o más`]
 
 const TEXT_GENERAL = '¡Hola! Quiero consultar por los talleres personalizados de TIAM.'
 const TEXT_SPACE = '¡Hola! Quiero consultar por el taller personalizado en el espacio de TIAM.'
@@ -132,7 +140,7 @@ export function TalleresPersonalizadosSection() {
             icon={Building2}
             title="En nuestro espacio"
             description="Venís al taller, en La Plata, y trabajamos con lo que necesita cada persona."
-            conditions={['Un espacio amigable y cálido']}
+            conditions={['Un espacio amigable y cálido', ...GROUP_CONDITIONS]}
             price={PRICE_SPACE}
             ctaLabel="Consultar por el espacio"
             ctaText={TEXT_SPACE}
@@ -145,9 +153,7 @@ export function TalleresPersonalizadosSection() {
             icon={Home}
             title="En tu domicilio"
             description="Reuní a tu grupo —amigas, amigos o vecinos— y vamos a tu casa."
-            // The group line goes last so it is the one right above the price: the listed
-            // price is the group's, so an individual session has to be quoted on request.
-            conditions={['Individual: consultanos el valor', `Grupo de ${HOME_MIN_PEOPLE} personas o más`]}
+            conditions={GROUP_CONDITIONS}
             price={PRICE_HOME}
             ctaLabel="Consultar por el domicilio"
             ctaText={TEXT_HOME}
