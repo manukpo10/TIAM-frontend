@@ -20,12 +20,13 @@ import espacioImg from '@/assets/taller/personalizado-espacio.webp'
  */
 
 // ── data:start ──
-// Agreed with the tallerista on 2026-10-12. The prices are per SESSION: the first
-// release said "por persona, por mes" and the owner corrected it the same day.
+// Agreed with the tallerista on 2026-10-12. Each price is per SESSION and covers the
+// WHOLE GROUP, not each person (the first release said "por persona, por mes"; the
+// owner corrected it on 2026-10-12 and 2026-10-13).
 const PRICE_SPACE = '$35.000'
 const PRICE_HOME = '$45.000'
-/** What a price covers. No "por persona" on purpose: per person or per group is still unconfirmed. */
-const PRICE_UNIT = 'por sesión'
+/** What a price covers. */
+const PRICE_UNIT = 'por sesión, para todo el grupo'
 /** Smallest group the tallerista goes to a home for. */
 const HOME_MIN_PEOPLE = 7
 
@@ -130,7 +131,7 @@ export function TalleresPersonalizadosSection() {
           <OptionCard
             icon={Building2}
             title="En nuestro espacio"
-            description="Venís al taller, en La Plata, y trabajamos con lo que vos necesitás."
+            description="Venís al taller, en La Plata, y trabajamos con lo que necesita cada persona."
             conditions={['Un espacio amigable y cálido']}
             price={PRICE_SPACE}
             ctaLabel="Consultar por el espacio"
@@ -144,8 +145,9 @@ export function TalleresPersonalizadosSection() {
             icon={Home}
             title="En tu domicilio"
             description="Reuní a tu grupo —amigas, amigos o vecinos— y vamos a tu casa."
-            // The group line goes last so it is the one right above the price.
-            conditions={['También de forma individual', `Grupo de ${HOME_MIN_PEOPLE} personas o más`]}
+            // The group line goes last so it is the one right above the price: the listed
+            // price is the group's, so an individual session has to be quoted on request.
+            conditions={['Individual: consultanos el valor', `Grupo de ${HOME_MIN_PEOPLE} personas o más`]}
             price={PRICE_HOME}
             ctaLabel="Consultar por el domicilio"
             ctaText={TEXT_HOME}
