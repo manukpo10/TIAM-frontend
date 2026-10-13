@@ -15,14 +15,17 @@ import espacioImg from '@/assets/taller/personalizado-espacio.webp'
  * these must never pass as real sessions — keep "Ilustración" in their alt text.
  *
  * Everything the tallerista may want to change is in the data block: prices
- * (monthly, per person), the minimum group size for home visits and the
- * message each button opens WhatsApp with.
+ * (per session), the minimum group size for home visits and the message each
+ * button opens WhatsApp with.
  */
 
 // ── data:start ──
-// Agreed with the tallerista on 2026-10-12.
+// Agreed with the tallerista on 2026-10-12. The prices are per SESSION: the first
+// release said "por persona, por mes" and the owner corrected it the same day.
 const PRICE_SPACE = '$35.000'
 const PRICE_HOME = '$45.000'
+/** What a price covers. No "por persona" on purpose: per person or per group is still unconfirmed. */
+const PRICE_UNIT = 'por sesión'
 /** Smallest group the tallerista goes to a home for. */
 const HOME_MIN_PEOPLE = 7
 
@@ -77,7 +80,7 @@ function OptionCard({ icon: Icon, title, description, conditions, price, ctaLabe
         <div className="mt-auto pt-6">
           <div className="border-t border-slate-100 pt-5">
             <p className="text-3xl font-bold text-slate-900">{price}</p>
-            <p className="mt-1 text-base font-medium text-slate-600">por persona, por mes</p>
+            <p className="mt-1 text-base font-medium text-slate-600">{PRICE_UNIT}</p>
           </div>
           <div className="mt-5">
             <WhatsAppCta label={ctaLabel} text={ctaText} fullWidth />
@@ -141,9 +144,8 @@ export function TalleresPersonalizadosSection() {
             icon={Home}
             title="En tu domicilio"
             description="Reuní a tu grupo —amigas, amigos o vecinos— y vamos a tu casa."
-            // The group line goes last so it is the one right above the price: $45.000 is the group
-            // price, the individual one is only quoted on request.
-            conditions={['Individual: consultanos el valor', `Grupo de ${HOME_MIN_PEOPLE} personas o más`]}
+            // The group line goes last so it is the one right above the price.
+            conditions={['También de forma individual', `Grupo de ${HOME_MIN_PEOPLE} personas o más`]}
             price={PRICE_HOME}
             ctaLabel="Consultar por el domicilio"
             ctaText={TEXT_HOME}
