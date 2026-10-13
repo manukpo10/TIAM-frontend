@@ -37,6 +37,7 @@ export function PublicFooter() {
               )}
               <li><Link to="/desafio-30-dias" className="hover:text-white transition-colors">Desafío 30 días</Link></li>
               <li><Link to="/talleres" className="hover:text-white transition-colors">Talleres</Link></li>
+              <li><Link to="/material-digital" className="hover:text-white transition-colors">Material digital</Link></li>
             </ul>
           </nav>
 
