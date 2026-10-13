@@ -6,9 +6,9 @@ import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { cn } from '@/lib/utils'
 import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
-import desafioHero from '@/assets/desafio-hero.webp'
-import tallerFoto2 from '@/assets/taller/taller-2.jpg'
-import { HeroDeck } from '@/pages/landing/HeroDeck'
+import desafioAbuelo from '@/assets/desafio-abuelo.webp'
+import tallerGrupal from '@/assets/taller/taller-grupal.webp'
+import { HeroMoments } from '@/pages/landing/HeroMoments'
 
 // Links styled as buttons rather than <Link><Button/></Link>: a button nested
 // inside an anchor is invalid HTML and costs keyboard users two tab stops per CTA.
@@ -51,8 +51,9 @@ const PATHS: Path[] = [
     title: 'Desafío 30 días',
     description: 'Ejercicios cognitivos que le llegan a tu ser querido por WhatsApp, para hacer en casa a su ritmo.',
     bullets: ['7 ejercicios nuevos por semana', 'Sin apps: se abren desde WhatsApp', 'Pago único, sin suscripción'],
-    image: desafioHero,
-    imagePosition: '72% 30%',
+    // Not desafio-hero: the hero's first scene already shows it, a screen above.
+    image: desafioAbuelo,
+    imagePosition: '50% 35%',
     featured: true,
     link: { cta: 'Conocer el Desafío', to: '/desafio-30-dias', variant: 'orange' },
   },
@@ -61,8 +62,9 @@ const PATHS: Path[] = [
     title: 'El taller donde nació TIAM',
     description: 'Encuentros grupales en La Plata, coordinados en persona por una tallerista cognitiva.',
     bullets: ['Encuentros todas las semanas', 'Dos sedes en La Plata', 'Grupos reducidos'],
-    image: tallerFoto2,
-    imagePosition: '50% 40%',
+    // An illustration like the other cards': the real photos of the taller live on /talleres.
+    image: tallerGrupal,
+    imagePosition: '50% 45%',
     link: { cta: 'Conocer el taller', to: '/talleres', variant: 'blue' },
   },
   {
@@ -202,14 +204,13 @@ export function LandingPage() {
               >
                 {/* Inline, not block: forcing the second half onto its own line left a
                     4-line headline in the narrow lg column; text-balance evens it out. */}
-                Mantené activa la mente <span className="text-tiam-blue">de quien más querés.</span>
+                Mantené la mente activa, <span className="text-tiam-blue">a tu manera.</span>
               </h1>
               {/* slate-700, not 600: over the blue background blob, 600 measured
                   4.48:1 on mobile — just under AA's 4.5. */}
               <p className="mt-6 text-lg sm:text-xl leading-relaxed text-slate-700 max-w-xl mx-auto lg:mx-0 text-pretty">
-                Ejercicios cognitivos por WhatsApp, con 7 nuevos cada semana: simples, amenos y para
-                hacer en casa, a su ritmo. ¿Preferís el cara a cara? Conocé el taller donde nació TIAM,
-                en La Plata.
+                Ejercicios por WhatsApp para hacer en casa, un taller presencial en La Plata y talleres
+                personalizados, en nuestro espacio o en tu domicilio.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
                 <Link to="/desafio-30-dias" className={cn(CTA_BASE, CTA_VARIANTS.orange)}>
@@ -217,15 +218,15 @@ export function LandingPage() {
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <Link to="/talleres" className={cn(CTA_BASE, CTA_VARIANTS.outline)}>
-                  Conocé el taller
+                  Conocé los talleres
                 </Link>
               </div>
-              {/* Every line is a claim the Desafío's own page already makes. */}
+              {/* Every line is a claim the site already makes on the page of that product. */}
               <ul className="mt-8 flex flex-col items-center gap-x-6 gap-y-2 text-base text-slate-700 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
                 {[
-                  'Sin apps: se abren desde WhatsApp',
-                  'Pago único, sin suscripción',
                   'Nació en un taller real de La Plata',
+                  'Talleres coordinados por una tallerista cognitiva',
+                  'Desafío sin suscripción: pago único',
                 ].map((proof) => (
                   <li key={proof} className="flex items-center gap-2">
                     <Check className="h-5 w-5 shrink-0 text-tiam-green" aria-hidden="true" />
@@ -235,7 +236,7 @@ export function LandingPage() {
               </ul>
             </div>
 
-            <HeroDeck />
+            <HeroMoments />
           </div>
 
           {/* A soft curve into the next section: the hero doesn't end on a hard edge. */}
