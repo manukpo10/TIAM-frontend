@@ -254,7 +254,7 @@ export function PlataformaPage() {
           {/* Background image */}
           <img
             src={heroBanner}
-            alt="Profesional de la salud acompañando a una adulta mayor mientras completan juntas una ficha de estimulación cognitiva de TIAM"
+            alt="Ilustración de una profesional de la salud que acompaña a una adulta mayor mientras completan juntas una ficha de estimulación cognitiva de TIAM"
             className="absolute inset-0 h-full w-full object-cover object-[right_30%]"
             fetchPriority="high"
           />
