@@ -1,30 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Check, ChevronRight, GraduationCap, MapPin, Pause, Play } from 'lucide-react'
+import { ArrowRight, Check, ChevronRight, GraduationCap } from 'lucide-react'
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { cn } from '@/lib/utils'
 import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
 import desafioHero from '@/assets/desafio-hero.webp'
-import tallerFoto from '@/assets/taller/taller-1.jpg'
 import tallerFoto2 from '@/assets/taller/taller-2.jpg'
-import tallerFoto3 from '@/assets/taller/taller-3.jpg'
-import tallerFoto4 from '@/assets/taller/taller-4.jpg'
-import tallerFoto5 from '@/assets/taller/taller-5.jpg'
-import tallerFoto6 from '@/assets/taller/taller-6.jpg'
-
-// Mismas 6 fotos reales del taller que usa /talleres, acá en modo carrusel
-// para la foto del hero — arrancan en taller-5 (la que ya se mostraba fija)
-// para no cambiar la primera impresión.
-const HERO_PHOTOS = [
-  { src: tallerFoto5, alt: 'Grupo de participantes trabaja con tableros de fichas de colores para armar secuencias, en el espacio del taller en La Plata' },
-  { src: tallerFoto, alt: 'Dos personas completan ejercicios de estimulación cognitiva en cuadernos, con café y galletitas sobre la mesa' },
-  { src: tallerFoto2, alt: 'Cuatro participantes del taller resuelven ejercicios en cuadernos alrededor de una mesa compartida' },
-  { src: tallerFoto3, alt: 'Seis personas escriben en cuadernos durante un encuentro del taller, con una consigna de lenguaje anotada en el pizarrón de fondo' },
-  { src: tallerFoto4, alt: 'Participantes del taller completan fichas de estimulación cognitiva sentados a la mesa' },
-  { src: tallerFoto6, alt: 'Grupo de participantes resuelve un ejercicio de secuencia numérica anotado en el pizarrón, durante un encuentro del taller' },
-]
+import { HeroDeck } from '@/pages/landing/HeroDeck'
 
 // Links styled as buttons rather than <Link><Button/></Link>: a button nested
 // inside an anchor is invalid HTML and costs keyboard users two tab stops per CTA.
@@ -39,117 +23,6 @@ const CTA_VARIANTS = {
   orange: 'bg-accent-hover text-white hover:bg-orange-800 focus-visible:ring-tiam-orange',
   blue: 'bg-primary text-white hover:bg-primary-hover focus-visible:ring-primary',
   outline: 'border border-slate-200 bg-white text-tiam-blue hover:bg-slate-50 focus-visible:ring-primary',
-}
-
-/** Auto-advancing sliding carousel — plain translateX + setInterval, no
- * library. It moves on its own, so it carries a pause button (WCAG 2.2.2),
- * starts paused for anyone whose OS asks for reduced motion, and pauses while
- * hovered on devices with a real pointer. */
-function HeroPhotoCarousel() {
-  const [index, setIndex] = useState(0)
-  // The only state the pause button's label reflects.
-  const [paused, setPaused] = useState(
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
-  // Desktop only: on touch screens a tap leaves an emulated mouseenter stuck
-  // "on", which froze the carousel right after tapping "Reanudar".
-  const [canHover] = useState(() => window.matchMedia('(hover: hover)').matches)
-  const [hovered, setHovered] = useState(false)
-
-  useEffect(() => {
-    if (paused || hovered) return
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % HERO_PHOTOS.length)
-    }, 4000)
-    return () => clearInterval(id)
-  }, [paused, hovered])
-
-  function togglePaused() {
-    // An explicit resume moves right away instead of waiting for the pointer —
-    // still over the photo after the click — to leave.
-    if (paused) setHovered(false)
-    setPaused((p) => !p)
-  }
-
-  function showPhoto(i: number) {
-    // Picking a photo means "let me look at this one", so it stops there.
-    setIndex(i)
-    setPaused(true)
-  }
-
-  return (
-    <div className="relative">
-      <div
-        role="region"
-        aria-roledescription="carrusel"
-        aria-label="Fotos del taller presencial en La Plata"
-        className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-2xl shadow-tiam-blue/15 ring-1 ring-slate-100"
-        onMouseEnter={() => {
-          if (canHover) setHovered(true)
-        }}
-        onMouseLeave={() => setHovered(false)}
-      >
-        <div
-          className="flex h-full ease-in-out motion-safe:transition-transform motion-safe:duration-700"
-          style={{ transform: `translateX(-${index * 100}%)` }}
-        >
-          {HERO_PHOTOS.map((photo, i) => (
-            <img
-              key={photo.src}
-              src={photo.src}
-              alt={photo.alt}
-              aria-hidden={i !== index}
-              className="h-full w-full shrink-0 object-cover"
-            />
-          ))}
-        </div>
-
-        {/* Top corner, not bottom: the "Taller presencial" badge below
-            overhangs the photo's bottom-left and would cover these on mobile.
-            Pause comes first so it's the first thing Tab reaches (ARIA APG
-            carousel pattern). */}
-        <div className="absolute right-3 top-3 flex items-center gap-0.5 rounded-full bg-slate-900/70 px-1.5 py-1 backdrop-blur-sm">
-          <button
-            type="button"
-            onClick={togglePaused}
-            aria-label={paused ? 'Reanudar las fotos' : 'Pausar las fotos'}
-            className="mr-1 flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
-            {paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          </button>
-          {HERO_PHOTOS.map((photo, i) => (
-            <button
-              key={photo.src}
-              type="button"
-              onClick={() => showPhoto(i)}
-              aria-label={`Ver foto ${i + 1} de ${HERO_PHOTOS.length}`}
-              aria-current={i === index}
-              className="flex h-6 w-6 items-center justify-center rounded-full focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <span
-                className={cn(
-                  'block rounded-full bg-white transition-all',
-                  i === index ? 'h-2.5 w-2.5' : 'h-2 w-2 opacity-80',
-                )}
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Overhangs the photo only on desktop: below lg the hero is one column
-          and -left would push it flush against the screen edge. */}
-      <div className="absolute -bottom-6 left-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-lg ring-1 ring-slate-100 lg:-left-6">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tiam-orange/10 text-accent-hover">
-          <MapPin className="h-5 w-5" aria-hidden="true" />
-        </span>
-        <div className="text-left">
-          <p className="text-sm font-bold leading-tight text-slate-900">Taller presencial</p>
-          <p className="text-sm text-slate-600">En La Plata desde 2024</p>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
@@ -311,7 +184,7 @@ export function LandingPage() {
             whole hero sideways with no way back. clip never scrolls. */}
         <section
           aria-labelledby="hero-heading"
-          className="relative overflow-clip bg-gradient-to-br from-tiam-blue/[0.07] via-slate-50 to-white pt-12 pb-20 md:pt-20 md:pb-28"
+          className="relative overflow-clip bg-gradient-to-br from-tiam-blue/[0.07] via-slate-50 to-white pt-12 pb-24 md:pt-20 md:pb-32"
         >
           {/* The three colors of the logo's figures, blurred into the background. */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -322,22 +195,21 @@ export function LandingPage() {
 
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 grid gap-14 lg:grid-cols-[1.15fr_1fr] lg:gap-12 lg:items-center">
             <div className="text-center lg:text-left">
-              <SectionEyebrow text="Estimulación cognitiva" />
+              <SectionEyebrow text="Estimulación cognitiva · La Plata" />
               <h1
                 id="hero-heading"
                 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-[1.1] tracking-tight text-balance"
               >
-                Ejercicios para mantener la mente activa{' '}
-                <span className="mt-1 block text-tiam-blue">
-                  en casa, en el consultorio o en nuestro taller.
-                </span>
+                {/* Inline, not block: forcing the second half onto its own line left a
+                    4-line headline in the narrow lg column; text-balance evens it out. */}
+                Mantené activa la mente <span className="text-tiam-blue">de quien más querés.</span>
               </h1>
               {/* slate-700, not 600: over the blue background blob, 600 measured
                   4.48:1 on mobile — just under AA's 4.5. */}
               <p className="mt-6 text-lg sm:text-xl leading-relaxed text-slate-700 max-w-xl mx-auto lg:mx-0 text-pretty">
-                TIAM nació como un Taller Interactivo para Adultos Mayores en La Plata. Hoy acompañamos
-                a familias, profesionales y adultos mayores con ejercicios de memoria, atención,
-                lenguaje y cálculo, entre otras áreas cognitivas.
+                Ejercicios cognitivos por WhatsApp, con 7 nuevos cada semana: simples, amenos y para
+                hacer en casa, a su ritmo. ¿Preferís el cara a cara? Conocé el taller donde nació TIAM,
+                en La Plata.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
                 <Link to="/desafio-30-dias" className={cn(CTA_BASE, CTA_VARIANTS.orange)}>
@@ -348,10 +220,33 @@ export function LandingPage() {
                   Conocé el taller
                 </Link>
               </div>
+              {/* Every line is a claim the Desafío's own page already makes. */}
+              <ul className="mt-8 flex flex-col items-center gap-x-6 gap-y-2 text-base text-slate-700 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
+                {[
+                  'Sin apps: se abren desde WhatsApp',
+                  'Pago único, sin suscripción',
+                  'Nació en un taller real de La Plata',
+                ].map((proof) => (
+                  <li key={proof} className="flex items-center gap-2">
+                    <Check className="h-5 w-5 shrink-0 text-tiam-green" aria-hidden="true" />
+                    {proof}
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <HeroPhotoCarousel />
+            <HeroDeck />
           </div>
+
+          {/* A soft curve into the next section: the hero doesn't end on a hard edge. */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 1440 64"
+            preserveAspectRatio="none"
+            className="pointer-events-none absolute inset-x-0 bottom-0 block h-8 w-full fill-white sm:h-12 md:h-16"
+          >
+            <path d="M0 40 C240 72 480 8 720 32 C960 56 1200 12 1440 40 L1440 64 L0 64 Z" />
+          </svg>
         </section>
 
         {/* ── Paths ────────────────────────────────────────────────────────── */}
