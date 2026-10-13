@@ -5,12 +5,14 @@ import { cn } from '@/lib/utils'
 import { useAutoCarousel } from '@/hooks/useAutoCarousel'
 import desafioHero from '@/assets/desafio-hero.webp'
 import espacioImg from '@/assets/taller/personalizado-espacio.webp'
-import domicilioImg from '@/assets/taller/personalizado-domicilio.webp'
+import consultorioImg from '@/assets/taller/personalizado-consultorio.webp'
 
 /**
- * The home hero's visual: TIAM's three live offers as three moments of the day,
- * told with the site's illustrations — "En casa" (Desafío 30 días), "En el
- * taller" (taller presencial) and "En tu domicilio" (talleres personalizados).
+ * The home hero's visual: TIAM's three live offers as three places, told with
+ * the site's illustrations — "En casa" (Desafío 30 días), "En el taller" (taller
+ * presencial) and "En el consultorio" (talleres personalizados). Three different
+ * rooms on purpose: the personalized talleres are also given at home, but a
+ * living room here read as a repeat of "En casa".
  * The scenes cross-fade on their own while the picture drifts slowly, and each
  * one links to its page. The platform for professionals isn't here: it isn't
  * on sale yet, so the hero doesn't promote it.
@@ -55,10 +57,10 @@ const SCENES: Scene[] = [
     cta: 'Conocé el taller',
   },
   {
-    moment: 'En tu domicilio',
+    moment: 'En el consultorio',
     product: 'Talleres personalizados',
-    src: domicilioImg,
-    alt: 'Ilustración de una tallerista y tres personas mayores que charlan alrededor de una mesa, en un living',
+    src: consultorioImg,
+    alt: 'Ilustración de una tallerista que muestra una tarjeta de ejercicios a un hombre y a una mujer mayores, sentados a una mesa redonda en un consultorio luminoso',
     position: '50% 50%',
     to: '/talleres#personalizados',
     cta: 'Conocé los talleres personalizados',
@@ -87,7 +89,7 @@ export function HeroMoments() {
     <div
       role="region"
       aria-roledescription="carrusel"
-      aria-label="Los tres momentos de TIAM: en casa, en el taller y en tu domicilio"
+      aria-label="Las tres propuestas de TIAM: en casa, en el taller y en el consultorio"
       className="relative isolate mx-auto w-full max-w-xl"
       {...regionProps}
     >
