@@ -8,6 +8,7 @@ import { requestFileLink, safeNavigationUrl } from './packClient'
 import type { Paper, PackFile, PackOrder } from './packTypes'
 import { PackApiError } from './packTypes'
 import { ContactLink } from './ContactLink'
+import { InAppBrowserNotice } from './InAppBrowserNotice'
 
 /**
  * The deliverables of a paid order, shared by the thank-you page (instant access) and the downloads
@@ -177,6 +178,8 @@ export function DownloadsPanel({ order, token }: DownloadsPanelProps) {
 
   return (
     <div className="space-y-6">
+      <InAppBrowserNotice token={token} />
+
       {available.length > 1 && (
         <Card>
           <fieldset>
