@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Card, PackShell, StateHero } from './PackShell'
 import { ContactLink } from './ContactLink'
 import { sendRegret } from './packClient'
+import type { RegretReceipt } from './packTypes'
 
 /**
  * /arrepentimiento: the "botón de arrepentimiento" the landings link from their footer (VITE_PACK_REGRET_URL).
@@ -18,10 +19,22 @@ import { sendRegret } from './packClient'
  * and how it applies to digital content already downloaded must be confirmed with a lawyer before launch
  * (see Proyecto Digitales/pack/cobro-diseno.md, section 2.8).
  *
- * The form is deliberately short and in one step. Nothing goes into the URL. The backend stores the request,
- * emails the buyer a receipt and notifies the owner; the refund itself is made by hand from Mercado Pago, and the
- * refund webhook then revokes the access.
+ * The form is deliberately short and in one step. Nothing goes into the URL. The backend stores the request and
+ * notifies the owner; the refund itself is made by hand from Mercado Pago, and the refund webhook then revokes the
+ * access.
+ *
+ * The constancia is on screen: the backend answers with a reference (ARR-000012) and the moment it received the
+ * request, and the page shows both. That is the buyer's proof, because the email copy is not guaranteed: it is sent only
+ * if the address matches a purchase, and it does not repeat what was typed in the form (nobody can use this form to
+ * make TIAM send arbitrary text to someone else's inbox).
  */
+
+/** "14 de octubre de 2026, 12:30": the moment the request was received, always in Argentina time whatever the device says. */
+function argentinaDateTime(iso: string): string | null {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+}
 
 const schema = z.object({
   fullName: z.string().trim().min(2, 'Escribí tu nombre y apellido').max(255),
@@ -33,7 +46,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export function ArrepentimientoPage() {
-  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [receipt, setReceipt] = useState<RegretReceipt | null>(null)
+  const [sent, setSent] = useState(false)
   const [failed, setFailed] = useState(false)
 
   const {
@@ -45,13 +59,15 @@ export function ArrepentimientoPage() {
   async function onSubmit(data: FormData) {
     setFailed(false)
     try {
-      await sendRegret({
+      const result = await sendRegret({
         fullName: data.fullName,
         email: data.email,
         orderRef: data.orderRef || undefined,
         reason: data.reason || undefined,
       })
-      setSentTo(data.email)
+      // The request is in. If the answer came without the constancia (it should not), the page still says so.
+      setReceipt(result?.reference ? result : null)
+      setSent(true)
     } catch {
       setFailed(true)
     }
@@ -59,22 +75,37 @@ export function ArrepentimientoPage() {
 
   return (
     <PackShell title="Botón de arrepentimiento" indexable>
-      {sentTo ? (
+      {sent ? (
         <div className="space-y-6">
           <StateHero tone="green" icon={CircleCheck} title="Recibimos tu solicitud">
-            <p>
-              Te enviamos una constancia a <strong className="break-words text-slate-900">{sentTo}</strong>. Si en unos minutos no la ves, mirá en spam o promociones.
-            </p>
+            <p>Guardá el número de abajo: es tu comprobante.</p>
           </StateHero>
+          {receipt && (
+            <Card className="border-t-4 border-t-tiam-green text-center">
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">Constancia de arrepentimiento</p>
+              <p className="mt-2 break-words text-3xl font-bold tracking-wide text-slate-900 sm:text-4xl" aria-label={`Número de constancia ${receipt.reference}`}>
+                {receipt.reference}
+              </p>
+              {argentinaDateTime(receipt.receivedAt) && (
+                <p className="mt-3 text-slate-600">
+                  Recibida el <strong className="text-slate-900">{argentinaDateTime(receipt.receivedAt)}</strong> (hora de Argentina)
+                </p>
+              )}
+              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                Si ese email tiene una compra, te mandamos una copia a tu casilla. Si no la ves en unos minutos, mirá en spam o promociones. Con este número y esta fecha
+                tenés tu constancia, llegue o no el email.
+              </p>
+            </Card>
+          )}
           <Card>
             <h2 className="text-lg font-bold text-slate-900">Qué sigue</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-600">
-              <li>Revisamos tu solicitud y te respondemos a ese email.</li>
+              <li>Revisamos tu solicitud y te respondemos al email que dejaste.</li>
               <li>Si corresponde, te devolvemos el pago por el mismo medio con el que pagaste.</li>
               <li>Cuando se devuelve el pago, el acceso a los archivos deja de funcionar.</li>
             </ul>
             <p className="mt-4 text-sm text-slate-600">
-              ¿Alguna duda? <ContactLink />.
+              ¿Alguna duda? <ContactLink /> y mencioná tu número de constancia.
             </p>
           </Card>
           <div className="text-center">
