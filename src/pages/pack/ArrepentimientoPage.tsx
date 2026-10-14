@@ -118,7 +118,7 @@ export function ArrepentimientoPage() {
         <div className="space-y-8">
           <StateHero tone="blue" icon={Undo2} title="Botón de arrepentimiento">
             <p>
-              Si compraste en TIAM y querés revocar tu compra, completá este formulario. Te enviamos una constancia por email y revisamos tu solicitud.
+              Si compraste en TIAM y querés revocar tu compra, completá este formulario. Al enviarlo te mostramos una constancia con un número de referencia y revisamos tu solicitud.
             </p>
           </StateHero>
 

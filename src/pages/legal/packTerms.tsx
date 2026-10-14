@@ -115,7 +115,7 @@ export const PACK_TERMS_SECTIONS: LegalSection[] = [
           <a href="/arrepentimiento" className="text-tiam-blue hover:underline">
             Botón de arrepentimiento
           </a>
-          , que también está en el pie de las páginas de venta. El comprador recibe una constancia por email y TIAM Digital responde a esa dirección.
+          , que también está en el pie de las páginas de venta. Al enviarlo, el comprador ve en pantalla una constancia con su número de referencia y la fecha y hora de recepción, y recibe una copia por email si esa dirección corresponde a una compra. TIAM Digital responde a la dirección indicada en el formulario.
         </p>
         <p>
           Cuando la solicitud corresponde, TIAM Digital devuelve el importe pagado por el mismo medio de pago que se usó y el acceso a los archivos deja de funcionar.
