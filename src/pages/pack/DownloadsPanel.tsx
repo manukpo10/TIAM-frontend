@@ -43,9 +43,12 @@ function normalizePaper(value: string): Paper {
   return value.trim().toUpperCase().startsWith('A') ? 'A4' : 'CARTA'
 }
 
-const isZip = (file: PackFile) => /\.zip$|\bzip\b/i.test(`${file.key} ${file.label}`)
+/** A file as the panel works with it: the API's paper spelling ("Carta") already turned into a {@link Paper}. */
+type PanelFile = Omit<PackFile, 'paper'> & { paper: Paper }
 
-const longDate = (iso?: string): string | null => {
+const isZip = (file: Pick<PackFile, 'key' | 'label'>) => /\.zip$|\bzip\b/i.test(`${file.key} ${file.label}`)
+
+const longDate = (iso?: string | null): string | null => {
   if (!iso) return null
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return null
@@ -54,7 +57,7 @@ const longDate = (iso?: string): string | null => {
 
 type RowState = 'idle' | 'busy' | 'started' | 'error' | 'limit'
 
-function FileRow({ file, token }: { file: PackFile; token: string }) {
+function FileRow({ file, token }: { file: PanelFile; token: string }) {
   const [state, setState] = useState<RowState>('idle')
   const zip = isZip(file)
   const Icon = zip ? FileArchive : FileText
@@ -119,7 +122,7 @@ function FileRow({ file, token }: { file: PackFile; token: string }) {
   )
 }
 
-function GamesBlock({ link }: { link?: string }) {
+function GamesBlock({ link }: { link?: string | null }) {
   const href = safeNavigationUrl(link)
   return (
     <Card className="border-t-4 border-t-tiam-green">
@@ -160,7 +163,7 @@ interface DownloadsPanelProps {
 export function DownloadsPanel({ order, token }: DownloadsPanelProps) {
   const items = (order.items ?? []).map((item) => ({
     ...item,
-    files: item.files.map((file) => ({ ...file, paper: normalizePaper(String(file.paper)) })),
+    files: item.files.map((file): PanelFile => ({ ...file, paper: normalizePaper(String(file.paper)) })),
   }))
   const available = (['A4', 'CARTA'] as const).filter((paper) => items.some((item) => item.files.some((file) => file.paper === paper)))
   const [chosen, setChosen] = useState<Paper>(readPaper)

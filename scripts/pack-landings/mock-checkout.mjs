@@ -12,6 +12,9 @@
 //   nombre con «precio» o «pago» ........... vuelve con ?error=precio / ?error=pago
 //   nombre con «efectivo» .................. /pack/gracias con un pago en efectivo pendiente (mock-cash)
 //   nombre con «pendiente» ................. /pack/gracias con el pago todavía sin confirmar (mock-pending)
+//   nombre con «revision» .................. /pack/gracias con el pedido retenido para una revisión manual (mock-review)
+//   nombre con «rechazado» ................. /pack/gracias con el pago rechazado, que no se recupera (mock-failed)
+//   nombre con «reintento» ................. /pack/gracias con el pago rechazado y, a los ~20 s, pagado en un segundo intento (mock-flip)
 //   cualquier otro ......................... /pack/gracias con el pedido pagado (mock-full si compró extras, si no mock-paid)
 // Imprime solo los NOMBRES de los campos que llegaron, nunca sus valores.
 
@@ -62,6 +65,16 @@ http
           params.set('status', 'pending')
           params.set('collection_status', 'pending')
           params.set('payment_type', 'ticket')
+        } else if (name.includes('revision')) {
+          token = 'mock-review'
+          params.set('status', 'approved')
+          params.set('collection_status', 'approved')
+          params.set('payment_type', 'credit_card')
+        } else if (name.includes('rechazado') || name.includes('reintento')) {
+          token = name.includes('reintento') ? 'mock-flip' : 'mock-failed'
+          params.set('status', 'rejected')
+          params.set('collection_status', 'rejected')
+          params.set('payment_type', 'credit_card')
         } else if (name.includes('pendiente')) {
           token = 'mock-pending'
           params.set('status', 'in_process')

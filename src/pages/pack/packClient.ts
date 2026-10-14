@@ -1,4 +1,4 @@
-import type { DownloadLink, PackOrder, RegretRequest } from './packTypes'
+import type { DownloadLink, OrderConfirmation, PackOrder, RegretReceipt, RegretRequest } from './packTypes'
 import { PackApiError } from './packTypes'
 
 /**
@@ -73,17 +73,22 @@ async function call<T>(method: Method, path: string, body?: unknown, signal?: Ab
 
 const orderPath = (token: string) => `/packs/orders/${encodeURIComponent(token)}`
 
-/** Order summary. 404 = unknown, expired, revoked or not paid yet: the backend never says which. */
+/**
+ * Order state (PENDING, PAID, FAILED or REVIEW; only PAID carries the files). 404 = unknown, expired or revoked: the
+ * backend never says which.
+ */
 export function getOrder(token: string, signal?: AbortSignal): Promise<PackOrder> {
   return call<PackOrder>('GET', orderPath(token), undefined, signal)
 }
 
 /**
  * Asks the backend to verify a Mercado Pago payment id against the order (it re-reads the payment
- * from Mercado Pago, it does not trust us). Lets the buyer in before the webhook arrives.
+ * from Mercado Pago, it does not trust us). Lets the buyer in before the webhook arrives. Answers with the
+ * order's state after that check; the files still come from getOrder.
+ * 429 (too many calls) and 503 (Mercado Pago not answering) mean "ask again later", not "failed".
  */
-export function confirmPayment(token: string, paymentId: string): Promise<void> {
-  return call<void>('POST', `${orderPath(token)}/confirm`, { paymentId })
+export function confirmPayment(token: string, paymentId: string): Promise<OrderConfirmation> {
+  return call<OrderConfirmation>('POST', `${orderPath(token)}/confirm`, { paymentId })
 }
 
 /** A signed, short-lived URL for one file. A POST on purpose: mail scanners that open links must not burn the download quota. */
@@ -96,8 +101,9 @@ export function resendAccess(email: string): Promise<void> {
   return call<void>('POST', '/packs/access/resend', { email })
 }
 
-export function sendRegret(request: RegretRequest): Promise<void> {
-  return call<void>('POST', '/packs/regret', request)
+/** The constancia: a reference like ARR-000012 and when it was received. Show both, the buyer keeps them as proof. */
+export function sendRegret(request: RegretRequest): Promise<RegretReceipt> {
+  return call<RegretReceipt>('POST', '/packs/regret', request)
 }
 
 /**

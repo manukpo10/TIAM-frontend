@@ -39,8 +39,8 @@ const SLOW_MS = 30_000
 const FAST_ATTEMPTS = 30 // about two minutes of checking every 4 seconds
 
 // One confirm call per order and payment, even if React runs the effect twice (StrictMode) or the page re-renders.
-const confirmations = new Map<string, Promise<void>>()
-function confirmOnce(token: string, paymentId: string): Promise<void> {
+const confirmations = new Map<string, Promise<unknown>>()
+function confirmOnce(token: string, paymentId: string): Promise<unknown> {
   const id = `${token}|${paymentId}`
   let promise = confirmations.get(id)
   if (!promise) {
@@ -92,7 +92,6 @@ export function GraciasPage() {
         }
         if (order.status === 'FAILED') return setView({ kind: 'failed' })
         if (order.status === 'REVIEW') return setView({ kind: 'review' })
-        if (order.status === 'REVOKED') return setView({ kind: 'not-found' })
         attempts += 1
         if (hint === 'failed') return schedule(SLOW_MS) // keep the "failed" screen; only a paid order changes it
         setView({ kind: 'waiting', delayed: attempts >= FAST_ATTEMPTS })
