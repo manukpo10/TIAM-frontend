@@ -242,7 +242,8 @@ if (form) {
   // Vuelta del backend con un error: aviso al lado del botón, datos que ya había escrito y la tarjeta a la vista.
   const code = incoming.get('error')
   if (code) {
-    showError(FORM_ERRORS[code] ?? FORM_ERROR_DEFAULT)
+    // hasOwn: un código como «constructor» o «toString» no debe leer propiedades heredadas del objeto.
+    showError(Object.hasOwn(FORM_ERRORS, code) ? FORM_ERRORS[code] : FORM_ERROR_DEFAULT)
     const draft = storage.read()
     if (draft) {
       const set = (name: string, value?: string) => {

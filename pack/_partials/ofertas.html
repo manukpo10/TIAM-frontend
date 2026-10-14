@@ -59,8 +59,8 @@
       <!-- ── Precio y compra ──
            Con VITE_PACK_CHECKOUT_URL la tarjeta es un <form method="post"> que viaja al backend (POST /packs/checkout, application/x-www-form-urlencoded) y este responde 303 a
            Mercado Pago. Funciona sin JavaScript: el servidor calcula el precio y exige el teléfono si se eligió «juegos». Sin esa variable la tarjeta es un <div> y el botón sigue
-           bajando a la sección de precio (#comprar), como antes: no hay nada que enviar. Campos del formulario: email, nombre, telefono, edicion, extras (repetido), web (trampa
-           para bots, tiene que llegar vacío), expected_total y utm_*/fbclid (los completa landing.ts). Ver Proyecto Digitales/pack/cobro-diseno.md, sección 2.3. -->
+           bajando a la sección de precio (#comprar), como antes: no hay nada que enviar. Campos del formulario: email, nombre, telefono, edicion, extras (repetido), hp_contacto
+           (trampa para bots, tiene que llegar vacío), expected_total y utm_*/fbclid (los completa landing.ts). Ver Proyecto Digitales/pack/cobro-diseno.md, sección 2.3. -->
       <!--if:VITE_PACK_CHECKOUT_URL-->
       <form id="pedido" class="price-card" method="post" action="%PACK_CHECKOUT_ACTION%" data-offer data-checkout data-base="%PACK_PRICE_NUM%" aria-label="Comprar el Pack Básico">
       <!--endif-->
@@ -128,8 +128,9 @@
               <input id="f-tel" name="telefono" type="tel" maxlength="30" autocomplete="tel" inputmode="tel" placeholder="Ej.: 221 555 1234" aria-describedby="h-tel" />
               <p id="h-tel" class="hint">Con código de área, sin 0 ni 15. Los juegos se activan desde este número.</p>
             </div>
-            <!-- Trampa para bots: una persona nunca lo ve ni lo completa -->
-            <div class="hp" aria-hidden="true"><label>No completar este campo <input type="text" name="web" tabindex="-1" autocomplete="off" /></label></div>
+            <!-- Trampa para bots: una persona nunca lo ve ni lo completa. El nombre `hp_contacto` lo fija el backend (ignora cualquier otro) y no se parece a ningún campo
+                 que un autocompletado conozca (con `web` un navegador podía llenarlo y la compra volvía a la landing sin aviso). -->
+            <div class="hp" aria-hidden="true"><label>No completar este campo <input type="text" name="hp_contacto" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore /></label></div>
             <input type="hidden" name="edicion" value="%PACK_EDICION%" />
             <input type="hidden" name="expected_total" value="" />
             <input type="hidden" name="utm_source" value="" />

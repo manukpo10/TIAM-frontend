@@ -7,7 +7,7 @@
 //   y armar las landings con VITE_PACK_CHECKOUT_URL=http://localhost:8787/packs/checkout
 //
 // A dónde responde, según lo que se escriba en el formulario:
-//   campo «web» (trampa) con texto ........ vuelve a la landing sin aviso (como haría el backend con un bot)
+//   campo «hp_contacto» (trampa) con texto  vuelve a la landing sin aviso (como haría el backend con un bot)
 //   email sin «@» o «juegos» sin teléfono .. vuelve a la landing con ?error=email / ?error=telefono
 //   nombre con «precio» o «pago» ........... vuelve con ?error=precio / ?error=pago
 //   nombre con «efectivo» .................. /pack/gracias con un pago en efectivo pendiente (mock-cash)
@@ -49,7 +49,7 @@ http
       console.log(`POST /packs/checkout  campos: ${[...new Set(body.keys())].join(', ')}  extras: [${extras.join(', ')}]  total: ${get('expected_total') || '-'}`)
 
       let location
-      if (get('web')) location = back('')
+      if (get('hp_contacto')) location = back('')
       else if (!get('email').includes('@')) location = back('email')
       else if (name.includes('precio')) location = back('precio')
       else if (name.includes('pago')) location = back('pago')
