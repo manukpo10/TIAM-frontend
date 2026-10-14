@@ -193,7 +193,8 @@ if (form) {
     sending = busy
     clearTimeout(slowTimer)
     if (!submit || !label || !status) return
-    submit.toggleAttribute('aria-disabled', busy)
+    if (busy) submit.setAttribute('aria-disabled', 'true')
+    else submit.removeAttribute('aria-disabled')
     submit.classList.toggle('is-busy', busy)
     label.textContent = busy ? 'Abriendo Mercado Pago…' : labelIdle
     status.hidden = !busy

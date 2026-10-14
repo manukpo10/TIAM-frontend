@@ -1,6 +1,8 @@
+import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ToastProvider } from '@/components/ui/Toast'
+import { Spinner } from '@/components/ui/Spinner'
 
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { AppLayout } from '@/components/layout/AppLayout'
@@ -39,6 +41,25 @@ import { Desafio30DiasPage } from '@/pages/desafio-30-dias/Desafio30DiasPage'
 import { DesafioExitoPage } from '@/pages/desafio-30-dias/DesafioExitoPage'
 import { DesafioPlayPage } from '@/pages/desafio/DesafioPlayPage'
 
+// Pack post-purchase pages: loaded on demand so they add nothing to the bundle every other visitor downloads.
+const GraciasPage = lazy(() => import('@/pages/pack/GraciasPage').then((m) => ({ default: m.GraciasPage })))
+const DescargasPage = lazy(() => import('@/pages/pack/DescargasPage').then((m) => ({ default: m.DescargasPage })))
+const RecuperarPage = lazy(() => import('@/pages/pack/RecuperarPage').then((m) => ({ default: m.RecuperarPage })))
+
+function Lazy({ children }: { children: ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center bg-white">
+          <Spinner className="h-8 w-8" />
+        </div>
+      }
+    >
+      {children}
+    </Suspense>
+  )
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -74,7 +95,13 @@ export default function App() {
             <Route path="/talleres" element={<TalleresPage />} />
             {/* /pack/familias and /pack/profesionales are the Pack's static landings (pack/ at the
                 repo root, served through vercel.json rewrites, outside this app): don't build
-                routes under /pack here, and link to them with a plain <a>, never <Link>. */}
+                routes for them here, and link to them with a plain <a>, never <Link>. The three
+                routes below are the Pack's post-purchase pages, which ARE part of this app. Their
+                order token must never reach a third party: see vercel.json (headers) and
+                pages/pack/PackShell.tsx. */}
+            <Route path="/pack/gracias" element={<Lazy><GraciasPage /></Lazy>} />
+            <Route path="/pack/descargas/:token" element={<Lazy><DescargasPage /></Lazy>} />
+            <Route path="/pack/recuperar" element={<Lazy><RecuperarPage /></Lazy>} />
             <Route path="/material-digital" element={<MaterialDigitalPage />} />
             <Route path="/desafio-30-dias" element={<Desafio30DiasPage />} />
             <Route path="/desafio-30-dias/exito" element={<DesafioExitoPage />} />
