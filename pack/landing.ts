@@ -39,6 +39,9 @@ const FORM_ERRORS: Record<string, string> = {
   telefono: 'Para sumar los juegos necesitamos tu WhatsApp, con código de área.',
   meses: 'Ese número de WhatsApp ya tiene los meses de juegos disponibles. Sacá los juegos de tu compra o usá otro número.',
   limite: 'Hubo muchos intentos seguidos. Esperá unos minutos y volvé a probar.',
+  edicion: 'Recargá la página y volvé a elegir tu pack.',
+  extras: 'Recargá la página y volvé a elegir lo que querés sumar.',
+  origen: 'No pudimos verificar desde dónde se envió el pedido. Recargá la página y probá de nuevo.',
 }
 const FORM_ERROR_DEFAULT = 'No pudimos procesar tu compra. Revisá los datos y probá de nuevo.'
 

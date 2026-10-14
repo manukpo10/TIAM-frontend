@@ -68,7 +68,9 @@ export function consumeReturnParams(): ReturnInfo {
   if (search) {
     const params = new URLSearchParams(search)
     const token = params.get('o')?.trim() || null
-    const paymentId = (params.get('payment_id') ?? params.get('collection_id'))?.trim() || null
+    // Mercado Pago's payment id is numeric, and the backend only accepts a numeric one: anything else is ignored.
+    const rawPaymentId = (params.get('payment_id') ?? params.get('collection_id'))?.trim() ?? ''
+    const paymentId = /^\d{1,18}$/.test(rawPaymentId) ? rawPaymentId : null
     const hint = classify(params)
 
     // Everything goes: the token, MP's ids and the external_reference.

@@ -1384,14 +1384,27 @@
   form[data-js] [data-phone]:not([data-open]) {
     display: none;
   }
-  /* Trampa para bots: fuera de la pantalla, no oculta con display:none (algunos bots la saltean) */
+  /* Trampa para bots: ocupa 1 px recortado y transparente, no está oculta con display:none (algunos bots la saltean) */
   .hp {
     position: absolute;
-    left: -10000px;
-    top: auto;
     width: 1px;
     height: 1px;
     overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .hp label,
+  .hp input {
+    display: block;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 0;
+    line-height: 0;
   }
   .form-error {
     margin-top: 1.25rem;
