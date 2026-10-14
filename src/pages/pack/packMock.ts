@@ -3,7 +3,8 @@ import { PackApiError } from './packTypes'
 
 /**
  * Fake backend for the Pack pages. It only exists in a development build with VITE_PACK_MOCK=1 (see packClient.ts):
- * in a production build the condition is a compile-time `false`, so this file never reaches `dist/`.
+ * in a production build the condition is a compile-time `false`, so this file never reaches `dist/`. Build it with
+ * `node scripts/pack-landings/build-mock.mjs <folder outside the repo>` (it sets NODE_ENV=development for you).
  * Every answer has the shape of the real one (src/pages/pack/contract/*.json are the backend's golden answers).
  *
  * Pick a scenario with the order token (the same URLs the real flow uses):

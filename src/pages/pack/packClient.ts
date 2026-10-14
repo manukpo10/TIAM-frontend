@@ -11,11 +11,14 @@ import { PackApiError } from './packTypes'
  *  - no Referer, no cookies, no caching;
  *  - nothing is logged and errors never include the path.
  *
- * `VITE_PACK_MOCK=1` (development only) answers every call from ./packMock instead of the network.
+ * `VITE_PACK_MOCK=1` answers every call from ./packMock instead of the network, but only in a development build
+ * (`vite`, or `vite build --mode development`). In a production build `import.meta.env.DEV` is a compile-time
+ * `false`, so the mock branch is dead code and packMock never reaches `dist/`, even if the variable leaks into the
+ * environment of the hosted build (review item M-08).
  */
 
 const BASE_URL: string = String(import.meta.env.VITE_API_URL ?? 'http://localhost:8080').replace(/\/+$/, '')
-const MOCK = import.meta.env.VITE_PACK_MOCK === '1'
+const MOCK = import.meta.env.DEV && import.meta.env.VITE_PACK_MOCK === '1'
 
 // The hosted backend can be asleep (free plan): the first request may take about a minute to answer.
 const TIMEOUT_MS = 75_000

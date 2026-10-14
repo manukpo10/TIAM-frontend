@@ -4,7 +4,8 @@
 //
 // Uso, desde la raíz del repo:
 //   node scripts/pack-landings/mock-checkout.mjs [puerto] [--site http://localhost:4191]
-//   y armar las landings con VITE_PACK_CHECKOUT_URL=http://localhost:8787/packs/checkout
+//   y armar el sitio con `node scripts/pack-landings/build-mock.mjs <carpeta>` (apunta el formulario a este servidor y enciende el mock de
+//   las páginas /pack/gracias, /pack/descargas y /arrepentimiento, que solo existe en esa build de desarrollo)
 //
 // A dónde responde, según lo que se escriba en el formulario:
 //   campo «hp_contacto» (trampa) con texto  vuelve a la landing sin aviso (como haría el backend con un bot)
