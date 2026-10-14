@@ -73,7 +73,7 @@ type CheckoutForm = z.infer<typeof checkoutSchema>
 // #E8531E is 3.69:1 and fails WCAG AA at body size; #CC4516 is 4.74:1. On the dark bands the
 // focus ring is white (the blue one is only ~3:1 on navy).
 const CTA_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-[0.875rem] bg-accent-hover px-7 font-bold text-white shadow-[0_1px_2px_rgba(0,0,0,0.25),0_14px_26px_-10px_rgba(204,70,16,0.75)] transition-colors hover:bg-[#a8370b] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2'
+  'inline-flex items-center justify-center gap-2 rounded-[0.875rem] bg-accent-hover px-7 font-bold text-white shadow-[0_1px_2px_rgba(0,0,0,0.25),0_14px_26px_-10px_rgba(204,70,16,0.75)] transition-[background-color,scale] hover:bg-[#a8370b] motion-safe:active:scale-[0.98] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2'
 const CTA_ON_DARK = `${CTA_BASE} focus-visible:ring-white focus-visible:ring-offset-tiam-navy`
 const CTA_ON_LIGHT = `${CTA_BASE} focus-visible:ring-tiam-blue`
 
@@ -314,14 +314,14 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 py-6 motion-safe:animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="checkout-title"
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-xl"
+        className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-xl motion-safe:animate-pop-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -507,13 +507,17 @@ export function Desafio30DiasPage() {
 
           <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 pb-16 pt-10 sm:px-6 md:pt-14 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12 lg:pb-20">
             <div className="max-w-xl text-left">
-              <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5">
+              <span
+                data-enter="1"
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5"
+              >
                 <span className="h-2 w-2 rounded-full bg-tiam-orange" />
                 <span className="text-[0.9375rem] font-bold">Desafío TIAM · 30 días</span>
               </span>
 
               <h1
                 id="hero-heading"
+                data-enter="2"
                 className="text-balance font-display text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-5xl lg:text-[2.5rem] xl:text-5xl"
               >
                 <span className="rounded-[0.25em] bg-[#cc4610] px-[0.22em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]">
@@ -521,7 +525,7 @@ export function Desafio30DiasPage() {
                 </span>{' '}
                 para mantener activa la mente de quien más querés.
               </h1>
-              <p className="mt-6 text-lg leading-relaxed text-slate-200 sm:text-xl">
+              <p data-enter="3" className="mt-6 text-lg leading-relaxed text-slate-200 sm:text-xl">
                 Ejercicios cognitivos por WhatsApp, con 7 nuevos cada semana.{' '}
                 {/* Left out on a phone so the price and the button land higher on the first screen. */}
                 <span className="hidden sm:inline">
@@ -530,14 +534,22 @@ export function Desafio30DiasPage() {
                 <strong className="font-semibold text-white">Sin turnos, sin apps, sin complicaciones.</strong>
               </p>
 
-              <p className="mt-7 font-display text-[2.5rem] font-extrabold leading-none tracking-[-0.03em]">
+              <p
+                data-enter="4"
+                className="mt-7 font-display text-[2.5rem] font-extrabold leading-none tracking-[-0.03em]"
+              >
                 {formatPrice(PRICE_ARS)}
               </p>
-              <p className="mt-2 text-base font-semibold text-slate-200">Desafío 30 días · pago único, sin suscripción</p>
+              <p data-enter="4" className="mt-2 text-base font-semibold text-slate-200">
+                Desafío 30 días · pago único, sin suscripción
+              </p>
 
               {/* flex-wrap: between 1024 and ~1100 px the column is narrower than the button and the
                   link side by side, and the link drops to its own line instead of overflowing. */}
-              <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
+              <div
+                data-enter="5"
+                className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5"
+              >
                 <button
                   type="button"
                   id="hero-cta"
@@ -554,7 +566,7 @@ export function Desafio30DiasPage() {
                   Ver cómo funciona
                 </a>
               </div>
-              <p className="mt-4 text-base text-slate-200">
+              <p data-enter="5" className="mt-4 text-base text-slate-200">
                 Pagás con Mercado Pago. Después lo activás por WhatsApp con un toque.
               </p>
             </div>
@@ -562,7 +574,7 @@ export function Desafio30DiasPage() {
             <AreasDeck />
           </div>
 
-          <ul role="list" className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 pb-14 sm:px-6 md:grid-cols-4 md:pb-16">
+          <ul role="list" data-stagger className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 pb-14 sm:px-6 md:grid-cols-4 md:pb-16">
             {STATS.map((stat) => (
               <li
                 key={stat.label}
@@ -583,7 +595,7 @@ export function Desafio30DiasPage() {
               Querés ayudar a mantener su mente activa. Lo difícil es hacerlo todos los días.
             </h2>
 
-            <ul role="list" className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-5">
+            <ul role="list" data-stagger className="mt-10 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-5">
               {PAIN.map(({ icon: Icon, title, text }) => (
                 <li
                   key={title}
@@ -645,7 +657,7 @@ export function Desafio30DiasPage() {
               </div>
 
               <div>
-                <ul role="list" className="space-y-6">
+                <ul role="list" data-stagger className="space-y-6">
                   {PLAY_FEATURES.map(({ icon: Icon, title, text }) => (
                     <li key={title} className="flex items-start gap-4">
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/12 text-white">
@@ -660,7 +672,7 @@ export function Desafio30DiasPage() {
                 </ul>
 
                 <p className="mt-8 text-base font-semibold text-slate-200">Cada día trabaja una de estas 8 áreas:</p>
-                <ul role="list" className="mt-3 flex flex-wrap gap-2">
+                <ul role="list" data-stagger className="mt-3 flex flex-wrap gap-2">
                   {AREA_COLORS.map(({ label, color }) => (
                     <li
                       key={label}
@@ -705,7 +717,7 @@ export function Desafio30DiasPage() {
                 En tres pasos tenés el desafío andando. No hace falta saber de tecnología.
               </p>
             </div>
-            <ol role="list" className="space-y-4">
+            <ol role="list" data-stagger className="space-y-4">
               {HOW_IT_WORKS.map(({ step, title, description }) => (
                 <li
                   key={step}
@@ -747,7 +759,7 @@ export function Desafio30DiasPage() {
             <div className="mt-10 grid items-start gap-6 md:mt-12 lg:grid-cols-[1.1fr_.9fr] lg:gap-8">
               <div className="rounded-[1.75rem] border border-slate-100 bg-white p-6 sm:p-8">
                 <h3 className="font-display text-2xl font-extrabold tracking-[-0.02em] text-slate-900">Todo lo que recibís</h3>
-                <ul role="list" className="mt-6 space-y-5">
+                <ul role="list" data-stagger className="mt-6 space-y-5">
                   {INCLUDES.map(({ title, description }) => (
                     <li key={title} className="flex items-start gap-3.5">
                       <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-green/15">
@@ -909,7 +921,7 @@ export function Desafio30DiasPage() {
               <p className="mt-4 text-lg leading-relaxed text-slate-700 sm:text-xl">
                 No hace falta ser profesional de la salud ni experto en nada. Solo querer acompañar.
               </p>
-              <ul role="list" className="mt-6 space-y-3.5">
+              <ul role="list" data-stagger className="mt-6 space-y-3.5">
                 {AUDIENCE.map((text) => (
                   <li key={text} className="flex items-start gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-tiam-green/15">
@@ -948,7 +960,7 @@ export function Desafio30DiasPage() {
                 Lo que suelen preguntar
               </h2>
             </div>
-            <div className="space-y-3">
+            <div data-stagger className="space-y-3">
               {FAQS.map(({ q, a }) => (
                 <details
                   key={q}
@@ -988,7 +1000,7 @@ export function Desafio30DiasPage() {
                 type="button"
                 id="cierre-cta"
                 onClick={handleBuy}
-                className="inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-[0.875rem] bg-white px-7 text-lg font-bold text-tiam-blue-dark shadow-[0_14px_26px_-10px_rgba(0,0,0,0.5)] transition-colors hover:bg-slate-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tiam-blue-dark sm:w-auto"
+                className="inline-flex min-h-[56px] w-full items-center justify-center gap-2 rounded-[0.875rem] bg-white px-7 text-lg font-bold text-tiam-blue-dark shadow-[0_14px_26px_-10px_rgba(0,0,0,0.5)] transition-[background-color,scale] hover:bg-slate-50 motion-safe:active:scale-[0.98] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tiam-blue-dark sm:w-auto"
               >
                 Quiero comprar el desafío
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />

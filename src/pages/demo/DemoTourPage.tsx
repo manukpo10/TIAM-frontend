@@ -63,6 +63,14 @@ const STEPS: Step[] = [
   },
 ]
 
+// Natural size of each screenshot, so its space is reserved before it loads (without it the page
+// below jumped when it arrived). `progreso` is taller than the rest; a screenshot added later with
+// another shape only gets the default until it is listed here.
+const SHOT_SIZE: Record<string, { width: number; height: number }> = {
+  progreso: { width: 1600, height: 1424 },
+}
+const DEFAULT_SHOT_SIZE = { width: 1600, height: 794 }
+
 function ScreenFrame({ step, onZoom }: { step: Step; onZoom: (src: string, alt: string) => void }) {
   const src = shotFor(step.slug)
   return (
@@ -80,7 +88,12 @@ function ScreenFrame({ step, onZoom }: { step: Step; onZoom: (src: string, alt: 
           className="group relative block w-full cursor-zoom-in"
           aria-label={`Ampliar captura: ${step.title}`}
         >
-          <img src={src} alt={step.title} className="block w-full rounded-xl shadow-md border border-slate-100" />
+          <img
+            src={src}
+            alt={step.title}
+            {...(SHOT_SIZE[step.slug] ?? DEFAULT_SHOT_SIZE)}
+            className="block w-full rounded-xl shadow-md border border-slate-100"
+          />
           {/* Hover hint */}
           <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-slate-900/70 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
             <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
@@ -145,7 +158,7 @@ export function DemoTourPage() {
 
         {/* Stepper */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-          <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+          <div data-stagger className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             {/* Screenshot */}
             <ScreenFrame step={step} onZoom={(src, alt) => setZoom({ src, alt })} />
 
@@ -224,7 +237,7 @@ export function DemoTourPage() {
           aria-modal="true"
           aria-label={`Captura ampliada: ${zoom.alt}`}
           onClick={() => setZoom(null)}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/85 p-4 sm:p-8"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/85 p-4 sm:p-8 motion-safe:animate-fade-in"
         >
           <button
             type="button"
@@ -238,7 +251,7 @@ export function DemoTourPage() {
             src={zoom.src}
             alt={zoom.alt}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-2xl object-contain cursor-default"
+            className="max-h-[90vh] max-w-[95vw] rounded-lg shadow-2xl object-contain cursor-default motion-safe:animate-pop-in"
           />
         </div>
       )}

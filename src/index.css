@@ -101,3 +101,108 @@ html {
     width: 100%;
   }
 }
+
+/* ── Movimiento ──
+   Un solo sistema para todo el sitio, calmo y breve. Anima opacity y translate/scale (solo
+   los desplegables animan alto) y todo vive dentro de `prefers-reduced-motion: no-preference`
+   o detrás de `motion-safe:`. Para subir o bajar la intensidad alcanza con tocar las
+   variables de abajo (y STAGGER_MS en RouteMotion.tsx).
+
+   - Entrada de página, título de portada y "aparecer al hacer scroll": RouteMotion.tsx.
+     Los bloques que arrancan bajo el pliegue quedan ocultos (data-reveal-state="pending")
+     hasta que entran en pantalla; nada de lo que se ve al cargar se oculta.
+   - Menú, modales y avisos: clases animate-fade-in / pop-in / menu-in / toast-in (abajo).
+   - Hover y apretado de botones y links: la base de abajo y las clases de cada componente. */
+:root {
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --reveal-distance: 16px;
+  --reveal-duration: 520ms;
+}
+
+@theme {
+  --animate-fade-in: fade-in 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-pop-in: pop-in 220ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-menu-in: menu-in 200ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-toast-in: toast-in 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; scale: 0.96; }
+  }
+  @keyframes menu-in {
+    from { opacity: 0; translate: 0 -8px; }
+  }
+  @keyframes toast-in {
+    from { opacity: 0; translate: 0 -10px; }
+  }
+}
+
+/* Cambio de color suave por defecto en todo lo interactivo. Va en la capa base: las clases
+   `transition-*` de cada componente la pisan. */
+@layer base {
+  a, button, summary, input, select, textarea {
+    transition-property: color, background-color, border-color, text-decoration-color, opacity;
+    transition-duration: 160ms;
+    transition-timing-function: var(--ease-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes reveal-in {
+    from { opacity: 0; translate: 0 var(--reveal-distance); }
+  }
+  @keyframes reveal-fade {
+    from { opacity: 0; }
+  }
+
+  /* RouteMotion marca "pending" a lo que arranca bajo el pliegue y lo pasa a "done" cuando
+     entra en pantalla; el `done` reproduce la entrada y después no deja nada puesto. Lo que
+     lleva data-reveal-fade solo hace fundido: los destinos de los links (#precio, #productos…),
+     porque scrollIntoView alinea la caja ya desplazada y quedaría torcida, y los bloques cuyos
+     hijos ya suben escalonados, para que no sea una subida doble. */
+  html[data-motion] [data-reveal-state="pending"] {
+    opacity: 0;
+    translate: 0 var(--reveal-distance);
+  }
+  html[data-motion] [data-reveal-state="pending"][data-reveal-fade] {
+    translate: none;
+  }
+  html[data-motion] [data-reveal-state="done"] {
+    animation: reveal-in var(--reveal-duration) var(--ease-soft) var(--reveal-delay, 0ms) backwards;
+  }
+  html[data-motion] [data-reveal-state="done"][data-reveal-fade] {
+    animation-name: reveal-fade;
+  }
+
+  /* Los <details> nativos (preguntas frecuentes, pasos de la transferencia) se abren deslizando
+     donde el navegador lo permite (Chrome, Edge); en los demás se abren de golpe, como siempre. */
+  details {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 260ms var(--ease-soft),
+      content-visibility 260ms var(--ease-soft) allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+@media print {
+  [data-reveal-state] {
+    opacity: 1 !important;
+    translate: none !important;
+    animation: none !important;
+  }
+}

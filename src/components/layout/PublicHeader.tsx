@@ -156,7 +156,7 @@ export function PublicHeader() {
           // Scrolls inside itself when the links don't fit: with the browser's own toolbars on a
           // small phone the last ones would otherwise sit below the visible screen, out of reach.
           <nav
-            className="lg:hidden max-h-[calc(100dvh-4.25rem)] overflow-y-auto border-t border-slate-100 bg-white px-4 sm:px-6 py-4"
+            className="lg:hidden max-h-[calc(100dvh-4.25rem)] overflow-y-auto border-t border-slate-100 bg-white px-4 sm:px-6 py-4 motion-safe:animate-menu-in"
             aria-label="Navegación móvil"
           >
             <ul className="flex flex-col gap-1">

@@ -183,8 +183,20 @@ function FaqAccordionItem({ item }: { item: QA }) {
           aria-hidden="true"
         />
       </button>
-      <div hidden={!open} className="border-t border-slate-100 px-5 pt-4 pb-5 text-[17px] leading-relaxed text-slate-600 max-w-2xl">
-        {item.answer}
+      {/* The answer stays mounted and its grid row goes from 0fr to 1fr, so it opens and closes
+          smoothly (the `hidden` attribute it used to toggle can't be animated). `inert` keeps the
+          closed answer out of the tab order and the accessibility tree, as `hidden` did. */}
+      <div
+        inert={!open}
+        className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="border-t border-slate-100 px-5 pt-4 pb-5 text-[17px] leading-relaxed text-slate-600 max-w-2xl">
+            {item.answer}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -204,9 +216,13 @@ export function ClinicalFaqPage() {
         {/* Intro */}
         <section className="border-b border-slate-100 bg-gradient-to-br from-tiam-blue/5 to-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14 md:py-20">
+            {/* width/height reserve the picture's space before it loads: without them the page below
+                jumped ~400 px down when it arrived. */}
             <img
               src={faqIllustration}
               alt=""
+              width={1024}
+              height={572}
               className="mb-6 w-full rounded-2xl border border-slate-100"
             />
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
@@ -224,7 +240,7 @@ export function ClinicalFaqPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
             Sobre la estimulación cognitiva
           </h2>
-          <div className="space-y-3">
+          <div data-stagger className="space-y-3">
             {FAQ.map((item) => (
               <FaqAccordionItem key={item.question} item={item} />
             ))}
@@ -237,7 +253,7 @@ export function ClinicalFaqPage() {
               <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
                 Sobre TIAM
               </h2>
-              <div className="space-y-3">
+              <div data-stagger className="space-y-3">
                 {FAQ_SERVICIO.map((item) => (
                   <FaqAccordionItem key={item.question} item={item} />
                 ))}

@@ -106,7 +106,7 @@ function ProductCard({ product }: { product: Product }) {
     <article
       className={cn(
         'group relative flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200',
-        // A card with no landing is not a link: no hover lift, like the home's coming-soon card.
+        // A card with no landing is not a link: no hover shadow, like the home's coming-soon card.
         landing && 'transition-shadow duration-200 hover:shadow-xl',
       )}
     >
@@ -208,23 +208,28 @@ export function MaterialDigitalPage() {
 
           <div className="relative mx-auto grid w-full max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
             <div className="text-left">
-              <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 backdrop-blur">
+              <span
+                data-enter="1"
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 backdrop-blur"
+              >
                 <Printer className="h-3.5 w-3.5 text-tiam-blue" aria-hidden="true" />
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-700">Material digital</span>
               </span>
               <h1
                 id="hero-heading"
+                data-enter="2"
                 className="text-balance text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-[2.5rem] xl:text-5xl"
               >
                 Fichas para imprimir y <span className="text-tiam-blue">mantener activa la mente.</span>
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-700 sm:text-xl">
+              <p data-enter="3" className="mt-6 max-w-xl text-lg leading-relaxed text-slate-700 sm:text-xl">
                 Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas. Elegí el que
                 necesitás y entrá a su página para ver todo el detalle.
               </p>
               <a
                 href="#productos"
-                className="mt-8 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-accent-hover px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-orange-800 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-orange focus-visible:ring-offset-2"
+                data-enter="4"
+                className="mt-8 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-accent-hover px-6 py-3 text-base font-semibold text-white transition-[color,background-color,scale] hover:bg-orange-800 motion-safe:active:scale-[0.98] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-orange focus-visible:ring-offset-2"
               >
                 Ver los productos
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -279,7 +284,7 @@ export function MaterialDigitalPage() {
 
             {/* Flex + justify-center rather than a grid: with two or three products the row
                 stays centred and every card keeps the same width. */}
-            <ul role="list" className="mt-12 flex flex-wrap justify-center gap-6">
+            <ul role="list" data-stagger className="mt-12 flex flex-wrap justify-center gap-6">
               {PRODUCTS.map((product) => (
                 <li key={product.id} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
                   <ProductCard product={product} />

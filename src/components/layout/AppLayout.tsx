@@ -114,6 +114,9 @@ export function AppLayout() {
       <div className="rounded-xl bg-slate-50 p-3">
         <Link
           to="/profile"
+          // Like the nav items: closing the drawer now, not in the pathname effect, so the scroll
+          // lock is released before RouteMotion scrolls the new page to the top.
+          onClick={() => setDrawerOpen(false)}
           className="mb-2 flex items-center gap-2.5 rounded-lg px-1 py-1 transition-colors hover:bg-slate-100"
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-xs font-bold text-white">
@@ -143,7 +146,8 @@ export function AppLayout() {
   )
 
   return (
-    <div className="flex min-h-dvh bg-slate-50">
+    // data-app-shell: RouteMotion only fades the page in here (no title rise, no scroll-reveal).
+    <div data-app-shell className="flex min-h-dvh bg-slate-50">
       {/* ── Mobile top bar (hidden on lg+) ── */}
       <header className="lg:hidden fixed top-0 inset-x-0 z-30 flex h-14 items-center gap-3 border-b border-slate-100 bg-white px-4">
         <button
@@ -163,7 +167,7 @@ export function AppLayout() {
       {/* ── Mobile backdrop ── */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 motion-safe:animate-fade-in lg:hidden"
           aria-hidden="true"
           onClick={() => setDrawerOpen(false)}
         />

@@ -46,7 +46,7 @@ function PhotoLightbox({ photo, onClose }: { photo: { src: string; alt: string }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 px-4 py-6 motion-safe:animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -63,7 +63,7 @@ function PhotoLightbox({ photo, onClose }: { photo: { src: string; alt: string }
       <img
         src={photo.src}
         alt={photo.alt}
-        className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl"
+        className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl motion-safe:animate-pop-in"
         onClick={(e) => e.stopPropagation()}
       />
     </div>
@@ -149,32 +149,39 @@ export function TalleresPage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-4">
+                <div
+                  data-enter="1"
+                  className="inline-flex items-center gap-2 rounded-full border border-tiam-blue/20 bg-tiam-blue/5 px-4 py-1.5 mb-4"
+                >
                   <Heart className="h-3.5 w-3.5 text-tiam-blue" />
                   <span className="text-xs font-semibold uppercase tracking-wide text-tiam-blue">
                     Taller presencial
                   </span>
                 </div>
-                <p className="font-semibold text-tiam-orange mb-2">Tu mente activa, tu vida plena.</p>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
+                <p data-enter="1" className="font-semibold text-tiam-orange mb-2">Tu mente activa, tu vida plena.</p>
+                <h1
+                  data-enter="2"
+                  className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight"
+                >
                   El taller presencial donde nació TIAM.
                 </h1>
-                <p className="mt-6 text-lg text-slate-700 leading-relaxed">
+                <p data-enter="3" className="mt-6 text-lg text-slate-700 leading-relaxed">
                   TIAM Digital nació en un lugar concreto: el Taller Interactivo para Adultos Mayores,
                   un espacio presencial de estimulación cognitiva que funciona en La Plata desde 2024.
                   Hoy seguimos coordinando esos mismos encuentros, cara a cara, semana a semana.
                 </p>
-                <div className="mt-8">
+                <div data-enter="4" className="mt-8">
                   <WhatsAppCta label="Sacar turno por WhatsApp" text={TALLER_INQUIRY_TEXT} />
                 </div>
                 <a
                   href="#personalizados"
+                  data-enter="4"
                   className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 font-semibold text-tiam-blue hover:text-tiam-blue-dark"
                 >
                   ¿Preferís algo a tu medida? Mirá los talleres personalizados
                   <ArrowDown className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </a>
-                <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                <div data-enter="5" className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-500">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm">
                     <Users className="h-3.5 w-3.5 text-tiam-blue" />
                     Para adultos mayores
@@ -264,7 +271,7 @@ export function TalleresPage() {
                 Encuentros reales, semana a semana, en La Plata.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+            <div data-stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
               {TALLER_PHOTOS.map((photo) => (
                 <button
                   key={photo.src}
@@ -292,7 +299,7 @@ export function TalleresPage() {
                 Un espacio para aprender, compartir y disfrutar
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div data-stagger className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {VALUES.map(({ icon: Icon, text }, i) => {
                 const isOrange = i % 2 === 1
                 return (
@@ -324,7 +331,7 @@ export function TalleresPage() {
                 Dos direcciones en La Plata — elegí el horario que mejor te quede.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div data-stagger className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {LOCATIONS.map(({ address, schedule, mapQuery }) => (
                 <div key={address} className="flex flex-col rounded-2xl bg-white p-6 shadow-sm">
                   <div className="flex items-start gap-3">

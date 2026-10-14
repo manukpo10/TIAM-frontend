@@ -37,7 +37,7 @@ export function BlogListPage() {
           {posts.length === 0 ? (
             <p className="text-slate-400">Todavía no hay artículos publicados.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div data-stagger className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {posts.map((post) => (
                 <article
                   key={post.slug}

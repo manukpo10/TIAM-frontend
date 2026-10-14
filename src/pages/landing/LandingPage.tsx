@@ -25,6 +25,11 @@ const CTA_VARIANTS = {
   blue: 'bg-primary text-white hover:bg-primary-hover focus-visible:ring-primary',
   outline: 'border border-slate-200 bg-white text-tiam-blue hover:bg-slate-50 focus-visible:ring-primary',
 }
+// The hero's buttons sink a little when pressed. The PathCard ones don't: their link is stretched
+// over the whole card by an ::after, and a scale on the link would make the link the containing
+// block of that ::after, so the click area would shrink to the button. Nothing lifts on hover: a
+// target that moves away from the pointer bounces when the hand trembles, and the hit area shifts.
+const CTA_PRESS = 'transition-[color,background-color,scale] motion-safe:active:scale-[0.98]'
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
 // Available products first, coming-soon last. Families lead and are the only
@@ -212,6 +217,7 @@ export function LandingPage() {
               <SectionEyebrow text="Estimulación cognitiva · La Plata" />
               <h1
                 id="hero-heading"
+                data-enter="2"
                 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-[1.1] tracking-tight text-balance"
               >
                 {/* Inline, not block: forcing the second half onto its own line left a
@@ -220,21 +226,30 @@ export function LandingPage() {
               </h1>
               {/* slate-700, not 600: over the blue background blob, 600 measured
                   4.48:1 on mobile — just under AA's 4.5. */}
-              <p className="mt-6 text-lg sm:text-xl leading-relaxed text-slate-700 max-w-xl mx-auto lg:mx-0 text-pretty">
+              <p
+                data-enter="3"
+                className="mt-6 text-lg sm:text-xl leading-relaxed text-slate-700 max-w-xl mx-auto lg:mx-0 text-pretty"
+              >
                 Ejercicios por WhatsApp para hacer en casa, un taller presencial en La Plata y talleres
                 personalizados, en nuestro espacio o en tu domicilio.
               </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
-                <Link to="/desafio-30-dias" className={cn(CTA_BASE, CTA_VARIANTS.orange)}>
+              <div
+                data-enter="4"
+                className="mt-9 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start"
+              >
+                <Link to="/desafio-30-dias" className={cn(CTA_BASE, CTA_VARIANTS.orange, CTA_PRESS)}>
                   Conocé el Desafío 30 días
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
-                <Link to="/talleres" className={cn(CTA_BASE, CTA_VARIANTS.outline)}>
+                <Link to="/talleres" className={cn(CTA_BASE, CTA_VARIANTS.outline, CTA_PRESS)}>
                   Conocé los talleres
                 </Link>
               </div>
               {/* Every line is a claim the site already makes on the page of that product. */}
-              <ul className="mt-8 flex flex-col items-center gap-x-6 gap-y-2 text-base text-slate-700 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
+              <ul
+                data-enter="5"
+                className="mt-8 flex flex-col items-center gap-x-6 gap-y-2 text-base text-slate-700 sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start"
+              >
                 {[
                   'Nació en un taller real de La Plata',
                   'Talleres coordinados por una tallerista cognitiva',
@@ -275,7 +290,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="mx-auto grid max-w-xl gap-6 md:max-w-none md:grid-cols-2">
+            <div data-stagger className="mx-auto grid max-w-xl gap-6 md:max-w-none md:grid-cols-2">
               {PATHS.map((path) => (
                 <PathCard key={path.title} path={path} />
               ))}

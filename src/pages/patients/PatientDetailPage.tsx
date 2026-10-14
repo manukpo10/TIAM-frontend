@@ -463,10 +463,10 @@ function HomeExerciseModal({ patient, onClose }: HomeExerciseModalProps) {
       aria-modal="true"
       aria-label={`Enviar ejercicio a ${patientFirstName}`}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-0 sm:px-4 py-0 sm:py-6"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-0 sm:px-4 py-0 sm:py-6 motion-safe:animate-fade-in"
     >
       {/* Panel */}
-      <div className="relative bg-white w-full sm:max-w-[480px] rounded-t-2xl sm:rounded-2xl shadow-xl overflow-y-auto max-h-[92dvh] sm:max-h-[85dvh]">
+      <div className="relative bg-white w-full sm:max-w-[480px] rounded-t-2xl sm:rounded-2xl shadow-xl overflow-y-auto max-h-[92dvh] sm:max-h-[85dvh] motion-safe:animate-pop-in">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
           <div>

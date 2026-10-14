@@ -135,7 +135,7 @@ export function TalleresPersonalizadosSection() {
           ))}
         </ul>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div data-stagger className="mt-10 grid gap-6 md:grid-cols-2">
           <OptionCard
             icon={Building2}
             title="En nuestro espacio"

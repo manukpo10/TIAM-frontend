@@ -108,7 +108,7 @@ function ToastCard({ item, onClose }: ToastCardProps) {
       className={[
         'flex items-start gap-3 rounded-xl border bg-white shadow-lg px-4 py-3',
         'w-full sm:min-w-[280px] sm:max-w-[400px]',
-        'animate-in slide-in-from-top-2 fade-in duration-200',
+        'motion-safe:animate-toast-in',
         BORDER_CLASS[item.type],
       ].join(' ')}
     >

@@ -100,7 +100,7 @@ export function RecursosPage() {
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">
                 Qué incluye
               </h2>
-              <ul className="space-y-3">
+              <ul data-stagger className="space-y-3">
                 {FICHAS.map(({ file, area, title, icon: Icon }) => (
                   <li
                     key={file}

@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui/Toast'
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
+import { RouteMotion } from '@/components/layout/RouteMotion'
 
 import { LandingPage } from '@/pages/landing/LandingPage'
 import { PlataformaPage } from '@/pages/plataforma/PlataformaPage'
@@ -53,6 +54,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <BrowserRouter>
+          <RouteMotion />
           <Routes>
             {/* Public — landing */}
             <Route path="/" element={<LandingPage />} />
