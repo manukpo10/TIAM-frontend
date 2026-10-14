@@ -63,6 +63,7 @@ export function PublicFooter() {
             <ul className="flex flex-col gap-3 text-sm">
               <li><Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
               <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
+              <li><Link to="/arrepentimiento" className="hover:text-white transition-colors">Botón de arrepentimiento</Link></li>
             </ul>
           </nav>
         </div>

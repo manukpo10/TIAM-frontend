@@ -84,7 +84,7 @@ export function RecuperarPage() {
                 <button type="button" onClick={again} className="font-medium text-tiam-blue underline underline-offset-2">
                   probar con otro
                 </button>
-                {cooldown > 0 && ` (disponible en ${cooldown} s)`}.
+                .
               </li>
             </ul>
             <p className="mt-4 text-sm text-slate-600">

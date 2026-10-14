@@ -45,6 +45,7 @@ import { DesafioPlayPage } from '@/pages/desafio/DesafioPlayPage'
 const GraciasPage = lazy(() => import('@/pages/pack/GraciasPage').then((m) => ({ default: m.GraciasPage })))
 const DescargasPage = lazy(() => import('@/pages/pack/DescargasPage').then((m) => ({ default: m.DescargasPage })))
 const RecuperarPage = lazy(() => import('@/pages/pack/RecuperarPage').then((m) => ({ default: m.RecuperarPage })))
+const ArrepentimientoPage = lazy(() => import('@/pages/pack/ArrepentimientoPage').then((m) => ({ default: m.ArrepentimientoPage })))
 
 function Lazy({ children }: { children: ReactNode }) {
   return (
@@ -85,6 +86,8 @@ export default function App() {
             {/* Public — legal */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            {/* Linked from the Pack landings' footer through VITE_PACK_REGRET_URL and from the site footer */}
+            <Route path="/arrepentimiento" element={<Lazy><ArrepentimientoPage /></Lazy>} />
 
             {/* Public — content & lead-gen */}
             <Route path="/blog" element={<BlogListPage />} />
