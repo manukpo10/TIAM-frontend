@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Banknote, CheckCircle2, CircleAlert, Clock, Loader2, Mail, MessageCircle, RefreshCw, SearchX, ShieldAlert, WifiOff } from 'lucide-react'
 import { startMetaPixel, trackMetaPixel } from '@/lib/metaPixel'
+import { purchaseValue } from '@/lib/purchaseValue'
 import { Card, PackShell, StateHero } from './PackShell'
 import { DownloadsPanel } from './DownloadsPanel'
 import { ContactLink } from './ContactLink'
@@ -192,10 +193,13 @@ export function GraciasPage() {
   }, [token, paymentId, hint])
 
   // The Meta Pixel starts only now: the URL was cleaned at render time, and only a paid order counts as a purchase.
+  // The event carries the order total as its value (in ARS) when the backend sent one, and nothing else about the
+  // order or the buyer: no token, no name, no email, no phone.
   useEffect(() => {
     if (!paidOrder || isPurchaseTracked()) return
     if (startMetaPixel()) {
-      trackMetaPixel('Purchase', { currency: 'ARS', content_type: 'product', content_category: 'pack-fichas', ...(paidOrder.total ? { value: paidOrder.total } : {}) })
+      const value = purchaseValue(paidOrder.total)
+      trackMetaPixel('Purchase', { currency: 'ARS', content_type: 'product', content_category: 'pack-fichas', ...(value === null ? {} : { value }) })
     }
     markPurchaseTracked()
   }, [paidOrder])
