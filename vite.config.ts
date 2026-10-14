@@ -23,6 +23,12 @@ const PARTIALS_DIR = path.resolve(PACK_DIR, '_partials')
 const PLACEHOLDER_RE = /\[\[[A-Z0-9_]+\]\]/g
 /** Fichas del Pack Básico: 4 áreas x 3 niveles x 10 fichas. Se usa para el costo por ficha. */
 const PACK_SHEETS = 120
+/**
+ * Páginas de los PDF que se venden (versión final de TIAM-pack, `npm run entrega`): «Empezá acá» (4: la tapa, qué trae, por dónde empezar e imprimir, y créditos y licencias) y los 12
+ * cuadernillos (300). Salen como %PACK_PAGES% y %PACK_START_PAGES% en las landings: si cambia el número de páginas, se cambia acá y en ningún otro lado.
+ */
+const PACK_START_PAGES = 4
+const PACK_BOOKLET_PAGES = 300
 
 // ── Datos que hacen falta para publicar ───────────────────────────────────────────────────────
 // Ningún [[MARCADOR]] llega a la página: si un dato real falta, el espacio se oculta o se usa un texto neutro (ver los
@@ -96,6 +102,8 @@ function packTokens(env: Record<string, string>, slug: string): Record<string, s
     PACK_PRICE: formatPesos(price),
     PACK_PRICE_NUM: String(price),
     PACK_PER_SHEET: formatPesos(price / PACK_SHEETS),
+    PACK_PAGES: String(PACK_START_PAGES + PACK_BOOKLET_PAGES),
+    PACK_START_PAGES: String(PACK_START_PAGES),
     PACK_GAMES_PRICE: formatPesos(gamesPrice),
     PACK_GAMES_PRICE_NUM: String(gamesPrice),
     PACK_GAMES_REGULAR: formatPesos(gamesRegular),
