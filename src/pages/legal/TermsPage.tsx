@@ -1,8 +1,14 @@
 import { LegalPage, type LegalSection } from './LegalPage'
+import { CONTACT_EMAIL, LEGAL_ENTITY } from './legalConfig'
+import { PACK_TERMS_SECTIONS } from './packTerms'
+
+// PENDING LEGAL REVIEW: clauses 10 to 12 (packs, 30-day Challenge, withdrawal and warranty) and the notes added to
+// clauses 1, 2 and 4 are a draft written from how the sale really works. See src/pages/legal/legalConfig.ts for what
+// the lawyer must confirm before the sale opens.
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '1 de octubre de 2026'
+const LAST_UPDATED = '14 de octubre de 2026'
 
 const TERMS_SECTIONS: LegalSection[] = [
   {
@@ -11,8 +17,8 @@ const TERMS_SECTIONS: LegalSection[] = [
     content: (
       <>
         <p>
-          Al acceder, registrarse o utilizar la plataforma TIAM Digital (en adelante, "TIAM" o "el
-          Servicio"), el usuario declara haber leído, comprendido y aceptado en su totalidad los
+          Al acceder, registrarse, utilizar la plataforma TIAM Digital o comprar alguno de sus productos
+          digitales (en adelante, "TIAM" o "el Servicio"), el usuario declara haber leído, comprendido y aceptado en su totalidad los
           presentes Términos y Condiciones, así como la{' '}
           <a href="/privacy" className="text-tiam-blue hover:underline">
             Política de Privacidad
@@ -61,6 +67,10 @@ const TERMS_SECTIONS: LegalSection[] = [
           del Servicio en cualquier momento, con o sin previo aviso, conforme a lo establecido en la
           cláusula 9 del presente documento.
         </p>
+        <p>
+          Además de la plataforma, TIAM Digital vende productos digitales para descargar y usar, como los
+          packs imprimibles, y ofrece el Desafío 30 días. Esas compras se rigen por las cláusulas 10 a 12.
+        </p>
       </>
     ),
   },
@@ -84,7 +94,7 @@ const TERMS_SECTIONS: LegalSection[] = [
         <p>
           Ante cualquier uso no autorizado de la cuenta o sospecha de vulneración de la seguridad, el
           usuario deberá notificarlo de forma inmediata a TIAM Digital a través de los canales de
-          contacto indicados en la cláusula 11.
+          contacto indicados en la cláusula 14.
         </p>
       </>
     ),
@@ -130,6 +140,10 @@ const TERMS_SECTIONS: LegalSection[] = [
           Con carácter general, TIAM Digital no realiza reembolsos por períodos parciales de
           suscripción no utilizados. No obstante, en los casos en que la legislación argentina vigente
           establezca el derecho a reembolso, TIAM Digital dará cumplimiento a dicha obligación.
+        </p>
+        <p>
+          Lo anterior se refiere a las suscripciones de la plataforma. Las compras de packs y del Desafío 30
+          días tienen su propio régimen de arrepentimiento, garantía y reembolso, descrito en la cláusula 12.
         </p>
       </>
     ),
@@ -301,8 +315,9 @@ const TERMS_SECTIONS: LegalSection[] = [
       </>
     ),
   },
+  ...PACK_TERMS_SECTIONS,
   {
-    number: 10,
+    number: 13,
     title: 'Ley aplicable y jurisdicción',
     content: (
       <p>
@@ -315,17 +330,17 @@ const TERMS_SECTIONS: LegalSection[] = [
     ),
   },
   {
-    number: 11,
+    number: 14,
     title: 'Contacto',
     content: (
       <p>
         Para consultas, reclamos o notificaciones relacionadas con los presentes Términos y
         Condiciones, puede comunicarse con TIAM Digital a través de la siguiente dirección de correo
         electrónico:{' '}
-        <a href="mailto:manuu.robles@gmail.com" className="text-tiam-blue hover:underline">
-          manuu.robles@gmail.com
+        <a href={`mailto:${CONTACT_EMAIL}`} className="text-tiam-blue hover:underline">
+          {CONTACT_EMAIL}
         </a>
-        .
+        .{LEGAL_ENTITY && <> Vendedor de los productos digitales: {LEGAL_ENTITY}.</>}
       </p>
     ),
   },
