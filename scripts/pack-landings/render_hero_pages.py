@@ -1,7 +1,8 @@
 """Dibuja a alta resolución las hojas REALES de adentro del pack que se muestran en las variantes del hero (make_hero_variants.py).
 
-Lee los PDF de `Proyecto Digitales/pack/pdf/<edicion>-a4/` (solo lectura) y deja PNG en `_cache/hero/pages/<edicion>-<clave>.png`.
-Las hojas llevan abajo un pie con la leyenda de borrador y el texto legal: para la imagen se blanquea esa franja (queda margen blanco).
+Lee los PDF FINALES de la entrega (`Proyecto Digitales/pack/venta/pack-basico-<edicion>/A4/`, solo lectura) y deja PNG en `_cache/hero/pages/<edicion>-<clave>.png`.
+Las hojas llevan abajo un pie con el texto legal (en la versión de trabajo, además, la leyenda de borrador): para la imagen se blanquea esa franja (queda margen blanco), porque
+a ese tamaño la letra del pie no se lee. Con `--borrador` lee los PDF de revisión de `pack/pdf/<edicion>-a4/`, como antes.
 
 Uso (con el Python que trae PyMuPDF): python scripts/pack-landings/render_hero_pages.py [--ppp 170]
 """
@@ -12,6 +13,8 @@ import argparse
 from pathlib import Path
 
 import fitz  # PyMuPDF
+
+import final_pdfs
 
 REPO = Path(__file__).resolve().parents[2]
 PDFS = REPO.parents[1] / "Proyecto Digitales" / "pack" / "pdf"
@@ -33,11 +36,19 @@ PAGES = {
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ppp", type=int, default=170)
+    ap.add_argument("--venta", default=str(final_pdfs.VENTA), help="carpeta de la entrega final (pack/venta)")
+    ap.add_argument("--borrador", action="store_true", help="leer los PDF de revisión de pack/pdf, como antes")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     for edition in ("familia", "profesional"):
         for key, (name, index) in PAGES.items():
-            pdf = PDFS / f"{edition}-a4" / name
+            if args.borrador:
+                pdf = PDFS / f"{edition}-a4" / name
+            else:
+                # "04-atencion-nivel-1.pdf" -> pack-basico-familias/A4/04-Atencion-Nivel-1.pdf
+                n, area, _, level = name[:-4].split("-")
+                pdf = final_pdfs.booklet_path(Path(args.venta), edition, "a4", area, int(level))
+                assert pdf.name.startswith(n), f"{pdf.name} no es el cuadernillo {n}"
             with fitz.open(pdf) as doc:
                 page = doc[index]
                 # franja del pie: 8,8 % inferior de la hoja, en blanco
