@@ -6,7 +6,7 @@ import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
 import { api } from '@/lib/api'
 import type { ApiError } from '@/types'
-import recursosHero from '@/assets/recursos-hero.jpg'
+import recursosHero from '@/assets/recursos-hero.webp'
 
 interface Ficha {
   file: string
@@ -82,10 +82,10 @@ export function RecursosPage() {
               </div>
               <img
                 src={recursosHero}
-                alt="Vista previa de las fichas gratuitas de TIAM, listas para imprimir en A4"
+                alt="Ilustración de una profesional sonriente que sostiene una ficha impresa, con su computadora y una impresora"
                 className="w-full rounded-2xl"
-                width={1024}
-                height={572}
+                width={1280}
+                height={715}
                 fetchPriority="high"
               />
             </div>
