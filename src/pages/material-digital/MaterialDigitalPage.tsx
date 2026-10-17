@@ -5,6 +5,7 @@ import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
 import { cn } from '@/lib/utils'
+import { MATERIAL_LAUNCHED } from '@/lib/platform'
 import materialMesa from '@/assets/material-digital/material-mesa.webp'
 import edicionFamilias from '@/assets/material-digital/edicion-familias.webp'
 import edicionProfesionales from '@/assets/material-digital/edicion-profesionales.webp'
@@ -16,6 +17,10 @@ import edicionProfesionales from '@/assets/material-digital/edicion-profesionale
  *
  * To add a product, add an entry to PRODUCTS. A product without a `landing` has no
  * page to send people to yet, so its card shows "Próximamente" instead of a link.
+ *
+ * While MATERIAL_LAUNCHED (lib/platform.ts) is false the whole shelf is "Próximamente": the
+ * cards stay, but with no price and no link, because the material isn't finished and can't be
+ * bought yet. The prices and landings below are kept for the launch.
  *
  * The pictures are TIAM's flat illustrations on purpose (the site's look); the real
  * covers and pages of each product live on its landing.
@@ -50,7 +55,7 @@ interface Product {
 // when the prices are final, change them here AND in the landings' build config (VITE_PACK_PRICE, and
 // VITE_PACK_PREVIEW for the ribbon), and set PREVIEW to false. The landing paths are final
 // (tiamdigital.com/pack/familias and /pack/profesionales, confirmed by the owner on 2026-10-13):
-// static pages served outside this app.
+// static pages served outside this app. None of this shows while MATERIAL_LAUNCHED is false.
 const PREVIEW = true
 
 const PRODUCTS: Product[] = [
@@ -99,8 +104,31 @@ function formatPrice(n: number) {
 
 const isExternal = (url: string) => /^https?:\/\//.test(url)
 
+// The page's words that change with the launch: while the material isn't on sale it says so.
+const COPY = MATERIAL_LAUNCHED
+  ? {
+      badge: 'Material digital',
+      lead: 'Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas. Elegí el que necesitás y entrá a su página para ver todo el detalle.',
+      heroCta: 'Ver los productos',
+      eyebrow: 'La biblioteca',
+      title: 'Elegí tu material',
+      count: (n: number) => (n === 1 ? '1 producto, en PDF para imprimir.' : `${n} productos, todos en PDF para imprimir.`),
+    }
+  : {
+      badge: 'Material digital · Próximamente',
+      lead: 'Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas. Todavía lo estamos terminando: mirá qué va a tener cada pack.',
+      heroCta: 'Ver los packs',
+      eyebrow: 'Próximamente',
+      title: 'Lo que estamos preparando',
+      count: (n: number) =>
+        n === 1
+          ? '1 pack, en PDF para imprimir. Todavía no se puede comprar.'
+          : `${n} packs, todos en PDF para imprimir. Todavía no se pueden comprar.`,
+    }
+
 function ProductCard({ product }: { product: Product }) {
-  const { landing } = product
+  // Not on sale: no landing to send people to, whatever the product says.
+  const landing = MATERIAL_LAUNCHED ? product.landing : undefined
   const external = landing ? isExternal(landing) : false
   return (
     <article
@@ -126,6 +154,11 @@ function ProductCard({ product }: { product: Product }) {
         <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue shadow-sm ring-1 ring-slate-200">
           {product.audience}
         </span>
+        {!MATERIAL_LAUNCHED && (
+          <span className="absolute bottom-4 left-4 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-800 shadow">
+            Próximamente
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-6">
@@ -141,33 +174,42 @@ function ProductCard({ product }: { product: Product }) {
         </ul>
 
         <div className="mt-auto pt-6">
-          {/* flex-wrap: in a narrow card (a 320px phone, the 1024px breakpoint, 200% zoom) the price
-              and the button don't fit side by side, and overflow-hidden would clip the button. */}
-          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-4 border-t border-slate-100 pt-5">
-            <div>
-              <p className="text-3xl font-bold text-slate-900">{formatPrice(product.price)}</p>
-              <p className="mt-0.5 text-sm font-medium text-slate-600">{product.priceNote}</p>
+          {MATERIAL_LAUNCHED ? (
+            // flex-wrap: in a narrow card (a 320px phone, the 1024px breakpoint, 200% zoom) the price
+            // and the button don't fit side by side, and overflow-hidden would clip the button.
+            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-4 border-t border-slate-100 pt-5">
+              <div>
+                <p className="text-3xl font-bold text-slate-900">{formatPrice(product.price)}</p>
+                <p className="mt-0.5 text-sm font-medium text-slate-600">{product.priceNote}</p>
+              </div>
+              {landing ? (
+                // The ::after overlay stretches the link across the whole card: one big tap
+                // target and a single tab stop.
+                <a
+                  href={landing}
+                  // Same visible text on every card: the name tells links apart for screen readers
+                  // and voice control (the label starts with the visible text, WCAG 2.5.3).
+                  aria-label={`${product.cta}: ${product.name}`}
+                  {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-semibold text-white transition-colors after:absolute after:inset-0 hover:bg-primary-hover focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  {product.cta}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              ) : (
+                <p className="inline-flex min-h-[48px] shrink-0 items-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
+                  Próximamente
+                </p>
+              )}
             </div>
-            {landing ? (
-              // The ::after overlay stretches the link across the whole card: one big tap
-              // target and a single tab stop.
-              <a
-                href={landing}
-                // Same visible text on every card: the name tells links apart for screen readers
-                // and voice control (the label starts with the visible text, WCAG 2.5.3).
-                aria-label={`${product.cta}: ${product.name}`}
-                {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                className="inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-semibold text-white transition-colors after:absolute after:inset-0 hover:bg-primary-hover focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                {product.cta}
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-            ) : (
-              <p className="inline-flex min-h-[48px] shrink-0 items-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
+          ) : (
+            // Not on sale yet: no price (the one on file is provisional) and nothing to click.
+            <div className="border-t border-slate-100 pt-5">
+              <p className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
                 Próximamente
               </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </article>
@@ -189,7 +231,7 @@ export function MaterialDigitalPage() {
       <PublicHeader />
 
       <main className="flex-1">
-        {PREVIEW && (
+        {MATERIAL_LAUNCHED && PREVIEW && (
           <div role="note" className="bg-amber-100 px-4 py-2 text-center text-sm font-semibold text-amber-900">
             Vista previa: datos provisorios
           </div>
@@ -213,7 +255,7 @@ export function MaterialDigitalPage() {
                 className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 backdrop-blur"
               >
                 <Printer className="h-3.5 w-3.5 text-tiam-blue" aria-hidden="true" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-700">Material digital</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-700">{COPY.badge}</span>
               </span>
               <h1
                 id="hero-heading"
@@ -223,15 +265,14 @@ export function MaterialDigitalPage() {
                 Fichas para imprimir y <span className="text-tiam-blue">mantener activa la mente.</span>
               </h1>
               <p data-enter="3" className="mt-6 max-w-xl text-lg leading-relaxed text-slate-700 sm:text-xl">
-                Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas. Elegí el que
-                necesitás y entrá a su página para ver todo el detalle.
+                {COPY.lead}
               </p>
               <a
                 href="#productos"
                 data-enter="4"
                 className="mt-8 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-accent-hover px-6 py-3 text-base font-semibold text-white transition-[color,background-color,scale] hover:bg-orange-800 motion-safe:active:scale-[0.98] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-orange focus-visible:ring-offset-2"
               >
-                Ver los productos
+                {COPY.heroCta}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
@@ -268,18 +309,14 @@ export function MaterialDigitalPage() {
         <section id="productos" aria-labelledby="productos-title" className="scroll-mt-20 bg-white py-16 md:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="mx-auto max-w-3xl text-center">
-              <SectionEyebrow text="La biblioteca" />
+              <SectionEyebrow text={COPY.eyebrow} />
               <h2
                 id="productos-title"
                 className="text-balance text-3xl font-bold tracking-tight text-slate-900 md:text-4xl"
               >
-                Elegí tu material
+                {COPY.title}
               </h2>
-              <p className="mt-3 text-lg text-slate-600">
-                {PRODUCTS.length === 1
-                  ? '1 producto, en PDF para imprimir.'
-                  : `${PRODUCTS.length} productos, todos en PDF para imprimir.`}
-              </p>
+              <p className="mt-3 text-lg text-slate-600">{COPY.count(PRODUCTS.length)}</p>
             </div>
 
             {/* Flex + justify-center rather than a grid: with two or three products the row
