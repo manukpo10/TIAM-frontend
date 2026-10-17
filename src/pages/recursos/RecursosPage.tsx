@@ -4,6 +4,8 @@ import { Download, FileText, Check, Gift, Brain, Target, Type, Calculator, type 
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import { HoneypotField } from '@/components/ui/HoneypotField'
+import { useBotTrap } from '@/hooks/useBotTrap'
 import { api } from '@/lib/api'
 import type { ApiError } from '@/types'
 import recursosHero from '@/assets/recursos-hero.webp'
@@ -32,6 +34,7 @@ export function RecursosPage() {
   const [consent, setConsent] = useState(false)
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
+  const trap = useBotTrap()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -51,7 +54,13 @@ export function RecursosPage() {
     }
     setStatus('submitting')
     try {
-      await api.post('/leads', { email: email.trim(), name: name.trim() || null, source: 'recursos', consent })
+      await api.post('/leads', {
+        email: email.trim(),
+        name: name.trim() || null,
+        source: 'recursos',
+        consent,
+        ...trap.trapFields(),
+      })
       setStatus('success')
     } catch (err) {
       setStatus('error')
@@ -149,6 +158,7 @@ export function RecursosPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} noValidate>
+                  <HoneypotField value={trap.website} onChange={trap.setWebsite} />
                   <h2 className="text-xl font-bold text-slate-900">Descargá las 4 fichas</h2>
                   <p className="mt-1 text-sm text-slate-600">Te las damos a cambio de tu email.</p>
 

@@ -7,6 +7,8 @@ import {
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Button } from '@/components/ui/Button'
+import { HoneypotField } from '@/components/ui/HoneypotField'
+import { useBotTrap } from '@/hooks/useBotTrap'
 import { api } from '@/lib/api'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -116,6 +118,7 @@ export function PlataformaComingSoonPage() {
   const emailRef = useRef<HTMLInputElement>(null)
   const consentRef = useRef<HTMLInputElement>(null)
   const successRef = useRef<HTMLDivElement>(null)
+  const trap = useBotTrap()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -145,7 +148,7 @@ export function PlataformaComingSoonPage() {
     try {
       // Same leads table as the free fichas on RecursosPage; `source` keeps
       // the two lists apart for the launch announcement.
-      await api.post('/leads', { email: email.trim(), name: null, source: 'plataforma', consent })
+      await api.post('/leads', { email: email.trim(), name: null, source: 'plataforma', consent, ...trap.trapFields() })
       setStatus('success')
     } catch {
       // Own message instead of err.message: a network failure surfaces as
@@ -220,6 +223,7 @@ export function PlataformaComingSoonPage() {
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} noValidate>
+                      <HoneypotField value={trap.website} onChange={trap.setWebsite} />
                       <label htmlFor="notify-email" className="block font-semibold text-white">
                         Dejanos tu email y te avisamos apenas esté lista
                       </label>
