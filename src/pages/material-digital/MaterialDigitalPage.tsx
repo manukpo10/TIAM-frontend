@@ -9,6 +9,7 @@ import { MATERIAL_LAUNCHED } from '@/lib/platform'
 import materialMesa from '@/assets/material-digital/material-mesa.webp'
 import edicionFamilias from '@/assets/material-digital/edicion-familias.webp'
 import edicionProfesionales from '@/assets/material-digital/edicion-profesionales.webp'
+import edicionCuerpo from '@/assets/material-digital/edicion-cuerpo.webp'
 
 /**
  * "Material digital" — the library of TIAM's printable products: one card per
@@ -37,10 +38,10 @@ interface Product {
   highlights: string[]
   image: string
   alt: string
-  /** Final price in Argentine pesos. */
-  price: number
+  /** Final price in Argentine pesos. Absent = not set yet: the card shows no price. */
+  price?: number
   /** What the price covers, under it. */
-  priceNote: string
+  priceNote?: string
   /**
    * The product's landing: a path served outside this app (a full page load, so it is
    * rendered with <a>, not <Link>) or a full URL. Absent = not ready yet.
@@ -95,6 +96,17 @@ const PRODUCTS: Product[] = [
     landing: '/pack/profesionales',
     cta: 'Ver el pack',
   },
+  {
+    // The third booklet, still to be made: no price and no landing yet (the card says "Próximamente").
+    id: 'pack-basico-ejercicios-corporales',
+    audience: 'Para adultos mayores',
+    name: 'Pack Básico de ejercicios corporales',
+    description: '120 fichas de ejercicios corporales para adultos mayores, en un cuadernillo para imprimir.',
+    highlights: ['120 fichas para entrenar el cuerpo', 'Pensado para adultos mayores', 'PDF para imprimir'],
+    image: edicionCuerpo,
+    alt: 'Ilustración de una mujer y un hombre mayores, de pie sobre una colchoneta y con los brazos extendidos en un ejercicio de estiramiento, en un living luminoso',
+    cta: 'Ver el pack',
+  },
 ]
 // ── data:end ──
 
@@ -108,7 +120,7 @@ const isExternal = (url: string) => /^https?:\/\//.test(url)
 const COPY = MATERIAL_LAUNCHED
   ? {
       badge: 'Material digital',
-      lead: 'Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas. Elegí el que necesitás y entrá a su página para ver todo el detalle.',
+      lead: 'Material en PDF para imprimir, para mantener activos la mente y el cuerpo. Elegí el que necesitás y entrá a su página para ver todo el detalle.',
       heroCta: 'Ver los productos',
       eyebrow: 'La biblioteca',
       title: 'Elegí tu material',
@@ -116,7 +128,7 @@ const COPY = MATERIAL_LAUNCHED
     }
   : {
       badge: 'Material digital · Próximamente',
-      lead: 'Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas. Todavía lo estamos terminando: mirá qué va a tener cada pack.',
+      lead: 'Material en PDF para imprimir, para mantener activos la mente y el cuerpo. Todavía lo estamos terminando: mirá qué va a tener cada pack.',
       heroCta: 'Ver los packs',
       eyebrow: 'Próximamente',
       title: 'Lo que estamos preparando',
@@ -178,10 +190,12 @@ function ProductCard({ product }: { product: Product }) {
             // flex-wrap: in a narrow card (a 320px phone, the 1024px breakpoint, 200% zoom) the price
             // and the button don't fit side by side, and overflow-hidden would clip the button.
             <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-4 border-t border-slate-100 pt-5">
-              <div>
-                <p className="text-3xl font-bold text-slate-900">{formatPrice(product.price)}</p>
-                <p className="mt-0.5 text-sm font-medium text-slate-600">{product.priceNote}</p>
-              </div>
+              {product.price !== undefined && (
+                <div>
+                  <p className="text-3xl font-bold text-slate-900">{formatPrice(product.price)}</p>
+                  <p className="mt-0.5 text-sm font-medium text-slate-600">{product.priceNote}</p>
+                </div>
+              )}
               {landing ? (
                 // The ::after overlay stretches the link across the whole card: one big tap
                 // target and a single tab stop.
@@ -341,8 +355,8 @@ export function MaterialDigitalPage() {
             </div>
 
             <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-slate-600">
-              Son productos digitales: no se envía nada impreso. Material de estimulación cognitiva: no reemplaza la
-              evaluación ni el tratamiento de un profesional de la salud.
+              Son productos digitales: no se envía nada impreso. Material de estimulación cognitiva y de ejercicio: no
+              reemplaza la evaluación ni el tratamiento de un profesional de la salud.
             </p>
           </div>
         </section>
