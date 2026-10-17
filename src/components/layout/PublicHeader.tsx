@@ -23,15 +23,16 @@ interface NavLink {
   children?: NavLink[]
 }
 
-const NAV_LINKS: NavLink[] = [
-  {
-    label: 'Plataforma',
-    href: '/plataforma',
-    route: true,
-    // The /demo tour ends in sign-up CTAs — hidden until launch, which leaves
-    // "Plataforma" as a plain link (no dropdown).
-    children: PLATFORM_LAUNCHED ? [{ label: 'Cómo funciona', href: '/demo', route: true }] : undefined,
-  },
+const PLATFORM_LINK: NavLink = {
+  label: 'Plataforma',
+  href: '/plataforma',
+  route: true,
+  // The /demo tour ends in sign-up CTAs — hidden until launch, which leaves
+  // "Plataforma" as a plain link (no dropdown).
+  children: PLATFORM_LAUNCHED ? [{ label: 'Cómo funciona', href: '/demo', route: true }] : undefined,
+}
+
+const SITE_LINKS: NavLink[] = [
   { label: 'Desafío 30 días', href: '/desafio-30-dias', route: true },
   { label: 'Talleres', href: '/talleres', route: true },
   { label: 'Material digital', href: '/material-digital', route: true },
@@ -39,6 +40,10 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Preguntas', href: '/preguntas-frecuentes', route: true },
   { label: 'Blog', href: '/blog', route: true },
 ]
+
+// While the platform is "Próximamente" it goes last, after what can be used
+// today; at launch it leads the menu again.
+const NAV_LINKS: NavLink[] = PLATFORM_LAUNCHED ? [PLATFORM_LINK, ...SITE_LINKS] : [...SITE_LINKS, PLATFORM_LINK]
 
 export function PublicHeader() {
   const user = useAuthStore((s) => s.user)

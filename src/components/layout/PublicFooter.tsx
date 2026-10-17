@@ -28,16 +28,20 @@ export function PublicFooter() {
           <nav aria-label="Producto">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4">Producto</p>
             <ul className="flex flex-col gap-3 text-sm">
-              <li><Link to="/plataforma" className="hover:text-white transition-colors">Plataforma</Link></li>
               {PLATFORM_LAUNCHED && (
-                <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
-              )}
-              {PLATFORM_LAUNCHED && (
-                <li><a href="/plataforma#planes" className="hover:text-white transition-colors">Planes</a></li>
+                <>
+                  <li><Link to="/plataforma" className="hover:text-white transition-colors">Plataforma</Link></li>
+                  <li><Link to="/demo" className="hover:text-white transition-colors">Cómo funciona</Link></li>
+                  <li><a href="/plataforma#planes" className="hover:text-white transition-colors">Planes</a></li>
+                </>
               )}
               <li><Link to="/desafio-30-dias" className="hover:text-white transition-colors">Desafío 30 días</Link></li>
               <li><Link to="/talleres" className="hover:text-white transition-colors">Talleres</Link></li>
               <li><Link to="/material-digital" className="hover:text-white transition-colors">Material digital</Link></li>
+              {/* While the platform is "Próximamente" it goes last, as in the header menu. */}
+              {!PLATFORM_LAUNCHED && (
+                <li><Link to="/plataforma" className="hover:text-white transition-colors">Plataforma</Link></li>
+              )}
             </ul>
           </nav>
 
