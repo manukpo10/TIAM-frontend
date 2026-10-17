@@ -346,7 +346,7 @@ export function MaterialDigitalPage() {
             <div className="mx-auto mt-12 flex max-w-xl items-start gap-3 rounded-2xl bg-slate-50 p-5">
               <Gift className="mt-0.5 h-5 w-5 shrink-0 text-tiam-blue" aria-hidden="true" />
               <p className="text-slate-700">
-                ¿Querés probar antes? Descargá 5 fichas gratis de muestra.{' '}
+                ¿Querés probar antes? Descargá 4 fichas gratis de muestra.{' '}
                 <Link to="/recursos" className="font-semibold text-tiam-blue underline hover:text-tiam-blue-dark">
                   Ver las fichas gratis
                 </Link>

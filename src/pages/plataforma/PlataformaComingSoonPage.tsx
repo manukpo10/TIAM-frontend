@@ -319,7 +319,7 @@ export function PlataformaComingSoonPage() {
                   <div>
                     <p className="font-semibold text-slate-900">¿Querés empezar ya?</p>
                     <p className="text-sm text-slate-600">
-                      Descargá 5 fichas de estimulación cognitiva gratis para tus sesiones.
+                      Descargá 4 fichas de estimulación cognitiva gratis para tus sesiones.
                     </p>
                   </div>
                 </div>
