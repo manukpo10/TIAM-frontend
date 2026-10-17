@@ -207,7 +207,7 @@ function openTransferSteps() {
 const FAQS = [
   {
     q: '¿Cómo recibo los ejercicios?',
-    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer mes al instante. Cada semana se desbloquean 7 actividades nuevas en ese mismo link — entrás cuando quieras y hacés una o varias, para hacer desde el celular o imprimir.',
+    a: 'Después de pagar, activás el desafío por WhatsApp con un toque y te llega el primer mes al instante. Cada semana se desbloquean 7 actividades nuevas en ese mismo link — entrás cuando quieras y hacés una o varias, para hacer desde el celular o imprimir. Si dejaste tu email al comprar, el link también te llega por correo.',
   },
   {
     q: '¿Necesito instalar alguna aplicación?',
@@ -365,15 +365,20 @@ function CheckoutModal({ onClose }: { onClose: () => void }) {
               Código de área y número, sin el 0 ni el 15 (como el ejemplo). A este WhatsApp le va a llegar el desafío.
             </p>
           </div>
-          <Input
-            id="email"
-            type="email"
-            label="Email (opcional)"
-            placeholder="tu@email.com"
-            autoComplete="email"
-            error={errors.email?.message}
-            {...register('email')}
-          />
+          <div>
+            <Input
+              id="email"
+              type="email"
+              label="Email (opcional)"
+              placeholder="tu@email.com"
+              autoComplete="email"
+              error={errors.email?.message}
+              {...register('email')}
+            />
+            <p className="mt-1.5 text-xs text-slate-500">
+              Si lo cargás, te mandamos el link de tu desafío también por email.
+            </p>
+          </div>
           <p className="flex items-start gap-2 text-xs text-slate-500">
             <MessageCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-tiam-green" />
             Después de pagar, activás el desafío por WhatsApp en un solo toque.

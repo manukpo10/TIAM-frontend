@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  MessageCircle, CheckCircle2, Clock, XCircle, ArrowRight, Smartphone, CalendarCheck,
+  MessageCircle, CheckCircle2, Clock, XCircle, ArrowRight, Smartphone, CalendarCheck, Mail,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { PublicHeader } from '@/components/layout/PublicHeader'
@@ -112,6 +112,14 @@ function Ready() {
             Después, entrá a ese mismo link cuando quieras: cada semana vas a encontrar 7 ejercicios nuevos.
           </span>
         </p>
+
+        <p className="mt-3 flex items-start gap-2 text-sm text-slate-500">
+          <Mail className="mt-0.5 h-4 w-4 shrink-0 text-tiam-blue" />
+          <span>
+            Si dejaste tu email en la compra, también te mandamos el link por correo. Si no lo ves, mirá en la
+            carpeta de no deseados.
+          </span>
+        </p>
       </div>
     </div>
   )
@@ -135,6 +143,10 @@ function Pending() {
 
       <p className="mt-4 text-sm text-slate-500">
         Si te avisamos que el pago sigue pendiente, esperá unos minutos y volvé a escribirnos.
+      </p>
+
+      <p className="mt-3 text-sm text-slate-500">
+        Si dejaste tu email en la compra, el link también te llega por correo apenas se acredite el pago.
       </p>
     </div>
   )
