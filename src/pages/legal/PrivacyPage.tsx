@@ -2,7 +2,7 @@ import { LegalPage, type LegalSection } from './LegalPage'
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '1 de octubre de 2026'
+const LAST_UPDATED = '17 de octubre de 2026'
 
 // Contact address for privacy requests and unsubscribes. Every clause that
 // mentions it renders this link, so changing it here updates the whole policy.
@@ -320,6 +320,12 @@ const PRIVACY_SECTIONS: LegalSection[] = [
           <li>
             <strong>Rendimiento:</strong> para recopilar información agregada sobre el uso de la
             plataforma y mejorar su funcionamiento.
+          </li>
+          <li>
+            <strong>Acceso al Desafío 30 días:</strong> un identificador aleatorio guardado en el
+            navegador y el tipo de dispositivo y navegador (por ejemplo, «Android · Chrome»), que se
+            asocian a la compra, para saber desde cuántos dispositivos se abre cada link de acceso. En
+            esta medición no guardamos la dirección IP.
           </li>
         </ul>
         <p>

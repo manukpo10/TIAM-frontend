@@ -5,6 +5,7 @@ import {
   Lock, Star, X, ArrowLeft, type LucideIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
+import { desafioDeviceId } from '@/lib/desafioDevice'
 import {
   CHALLENGE_TOTAL_DAYS,
   getChallengeDays,
@@ -78,7 +79,10 @@ export function DesafioPlayPage() {
     let cancelled = false
     async function load() {
       try {
-        const data = await api.get<ChallengeAccess>(`/challenge/${token}`)
+        // `device` only counts how many devices open this link (measurement, never a gate).
+        const device = desafioDeviceId()
+        const query = device ? `?device=${encodeURIComponent(device)}` : ''
+        const data = await api.get<ChallengeAccess>(`/challenge/${token}${query}`)
         if (!cancelled) {
           setAccess(data)
           setPhase('ready')
