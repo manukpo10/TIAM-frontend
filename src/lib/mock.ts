@@ -251,7 +251,24 @@ const activeHomeSubs = new Set<string>(['p1'])
  * POST complete → GET progress round-trip for real in dev — a static canned
  * stub would hide the exact integration bugs this mock exists to catch.
  */
-let mockChallengeDayResults: Record<string, DayResult[]> = {}
+/** Dev-only: links that already "renewed" through the mocked checkout (they then own month 2). */
+const mockRenewed = new Set<string>()
+
+let mockChallengeDayResults: Record<string, DayResult[]> = {
+  // Dev-only demo buyer (open /desafio/mock-final): has played every exercise of month 1 except the last two, so
+  // the player shows the "Seguí con el Mes 2" offer.
+  'mock-final': getChallengeDays(1)
+    .filter((d) => d.type === 'game')
+    .slice(0, -2)
+    .map((d) => ({
+      day: d.day,
+      area: d.area,
+      mistakes: 0,
+      totalAttempts: 6,
+      stars: 3,
+      playedAt: new Date().toISOString(),
+    })),
+}
 
 /**
  * Mocked "current day" for the Desafío access check — bumped to the full 30 so
@@ -731,12 +748,35 @@ export function mockRequest<T>(method: string, path: string, body?: unknown): Pr
   if (method === 'GET' && challengeAccessMatch) {
     // Mock access state. Bump currentDay to 30 to preview all cards unlocked in dev;
     // in production the backend computes this from the purchase date.
+    const token = challengeAccessMatch[1]
+    // Dev-only demo: /desafio/mock-2meses owns months 1 and 2 under one link (month 2 just started: 7 days open), and
+    // so does any link that "renewed" through the mocked checkout below; any other token is a single-month buyer who
+    // is offered the next month.
+    const months =
+      token === 'mock-2meses' || mockRenewed.has(token)
+        ? [
+            { challengeMonth: 1, accessToken: token, currentDay: MOCK_CHALLENGE_CURRENT_DAY, totalDays: CHALLENGE_TOTAL_DAYS },
+            { challengeMonth: 2, accessToken: `${token}-m2`, currentDay: 7, totalDays: CHALLENGE_TOTAL_DAYS },
+          ]
+        : [{ challengeMonth: 1, accessToken: token, currentDay: MOCK_CHALLENGE_CURRENT_DAY, totalDays: CHALLENGE_TOTAL_DAYS }]
     return delay({
       buyerFirstName: 'Manuel',
       currentDay: MOCK_CHALLENGE_CURRENT_DAY,
       totalDays: CHALLENGE_TOTAL_DAYS,
       challengeMonth: MOCK_CHALLENGE_MONTH,
+      months,
+      nextMonth: months.length + 1,
+      nextMonthPriceArs: 20000,
     } as T)
+  }
+
+  // ── Challenge (Desafío 30 días) — "Renovar y desbloquear el mes siguiente" ─
+  const nextMonthMatch = rawPath.match(/^\/challenge\/([\w-]+)\/next-month$/)
+  if (method === 'POST' && nextMonthMatch) {
+    // The real backend returns the Mercado Pago checkout, and Mercado Pago sends the buyer back to their own link with
+    // the result; the mock "pays" at once and sends the buyer back the same way.
+    mockRenewed.add(nextMonthMatch[1])
+    return delay({ checkoutUrl: `${window.location.origin}/desafio/${nextMonthMatch[1]}?status=approved` } as T)
   }
 
   // ── Challenge (Desafío 30 días) — day completion ──────────────────────────

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import {
   Brain, Eye, MessageCircle, Hand, Calculator, Compass, Lightbulb, Puzzle,
-  Lock, Star, X, ArrowLeft, type LucideIcon,
+  Lock, Star, X, ArrowLeft, CheckCircle2, Clock, AlertCircle, type LucideIcon,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { desafioDeviceId } from '@/lib/desafioDevice'
@@ -11,6 +11,7 @@ import {
   getChallengeDays,
   type ChallengeAccess,
   type ChallengeArea,
+  type ChallengeMonthAccess,
 } from '@/lib/challengeContent'
 import { computeStars, type BadgeId, type ChallengeProgress, type CompleteDayResponse, type GameResult } from '@/lib/challengeProgress'
 import logoImg from '@/assets/logogrande-sinfondo.png'
@@ -47,11 +48,98 @@ type Phase = 'loading' | 'error' | 'ready'
  *  that nobody who means the next tap notices. Same value the games use. */
 const SHIELD_MS = 400
 
+/** How many exercises left (or fewer) make the player offer the next month. */
+const NEXT_MONTH_OFFER_AT = 2
+
+/**
+ * A month still in its first week has only its first batch open: the backend unlocks 7 exercises a week, so
+ * `currentDay` is the number of days OPEN (7 for a month bought today), not the day the buyer is on.
+ */
+const FIRST_WEEK_OPEN_DAYS = 7
+
+const formatPrice = (n: number) =>
+  n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+
+/** What Mercado Pago says happened, read from the query string it appends when it sends the buyer back to this link. */
+type PayResult = 'approved' | 'pending' | 'rejected' | null
+
+function payResultFrom(params: URLSearchParams): PayResult {
+  const status = params.get('status') ?? params.get('collection_status')
+  if (status === 'approved') return 'approved'
+  if (status === 'pending' || status === 'in_process') return 'pending'
+  if (status === 'rejected' || status === 'cancelled' || status === 'failure') return 'rejected'
+  return null
+}
+
+// How many months the buyer owned when they tapped "Renovar": back from Mercado Pago, a bigger number means the
+// payment is already confirmed and the new month is here. localStorage (not sessionStorage) so it also survives
+// the buyer coming back through another app's browser.
+const renewalKey = (token: string) => `tiam_desafio_renewal_${token}`
+
+function monthsBeforeRenewal(token: string): number | null {
+  try {
+    const saved = localStorage.getItem(renewalKey(token))
+    const months = saved ? Number(JSON.parse(saved).months) : NaN
+    return Number.isFinite(months) ? months : null
+  } catch {
+    return null
+  }
+}
+
+/** The payment is confirmed by a webhook that can lag a few seconds behind the buyer's return. */
+const PAYMENT_POLL_MS = 4000
+const PAYMENT_POLL_TRIES = 20
+
+/**
+ * The months the buyer owns under this link, lowest first. An older backend sends none: the opened link is then the
+ * only month, exactly as before months could be chained.
+ */
+function ownedMonths(access: ChallengeAccess, token: string): ChallengeMonthAccess[] {
+  if (access.months && access.months.length > 0) return access.months
+  return [{
+    challengeMonth: access.challengeMonth ?? 1,
+    accessToken: token,
+    currentDay: access.currentDay,
+    totalDays: access.totalDays,
+  }]
+}
+
 export function DesafioPlayPage() {
   const { token } = useParams<{ token: string }>()
   const [phase, setPhase] = useState<Phase>('loading')
   const [access, setAccess] = useState<ChallengeAccess | null>(null)
   const [progress, setProgress] = useState<ChallengeProgress | null>(null)
+  // Which owned month is on screen. Null = the newest one (the month just bought opens first); each month keeps
+  // its own progress under its own token, so switching months re-reads the progress of that month.
+  const [chosenMonth, setChosenMonth] = useState<number | null>(null)
+  // "Renovar": one tap to Mercado Pago, nothing typed (the backend uses the WhatsApp and email on the purchase).
+  const [renewing, setRenewing] = useState(false)
+  const [renewError, setRenewError] = useState<string | null>(null)
+  // Back from Mercado Pago the query string says how the payment went; read once, then the URL is cleaned.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [payResult, setPayResult] = useState<PayResult>(() => payResultFrom(searchParams))
+  // Months owned when the buyer tapped "Renovar" (saved before leaving), and when this page loaded: the new month
+  // is here as soon as the buyer owns more than that.
+  const [monthsBeforePay] = useState<number | null>(() =>
+    payResultFrom(searchParams) === 'approved' ? monthsBeforeRenewal(token ?? '') : null)
+  const [monthsAtLoad, setMonthsAtLoad] = useState<number | null>(null)
+  const [paymentTimedOut, setPaymentTimedOut] = useState(false)
+  const owned = access ? ownedMonths(access, token ?? '') : []
+  // Without the marker saved at the tap (another browser, storage blocked) the baseline is a guess: what this page
+  // loaded with. The webhook may have beaten the page to it, so a newest month still in its first week is the one
+  // just paid for, already here.
+  const baselineIsGuess = monthsBeforePay === null
+  const payBaseline = monthsBeforePay ?? monthsAtLoad
+  const newMonthAlreadyHere =
+    baselineIsGuess && owned.length > 1 && owned[owned.length - 1].currentDay <= FIRST_WEEK_OPEN_DAYS
+  const paymentConfirmed =
+    payResult === 'approved' && payBaseline !== null && (owned.length > payBaseline || newMonthAlreadyHere)
+  const waitingForPayment = payResult === 'approved' && payBaseline !== null && !paymentConfirmed && !paymentTimedOut
+  const active = owned.find((m) => m.challengeMonth === chosenMonth) ?? owned[owned.length - 1] ?? null
+  const activeToken = active?.accessToken ?? null
+  // The token the progress on screen belongs to: a save that finishes after the buyer switched months must not
+  // paint the old month's stars onto the new one.
+  const activeTokenRef = useRef<string | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   // timeStamp of the last tap inside the day card. The card is vertically
   // centred and shrinks when a game moves to a shorter screen, so the second
@@ -85,21 +173,11 @@ export function DesafioPlayPage() {
         const data = await api.get<ChallengeAccess>(`/challenge/${token}${query}`)
         if (!cancelled) {
           setAccess(data)
+          setMonthsAtLoad((previous) => previous ?? data.months?.length ?? 1)
           setPhase('ready')
         }
       } catch {
         if (!cancelled) setPhase('error')
-      }
-      // Progress is a pure enhancement (streak/badges/area stars) — its own
-      // request fails independently of the access check above, and a
-      // failure here must never block the day-grid from rendering.
-      try {
-        const data = await api.get<ChallengeProgress>(`/challenge/${token}/progress`)
-        if (!cancelled) setProgress(data)
-      } catch {
-        // Silently leave `progress` null — ChallengeProgressPanel renders
-        // nothing in that case, same graceful-degradation as a slow/failed
-        // game-result save.
       }
     }
     load()
@@ -107,6 +185,86 @@ export function DesafioPlayPage() {
       cancelled = true
     }
   }, [token])
+
+  // Progress is a pure enhancement (streak/badges/area stars) — its own
+  // request fails independently of the access check above, and a
+  // failure here must never block the day-grid from rendering. One request per
+  // month on screen: every month keeps its own progress.
+  useEffect(() => {
+    activeTokenRef.current = activeToken
+    if (!activeToken) return
+    let cancelled = false
+    api
+      .get<ChallengeProgress>(`/challenge/${activeToken}/progress`)
+      .then((data) => {
+        if (!cancelled) setProgress(data)
+      })
+      .catch(() => {
+        // Silently leave `progress` null — ChallengeProgressPanel renders
+        // nothing in that case, same graceful-degradation as a slow/failed
+        // game-result save.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [activeToken])
+
+  // Mercado Pago appends the payment result to the address it sends the buyer back to: keep it in state (above)
+  // and clean the address, so refreshing the page does not announce the payment again.
+  useEffect(() => {
+    if (Array.from(searchParams.keys()).length > 0) setSearchParams({}, { replace: true })
+  }, [searchParams, setSearchParams])
+
+  // Coming back from the browser's back button after tapping "Renovar", the page can be restored frozen in its
+  // "opening Mercado Pago" state: give the button back.
+  useEffect(() => {
+    function handlePageShow(e: PageTransitionEvent) {
+      if (e.persisted) setRenewing(false)
+    }
+    window.addEventListener('pageshow', handlePageShow)
+    return () => window.removeEventListener('pageshow', handlePageShow)
+  }, [])
+
+  // Approved, but the payment webhook has not reached us yet: ask again every few seconds until the new month is
+  // under this link (or give up after about a minute and a half and say what to do).
+  useEffect(() => {
+    if (!waitingForPayment || payBaseline === null) return
+    let cancelled = false
+    let tries = 0
+    const timer = window.setInterval(() => {
+      tries += 1
+      api
+        .get<ChallengeAccess>(`/challenge/${token}`)
+        .then((fresh) => {
+          if (cancelled || (fresh.months?.length ?? 1) <= payBaseline) return
+          window.clearInterval(timer)
+          setProgress(null)
+          setChosenMonth(null)
+          setAccess(fresh)
+        })
+        .catch(() => {
+          // A failed poll is just a missed one.
+        })
+      if (tries >= PAYMENT_POLL_TRIES) {
+        window.clearInterval(timer)
+        setPaymentTimedOut(true)
+      }
+    }, PAYMENT_POLL_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(timer)
+    }
+  }, [waitingForPayment, payBaseline, token])
+
+  // Once the new month is here the "I'm about to renew" marker is spent.
+  useEffect(() => {
+    if (!paymentConfirmed) return
+    try {
+      localStorage.removeItem(renewalKey(token ?? ''))
+    } catch {
+      // Storage unavailable: nothing to clean.
+    }
+  }, [paymentConfirmed, token])
 
   // Close the day card on Escape (matches the modal pattern used elsewhere)
   useEffect(() => {
@@ -155,10 +313,13 @@ export function DesafioPlayPage() {
     // stars and the panel reflect this result, and queue any newly-earned badge
     // (shown after the star screen is dismissed). A failed save just logs — the
     // reward screen already showed.
+    const savedToken = activeToken ?? token
     api
-      .post<CompleteDayResponse>(`/challenge/${token}/days/${day}/complete`, result)
-      .then(() => api.get<ChallengeProgress>(`/challenge/${token}/progress`))
+      .post<CompleteDayResponse>(`/challenge/${savedToken}/days/${day}/complete`, result)
+      .then(() => api.get<ChallengeProgress>(`/challenge/${savedToken}/progress`))
       .then((freshProgress) => {
+        // The buyer may have switched to another month while this saved.
+        if (activeTokenRef.current !== savedToken) return
         setProgress(freshProgress)
         const newlyEarned = freshProgress.badges.filter((b) => b.earned && !previouslyEarned.has(b.code))
         if (newlyEarned.length > 0) setBadgeQueue(newlyEarned.map((b) => b.code))
@@ -172,6 +333,36 @@ export function DesafioPlayPage() {
     setSelectedDay(null)
     setDayResult(null)
     setBadgeQueue([])
+  }
+
+  /** "Renovar y desbloquear": straight to Mercado Pago, nothing typed. The backend reuses the WhatsApp and email on file. */
+  async function handleRenew(offeredMonth: number) {
+    if (renewing) return
+    setRenewing(true)
+    setRenewError(null)
+    try {
+      // Remember how many months the buyer owns now: back from Mercado Pago, more than that means it is paid.
+      try {
+        localStorage.setItem(renewalKey(token ?? ''), JSON.stringify({ months: owned.length }))
+      } catch {
+        // Storage unavailable: the page then compares against what it loaded with.
+      }
+      const res = await api.post<{ checkoutUrl: string }>(`/challenge/${token}/next-month`, { challengeMonth: offeredMonth })
+      // Hand off to Mercado Pago Checkout Pro.
+      window.location.assign(res.checkoutUrl)
+    } catch (err: unknown) {
+      const apiErr = err as { message?: string }
+      setRenewError(apiErr.message ?? 'No pudimos abrir Mercado Pago. Probá de nuevo en un momento.')
+      setRenewing(false)
+    }
+  }
+
+  function selectMonth(monthNumber: number) {
+    if (active && monthNumber === active.challengeMonth) return
+    closeDayModal()
+    // The previous month's stars must not linger while this month's progress loads.
+    setProgress(null)
+    setChosenMonth(monthNumber)
   }
 
   if (phase === 'loading') {
@@ -197,10 +388,24 @@ export function DesafioPlayPage() {
     )
   }
 
-  // The backend's `challengeMonth` is rolling out in parallel and may not be on
-  // every response yet — default to month 1 so existing buyers see zero change.
-  const month = access.challengeMonth ?? 1
+  // The month on screen and how far its days are open. `active` is never null here (ownedMonths always
+  // yields at least the opened link), and for a single-month buyer it is exactly what `access` says.
+  const month = active?.challengeMonth ?? access.challengeMonth ?? 1
+  const unlockedDay = active?.currentDay ?? access.currentDay
   const days = getChallengeDays(month)
+
+  // Near the end of the newest month the player offers the next one. "Near the end" counts the exercises still
+  // unplayed (card days never have a result, so they are not counted), not the calendar: every buyer goes at their
+  // own pace. Only on the newest month — an older month is just being finished — and only once the progress loaded.
+  const isNewestMonth = owned.length === 0 || month === owned[owned.length - 1].challengeMonth
+  const exercisesLeft = progress
+    ? days.filter((d) => d.type === 'game' && !progress.days.some((r) => r.day === d.day)).length
+    : null
+  const nextMonth = access.nextMonth ?? null
+  const nextPrice = access.nextMonthPriceArs ?? null
+  const showNextMonthOffer =
+    nextMonth !== null && nextPrice !== null && isNewestMonth && exercisesLeft !== null
+    && exercisesLeft <= NEXT_MONTH_OFFER_AT
 
   const selected = selectedDay
     ? days.find((d) => d.day === selectedDay) ?? null
@@ -217,9 +422,9 @@ export function DesafioPlayPage() {
   // result by design) pass through for free, same as the backend's own
   // streak logic.
   const nextUnplayedDay =
-    days.find((d) => d.day <= access.currentDay && d.type === 'game'
+    days.find((d) => d.day <= unlockedDay && d.type === 'game'
       && !progress?.days.some((r) => r.day === d.day))?.day
-    ?? access.currentDay
+    ?? unlockedDay
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-tiam-blue/5 to-white">
@@ -233,10 +438,141 @@ export function DesafioPlayPage() {
           <p className="mt-3 text-lg text-slate-500 leading-relaxed">
             Este es tu Desafío de 30 días. Tocá un día para ver tu ejercicio.
           </p>
-          <p className="mt-4 inline-block rounded-full bg-tiam-blue/10 px-4 py-1.5 text-sm font-semibold text-tiam-blue">
-            Tenés desbloqueado hasta el día {access.currentDay} de {CHALLENGE_TOTAL_DAYS}
+          {owned.length > 1 && (
+            <nav aria-label="Elegí el mes" className="mt-6">
+              <div className="inline-flex flex-wrap justify-center gap-2 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-slate-200">
+                {owned.map((m) => {
+                  const isActive = m.challengeMonth === month
+                  return (
+                    <button
+                      key={m.challengeMonth}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => selectMonth(m.challengeMonth)}
+                      className={[
+                        'min-h-[44px] min-w-[88px] rounded-xl px-4 text-base font-bold transition',
+                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-blue focus-visible:ring-offset-2',
+                        isActive ? 'bg-tiam-blue text-white shadow' : 'text-slate-600 hover:bg-slate-100',
+                      ].join(' ')}
+                    >
+                      Mes {m.challengeMonth}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="mt-2 text-sm text-slate-500">
+                Cada mes guarda su propio avance. Cambiá de mes cuando quieras.
+              </p>
+            </nav>
+          )}
+          {/* With several months the tabs above say which one is open; with one, say it here. */}
+          {owned.length <= 1 && (
+            <p className="mt-5 text-sm font-extrabold uppercase tracking-widest text-tiam-blue">Mes {month}</p>
+          )}
+          <p className="mt-3 inline-block rounded-full bg-tiam-blue/10 px-4 py-1.5 text-sm font-semibold text-tiam-blue">
+            Tenés desbloqueado hasta el día {unlockedDay} de {CHALLENGE_TOTAL_DAYS}
           </p>
         </header>
+
+        {/* Back from Mercado Pago: how the payment went, and the new month showing up under this same link. */}
+        {payResult !== null && (waitingForPayment || paymentConfirmed || payResult !== 'approved' || paymentTimedOut) && (
+          <section
+            role="status"
+            className={[
+              'relative mt-8 flex items-start gap-3 rounded-3xl p-5 pr-12',
+              paymentConfirmed ? 'bg-green-50 text-green-900'
+                : payResult === 'rejected' ? 'bg-red-50 text-red-900'
+                  : 'bg-sky-50 text-sky-900',
+            ].join(' ')}
+          >
+            {paymentConfirmed ? <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" aria-hidden="true" />
+              : payResult === 'rejected' ? <AlertCircle className="mt-0.5 h-6 w-6 shrink-0" aria-hidden="true" />
+                : <Clock className="mt-0.5 h-6 w-6 shrink-0" aria-hidden="true" />}
+            <div className="text-base leading-relaxed">
+              {paymentConfirmed && (
+                <>
+                  <p className="font-bold">¡Listo! Tu Mes&nbsp;{month} ya está desbloqueado.</p>
+                  <p>Los meses que tenés están arriba: cambiás de uno a otro cuando quieras.</p>
+                </>
+              )}
+              {waitingForPayment && (
+                <>
+                  <p className="font-bold">Tu pago fue aprobado. Estamos activando tu Mes&nbsp;{nextMonth ?? ''}…</p>
+                  <p>Tarda unos segundos. No cierres esta página: aparece solo.</p>
+                </>
+              )}
+              {payResult === 'approved' && paymentTimedOut && !paymentConfirmed && (
+                <>
+                  <p className="font-bold">
+                    {baselineIsGuess ? 'Todavía no vemos tu mes nuevo.' : 'Tu pago fue aprobado, pero el mes todavía no aparece.'}
+                  </p>
+                  <p>Recargá la página en unos minutos. Si sigue sin aparecer, escribinos por WhatsApp y lo resolvemos.</p>
+                </>
+              )}
+              {payResult === 'pending' && (
+                <>
+                  <p className="font-bold">Tu pago está en proceso.</p>
+                  <p>Cuando se acredite, el mes nuevo aparece en este mismo link: volvé a abrirlo en un rato. Mientras tanto seguí con tu mes.</p>
+                </>
+              )}
+              {payResult === 'rejected' && (
+                <>
+                  <p className="font-bold">El pago no se completó.</p>
+                  <p>No se hizo ningún cobro. Podés intentarlo de nuevo cuando quieras.</p>
+                </>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setPayResult(null)}
+              aria-label="Cerrar aviso"
+              className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-xl opacity-60 hover:bg-black/5 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </section>
+        )}
+
+        {/* Near the end of the newest month: offer the next one with one tap. Nothing is typed (the backend
+            reuses the WhatsApp and email on the purchase); Mercado Pago brings the buyer back to this same link. */}
+        {showNextMonthOffer && nextMonth !== null && nextPrice !== null && payResult !== 'approved' && payResult !== 'pending' && (
+          <section
+            aria-labelledby="next-month-offer"
+            className="mt-8 rounded-3xl border border-tiam-orange/30 bg-orange-50 p-5 text-center sm:p-6"
+          >
+            {/* The non-breaking space after "Mes" keeps it with its number on a narrow screen */}
+            <h2 id="next-month-offer" className="text-balance text-xl font-bold text-slate-800">
+              {exercisesLeft === 0
+                ? <>¡Completaste el Mes&nbsp;{month}! 🎉</>
+                : <>Te {exercisesLeft === 1 ? 'queda 1 ejercicio' : `quedan ${exercisesLeft} ejercicios`} del Mes&nbsp;{month}</>}
+            </h2>
+            <p className="mt-2 text-base leading-relaxed text-slate-600">
+              Renová para desbloquear el Mes&nbsp;{nextMonth}: son 30 ejercicios nuevos, en este mismo link y a tu ritmo.
+            </p>
+            <button
+              type="button"
+              onClick={() => handleRenew(nextMonth)}
+              disabled={renewing}
+              aria-busy={renewing}
+              // #CC4610 (4.7:1 with white): the brand orange fails AA for text.
+              className="mt-4 min-h-[56px] rounded-2xl bg-[#CC4610] px-6 py-2 text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-tiam-orange focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-80"
+            >
+              {renewing ? (
+                <span className="block text-base font-bold">Abriendo Mercado Pago…</span>
+              ) : (
+                <>
+                  <span className="block text-base font-bold">Renovar y desbloquear el Mes&nbsp;{nextMonth}</span>
+                  <span className="block text-sm font-semibold">{formatPrice(nextPrice)} · Mercado Pago</span>
+                </>
+              )}
+            </button>
+            {renewError && (
+              <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {renewError}
+              </p>
+            )}
+          </section>
+        )}
 
         {/* 30-day grid — first thing after the header. Some older adults didn't
             realize there was more below the achievements panel when it led;
@@ -246,7 +582,7 @@ export function DesafioPlayPage() {
         <div className="mt-10 grid grid-cols-4 gap-3 sm:grid-cols-5 sm:gap-4">
           {days.map((d) => {
             const meta = AREA_META[d.area]
-            const locked = d.day > access.currentDay
+            const locked = d.day > unlockedDay
             const isToday = d.day === nextUnplayedDay
             // Real result, not a calendar guess: a day only shows stars once
             // it actually has a recorded playthrough. An unlocked-but-unplayed

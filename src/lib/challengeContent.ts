@@ -101,6 +101,22 @@ export interface ChallengeAccess {
    * parallel and older/in-flight responses may not carry it yet — always read
    * this as `access.challengeMonth ?? 1` so those buyers see month 1, unchanged. */
   challengeMonth?: number
+  /** Every month the buyer owns under this one link, lowest first (the first purchase plus the months bought
+   * from the player). Each month keeps its own progress under its own `accessToken`. Optional: an older
+   * backend does not send it, and the player then treats the opened link as the only month. */
+  months?: ChallengeMonthAccess[]
+  /** The month the player may offer next, or null/absent when there is nothing to offer. */
+  nextMonth?: number | null
+  /** What Mercado Pago charges for `nextMonth`, in ARS. */
+  nextMonthPriceArs?: number | null
+}
+
+/** One month of a buyer's link, as the player needs it to switch between months. */
+export interface ChallengeMonthAccess {
+  challengeMonth: number
+  accessToken: string
+  currentDay: number
+  totalDays: number
 }
 
 export const CHALLENGE_TOTAL_DAYS = 30
