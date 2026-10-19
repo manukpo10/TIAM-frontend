@@ -1,12 +1,19 @@
 import { LegalPage, type LegalSection } from './LegalPage'
+import { CONTACT_EMAIL, LEGAL_ENTITY, PIXEL_ENABLED } from './legalConfig'
+
+// PENDING LEGAL REVIEW: everything about buyers of the Packs and the 30-day Challenge (clause 1's seller line,
+// 2d, the purchase items of 3, 4, 6 and 8, and the purchase/Pixel items of 10) is a DRAFT written from how the
+// sale really works. See src/pages/legal/legalConfig.ts for what the lawyer must confirm before the sale opens.
+// Also check, in Meta Events Manager, whether "Automatic Advanced Matching" is on: it can read form fields
+// (email, phone) on the landing pages, which this policy says TIAM's own events do not send.
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
 const LAST_UPDATED = '17 de octubre de 2026'
 
 // Contact address for privacy requests and unsubscribes. Every clause that
-// mentions it renders this link, so changing it here updates the whole policy.
-const PRIVACY_EMAIL = 'manuu.robles@gmail.com'
+// mentions it renders this link; the address itself comes from legalConfig.ts.
+const PRIVACY_EMAIL = CONTACT_EMAIL
 
 function PrivacyEmailLink() {
   return (
@@ -25,7 +32,7 @@ const PRIVACY_SECTIONS: LegalSection[] = [
         El responsable del tratamiento de los datos personales recopilados a través del sitio web y
         la plataforma TIAM Digital es TIAM Digital (en adelante, "TIAM" o "nosotros"). Para
         consultas relacionadas con el tratamiento de sus datos personales, puede comunicarse a:{' '}
-        <PrivacyEmailLink />.
+        <PrivacyEmailLink />.{LEGAL_ENTITY && <> Vendedor de los productos digitales: {LEGAL_ENTITY}.</>}
       </p>
     ),
   },
@@ -74,6 +81,26 @@ const PRIVACY_SECTIONS: LegalSection[] = [
           proporcionan su dirección de correo electrónico y, de manera opcional, su nombre. También
           registramos desde qué formulario lo hicieron y en qué fecha.
         </p>
+        <p className="font-semibold text-slate-800 mt-4">d) Datos de quienes compran packs o el Desafío 30 días</p>
+        <ul className="list-disc pl-5 space-y-1.5 mt-1">
+          <li>Nombre y dirección de correo electrónico, que se piden para enviar el acceso a los archivos.</li>
+          <li>
+            Número de teléfono (WhatsApp), solo cuando se compra el Desafío 30 días o un mes de juegos junto con el pack, porque
+            la activación se hace desde ese número.
+          </li>
+          <li>
+            Datos de la compra: producto, importe, estado y fecha del pago e identificador del pago en Mercado Pago. TIAM
+            Digital no accede a los datos de la tarjeta.
+          </li>
+          <li>
+            Origen de la visita (parámetros de campaña de los anuncios, como la fuente o el identificador de clic), para saber
+            qué anuncios llevan a compras.
+          </li>
+          <li>Registro de las descargas (fecha y archivo), para detectar el uso abusivo de los enlaces.</li>
+          <li>
+            Si se usa el botón de arrepentimiento: el nombre, el email, el número de pedido y el motivo que la persona escriba.
+          </li>
+        </ul>
       </>
     ),
   },
@@ -105,6 +132,14 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             Pueden dejar de recibirlas en cualquier momento escribiendo a <PrivacyEmailLink />.
           </li>
           <li>
+            Entregar los productos digitales comprados: habilitar la descarga, enviar por email el enlace de acceso y activar el
+            Desafío 30 días por WhatsApp. Los emails que se envían a quienes compran son de servicio: acceso, constancias y
+            soporte.
+          </li>
+          <li>
+            Atender las solicitudes de reenvío de acceso y de arrepentimiento, y enviar la constancia correspondiente.
+          </li>
+          <li>
             Mejorar el Servicio a través del análisis de patrones de uso agregados y anonimizados.
           </li>
         </ul>
@@ -132,6 +167,10 @@ const PRIVACY_SECTIONS: LegalSection[] = [
           Los datos de contacto de las personas interesadas se tratan sobre la base del consentimiento
           que prestan al enviar el formulario correspondiente, el cual pueden revocar en cualquier
           momento.
+        </p>
+        <p>
+          Los datos de quienes compran packs o el Desafío 30 días se tratan para ejecutar el contrato de compra —entregar el
+          producto, atender reclamos, devoluciones y arrepentimientos— y para cumplir las obligaciones legales de TIAM Digital.
         </p>
         <p>
           Respecto de los datos de salud de los pacientes, <strong>el profesional es el responsable
@@ -190,9 +229,27 @@ const PRIVACY_SECTIONS: LegalSection[] = [
         </p>
         <ul className="list-disc pl-5 space-y-1.5 mt-2">
           <li>
-            <strong>Mercado Pago:</strong> procesamiento de pagos. Aplican los términos y política de
-            privacidad de Mercado Pago para los datos de pago.
+            <strong>Mercado Pago:</strong> procesamiento de pagos de las suscripciones, los packs y el Desafío 30 días. Aplican los
+            términos y política de privacidad de Mercado Pago para los datos de pago.
           </li>
+          <li>
+            <strong>Proveedor de envío de correo electrónico:</strong> envía los emails de acceso y las constancias, por lo que
+            recibe la dirección de correo, el nombre del destinatario y el contenido del mensaje.
+          </li>
+          <li>
+            <strong>Proveedor de almacenamiento de archivos:</strong> aloja los PDF y los entrega con direcciones temporales; puede
+            registrar datos técnicos de la descarga, como la dirección IP.
+          </li>
+          <li>
+            <strong>WhatsApp (Meta Platforms):</strong> para activar el Desafío 30 días y enviar los ejercicios se trata, a través de
+            WhatsApp, el número de teléfono desde el que escribe el comprador y los mensajes.
+          </li>
+          {PIXEL_ENABLED && (
+            <li>
+              <strong>Meta Platforms (Píxel de Meta):</strong> medición de los anuncios de las páginas de venta, según se describe en
+              la cláusula 10.
+            </li>
+          )}
           <li>
             <strong>Proveedor de infraestructura y hosting:</strong> almacenamiento y operación de la
             plataforma en la nube.
@@ -246,6 +303,11 @@ const PRIVACY_SECTIONS: LegalSection[] = [
         <p>
           Los datos de contacto de las personas interesadas se conservan hasta que soliciten la baja o
           revoquen su consentimiento.
+        </p>
+        <p>
+          Los datos de las compras (nombre, email, teléfono, importes y estado del pago) se conservan mientras sean necesarios
+          para entregar el producto, permitir una nueva descarga, atender reclamos, devoluciones y arrepentimientos, y cumplir las
+          obligaciones legales y fiscales. Cumplido ese plazo se eliminan o se anonimizan.
         </p>
       </>
     ),
@@ -327,7 +389,19 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             asocian a la compra, para saber desde cuántos dispositivos se abre cada link de acceso. En
             esta medición no guardamos la dirección IP.
           </li>
+          <li>
+            <strong>Compras:</strong> en las páginas de compra y de descarga, el navegador guarda de forma temporal (sin cookies, y
+            hasta cerrar la pestaña) el identificador del pedido y lo escrito en el formulario, para no pedirlo de nuevo si algo falla.
+            También puede recordar el tamaño de papel elegido.
+          </li>
         </ul>
+        {PIXEL_ENABLED && (
+          <p>
+            Las páginas de venta de los packs usan el Píxel de Meta para medir el resultado de los anuncios: informa a Meta qué
+            páginas se visitan y cuándo se inicia o se completa una compra, con el importe. Los eventos que TIAM Digital envía no
+            incluyen el email, el nombre ni el teléfono del comprador. El Píxel no se carga en la página de descargas.
+          </p>
+        )}
         <p>
           El usuario puede configurar su navegador para rechazar cookies, aunque esto podría afectar
           el correcto funcionamiento de determinadas funcionalidades del Servicio.

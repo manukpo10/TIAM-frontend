@@ -1,7 +1,8 @@
 <!-- Ofertas: "Todo lo que recibís" + tarjeta de precio con las ofertas al pagar. TODOS los números salen de la configuración (.env / variables de Vercel), vía los
      tokens de vite.config.ts: %PACK_PRICE%, %PACK_GAMES_PRICE%, %PACK_GAMES_REGULAR% (PRICE_ARS del Desafío), %PACK_EXTRA_PRICE%, %PACK_GUARANTEE_DAYS%. Nada está escrito acá.
-     Reglas: solo lleva valor en pesos lo que tiene un precio real (el mes de juegos); no hay "valor total" inventado. El cuadernillo extra todavía NO existe: se muestra "Próximamente" y no
-     se puede elegir hasta que VITE_PACK_EXTRA_AVAILABLE tenga un valor. Las casillas elegidas suben al total y viajan al checkout como ?extras=juegos (ver pack/landing.ts). -->
+     Reglas: solo lleva valor en pesos lo que tiene un precio real (el mes de juegos); no hay "valor total" inventado. El cuadernillo extra YA EXISTE (volumen 1 de TIAM-pack: 40 fichas nuevas, 10 por área,
+     en los 3 niveles, con guía, solucionario y registro; ninguna repite una del pack): con VITE_PACK_EXTRA_AVAILABLE con valor se puede elegir; sin valor vuelve a mostrarse "Próximamente" y no se puede
+     elegir. Las casillas elegidas suben al total y viajan al backend como campos «extras» del formulario de compra (ver pack/landing.ts). La tapa chica es la real (python scripts/pack-landings/make_images.py --solo extra). -->
 <section id="comprar" class="band scroll-mt-4 bg-gradient-to-b from-white to-[#e6f0fb]" aria-labelledby="t-precio">
   <div class="wrap">
     <div class="mx-auto max-w-3xl text-center">
@@ -17,13 +18,13 @@
       <section class="stack" aria-labelledby="t-recibis">
         <h3 id="t-recibis" class="t-h3 text-2xl font-extrabold">Todo lo que recibís</h3>
         <ul class="stack-list mt-5">
-          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>12 cuadernillos en PDF</b><span>120 fichas y 303 páginas: 4 áreas, 3 niveles, 10 fichas en cada cuadernillo.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>12 cuadernillos en PDF</b><span>120 fichas y %PACK_PAGES% páginas: 4 áreas, 3 niveles, 10 fichas en cada cuadernillo.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Una hoja de trabajo en cada ficha</b><span>Letra grande, desde 16 puntos, pensada para blanco y negro.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b><!--if:PACK_FAMILIAS-->Una guía para acompañar en cada ficha<!--endif--><!--if:PACK_PROFESIONALES-->Una guía para el profesional en cada ficha<!--endif--></b><span>Objetivo, pasos, cuándo pausar y un consejo de tallerista.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Ajustes «más fácil» y «más difícil»</b><span>Para adaptar la ficha en el momento.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Solucionario comprobado</b><span>Un verificador revisa cada ficha antes de armar el pack.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b><!--if:PACK_FAMILIAS-->El registro «Cómo nos fue hoy»<!--endif--><!--if:PACK_PROFESIONALES-->El registro de la sesión<!--endif--></b><span>En la misma hoja de la guía: fecha, tiempo y ayuda necesaria.</span></div></li>
-          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>«Empezá acá»</b><span>Un PDF de 3 páginas: qué trae, por dónde empezar y cómo imprimir.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>«Empezá acá»</b><span>Un PDF de %PACK_START_PAGES% páginas: qué trae, por dónde empezar, cómo imprimir y los créditos de las licencias.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>PDF en A4 y en Carta</b><span>Para imprimir en casa o en una librería.</span></div></li>
           <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Entrega por email</b><span>Te llega apenas se acredita el pago.</span></div></li>
         </ul>
@@ -39,21 +40,33 @@
             </div>
           </li>
           <!--if:PACK_EXTRA_PRICE_SET-->
-          <li>
+          <li<!--if:VITE_PACK_EXTRA_AVAILABLE--> class="has-cover"<!--endif-->>
             <svg class="i" aria-hidden="true"><use href="#i-plus" /></svg>
             <div>
               <b>Cuadernillo extra: 40 fichas más</b>
-              <span>Un cuadernillo más, para sumar a las 120.</span>
+              <span>40 fichas nuevas, 10 por área y en los 3&nbsp;niveles, con guía y solucionario. No repiten las del pack.</span>
               <!--ifnot:VITE_PACK_EXTRA_AVAILABLE--><span class="tag tag--soon">Próximamente · +&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span><!--endif-->
               <!--if:VITE_PACK_EXTRA_AVAILABLE--><span class="tag">+&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span><!--endif-->
             </div>
+            <!--if:VITE_PACK_EXTRA_AVAILABLE-->
+            <img class="extra-cover" src="/pack/img/cuadernillo-extra-%PACK_EDICION%-240.webp" srcset="/pack/img/cuadernillo-extra-%PACK_EDICION%-240.webp 240w, /pack/img/cuadernillo-extra-%PACK_EDICION%-400.webp 400w" sizes="72px" width="240" height="340" alt="Tapa real del Cuadernillo extra: banda azul oscuro con el título, el sello de 40 fichas y una señora mayor con su nieto plantando albahaca" loading="lazy" decoding="async" />
+            <!--endif-->
           </li>
           <!--endif-->
         </ul>
       </section>
 
-      <!-- ── Precio y compra ── -->
+      <!-- ── Precio y compra ──
+           Con VITE_PACK_CHECKOUT_URL la tarjeta es un <form method="post"> que viaja al backend (POST /packs/checkout, application/x-www-form-urlencoded) y este responde 303 a
+           Mercado Pago. Funciona sin JavaScript: el servidor calcula el precio y exige el teléfono si se eligió «juegos». Sin esa variable la tarjeta es un <div> y el botón sigue
+           bajando a la sección de precio (#comprar), como antes: no hay nada que enviar. Campos del formulario: email, nombre, telefono, edicion, extras (repetido), hp_contacto
+           (trampa para bots, tiene que llegar vacío), expected_total y utm_*/fbclid (los completa landing.ts). Ver Proyecto Digitales/pack/cobro-diseno.md, sección 2.3. -->
+      <!--if:VITE_PACK_CHECKOUT_URL-->
+      <form id="pedido" class="price-card" method="post" action="%PACK_CHECKOUT_ACTION%" data-offer data-checkout data-base="%PACK_PRICE_NUM%" aria-label="Comprar el Pack Básico">
+      <!--endif-->
+      <!--ifnot:VITE_PACK_CHECKOUT_URL-->
       <div class="price-card" data-offer data-base="%PACK_PRICE_NUM%">
+      <!--endif-->
         <div class="price-head">
           <p class="inline-flex rounded-full bg-white/15 px-3.5 py-1 text-base font-semibold">Pack Básico · <!--if:PACK_FAMILIAS-->edición familias<!--endif--><!--if:PACK_PROFESIONALES-->edición profesionales<!--endif--></p>
           <p class="price-amount"><small>$</small><b>%PACK_PRICE%</b></p>
@@ -80,7 +93,7 @@
                 <input type="checkbox" name="extras" value="cuadernillo" data-price="%PACK_EXTRA_PRICE_NUM%" />
                 <span class="min-w-0 flex-1">
                   <span class="addon-top"><b>Cuadernillo extra: 40 fichas más</b><span class="addon-price">+&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span></span>
-                  <small>Un cuadernillo más, para sumar a las 120.</small>
+                  <small>40 fichas nuevas: 10 por área, en los 3&nbsp;niveles, con guía y solucionario.</small>
                 </span>
               </label>
               <!--endif-->
@@ -89,7 +102,7 @@
                 <input type="checkbox" disabled aria-label="Cuadernillo extra: próximamente" />
                 <span class="min-w-0 flex-1">
                   <span class="addon-top"><b>Cuadernillo extra: 40 fichas más</b><span class="addon-price addon-price--soon">+&nbsp;$&nbsp;%PACK_EXTRA_PRICE%</span></span>
-                  <small>Un cuadernillo más, para sumar a las 120. Todavía no está disponible.</small>
+                  <small>40 fichas nuevas: 10 por área, en los 3&nbsp;niveles, con guía y solucionario. Todavía no está disponible.</small>
                   <span class="tag tag--soon">Próximamente</span>
                 </span>
               </div>
@@ -98,13 +111,56 @@
             </div>
           </fieldset>
 
+          <!--if:VITE_PACK_CHECKOUT_URL-->
+          <fieldset class="buyer">
+            <legend class="text-lg font-extrabold">¿A dónde te lo enviamos?</legend>
+            <div class="field">
+              <label for="f-email">Tu email</label>
+              <input id="f-email" name="email" type="email" required maxlength="254" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="nombre@correo.com" aria-describedby="h-email" />
+              <p id="h-email" class="hint">Ahí te llega el acceso a los PDF apenas se acredita el pago.</p>
+            </div>
+            <div class="field">
+              <label for="f-nombre">Tu nombre</label>
+              <input id="f-nombre" name="nombre" type="text" required minlength="2" maxlength="100" autocomplete="name" placeholder="Nombre y apellido" />
+            </div>
+            <div class="field" data-phone>
+              <label for="f-tel">Tu WhatsApp <span class="opt" data-phone-opt>(solo si sumás los juegos)</span></label>
+              <input id="f-tel" name="telefono" type="tel" maxlength="30" autocomplete="tel" inputmode="tel" placeholder="Ej.: 221 555 1234" aria-describedby="h-tel" />
+              <p id="h-tel" class="hint">Con código de área, sin 0 ni 15. Los juegos se activan desde este número.</p>
+            </div>
+            <!-- Trampa para bots: una persona nunca lo ve ni lo completa. El nombre `hp_contacto` lo fija el backend (ignora cualquier otro) y no se parece a ningún campo
+                 que un autocompletado conozca (con `web` un navegador podía llenarlo y la compra volvía a la landing sin aviso). -->
+            <div class="hp" aria-hidden="true"><label>No completar este campo <input type="text" name="hp_contacto" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore /></label></div>
+            <input type="hidden" name="edicion" value="%PACK_EDICION%" />
+            <input type="hidden" name="expected_total" value="" />
+            <input type="hidden" name="utm_source" value="" />
+            <input type="hidden" name="utm_medium" value="" />
+            <input type="hidden" name="utm_campaign" value="" />
+            <input type="hidden" name="utm_content" value="" />
+            <input type="hidden" name="utm_term" value="" />
+            <input type="hidden" name="fbclid" value="" />
+          </fieldset>
+          <!--endif-->
+
           <p class="total"><span>Total</span><strong data-total aria-live="polite">$&nbsp;%PACK_PRICE%</strong></p>
 
+          <!--if:VITE_PACK_CHECKOUT_URL-->
+          <div class="form-error" data-form-error role="alert" hidden></div>
+          <button type="submit" data-submit data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
+            <span data-submit-label>Pagar con Mercado Pago</span>
+            <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+          </button>
+          <p class="form-status" data-form-status role="status" hidden></p>
+          <p class="mt-4 text-center text-[0.9375rem] text-slate-600">Pagás con Mercado Pago, en cuotas. TIAM no guarda los datos de tu tarjeta.</p>
+          <p class="mt-2 text-center text-[0.9375rem] text-slate-600">Al comprar aceptás los <a class="underline" href="/terms" target="_blank" rel="noopener">términos y condiciones</a> y la <a class="underline" href="/privacy" target="_blank" rel="noopener">política de privacidad</a>.</p>
+          <!--endif-->
+          <!--ifnot:VITE_PACK_CHECKOUT_URL-->
           <a href="%PACK_BUY_URL%" data-buy data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
             Quiero mi pack
             <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
           </a>
           <p class="mt-4 text-center text-[0.9375rem] text-slate-600">Pagás con Mercado Pago, en cuotas. TIAM no guarda los datos de tu tarjeta.</p>
+          <!--endif-->
 
           <!--if:PACK_GUARANTEE-->
           <p class="mt-5 flex gap-3 rounded-2xl bg-slate-50 p-4 text-base text-slate-700">
@@ -113,7 +169,12 @@
           </p>
           <!--endif-->
         </div>
+      <!--if:VITE_PACK_CHECKOUT_URL-->
+      </form>
+      <!--endif-->
+      <!--ifnot:VITE_PACK_CHECKOUT_URL-->
       </div>
+      <!--endif-->
     </div>
   </div>
 </section>

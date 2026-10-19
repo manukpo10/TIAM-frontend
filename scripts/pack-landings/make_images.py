@@ -1,20 +1,21 @@
 """Imágenes de las landings del pack: vistas reales de las fichas, tapas de los cuadernillos y recortes.
 
 Uso, desde la raíz del repo:
-    python scripts/pack-landings/make_images.py [--muestras RUTA] [--out pack/img] [--solo grupo]
+    python scripts/pack-landings/make_images.py [--venta RUTA] [--out pack/img] [--solo grupo]
+    python scripts/pack-landings/make_images.py --borrador [--muestras RUTA]    (la versión de antes: muestras con etiqueta «Borrador», retocada)
 
 Qué hace
-- Lee los PDF de muestra de TIAM-pack/muestras (solo lectura: se cargan en memoria y no se
-  guarda nada en esa carpeta).
+- Lee los PDF FINALES de la entrega (Proyecto Digitales/pack/venta, que arma `npm run entrega` en TIAM-pack; ver final_pdfs.py) por el mismo nombre de muestra que usaba
+  antes. Son las mismas fichas y las mismas páginas, ya sin la etiqueta «Borrador» ni la cuenta provisoria del pie: NO se retoca nada. Con `--borrador` vuelve a leer los PDF de
+  muestra de TIAM-pack/muestras y les tapa el cartelito, como antes. Se cargan en memoria: no se guarda nada en esas carpetas.
 - Renderiza páginas reales con PyMuPDF: las hojas sueltas (hoja de trabajo y guía), la galería
   (la parte de arriba de ocho hojas de trabajo, con su margen blanco de verdad) y las TAPAS REALES
   de los cuadernillos (de `portadas-a4-<edicion>.pdf`, que sale de
   `npm run portadas -- --papel=A4 --edicion=familia|profesional` en TIAM-pack): para cada área, la
   tapa del nivel 1 en la edición de cada landing (los tres niveles se distinguen por los chips de
   la tarjeta, no repitiendo la tapa).
-- Retoca en memoria el cartelito "Borrador" del pie de cada página interior, para que la vista sea la
-  del pack terminado (se quita con --final en el motor). Es un retoque del dibujo, no del
-  contenido de la ficha. Las tapas no llevan pie ni "Borrador": no se retocan.
+- Solo con `--borrador`: retoca en memoria el cartelito "Borrador" del pie de cada página interior, para que la vista sea la del pack terminado. Con los PDF finales ya no hace
+  falta. Las tapas no llevan pie ni "Borrador": no se retocan.
 - Recorta, sin caras, detalles de las fotos del taller que ya están en src/assets/taller.
 - Convierte a WebP las ilustraciones elegidas de make_illustrations.mjs y escribe su manifiesto.
 - `--solo compartir`: la ilustración del bloque "Con este pack no hay nada que preparar" (familias) es la escena aprobada de la portada de
@@ -39,6 +40,8 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 from PIL import Image, ImageDraw
+
+import final_pdfs
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -72,22 +75,21 @@ def norm(s: str) -> str:
 
 
 class Library:
-    """PDF de muestra cargados desde bytes: no se toca el archivo original."""
+    """PDF cargados desde bytes: no se toca el archivo original. Con `final`, los PDF finales de la entrega (por el nombre de muestra); si no, los de muestra."""
 
-    def __init__(self, folder: Path) -> None:
+    def __init__(self, folder: Path, final: Path | None = None) -> None:
         self.folder = folder
+        self.final = final
         self.docs: dict[str, fitz.Document] = {}
 
     def pdf(self, name: str) -> fitz.Document:
         if name not in self.docs:
-            self.docs[name] = fitz.open(stream=(self.folder / name).read_bytes(), filetype="pdf")
+            self.docs[name] = final_pdfs.open_sample(self.final, name) if self.final else fitz.open(stream=(self.folder / name).read_bytes(), filetype="pdf")
         return self.docs[name]
 
     def page(self, key: str) -> fitz.Page:
         name, number, needles = PAGES[key]
-        if name not in self.docs:
-            self.docs[name] = fitz.open(stream=(self.folder / name).read_bytes(), filetype="pdf")
-        page = self.docs[name][number - 1]
+        page = self.pdf(name)[number - 1]
         text = norm(page.get_text())
         missing = [n for n in needles if norm(n) not in text]
         if missing:
@@ -132,8 +134,12 @@ def retouch(page: fitz.Page) -> None:
         page.draw_rect(fitz.Rect(box.x0 - 3, box.y0 - 2, box.x1 + 3, box.y1 + 2), color=None, fill=(1, 1, 1), overlay=True)
 
 
+RETOUCH = False  # solo con --borrador: los PDF finales no llevan etiqueta ni cuenta provisoria
+
+
 def render(page: fitz.Page, width_px: int, clip: fitz.Rect | None = None) -> Image.Image:
-    retouch(page)
+    if RETOUCH:
+        retouch(page)
     rect = clip or page.rect
     scale = width_px / rect.width
     pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=clip, alpha=False)
@@ -176,7 +182,10 @@ def cover_page_number(area: str, level: int) -> int:
 def cover_image(pdf: fitz.Document, area: str, level: int = COVER_LEVEL, ss: int = 2) -> Image.Image:
     """La tapa real completa (A4, con su margen blanco de impresión), opaca y sin borde ni sombra: el borde fino, las esquinas y la sombra de
     papel impreso los pone el CSS (igual que en las hojas de "Cada ficha son dos hojas"), así la imagen conserva su proporción y no se recorta."""
-    page = pdf[cover_page_number(area, level) - 1]  # las tapas no llevan pie: sin retoque
+    return cover_page_image(pdf[cover_page_number(area, level) - 1], ss)  # las tapas no llevan pie: sin retoque
+
+
+def cover_page_image(page: fitz.Page, ss: int = 2) -> Image.Image:
     scale = max(COVER_WIDTHS) * ss / page.rect.width
     pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
     return Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
@@ -312,15 +321,19 @@ def illustrations(candidates: Path, chosen: dict[str, int], out: Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--venta", default=str(final_pdfs.VENTA), help="carpeta de la entrega final (pack/venta)")
+    ap.add_argument("--borrador", action="store_true", help="usar los PDF de muestra con etiqueta de borrador (y retocarlos), como antes")
     ap.add_argument("--muestras", default=str(REPO.parent / "TIAM-pack" / "muestras"))
     ap.add_argument("--out", default=str(REPO / "pack" / "img"))
-    ap.add_argument("--solo", default="", help="grupo: hojas, portadas, galeria, compartir, taller, logo, ilustraciones")
+    ap.add_argument("--solo", default="", help="grupo: hojas, portadas, extra, galeria, compartir, taller, logo, ilustraciones")
     ap.add_argument("--candidatos", default="", help="carpeta de make_illustrations.mjs (con candidatos.json)")
     ap.add_argument("--elegidas", default="", help='ilustraciones elegidas: "id=semilla,id=semilla"')
     args = ap.parse_args()
 
     out = Path(args.out)
-    lib = Library(Path(args.muestras))
+    global RETOUCH
+    RETOUCH = args.borrador
+    lib = Library(Path(args.muestras), None if args.borrador else Path(args.venta))
     want = lambda p: (not args.solo and p != 'ilustraciones') or args.solo == p  # noqa: E731
 
     if want("hero"):
@@ -348,6 +361,15 @@ def main() -> None:
                     # Calidad 72: el arte "tinta firme" tiene textura y a 82 las tarjetas pesaban un 25 % más que con el arte plano (13,6 y 28,7 KB contra
                     # 10,9 y 22,4 KB); a 112 o 170 px de ancho no se nota.
                     save_webp(scaled(cover, w), out / f"cuadernillo-{area}-{slug}-{w}.webp", quality=72)
+
+    if want("extra"):
+        # La tapa del Cuadernillo extra (página 1 de cuadernillo-extra-1-<edicion>-a4.pdf, que sale de `npm run muestras` o `npm run extra` en TIAM-pack), en la edición de cada landing.
+        # Misma regla que las tapas de área: la página completa, sin borde ni sombra (los pone el CSS), a 240 y 400 px.
+        print("tapa real del Cuadernillo extra (en la edición de cada landing)")
+        for edition, slug in EDITIONS.items():
+            cover = cover_page_image(lib.pdf(f"cuadernillo-extra-1-{edition}-a4.pdf")[0])
+            for w in COVER_WIDTHS:
+                save_webp(scaled(cover, w), out / f"cuadernillo-extra-{slug}-{w}.webp", quality=72)
 
     if want("galeria"):
         print("galería (la parte de arriba de ocho hojas de trabajo, con su margen blanco)")

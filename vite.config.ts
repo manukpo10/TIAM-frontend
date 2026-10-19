@@ -23,6 +23,12 @@ const PARTIALS_DIR = path.resolve(PACK_DIR, '_partials')
 const PLACEHOLDER_RE = /\[\[[A-Z0-9_]+\]\]/g
 /** Fichas del Pack Básico: 4 áreas x 3 niveles x 10 fichas. Se usa para el costo por ficha. */
 const PACK_SHEETS = 120
+/**
+ * Páginas de los PDF que se venden (versión final de TIAM-pack, `npm run entrega`): «Empezá acá» (4: la tapa, qué trae, por dónde empezar e imprimir, y créditos y licencias) y los 12
+ * cuadernillos (300). Salen como %PACK_PAGES% y %PACK_START_PAGES% en las landings: si cambia el número de páginas, se cambia acá y en ningún otro lado.
+ */
+const PACK_START_PAGES = 4
+const PACK_BOOKLET_PAGES = 300
 
 // ── Datos que hacen falta para publicar ───────────────────────────────────────────────────────
 // Ningún [[MARCADOR]] llega a la página: si un dato real falta, el espacio se oculta o se usa un texto neutro (ver los
@@ -31,7 +37,7 @@ const PACK_SHEETS = 120
 // (que marca como "provisorios" el precio, la garantía y las ofertas). Lo recomendado no hace fallar el build.
 type Pending = { key: string; what: string }
 const REQUIRED_COMMON: Pending[] = [
-  { key: 'VITE_PACK_CHECKOUT_URL', what: 'link de pago (checkout)' },
+  { key: 'VITE_PACK_CHECKOUT_URL', what: 'URL del backend que recibe el formulario de compra (POST /packs/checkout)' },
   { key: 'VITE_PACK_CONTACT_URL', what: 'enlace de contacto (WhatsApp o mailto:)' },
   { key: 'VITE_PACK_CONTACT_TEXT', what: 'texto visible del contacto' },
   { key: 'VITE_PACK_REGRET_URL', what: 'página del botón de arrepentimiento' },
@@ -91,11 +97,15 @@ function packTokens(env: Record<string, string>, slug: string): Record<string, s
   const promoOk = !!(y && m && d) && !Number.isNaN(Date.UTC(y, m - 1, d))
   return {
     PACK_EDICION: slug,
-    // A dónde van los botones de compra: el checkout, o la sección de precio de la misma página mientras no haya checkout
-    PACK_BUY_URL: isOn(env.VITE_PACK_CHECKOUT_URL) ? escapeHtml(String(env.VITE_PACK_CHECKOUT_URL).trim()) : '#comprar',
+    // A dónde van los botones de compra: con checkout, al formulario de la tarjeta de precio (#pedido); sin checkout, a la sección de precio (#comprar). Nunca salen de la página.
+    PACK_BUY_URL: isOn(env.VITE_PACK_CHECKOUT_URL) ? '#pedido' : '#comprar',
+    // Destino del formulario de compra: el endpoint del backend (POST /packs/checkout). Vacío mientras no haya checkout (entonces no hay formulario).
+    PACK_CHECKOUT_ACTION: isOn(env.VITE_PACK_CHECKOUT_URL) ? escapeHtml(String(env.VITE_PACK_CHECKOUT_URL).trim()) : '',
     PACK_PRICE: formatPesos(price),
     PACK_PRICE_NUM: String(price),
     PACK_PER_SHEET: formatPesos(price / PACK_SHEETS),
+    PACK_PAGES: String(PACK_START_PAGES + PACK_BOOKLET_PAGES),
+    PACK_START_PAGES: String(PACK_START_PAGES),
     PACK_GAMES_PRICE: formatPesos(gamesPrice),
     PACK_GAMES_PRICE_NUM: String(gamesPrice),
     PACK_GAMES_REGULAR: formatPesos(gamesRegular),
