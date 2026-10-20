@@ -1578,13 +1578,46 @@
     align-items: center;
     gap: 0.45rem;
   }
+  /* En lugar del punto de color, la planta de papel de cada área (las mismas de las tapas: public/plantas/v1, ver scripts/plantas/export_plantas.py). El nombre del área
+     sigue escrito al lado y la planta es decoración (un fondo de CSS no lleva texto alternativo). La caja es de 4:5 y se reserva desde el CSS: la píldora no cambia de alto
+     cuando llega el archivo, y el margen negativo evita que crezca por la planta. 1x primero (1,3 KB) y 2x solo en pantallas de alta densidad. */
   .tipos--dots li::before {
     content: "";
     flex: none;
-    height: 0.75rem;
-    width: 0.75rem;
-    border-radius: 9999px;
-    background: var(--k);
+    height: 1.75rem;
+    width: 1.4rem;
+    margin-block: -0.3rem;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .tipos--dots .k-ori::before {
+    background-image: url(/plantas/v1/orientacion-48.webp);
+    background-image: image-set(url(/plantas/v1/orientacion-48.webp) 1x, url(/plantas/v1/orientacion-96.webp) 2x);
+  }
+  .tipos--dots .k-mem::before {
+    background-image: url(/plantas/v1/memoria-48.webp);
+    background-image: image-set(url(/plantas/v1/memoria-48.webp) 1x, url(/plantas/v1/memoria-96.webp) 2x);
+  }
+  .tipos--dots .k-ate::before {
+    background-image: url(/plantas/v1/atencion-48.webp);
+    background-image: image-set(url(/plantas/v1/atencion-48.webp) 1x, url(/plantas/v1/atencion-96.webp) 2x);
+  }
+  .tipos--dots .k-len::before {
+    background-image: url(/plantas/v1/lenguaje-48.webp);
+    background-image: image-set(url(/plantas/v1/lenguaje-48.webp) 1x, url(/plantas/v1/lenguaje-96.webp) 2x);
+  }
+  .tipos--dots .k-cal::before {
+    background-image: url(/plantas/v1/calculo-48.webp);
+    background-image: image-set(url(/plantas/v1/calculo-48.webp) 1x, url(/plantas/v1/calculo-96.webp) 2x);
+  }
+  .tipos--dots .k-raz::before {
+    background-image: url(/plantas/v1/razonamiento-48.webp);
+    background-image: image-set(url(/plantas/v1/razonamiento-48.webp) 1x, url(/plantas/v1/razonamiento-96.webp) 2x);
+  }
+  .tipos--dots .k-vis::before {
+    background-image: url(/plantas/v1/visuoespacial-48.webp);
+    background-image: image-set(url(/plantas/v1/visuoespacial-48.webp) 1x, url(/plantas/v1/visuoespacial-96.webp) 2x);
   }
 
   /* Enlace para saltar al contenido */

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Download, FileText, Check, Gift, Brain, Target, Type, Calculator, type LucideIcon } from 'lucide-react'
+import { Download, FileText, Check, Gift } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import { AreaPlantIcon } from '@/components/plants/AreaPlantIcon'
+import type { AreaKey } from '@/lib/areaPlants'
 import { Button } from '@/components/ui/Button'
 import { HoneypotField } from '@/components/ui/HoneypotField'
 import { useBotTrap } from '@/hooks/useBotTrap'
@@ -14,16 +16,17 @@ interface Ficha {
   file: string
   area: string
   title: string
-  icon: LucideIcon
+  /** The area's plant (lib/areaPlants.ts): decoration next to the name, which always stays. */
+  plant: AreaKey
 }
 
 // One complete exercise per area, cut from the approved Pack Básico PDFs (professional edition, A4, level 1):
 // the worksheet (study + recall pages for memory) plus its guide for the professional.
 const FICHAS: Ficha[] = [
-  { file: '/recursos/ficha-memoria.pdf', area: 'Memoria', title: '¿Qué cambió? En el mercado', icon: Brain },
-  { file: '/recursos/ficha-atencion.pdf', area: 'Atención', title: 'Sopa de letras: meses y días', icon: Target },
-  { file: '/recursos/ficha-lenguaje.pdf', area: 'Lenguaje', title: 'Letras que faltan', icon: Type },
-  { file: '/recursos/ficha-calculo.pdf', area: 'Cálculo', title: 'Compras en la ferretería', icon: Calculator },
+  { file: '/recursos/ficha-memoria.pdf', area: 'Memoria', title: '¿Qué cambió? En el mercado', plant: 'memoria' },
+  { file: '/recursos/ficha-atencion.pdf', area: 'Atención', title: 'Sopa de letras: meses y días', plant: 'atencion' },
+  { file: '/recursos/ficha-lenguaje.pdf', area: 'Lenguaje', title: 'Letras que faltan', plant: 'lenguaje' },
+  { file: '/recursos/ficha-calculo.pdf', area: 'Cálculo', title: 'Compras en la ferretería', plant: 'calculo' },
 ]
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -111,13 +114,14 @@ export function RecursosPage() {
                 Qué incluye
               </h2>
               <ul data-stagger className="space-y-3">
-                {FICHAS.map(({ file, area, title, icon: Icon }) => (
+                {FICHAS.map(({ file, area, title, plant }) => (
                   <li
                     key={file}
                     className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-md hover:shadow-lg hover:border-tiam-blue/20 transition-[box-shadow,border-color] duration-200"
                   >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-tiam-blue/10">
-                      <Icon className="h-5 w-5 text-tiam-blue" aria-hidden="true" />
+                    {/* On the covers' paper colour, like the garden they come from. */}
+                    <span className="flex h-12 w-12 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-[#FDF9EB] pb-1 ring-1 ring-slate-100">
+                      <AreaPlantIcon area={plant} size={40} />
                     </span>
                     <div className="min-w-0">
                       <span className="inline-flex items-center rounded-full bg-tiam-green/10 px-2 py-0.5 text-xs font-medium text-tiam-green">

@@ -4,6 +4,8 @@ import { ArrowRight, Check, Gift, Printer } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
+import { AreaChips } from '@/components/plants/AreaChips'
+import { AREA_KEYS, type AreaKey } from '@/lib/areaPlants'
 import { cn } from '@/lib/utils'
 import { MATERIAL_LAUNCHED } from '@/lib/platform'
 import materialMesa from '@/assets/material-digital/material-mesa.webp'
@@ -39,6 +41,8 @@ interface Product {
   description: string
   /** Short lines under the description. */
   highlights: string[]
+  /** The cognitive areas the product covers: each one is shown with its plant (lib/areaPlants.ts) next to its name, under the highlights. */
+  areas?: AreaKey[]
   image: string
   alt: string
   /** Final price in Argentine pesos. Absent = not set yet: the card shows no price. */
@@ -78,9 +82,11 @@ const PRODUCTS: Product[] = [
       '120 ejercicios de estimulación cognitiva para hacer solo/a: cuatro cuadernos que suben de nivel, con letra grande y las soluciones al final.',
     highlights: [
       '120 ejercicios distintos en 4 cuadernos que suben de nivel',
+      '7 áreas cognitivas, cada una con su color',
       'Para hacer solo/a, con las soluciones al final',
       'PDF para imprimir en A4 o Carta',
     ],
+    areas: [...AREA_KEYS],
     image: edicionCuadernos,
     alt: 'Ilustración de una mujer mayor que sonríe sentada sola a la mesa de la cocina, junto a una ventana, y escribe con lápiz en un cuaderno de ejercicios, con una taza de té y una planta',
     price: 20000,
@@ -96,10 +102,11 @@ const PRODUCTS: Product[] = [
     description:
       '120 fichas imprimibles en 3 niveles, cada una con su guía, su solucionario y su registro de la sesión. Elegís, imprimís y trabajás, sin improvisar.',
     highlights: [
-      '4 áreas (Memoria, Atención, Lenguaje y Cálculo) en 3 niveles',
+      '4 áreas en 3 niveles',
       'Guía para el profesional y registro de la sesión',
       'PDF para imprimir',
     ],
+    areas: ['memoria', 'atencion', 'lenguaje', 'calculo'],
     image: edicionProfesionales,
     alt: 'Ilustración de una tallerista que reparte fichas impresas a tres personas mayores sentadas a una mesa, en un salón luminoso',
     price: 14990,
@@ -198,6 +205,8 @@ function ProductCard({ product }: { product: Product }) {
             </li>
           ))}
         </ul>
+        {/* The area's plant next to its written name: decoration, the label always stays (and so does the colour key of the covers). */}
+        {product.areas && <AreaChips areas={product.areas} label="Áreas cognitivas" className="mt-4" />}
 
         <div className="mt-auto pt-6">
           {canBuyNow ? (

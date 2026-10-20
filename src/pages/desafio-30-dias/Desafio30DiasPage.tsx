@@ -11,7 +11,9 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import { AreaPlantIcon } from '@/components/plants/AreaPlantIcon'
 import { api } from '@/lib/api'
+import { areaKeyOf } from '@/lib/areaPlants'
 import { CHALLENGE_TOTAL_DAYS } from '@/lib/challengeContent'
 import { cn } from '@/lib/utils'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
@@ -678,15 +680,27 @@ export function Desafio30DiasPage() {
 
                 <p className="mt-8 text-base font-semibold text-slate-200">Cada día trabaja una de estas 8 áreas:</p>
                 <ul role="list" data-stagger className="mt-3 flex flex-wrap gap-2">
-                  {AREA_COLORS.map(({ label, color }) => (
-                    <li
-                      key={label}
-                      className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[0.9375rem] font-semibold"
-                    >
-                      <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-                      {label}
-                    </li>
-                  ))}
+                  {AREA_COLORS.map(({ label, color }) => {
+                    // The plant of the area when it has one, on a small paper disc (this band is dark: the violet, teal and gold plants would vanish on it);
+                    // "Reconocimiento" has no plant yet and keeps its coloured dot.
+                    const areaKey = areaKeyOf(label)
+                    return (
+                      <li
+                        key={label}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-full bg-white/10 py-1.5 text-[0.9375rem] font-semibold',
+                          areaKey ? 'py-1 pl-1.5 pr-3' : 'px-3',
+                        )}
+                      >
+                        {areaKey ? (
+                          <AreaPlantIcon area={areaKey} size={20} onPaper />
+                        ) : (
+                          <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                        )}
+                        {label}
+                      </li>
+                    )
+                  })}
                 </ul>
 
                 <div className="mt-8 rounded-3xl bg-white p-5 text-slate-900 shadow-[0_24px_40px_-24px_rgba(0,0,0,0.8)]">

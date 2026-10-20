@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { CalendarCheck, Pause, Play, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAutoCarousel } from '@/hooks/useAutoCarousel'
+import { AreaPlantIcon } from '@/components/plants/AreaPlantIcon'
+import { areaKeyOf } from '@/lib/areaPlants'
 import { DECK_CARDS } from '@/pages/desafio-30-dias/deckCards'
 
 /**
@@ -82,6 +84,7 @@ export function AreasDeck() {
         <div className="relative aspect-[900/616] w-full">
           {DECK_CARDS.map((card, i) => {
             const state = positionFor(i, active, fanned)
+            const areaKey = areaKeyOf(card.label)
             return (
               <figure
                 key={card.src}
@@ -107,11 +110,17 @@ export function AreasDeck() {
                 {/* Top-left, not bottom-left: the "7 ejercicios nuevos" note overhangs the
                     deck's bottom-left corner and would cover every label. */}
                 <figcaption className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-1.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200">
-                  <span
-                    aria-hidden="true"
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: card.color }}
-                  />
+                  {/* The area's plant when it has one (the seven of the Cuadernos' covers); "Reconocimiento" and the trophy keep their coloured dot.
+                      -my-0.5: the plant is a little taller than the line, and the pill keeps its height. */}
+                  {areaKey ? (
+                    <AreaPlantIcon area={areaKey} size={22} className="-my-0.5" />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: card.color }}
+                    />
+                  )}
                   {card.label}
                 </figcaption>
               </figure>
