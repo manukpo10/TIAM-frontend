@@ -4,6 +4,9 @@ import { ArrowRight, Check, ChevronRight, GraduationCap } from 'lucide-react'
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { PublicFooter } from '@/components/layout/PublicFooter'
+import { AreaChips } from '@/components/plants/AreaChips'
+import { Sprouts } from '@/components/plants/Sprouts'
+import type { AreaKey } from '@/lib/areaPlants'
 import { cn } from '@/lib/utils'
 import profNeuro from '@/assets/profesionales/neuropsicologia.webp'
 import desafioAbuelo from '@/assets/desafio-abuelo.webp'
@@ -44,6 +47,8 @@ interface Path {
   title: string
   description: string
   bullets: string[]
+  // The cognitive areas the product covers: each one grows as its plant (lib/areaPlants.ts), next to its name, when the card scrolls into view.
+  areas?: AreaKey[]
   image: string
   imagePosition: string
   featured?: boolean
@@ -79,6 +84,8 @@ const PATHS: Path[] = [
     title: 'Fichas para imprimir',
     description: 'Material de estimulación cognitiva en PDF, con una guía paso a paso y las respuestas.',
     bullets: ['Pack Básico: 120 fichas en 4 áreas y 3 niveles', 'Letra grande, listas para imprimir', 'Para familias y para profesionales'],
+    // The four areas of the Pack Básico: the same ones /material-digital names.
+    areas: ['memoria', 'atencion', 'lenguaje', 'calculo'],
     image: materialMesa,
     imagePosition: '50% 50%',
     link: { cta: 'Ver el material', to: '/material-digital', variant: 'blue' },
@@ -136,7 +143,7 @@ function PathCard({ path }: { path: Path }) {
         </div>
         <h3 className="text-2xl font-bold text-slate-900">{path.title}</h3>
         <p className="mt-2 leading-relaxed text-slate-600">{path.description}</p>
-        <ul className="mb-7 mt-5 space-y-2.5">
+        <ul className={cn('mt-5 space-y-2.5', path.areas ? 'mb-4' : 'mb-7')}>
           {path.bullets.map((bullet) => (
             <li key={bullet} className="flex gap-2.5 text-slate-700">
               <Check className="mt-0.5 h-5 w-5 shrink-0 text-tiam-green" aria-hidden="true" />
@@ -144,6 +151,7 @@ function PathCard({ path }: { path: Path }) {
             </li>
           ))}
         </ul>
+        {path.areas && <AreaChips areas={path.areas} label="Las áreas del Pack Básico" sprout className="mb-7" />}
         {path.link ? (
           // The ::after overlay stretches this link across the whole card, so
           // the entire card is one big tap target with a single tab stop.
@@ -281,9 +289,15 @@ export function LandingPage() {
         </section>
 
         {/* ── Paths ────────────────────────────────────────────────────────── */}
-        <section aria-labelledby="paths-heading" className="py-16 md:py-24 bg-white">
+        {/* relative: the plants that stand on this section's bottom edge (below) are positioned against it. */}
+        <section aria-labelledby="paths-heading" className="relative py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="mx-auto mb-12 max-w-2xl text-center">
+            <div className="relative mx-auto mb-12 max-w-2xl text-center">
+              {/* The garden starts to show here: a few area plants grow when the heading scrolls into view. Over the heading on a phone, on both sides of it from lg up
+                  (where there is room beside the 2xl column). Decoration only: nothing is covered and nothing shifts (the boxes have their size). */}
+              <Sprouts areas={['orientacion', 'memoria', 'atencion']} height={64} className="mb-5 justify-center gap-1 lg:hidden" />
+              <Sprouts areas={['orientacion', 'memoria']} height={128} className="absolute bottom-0 right-full mr-8 hidden gap-1 lg:flex" />
+              <Sprouts areas={['lenguaje', 'calculo']} height={128} className="absolute bottom-0 left-full ml-8 hidden gap-1 lg:flex" />
               <SectionEyebrow text="Para cada momento" />
               <h2 id="paths-heading" className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
                 Elegí por dónde empezar
@@ -306,6 +320,14 @@ export function LandingPage() {
                 en estimulación cognitiva.
               </span>
             </p>
+          </div>
+
+          {/* The seam with the next section: a few plants stand on its edge, in the section's own bottom padding (they are shorter than it, so they never touch the text above). */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0">
+            <div className="mx-auto flex max-w-6xl items-end justify-between px-4 sm:px-6">
+              <Sprouts areas={['razonamiento', 'visuoespacial']} height={72} plantClassName="h-12 w-auto sm:h-[72px]" className="gap-1" />
+              <Sprouts areas={['atencion', 'calculo']} height={72} plantClassName="h-12 w-auto sm:h-[72px]" className="gap-1" />
+            </div>
           </div>
         </section>
 

@@ -199,6 +199,44 @@ html {
   }
 }
 
+/* ── Plantas ──
+   Las plantas de las áreas (las del jardín de las tapas de los Cuadernos TIAM, lib/areaPlants.ts) que brotan en la portada cuando su bloque entra en pantalla.
+   useReveal (hooks/useReveal.ts, con sus reglas y pruebas en lib/reveal.ts) pone data-grow="static" | "pending" | "done" en el contenedor:
+   - static: se ven tal cual, sin movimiento (movimiento reducido, sin IntersectionObserver, lo que arranca a la vista o más arriba, o cualquier falla);
+   - pending: arranca bajo el pliegue y espera, escondida;
+   - done: entró en pantalla, brota una vez (crece desde la base, un poco más ancha que alta al principio y con un pequeño pasado de largo).
+   Solo se animan opacity, scale, translate y rotate: no cambia ningún tamaño ni se mueve nada (sin layout shift), y no hay nada de esto en lo que se ve al cargar.
+   Todo vive dentro de `prefers-reduced-motion: no-preference`: con movimiento reducido las plantas son una imagen quieta, pase lo que pase con el JavaScript. */
+.plant-sprout {
+  transform-origin: 50% 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes plant-sprout {
+    from {
+      opacity: 0;
+      scale: 0.82 0.2;
+      translate: 0 8px;
+      rotate: -3deg;
+    }
+    65% {
+      opacity: 1;
+      scale: 1.015 1.045;
+      rotate: 1deg;
+    }
+    to {
+      scale: 1;
+      rotate: 0deg;
+    }
+  }
+  [data-grow="pending"] .plant-sprout {
+    opacity: 0;
+  }
+  [data-grow="done"] .plant-sprout {
+    animation: plant-sprout 1100ms var(--ease-soft) var(--plant-delay, 0ms) backwards;
+  }
+}
+
 @media print {
   [data-reveal-state] {
     opacity: 1 !important;
