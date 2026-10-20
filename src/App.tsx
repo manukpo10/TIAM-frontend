@@ -1,4 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
+import { ChunkErrorBoundary } from '@/components/ChunkErrorBoundary'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ToastProvider } from '@/components/ui/Toast'
@@ -48,17 +49,20 @@ const DescargasPage = lazy(() => import('@/pages/pack/DescargasPage').then((m) =
 const RecuperarPage = lazy(() => import('@/pages/pack/RecuperarPage').then((m) => ({ default: m.RecuperarPage })))
 const ArrepentimientoPage = lazy(() => import('@/pages/pack/ArrepentimientoPage').then((m) => ({ default: m.ArrepentimientoPage })))
 
+// The boundary reloads the page once when a chunk can no longer be loaded (a tab that was open before a deploy): see lib/chunkReload.ts.
 function Lazy({ children }: { children: ReactNode }) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-dvh items-center justify-center bg-white">
-          <Spinner className="h-8 w-8" />
-        </div>
-      }
-    >
-      {children}
-    </Suspense>
+    <ChunkErrorBoundary>
+      <Suspense
+        fallback={
+          <div className="flex min-h-dvh items-center justify-center bg-white">
+            <Spinner className="h-8 w-8" />
+          </div>
+        }
+      >
+        {children}
+      </Suspense>
+    </ChunkErrorBoundary>
   )
 }
 
