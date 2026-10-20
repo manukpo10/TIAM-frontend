@@ -5,6 +5,8 @@ import { startMetaPixel, trackMetaPixel } from '@/lib/metaPixel'
 import { purchaseValue } from '@/lib/purchaseValue'
 import { Card, PackShell, StateHero } from './PackShell'
 import { DownloadsPanel } from './DownloadsPanel'
+import { FilesUnavailable } from './FilesUnavailable'
+import { orderHasFiles, purchaseCategory } from './orderRules'
 import { ContactLink } from './ContactLink'
 import { contact } from './contact'
 import { linkButton } from './linkButton'
@@ -39,6 +41,7 @@ import { consumeReturnParams, isPurchaseTracked, markPurchaseTracked } from './r
 type View =
   | { kind: 'loading'; slow: boolean }
   | { kind: 'paid'; order: PackOrder }
+  | { kind: 'no-files' }
   | { kind: 'waiting'; delayed: boolean }
   | { kind: 'failed' }
   | { kind: 'review' }
@@ -103,7 +106,8 @@ export function GraciasPage() {
         window.clearTimeout(timer)
         confirmTimers.forEach(window.clearTimeout)
         setPaidOrder(order)
-        setView({ kind: 'paid', order })
+        // Paid, but with no file to list: never an empty list (orderRules.ts). The purchase still counts for the Pixel (paidOrder is set).
+        setView(orderHasFiles(order) ? { kind: 'paid', order } : { kind: 'no-files' })
         return null
       }
       const now = Date.now()
@@ -199,7 +203,7 @@ export function GraciasPage() {
     if (!paidOrder || isPurchaseTracked()) return
     if (startMetaPixel()) {
       const value = purchaseValue(paidOrder.total)
-      trackMetaPixel('Purchase', { currency: 'ARS', content_type: 'product', content_category: 'pack-fichas', ...(value === null ? {} : { value }) })
+      trackMetaPixel('Purchase', { currency: 'ARS', content_type: 'product', content_category: purchaseCategory(paidOrder.edition), ...(value === null ? {} : { value }) })
     }
     markPurchaseTracked()
   }, [paidOrder])
@@ -210,6 +214,7 @@ export function GraciasPage() {
     <PackShell title="Gracias por tu compra">
       {view.kind === 'loading' && <Loading slow={view.slow} />}
       {view.kind === 'paid' && token && <Paid order={view.order} token={token} />}
+      {view.kind === 'no-files' && <FilesUnavailable />}
       {view.kind === 'waiting' && <Waiting cash={cash} delayed={view.delayed} onRetry={retry} />}
       {view.kind === 'failed' && <Failed edition={edition} onCheck={retry} />}
       {view.kind === 'review' && <Review />}

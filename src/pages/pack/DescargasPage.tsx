@@ -4,7 +4,9 @@ import { CheckCircle2, Loader2, RefreshCw, SearchX, WifiOff } from 'lucide-react
 import { PackShell, StateHero } from './PackShell'
 import { ContactLink } from './ContactLink'
 import { DownloadsPanel } from './DownloadsPanel'
+import { FilesUnavailable } from './FilesUnavailable'
 import { linkButton } from './linkButton'
+import { orderHasFiles } from './orderRules'
 import { getOrder } from './packClient'
 import type { PackOrder } from './packTypes'
 import { PackApiError } from './packTypes'
@@ -21,6 +23,7 @@ import { PackApiError } from './packTypes'
 type State =
   | { kind: 'loading'; slow: boolean }
   | { kind: 'ready'; order: PackOrder }
+  | { kind: 'no-files' }
   | { kind: 'not-found' }
   | { kind: 'offline' }
 
@@ -37,8 +40,10 @@ export function DescargasPage() {
     getOrder(token, controller.signal)
       .then((order) => {
         if (controller.signal.aborted) return
-        // Only a paid order has downloads; any other state is "not found" for whoever holds this link.
-        setState(order.status === 'PAID' && order.items?.length ? { kind: 'ready', order } : { kind: 'not-found' })
+        // Only a paid order has downloads; any other state is "not found" for whoever holds this link. A paid order with no file to list
+        // is not an empty list: it says "no pudimos cargar tus archivos" (the same screen as the thank-you page).
+        if (order.status !== 'PAID') setState({ kind: 'not-found' })
+        else setState(orderHasFiles(order) ? { kind: 'ready', order } : { kind: 'no-files' })
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return
@@ -74,6 +79,8 @@ export function DescargasPage() {
           <DownloadsPanel order={state.order} token={token} />
         </div>
       )}
+
+      {state.kind === 'no-files' && <FilesUnavailable />}
 
       {state.kind === 'not-found' && (
         <div className="space-y-6">

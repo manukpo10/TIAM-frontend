@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input'
 import { Card, PackShell, StateHero } from './PackShell'
 import { ContactLink } from './ContactLink'
 import { resendAccess } from './packClient'
-import { PackApiError } from './packTypes'
+import { recoverOutcome } from './orderRules'
 
 /**
  * /pack/recuperar: "send me my access again". The answer is the same whatever the email (an outsider must not
@@ -49,15 +49,17 @@ export function RecuperarPage() {
 
   async function onSubmit(data: FormData) {
     setFailed(false)
+    let problem: unknown
     try {
       await resendAccess(data.email)
     } catch (error) {
-      // 4xx answers (including "too many requests") are the backend deciding something about this email:
-      // they get the same confirmation as a success. Only "could not reach it" is reported.
-      if (error instanceof PackApiError && (error.kind === 'network' || error.kind === 'server')) {
-        setFailed(true)
-        return
-      }
+      problem = error ?? new Error('unknown')
+    }
+    // Only a 2xx answer says "te mandamos el acceso" (the backend answers the same for an email that has an order and one that has not, so nothing leaks).
+    // Any other answer (a bad request, a 404, "too many requests", a server error, no connection) is the error state (orderRules.ts, with its tests).
+    if (recoverOutcome(problem) === 'failed') {
+      setFailed(true)
+      return
     }
     setSent(true)
     setCooldown(COOLDOWN_SECONDS)
