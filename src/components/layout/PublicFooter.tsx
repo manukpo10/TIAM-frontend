@@ -19,8 +19,8 @@ export function PublicFooter() {
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
               {PLATFORM_LAUNCHED
-                ? 'Estimulación cognitiva para cada momento: plataforma para profesionales, Desafío 30 días para familias y, pronto, formación para especializarte.'
-                : 'Estimulación cognitiva para cada momento: Desafío 30 días para familias y, pronto, una plataforma para profesionales y formación para especializarte.'}
+                ? 'Estimulación cognitiva para cada momento: plataforma para profesionales, el Desafío 30 días y los Cuadernos TIAM para hacer en casa y, pronto, formación para especializarte.'
+                : 'Estimulación cognitiva para cada momento: el Desafío 30 días y los Cuadernos TIAM para hacer en casa, y pronto una plataforma para profesionales y formación para especializarte.'}
             </p>
           </div>
 
@@ -38,6 +38,8 @@ export function PublicFooter() {
               <li><Link to="/desafio-30-dias" className="hover:text-white transition-colors">Desafío 30 días</Link></li>
               <li><Link to="/talleres" className="hover:text-white transition-colors">Talleres</Link></li>
               <li><Link to="/material-digital" className="hover:text-white transition-colors">Material digital</Link></li>
+              {/* On sale since 2026-10-19. /cuadernos is a static page outside the SPA (vercel.json rewrite): a plain <a>, never <Link> (see App.tsx). */}
+              <li><a href="/cuadernos" className="hover:text-white transition-colors">Cuadernos TIAM</a></li>
               {/* While the platform is "Próximamente" it goes last, as in the header menu. */}
               {!PLATFORM_LAUNCHED && (
                 <li><Link to="/plataforma" className="hover:text-white transition-colors">Plataforma</Link></li>
