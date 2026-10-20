@@ -7,9 +7,10 @@ import { SectionEyebrow } from '@/components/ui/SectionEyebrow'
 import { cn } from '@/lib/utils'
 import { MATERIAL_LAUNCHED } from '@/lib/platform'
 import materialMesa from '@/assets/material-digital/material-mesa.webp'
-import edicionFamilias from '@/assets/material-digital/edicion-familias.webp'
+import edicionCuadernos from '@/assets/material-digital/edicion-cuadernos.webp'
 import edicionProfesionales from '@/assets/material-digital/edicion-profesionales.webp'
 import edicionCuerpo from '@/assets/material-digital/edicion-cuerpo.webp'
+import { isExternal, shelfCount, visibleLanding } from './shelf'
 
 /**
  * "Material digital" — the library of TIAM's printable products: one card per
@@ -21,7 +22,9 @@ import edicionCuerpo from '@/assets/material-digital/edicion-cuerpo.webp'
  *
  * While MATERIAL_LAUNCHED (lib/platform.ts) is false the whole shelf is "Próximamente": the
  * cards stay, but with no price and no link, because the material isn't finished and can't be
- * bought yet. The prices and landings below are kept for the launch.
+ * bought yet. The prices and landings below are kept for the launch. The one exception is a product
+ * marked `landingOpen` (the Cuadernos TIAM): its landing is already online in preview, so its card
+ * links to it (with a "Muy pronto" badge, still no price). The rule lives in shelf.ts, with its tests.
  *
  * The pictures are TIAM's flat illustrations on purpose (the site's look); the real
  * covers and pages of each product live on its landing.
@@ -47,6 +50,13 @@ interface Product {
    * rendered with <a>, not <Link>) or a full URL. Absent = not ready yet.
    */
   landing?: string
+  /**
+   * The landing is already online (in preview, sales off) while the shelf is still "Próximamente": the card links to it and shows `badge`
+   * instead of "Próximamente". See shelf.ts (visibleLanding), which has its tests.
+   */
+  landingOpen?: boolean
+  /** The small badge over the picture while the shelf is not launched. Default: "Próximamente". */
+  badge?: string
   cta: string
 }
 
@@ -61,22 +71,27 @@ const PREVIEW = true
 
 const PRODUCTS: Product[] = [
   {
-    id: 'pack-basico-familias',
-    audience: 'Para familias',
-    name: 'Pack Básico para familias',
+    // The Cuadernos TIAM (the owner approved their landing on 2026-10-19). The card links to it while sales are still off (landingOpen), with a
+    // "Muy pronto" badge and no price. /cuadernos is a static page outside this app: a plain <a>, never <Link>. Its price is VITE_PACK_CUADERNOS_PRICE in
+    // the landing's build config (20.000), kept here for the launch.
+    id: 'cuadernos-tiam',
+    audience: 'Para adultos mayores y familias',
+    name: 'Cuadernos TIAM',
     description:
-      '120 fichas listas para imprimir, con letra grande, una guía paso a paso y las respuestas. Elegís una, la imprimís y se sientan juntos.',
+      '120 ejercicios de estimulación cognitiva para hacer solo/a: cuatro cuadernos que suben de nivel, con letra grande y las soluciones al final.',
     highlights: [
-      '4 áreas (Memoria, Atención, Lenguaje y Cálculo) en 3 niveles',
-      'Guía para acompañar y registro «Cómo nos fue hoy»',
-      'PDF para imprimir en casa',
+      '120 ejercicios distintos en 4 cuadernos que suben de nivel',
+      'Para hacer solo/a, con las soluciones al final',
+      'PDF para imprimir en A4 o Carta',
     ],
-    image: edicionFamilias,
-    alt: 'Ilustración de una hija y su mamá sentadas a la mesa de la cocina, que resuelven juntas una ficha impresa con lápiz y té',
-    price: 14990,
+    image: edicionCuadernos,
+    alt: 'Ilustración de una mujer mayor que sonríe sentada sola a la mesa de la cocina, junto a una ventana, y escribe con lápiz en un cuaderno de ejercicios, con una taza de té y una planta',
+    price: 20000,
     priceNote: 'pago único',
-    landing: '/pack/familias',
-    cta: 'Ver el pack',
+    landing: '/cuadernos',
+    landingOpen: true,
+    badge: 'Muy pronto',
+    cta: 'Ver los cuadernos',
   },
   {
     id: 'pack-basico-profesionales',
@@ -101,8 +116,8 @@ const PRODUCTS: Product[] = [
     id: 'pack-basico-ejercicios-corporales',
     audience: 'Para adultos mayores',
     name: 'Pack Básico de ejercicios corporales',
-    description: '120 fichas de ejercicios corporales para adultos mayores, en un cuadernillo para imprimir.',
-    highlights: ['120 fichas para entrenar el cuerpo', 'Pensado para adultos mayores', 'PDF para imprimir'],
+    description: 'Ejercicios corporales para adultos mayores, en un cuadernillo para imprimir.',
+    highlights: ['Ejercicios para entrenar el cuerpo', 'Pensado para adultos mayores', 'PDF para imprimir'],
     image: edicionCuerpo,
     alt: 'Ilustración de una mujer y un hombre mayores, de pie sobre una colchoneta y con los brazos extendidos en un ejercicio de estiramiento, en un living luminoso',
     cta: 'Ver el pack',
@@ -114,8 +129,6 @@ function formatPrice(n: number) {
   return n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 }
 
-const isExternal = (url: string) => /^https?:\/\//.test(url)
-
 // The page's words that change with the launch: while the material isn't on sale it says so.
 const COPY = MATERIAL_LAUNCHED
   ? {
@@ -124,23 +137,21 @@ const COPY = MATERIAL_LAUNCHED
       heroCta: 'Ver los productos',
       eyebrow: 'La biblioteca',
       title: 'Elegí tu material',
-      count: (n: number) => (n === 1 ? '1 producto, en PDF para imprimir.' : `${n} productos, todos en PDF para imprimir.`),
     }
   : {
       badge: 'Material digital · Próximamente',
-      lead: 'Material en PDF para imprimir, para mantener activos la mente y el cuerpo. Todavía lo estamos terminando: mirá qué va a tener cada pack.',
-      heroCta: 'Ver los packs',
+      lead: 'Material en PDF para imprimir, para mantener activos la mente y el cuerpo. Todavía lo estamos terminando: mirá qué va a tener cada uno.',
+      heroCta: 'Ver los productos',
       eyebrow: 'Próximamente',
       title: 'Lo que estamos preparando',
-      count: (n: number) =>
-        n === 1
-          ? '1 pack, en PDF para imprimir. Todavía no se puede comprar.'
-          : `${n} packs, todos en PDF para imprimir. Todavía no se pueden comprar.`,
     }
 
+// The line under the title (shelf.ts, with its tests): while the shelf is not launched it says which products already have their page.
+const OPEN_NAMES = PRODUCTS.filter((product) => visibleLanding(product, false)).map((product) => product.name)
+
 function ProductCard({ product }: { product: Product }) {
-  // Not on sale: no landing to send people to, whatever the product says.
-  const landing = MATERIAL_LAUNCHED ? product.landing : undefined
+  // Not on sale: no landing to send people to, unless the product's landing is already online on purpose (landingOpen).
+  const landing = visibleLanding(product, MATERIAL_LAUNCHED)
   const external = landing ? isExternal(landing) : false
   return (
     <article
@@ -168,7 +179,7 @@ function ProductCard({ product }: { product: Product }) {
         </span>
         {!MATERIAL_LAUNCHED && (
           <span className="absolute bottom-4 left-4 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-800 shadow">
-            Próximamente
+            {product.badge ?? 'Próximamente'}
           </span>
         )}
       </div>
@@ -217,11 +228,24 @@ function ProductCard({ product }: { product: Product }) {
               )}
             </div>
           ) : (
-            // Not on sale yet: no price (the one on file is provisional) and nothing to click.
+            // Not on sale yet: no price. Nothing to click, unless the product's landing is already online (landingOpen):
+            // then the button leads to it (a plain <a>: the landing is a static page outside this app).
             <div className="border-t border-slate-100 pt-5">
-              <p className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
-                Próximamente
-              </p>
+              {landing ? (
+                <a
+                  href={landing}
+                  aria-label={`${product.cta}: ${product.name}`}
+                  {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-semibold text-white transition-colors after:absolute after:inset-0 hover:bg-primary-hover focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  {product.cta}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </a>
+              ) : (
+                <p className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
+                  Próximamente
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -330,7 +354,7 @@ export function MaterialDigitalPage() {
               >
                 {COPY.title}
               </h2>
-              <p className="mt-3 text-lg text-slate-600">{COPY.count(PRODUCTS.length)}</p>
+              <p className="mt-3 text-lg text-slate-600">{shelfCount(PRODUCTS.length, OPEN_NAMES, MATERIAL_LAUNCHED)}</p>
             </div>
 
             {/* Flex + justify-center rather than a grid: with two or three products the row
