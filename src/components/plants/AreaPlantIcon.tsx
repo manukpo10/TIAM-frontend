@@ -36,6 +36,8 @@ export function AreaPlantIcon({ area, size = 28, onPaper = false, sprout, classN
       aria-hidden="true"
       loading="lazy"
       decoding="async"
+      // Low priority: in the Desafío's hero the first card of the deck is the LCP image, and these icons sit next to its label.
+      fetchPriority="low"
       draggable={false}
       style={style}
       className={cn('block shrink-0 select-none', sprout !== undefined && 'plant-sprout', !onPaper && className)}

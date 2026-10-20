@@ -27,7 +27,7 @@ export const AREA_LABELS: Record<AreaKey, string> = {
   visuoespacial: 'Visión y espacio',
 }
 
-/** AREA_COLOR of TIAM-pack: the colour of each plant. All of them reach AA with white text. pack/landing.css (.k-ori…) repeats them, and a test keeps both in step. */
+/** AREA_COLOR of TIAM-pack: the colour of each plant. All of them reach AA with white text. The Pack landings (pack/landing.css, --color-area-*) use the same four for Memoria, Atención, Lenguaje and Cálculo, and a test keeps them in step. */
 export const AREA_COLORS: Record<AreaKey, string> = {
   orientacion: '#8F6B00',
   memoria: '#1B6FC4',

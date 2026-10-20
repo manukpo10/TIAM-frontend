@@ -9,13 +9,17 @@ import { AREA_KEYS, AREA_LABELS, PLANTS_DIR } from '../src/lib/areaPlants.ts'
 
 const root = path.resolve(import.meta.dirname, '..')
 const read = (file: string) => fs.readFileSync(path.join(root, file), 'utf8')
+/** The source without its comments (block, JSX and whole-line ones): the docs of a component say alt="" too, and a test must fail when the real attribute is gone. */
+const code = (file: string) => read(file).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
 
 describe('AreaPlantIcon', () => {
-  const icon = read('src/components/plants/AreaPlantIcon.tsx')
-  it('is decoration: alt="" and aria-hidden, lazy, with width and height (no layout shift)', () => {
+  const icon = code('src/components/plants/AreaPlantIcon.tsx')
+  it('is decoration: alt="" and aria-hidden, lazy and low priority, with width and height (no layout shift)', () => {
     assert.match(icon, /alt=""/)
     assert.match(icon, /aria-hidden="true"/)
     assert.match(icon, /loading="lazy"/)
+    // In the Desafío's hero the deck's first card is the LCP image: the icons next to its label must not compete with it.
+    assert.match(icon, /fetchPriority="low"/)
     assert.match(icon, /width=\{icon\.width\}/)
     assert.match(icon, /height=\{icon\.height\}/)
     assert.match(icon, /srcSet=\{icon\.srcSet\}/)
@@ -73,8 +77,13 @@ describe('/cuadernos: the colour key and the area chips', () => {
       for (const file of [`${area}-48.webp`, `${area}-96.webp`]) assert.ok(fs.existsSync(path.join(root, 'public', 'plantas', 'v1', file)), file)
     })
   }
+  it('left no dead CSS behind: the coloured dots are gone, and so are the --k colours only they used', () => {
+    assert.doesNotMatch(css, /--k:/)
+    assert.doesNotMatch(css, /var\(--k\)/)
+    assert.doesNotMatch(css, /\.tipos--dots[^{]*::before/, 'no pseudo-element dot in front of the area names')
+  })
   it('is lazy on purpose: no CSS background loads the plants at page load (the landing is the one that sells)', () => {
-    assert.doesNotMatch(css, /url\(\/plantas/)
+    assert.doesNotMatch(css, /url\(\s*["']?\/plantas/)
   })
   it('reserves the icon box in the CSS, so the pills do not grow when the file arrives', () => {
     const rule = /\.tipos--dots li > img\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
@@ -100,18 +109,27 @@ describe('the Desafío 30 días page', () => {
 
 describe('the home page: plants that sprout as you scroll', () => {
   const home = read('src/pages/landing/LandingPage.tsx')
-  const sprouts = read('src/components/plants/Sprouts.tsx')
+  const sprouts = code('src/components/plants/Sprouts.tsx')
   const css = read('src/index.css')
 
   it('adds three kinds of spots and leaves the rest of the home as it was (the hero, the cards and the closing are untouched)', () => {
-    assert.match(home, /<Sprouts areas=\{\['orientacion', 'memoria', 'atencion'\]\}[^>]*lg:hidden/, 'over the heading of the paths, on a phone')
-    assert.match(home, /<Sprouts areas=\{\['orientacion', 'memoria'\]\}[^>]*right-full[^>]*hidden[^>]*lg:flex/, 'beside the heading, from lg up')
+    assert.match(home, /<Sprouts areas=\{\['orientacion', 'memoria', 'atencion'\]\}[^>]*xl:hidden/, 'over the heading of the paths, on a phone')
+    // The side groups need 32 + 182 px beside the 672 px column: that only fits from xl (1280 px) up; at lg (1024) the right one was cut off by the viewport.
+    assert.match(home, /<Sprouts areas=\{\['orientacion', 'memoria'\]\}[^>]*right-full[^>]*hidden[^>]*xl:flex/, 'beside the heading, from xl up')
+    assert.match(home, /<Sprouts areas=\{\['lenguaje', 'calculo'\]\}[^>]*left-full[^>]*hidden[^>]*xl:flex/, 'beside the heading, from xl up')
+    assert.doesNotMatch(home, /lg:flex/, 'no side group is shown from lg')
     assert.match(home, /<AreaChips areas=\{path\.areas\} label="Las áreas del Pack Básico" sprout/, 'next to the "4 áreas" of the Material digital card')
     assert.match(home, /areas: \['memoria', 'atencion', 'lenguaje', 'calculo'\]/, 'the four areas of the Pack Básico')
     assert.match(home, /pointer-events-none absolute inset-x-0 bottom-0/, 'the plants that stand on the bottom edge of the paths section')
   })
+  it('keeps the seam plants shorter than the bottom padding of their section (py-16 = 64 px until md), so they never touch the text above', () => {
+    const seam = home.slice(home.indexOf('pointer-events-none absolute inset-x-0 bottom-0'))
+    assert.match(seam, /h-12 w-auto md:h-\[72px\]/, '48 px below md, 72 px from md (py-24 = 96 px)')
+    assert.doesNotMatch(seam, /sm:h-\[72px\]/)
+  })
   it('keeps every hero element out of it: nothing above the fold gets a plant', () => {
     const hero = home.slice(home.indexOf('aria-labelledby="hero-heading"'), home.indexOf('aria-labelledby="paths-heading"'))
+    assert.ok(hero.length > 500, 'the hero was found (its markers still exist)')
     assert.doesNotMatch(hero, /Sprouts|AreaChips|AreaPlantIcon/)
   })
   it('is decoration that cannot shift the page: aria-hidden, alt="", lazy, low priority, with the width and height of each plant', () => {

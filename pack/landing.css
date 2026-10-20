@@ -1551,28 +1551,8 @@
   .area--c4 {
     --c: #16263f;
   }
-  /* Las siete áreas de los cuadernos, con los colores de las tapas y de cada hoja (AREA_COLOR de TIAM-pack; todos llegan a AA con texto blanco). Delante de cada ejercicio va la planta de su área, del color de --k (una prueba, tests/area-plants.test.ts, compara estos colores con los de las plantas). */
-  .k-ori {
-    --k: #8f6b00;
-  }
-  .k-mem {
-    --k: #1b6fc4;
-  }
-  .k-ate {
-    --k: #cc4610;
-  }
-  .k-len {
-    --k: #2c801c;
-  }
-  .k-cal {
-    --k: #5b3c9e;
-  }
-  .k-raz {
-    --k: #0f766e;
-  }
-  .k-vis {
-    --k: #a3225c;
-  }
+  /* Las siete áreas de los cuadernos (clase k-* de cada <li> de la colección): delante del nombre va la planta de papel de su área, del color de las tapas (AREA_COLOR de TIAM-pack,
+     que también usan los cuatro --color-area-* de arriba), y el nombre sigue escrito. Antes iba un punto de color. */
   .tipos--dots li {
     display: inline-flex;
     align-items: center;

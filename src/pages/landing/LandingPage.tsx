@@ -293,11 +293,11 @@ export function LandingPage() {
         <section aria-labelledby="paths-heading" className="relative py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="relative mx-auto mb-12 max-w-2xl text-center">
-              {/* The garden starts to show here: a few area plants grow when the heading scrolls into view. Over the heading on a phone, on both sides of it from lg up
-                  (where there is room beside the 2xl column). Decoration only: nothing is covered and nothing shifts (the boxes have their size). */}
-              <Sprouts areas={['orientacion', 'memoria', 'atencion']} height={64} className="mb-5 justify-center gap-1 lg:hidden" />
-              <Sprouts areas={['orientacion', 'memoria']} height={128} className="absolute bottom-0 right-full mr-8 hidden gap-1 lg:flex" />
-              <Sprouts areas={['lenguaje', 'calculo']} height={128} className="absolute bottom-0 left-full ml-8 hidden gap-1 lg:flex" />
+              {/* The garden starts to show here: a few area plants grow when the heading scrolls into view. Over the heading up to lg, on both sides of it from xl (1280 px) up,
+                  where there is room beside the 2xl column: each side group needs 32 + 182 px, and at 1024 the right one was cut off by the viewport. Decoration only: nothing is covered and nothing shifts (the boxes have their size). */}
+              <Sprouts areas={['orientacion', 'memoria', 'atencion']} height={64} className="mb-5 justify-center gap-1 xl:hidden" />
+              <Sprouts areas={['orientacion', 'memoria']} height={128} className="absolute bottom-0 right-full mr-8 hidden gap-1 xl:flex" />
+              <Sprouts areas={['lenguaje', 'calculo']} height={128} className="absolute bottom-0 left-full ml-8 hidden gap-1 xl:flex" />
               <SectionEyebrow text="Para cada momento" />
               <h2 id="paths-heading" className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
                 Elegí por dónde empezar
@@ -322,11 +322,11 @@ export function LandingPage() {
             </p>
           </div>
 
-          {/* The seam with the next section: a few plants stand on its edge, in the section's own bottom padding (they are shorter than it, so they never touch the text above). */}
+          {/* The seam with the next section: a few plants stand on its edge, in the section's own bottom padding (48 px below md, 72 px from md: always shorter than its py-16 / py-24, so they never touch the text above). */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0">
             <div className="mx-auto flex max-w-6xl items-end justify-between px-4 sm:px-6">
-              <Sprouts areas={['razonamiento', 'visuoespacial']} height={72} plantClassName="h-12 w-auto sm:h-[72px]" className="gap-1" />
-              <Sprouts areas={['atencion', 'calculo']} height={72} plantClassName="h-12 w-auto sm:h-[72px]" className="gap-1" />
+              <Sprouts areas={['razonamiento', 'visuoespacial']} height={72} plantClassName="h-12 w-auto md:h-[72px]" className="gap-1" />
+              <Sprouts areas={['atencion', 'calculo']} height={72} plantClassName="h-12 w-auto md:h-[72px]" className="gap-1" />
             </div>
           </div>
         </section>

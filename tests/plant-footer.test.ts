@@ -9,10 +9,12 @@ import { GARDEN } from '../src/lib/areaPlants.ts'
 
 const root = path.resolve(import.meta.dirname, '..')
 const read = (file: string) => fs.readFileSync(path.join(root, file), 'utf8')
+/** The source without its comments: the doc of the component says alt="" too, and the test must fail when the real attribute is gone. */
+const code = (file: string) => read(file).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
 
 describe('the SPA footer', () => {
   const footer = read('src/components/layout/PublicFooter.tsx')
-  const band = read('src/components/plants/GardenBand.tsx')
+  const band = code('src/components/plants/GardenBand.tsx')
 
   it('puts the garden band right above the <footer>, in the flow', () => {
     assert.match(footer, /import \{ GardenBand \} from '@\/components\/plants\/GardenBand'/)

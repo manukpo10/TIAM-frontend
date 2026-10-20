@@ -35,13 +35,12 @@ describe('the seven areas', () => {
       visuoespacial: 'Visión y espacio',
     })
   })
-  it('use the same colours as the colour key of the Cuadernos landing (pack/landing.css)', () => {
+  it('are the colours the Pack landings already use for their four areas (the @theme tokens of pack/landing.css)', () => {
     const css = fs.readFileSync(path.join(root, 'pack/landing.css'), 'utf8')
-    const classes: Record<string, string> = { orientacion: 'k-ori', memoria: 'k-mem', atencion: 'k-ate', lenguaje: 'k-len', calculo: 'k-cal', razonamiento: 'k-raz', visuoespacial: 'k-vis' }
-    for (const key of AREA_KEYS) {
-      const rule = new RegExp(`\\.${classes[key]}\\s*\\{\\s*--k:\\s*(#[0-9a-fA-F]{6})`).exec(css)
-      assert.ok(rule, `${classes[key]} has a --k colour`)
-      assert.equal(rule[1].toUpperCase(), AREA_COLORS[key], key)
+    for (const key of ['memoria', 'atencion', 'lenguaje', 'calculo'] as const) {
+      const token = new RegExp(`--color-area-${key}:\\s*(#[0-9a-fA-F]{6})`).exec(css)
+      assert.ok(token, `--color-area-${key} exists`)
+      assert.equal(token[1].toUpperCase(), AREA_COLORS[key], key)
     }
   })
 })
