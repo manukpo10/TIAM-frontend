@@ -54,20 +54,33 @@ describe('/cuadernos: the colour key and the area chips', () => {
   })
   const classes: Record<string, string> = { orientacion: 'k-ori', memoria: 'k-mem', atencion: 'k-ate', lenguaje: 'k-len', calculo: 'k-cal', razonamiento: 'k-raz', visuoespacial: 'k-vis' }
   for (const area of AREA_KEYS) {
-    it(`${area}: the dot of .${classes[area]} becomes its plant (1x and 2x, existing files)`, () => {
-      const rule = new RegExp(`\\.tipos--dots \\.${classes[area]}::before\\s*\\{([^}]*)\\}`).exec(css)
-      assert.ok(rule, 'a ::before rule for the area')
-      const files = [...rule[1].matchAll(/url\((\/plantas\/v1\/[^)]+)\)/g)].map((m) => m[1])
-      assert.ok(files.includes(`${PLANTS_DIR}/${area}-48.webp`), '1x file')
-      assert.ok(files.includes(`${PLANTS_DIR}/${area}-96.webp`), '2x file')
-      for (const file of files) assert.ok(fs.existsSync(path.join(root, 'public', file)), `${file} exists`)
-      assert.match(rule[1], /image-set\(/, 'image-set for the 2x screens, after a plain url() fallback')
+    const include = `planta-${area}`
+    it(`${area}: every ${classes[area]} item has its plant in front of the name, through the ${include} partial`, () => {
+      const items = [...partial.matchAll(new RegExp(`<li class="${classes[area]}">([^<]*(?:<!--include:[\\w-]+-->)?[^<]*)</li>`, 'g'))].map((m) => m[1])
+      assert.equal(items.length, 5, 'the key plus the exercise of each of the 4 cuadernos')
+      for (const item of items) assert.ok(item.startsWith(`<!--include:${include}-->`), `${item} starts with the plant`)
+    })
+    it(`${area}: the ${include} partial is a decorative, lazy <img> with its size and both densities`, () => {
+      const img = read(`pack/_partials/${include}.html`).trim()
+      assert.match(img, /^<img [^>]*>$/, 'one <img> and nothing else (no spaces around it)')
+      assert.ok(img.includes(`src="${PLANTS_DIR}/${area}-48.webp"`))
+      assert.ok(img.includes(`srcset="${PLANTS_DIR}/${area}-48.webp 1x, ${PLANTS_DIR}/${area}-96.webp 2x"`))
+      assert.match(img, /alt=""/)
+      assert.match(img, /aria-hidden="true"/)
+      assert.match(img, /loading="lazy"/)
+      assert.match(img, /decoding="async"/)
+      assert.match(img, /width="22" height="28"/)
+      for (const file of [`${area}-48.webp`, `${area}-96.webp`]) assert.ok(fs.existsSync(path.join(root, 'public', 'plantas', 'v1', file)), file)
     })
   }
+  it('is lazy on purpose: no CSS background loads the plants at page load (the landing is the one that sells)', () => {
+    assert.doesNotMatch(css, /url\(\/plantas/)
+  })
   it('reserves the icon box in the CSS, so the pills do not grow when the file arrives', () => {
-    const base = /\.tipos--dots li::before\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
-    assert.match(base, /width:\s*1\.4rem/)
-    assert.match(base, /height:\s*1\.75rem/)
+    const rule = /\.tipos--dots li > img\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+    assert.match(rule, /width:\s*1\.4rem/)
+    assert.match(rule, /height:\s*1\.75rem/)
+    assert.match(rule, /margin-block:\s*-0\.3rem/)
   })
 })
 
