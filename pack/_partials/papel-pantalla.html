@@ -53,9 +53,11 @@
 
         <div class="duo-price mt-8">
           <p class="font-bold"><!--ifnot:PACK_CUADERNOS-->Un mes de juegos interactivos<!--endif--><!--if:PACK_CUADERNOS-->1&nbsp;mes del Desafío de 30&nbsp;días<!--endif--></p>
+          <!--if:PACK_GAMES_DISCOUNT-->
           <p class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span class="text-base text-slate-600"><!--ifnot:PACK_CUADERNOS-->Suelto cuesta<!--endif--><!--if:PACK_CUADERNOS-->Precio normal<!--endif--> <span class="strike">$&nbsp;%PACK_GAMES_REGULAR%</span></span>
           </p>
+          <!--endif-->
           <p class="mt-2 flex flex-wrap items-baseline gap-x-3">
             <span class="font-display text-4xl font-extrabold leading-none tracking-tight text-tiam-blue-dark">+&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span>
             <span class="text-base font-semibold text-slate-700"><!--ifnot:PACK_CUADERNOS-->sumándolo a tu pack<!--endif--><!--if:PACK_CUADERNOS-->sumándolo a tus cuadernos<!--endif--></span>
