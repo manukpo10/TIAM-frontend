@@ -22,7 +22,11 @@ interface LegalPageProps {
 
 export function LegalPage({ title, lastUpdated, sections, crossLinkTo, crossLinkLabel }: LegalPageProps) {
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // A link such as /terms#vendedor (the landings' footers) lands on that block; without a hash, at the top. 'instant': the site sets
+    // `scroll-behavior: smooth`, which would animate the whole page past.
+    const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null
+    if (target) target.scrollIntoView({ behavior: 'instant' })
+    else window.scrollTo(0, 0)
   }, [])
 
   return (

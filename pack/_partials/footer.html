@@ -27,7 +27,8 @@
         <ul class="mt-4 space-y-1 text-[0.9375rem] text-slate-700">
           <li><a class="inline-flex min-h-11 items-center underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue" href="%VITE_PACK_CONTACT_URL%"><!--if:VITE_PACK_CONTACT_TEXT-->%VITE_PACK_CONTACT_TEXT%<!--endif--><!--ifnot:VITE_PACK_CONTACT_TEXT-->Escribinos<!--endif--></a></li>
           <!--if:VITE_PACK_LEGAL_ENTITY-->
-          <li class="pt-1 text-slate-600">%VITE_PACK_LEGAL_ENTITY%</li>
+          <li class="pt-1 text-slate-600">%VITE_PACK_LEGAL_ENTITY%<!--if:VITE_PACK_LEGAL_CITY--> · %VITE_PACK_LEGAL_CITY%<!--endif--></li>
+          <li><a href="/terms#vendedor" class="inline-flex min-h-11 items-center underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue">Datos del vendedor</a></li>
           <!--endif-->
         </ul>
       </div>
@@ -36,7 +37,7 @@
 
     <!--ifnot:VITE_PACK_CONTACT_URL-->
     <!--if:VITE_PACK_LEGAL_ENTITY-->
-    <p class="mt-8 text-[0.9375rem] text-slate-600">%VITE_PACK_LEGAL_ENTITY%</p>
+    <p class="mt-8 text-[0.9375rem] text-slate-600">%VITE_PACK_LEGAL_ENTITY%<!--if:VITE_PACK_LEGAL_CITY--> · %VITE_PACK_LEGAL_CITY%<!--endif--> · <a href="/terms#vendedor" class="underline decoration-slate-300 hover:text-tiam-blue hover:decoration-tiam-blue">Datos del vendedor</a></p>
     <!--endif-->
     <!--endif-->
 

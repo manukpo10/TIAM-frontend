@@ -1,5 +1,14 @@
 import type { LegalSection } from './LegalPage'
-import { GUARANTEE_DAYS, INVOICE_TEXT, LEGAL_ENTITY, LICENSE_FAMILIAS, LICENSE_PROFESIONALES } from './legalConfig'
+import {
+  CONTACT_EMAIL,
+  GUARANTEE_DAYS,
+  INVOICE_TEXT,
+  LEGAL_ADDRESS,
+  LEGAL_ENTITY,
+  LICENSE_CUADERNOS,
+  LICENSE_FAMILIAS,
+  LICENSE_PROFESIONALES,
+} from './legalConfig'
 
 /**
  * Terms clauses for the Packs and the 30-day Challenge (clauses 10 to 12 of /terms).
@@ -13,7 +22,7 @@ import { GUARANTEE_DAYS, INVOICE_TEXT, LEGAL_ENTITY, LICENSE_FAMILIAS, LICENSE_P
 export const PACK_TERMS_SECTIONS: LegalSection[] = [
   {
     number: 10,
-    title: 'Packs imprimibles (productos digitales)',
+    title: 'Packs y cuadernos imprimibles (productos digitales)',
     content: (
       <>
         <p>
@@ -21,10 +30,35 @@ export const PACK_TERMS_SECTIONS: LegalSection[] = [
           otra para profesionales, y puede incluir complementos opcionales, como un cuadernillo extra o un mes del Desafío 30 días. Es un producto digital: no se envía
           nada físico.
         </p>
-        {LEGAL_ENTITY && (
-          <p>
-            <strong>Vendedor:</strong> {LEGAL_ENTITY}
-          </p>
+        <p>
+          Los Cuadernos TIAM son una colección de cuatro cuadernos con 120 ejercicios de estimulación cognitiva en formato PDF, para imprimir en tamaño A4 o Carta y hacer sin
+          acompañante, con las soluciones al final de cada cuaderno. Puede sumarse, como complemento opcional, el primer mes del Desafío 30 días. Es un producto digital: no se
+          envía nada físico. Todo lo que dice este apartado sobre el Pack aplica también a los Cuadernos TIAM.
+        </p>
+        {(LEGAL_ENTITY || LEGAL_ADDRESS) && (
+          // The seller-information block: the footers of the landings link here («Datos del vendedor», /terms#vendedor). The street address is printed
+          // ONLY here (owner decision, 2026-10-19); tests/seller-address.test.ts keeps it out of everywhere else.
+          <div id="vendedor" className="mt-4 scroll-mt-24 rounded-xl bg-slate-50 p-4">
+            <p className="font-semibold text-slate-800">Datos del vendedor</p>
+            <ul className="mt-1 space-y-1">
+              {LEGAL_ENTITY && (
+                <li>
+                  <strong>Vendedor:</strong> {LEGAL_ENTITY}
+                </li>
+              )}
+              {LEGAL_ADDRESS && (
+                <li>
+                  <strong>Domicilio:</strong> {LEGAL_ADDRESS}
+                </li>
+              )}
+              <li>
+                <strong>Contacto:</strong>{' '}
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-tiam-blue hover:underline">
+                  {CONTACT_EMAIL}
+                </a>
+              </li>
+            </ul>
+          </div>
         )}
         <p className="font-semibold text-slate-800 mt-4">Precio y pago</p>
         <p className="mt-1">
@@ -63,6 +97,11 @@ export const PACK_TERMS_SECTIONS: LegalSection[] = [
             <strong>Edición profesionales:</strong> {LICENSE_PROFESIONALES}
           </p>
         )}
+        {LICENSE_CUADERNOS && (
+          <p>
+            <strong>Cuadernos TIAM:</strong> {LICENSE_CUADERNOS}
+          </p>
+        )}
         {INVOICE_TEXT && (
           <>
             <p className="font-semibold text-slate-800 mt-4">Factura</p>
@@ -82,19 +121,21 @@ export const PACK_TERMS_SECTIONS: LegalSection[] = [
     content: (
       <>
         <p>
-          El Desafío 30 días es un programa de ejercicios de estimulación cognitiva que se recibe a través de WhatsApp y de un enlace personal. Se compra por mes y puede
-          sumarse al comprar un Pack.
+          El Desafío 30 días es un programa de ejercicios de estimulación cognitiva que se juega desde el celular con un enlace personal, y también por WhatsApp. Se compra por mes
+          y puede sumarse al comprar un Pack o los Cuadernos TIAM.
         </p>
         <ul className="list-disc pl-5 space-y-1.5 mt-2">
           <li>
-            Para activarlo hace falta escribir a TIAM Digital por WhatsApp desde el mismo número de teléfono que se indicó en la compra. Ese número debe ser del comprador o de
-            la persona que va a realizar el Desafío.
+            Los 30 días se cuentan desde la fecha de pago. No esperan ningún mensaje de WhatsApp: se puede empezar de inmediato desde el enlace personal que se entrega con la
+            compra, en la página de descargas y en el email de acceso.
           </li>
           <li>
-            Los 30 días se cuentan desde la fecha de pago.
+            Si no se pudo generar el enlace, se empieza escribiendo a TIAM Digital por WhatsApp desde el mismo número de teléfono que se indicó en la compra. Ese número debe ser
+            del comprador o de la persona que va a realizar el Desafío.
           </li>
           <li>
-            Al sumarlo a un Pack se activa con el mismo número de WhatsApp indicado en la compra y se comunica también en el email de acceso.
+            Al sumarlo a un Pack o a los Cuadernos TIAM se otorga un solo mes: el próximo que ese número de teléfono todavía no haya comprado. Los meses siguientes son
+            opcionales, se compran aparte en la página del Desafío y no hay renovación automática.
           </li>
           <li>
             El Desafío es un material de estimulación cognitiva y no reemplaza la evaluación ni el tratamiento de un profesional de la salud.
@@ -124,8 +165,17 @@ export const PACK_TERMS_SECTIONS: LegalSection[] = [
           <>
             <p className="font-semibold text-slate-800 mt-4">Garantía de {GUARANTEE_DAYS} días</p>
             <p className="mt-1">
-              Además, si el pack no es lo que el comprador esperaba, puede escribir a TIAM Digital dentro de los {GUARANTEE_DAYS} días de la compra y se le devuelve el pago.
-              Esta garantía se suma a los derechos que la ley reconoce a los consumidores y no los limita.
+              Dentro de los {GUARANTEE_DAYS} días de la compra, el comprador puede pedir la devolución del importe completo, incluido el mes del Desafío 30 días si lo sumó. Se pide
+              con el{' '}
+              <a href="/arrepentimiento" className="text-tiam-blue hover:underline">
+                Botón de arrepentimiento
+              </a>{' '}
+              o escribiendo a{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-tiam-blue hover:underline">
+                {CONTACT_EMAIL}
+              </a>
+              . El reembolso lo hace TIAM Digital desde Mercado Pago y el acceso a los archivos se cierra automáticamente cuando el pago se devuelve. Esta garantía se suma a los
+              derechos que la ley reconoce a los consumidores y no los limita.
             </p>
           </>
         )}

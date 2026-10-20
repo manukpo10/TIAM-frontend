@@ -16,12 +16,20 @@ const read = (value: unknown): string => String(value ?? '').trim()
 /** Legal name and CUIT of the seller. Empty until the owner provides it. */
 export const LEGAL_ENTITY = read(import.meta.env.VITE_PACK_LEGAL_ENTITY)
 
+/**
+ * The seller's full street address. The owner accepted to publish it (it is public in ARCA) with the exposure kept to a minimum: it is printed ONLY in the
+ * seller-information block of the Terms (packTerms.tsx, id="vendedor"). Everything else shows the city and a link to that block. tests/seller-address.test.ts
+ * fails if it appears anywhere else.
+ */
+export const LEGAL_ADDRESS = read(import.meta.env.VITE_PACK_LEGAL_ADDRESS)
+
 /** Days of the money-back guarantee the landings promise. 0 = no guarantee is offered. */
 export const GUARANTEE_DAYS = Number(read(import.meta.env.VITE_PACK_GUARANTEE_DAYS)) || 0
 
 /** Licence texts per edition, as published on the landings. */
 export const LICENSE_FAMILIAS = read(import.meta.env.VITE_PACK_LICENSE_FAMILIAS)
 export const LICENSE_PROFESIONALES = read(import.meta.env.VITE_PACK_LICENSE_PROFESIONALES)
+export const LICENSE_CUADERNOS = read(import.meta.env.VITE_PACK_LICENSE_CUADERNOS)
 
 /** How professionals ask for an invoice. */
 export const INVOICE_TEXT = read(import.meta.env.VITE_PACK_INVOICE_TEXT)
