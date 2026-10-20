@@ -9,7 +9,7 @@ import { CONTACT_EMAIL, LEGAL_ENTITY, PIXEL_ENABLED } from './legalConfig'
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '17 de octubre de 2026'
+const LAST_UPDATED = '19 de octubre de 2026'
 
 // Contact address for privacy requests and unsubscribes. Every clause that
 // mentions it renders this link; the address itself comes from legalConfig.ts.
@@ -81,12 +81,12 @@ const PRIVACY_SECTIONS: LegalSection[] = [
           proporcionan su dirección de correo electrónico y, de manera opcional, su nombre. También
           registramos desde qué formulario lo hicieron y en qué fecha.
         </p>
-        <p className="font-semibold text-slate-800 mt-4">d) Datos de quienes compran packs o el Desafío 30 días</p>
+        <p className="font-semibold text-slate-800 mt-4">d) Datos de quienes compran packs, Cuadernos TIAM o el Desafío 30 días</p>
         <ul className="list-disc pl-5 space-y-1.5 mt-1">
           <li>Nombre y dirección de correo electrónico, que se piden para enviar el acceso a los archivos.</li>
           <li>
-            Número de teléfono (WhatsApp), solo cuando se compra el Desafío 30 días o un mes de juegos junto con el pack, porque
-            la activación se hace desde ese número.
+            Número de teléfono (WhatsApp), solo cuando se compra el Desafío 30 días o un mes del Desafío junto con un pack o con los
+            Cuadernos TIAM, para asignar el mes al comprador y para poder atenderlo por WhatsApp si hace falta.
           </li>
           <li>
             Datos de la compra: producto, importe, estado y fecha del pago e identificador del pago en Mercado Pago. TIAM
@@ -132,8 +132,8 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             Pueden dejar de recibirlas en cualquier momento escribiendo a <PrivacyEmailLink />.
           </li>
           <li>
-            Entregar los productos digitales comprados: habilitar la descarga, enviar por email el enlace de acceso y activar el
-            Desafío 30 días por WhatsApp. Los emails que se envían a quienes compran son de servicio: acceso, constancias y
+            Entregar los productos digitales comprados: habilitar la descarga, enviar por email el enlace de acceso y entregar el
+            mes del Desafío 30 días, que corre desde la compra y se empieza desde el enlace personal. Los emails que se envían a quienes compran son de servicio: acceso, constancias y
             soporte.
           </li>
           <li>
@@ -241,8 +241,8 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             registrar datos técnicos de la descarga, como la dirección IP.
           </li>
           <li>
-            <strong>WhatsApp (Meta Platforms):</strong> para activar el Desafío 30 días y enviar los ejercicios se trata, a través de
-            WhatsApp, el número de teléfono desde el que escribe el comprador y los mensajes.
+            <strong>WhatsApp (Meta Platforms):</strong> si el comprador escribe por WhatsApp (por ejemplo, cuando no tiene su enlace personal del Desafío 30 días) se
+            trata, a través de WhatsApp, el número de teléfono desde el que escribe y los mensajes.
           </li>
           {PIXEL_ENABLED && (
             <li>

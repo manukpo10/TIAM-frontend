@@ -1,7 +1,7 @@
 <!-- Ofertas (Cuadernos TIAM): el MISMO bloque y las mismas clases que las ofertas del Pack (ofertas.html): "Todo lo que recibís" + tarjeta de precio con la oferta al pagar y el formulario.
      TODOS los números salen de la configuración (.env / variables de Vercel), vía los tokens de vite.config.ts: %PACK_PRICE% (VITE_PACK_CUADERNOS_PRICE: 20.000), %PACK_GAMES_PRICE%
-     (VITE_PACK_CUADERNOS_GAMES_PRICE: el PRIMER mes del Desafío al comprar junto, 15.000), %PACK_GAMES_REGULAR% (su precio normal: PRICE_ARS de Desafio30DiasPage.tsx, 20.000), %PACK_PER_SHEET%
-     y %PACK_CUADERNOS_PAGES%. Nada está escrito acá. Total: 20.000 solo, 35.000 con el primer mes del Desafío.
+     (VITE_PACK_CUADERNOS_GAMES_PRICE: 1 mes del Desafío al comprar junto, 15.000), %PACK_GAMES_REGULAR% (su precio normal: PRICE_ARS de Desafio30DiasPage.tsx, 20.000), %PACK_PER_SHEET%
+     y %PACK_CUADERNOS_PAGES%. Nada está escrito acá. Total: 20.000 solo, 35.000 con 1 mes del Desafío.
      Reglas: sin cuadernillo extra (no existe para este producto), sin "valor total" inventado; la única cifra "normal" es la del mes del Desafío, que es su precio real de lista.
      Bonos: la lista sale de VITE_PACK_CUADERNOS_BONUSES (`Título | descripción ;; Otro | descripción`); vacía = no se muestra nada, y nunca llevan un valor en pesos.
      Con VITE_PACK_CHECKOUT_URL la tarjeta es un <form method="post"> que viaja al backend (POST /packs/checkout, edicion=cuadernos) y este responde 303 a Mercado Pago; sin esa variable es un <div> y
@@ -42,7 +42,7 @@
           <li>
             <svg class="i" aria-hidden="true"><use href="#i-plus" /></svg>
             <div>
-              <b>El primer mes del Desafío de 30&nbsp;días</b>
+              <b>1&nbsp;mes del Desafío de 30&nbsp;días</b>
               <span>30 ejercicios interactivos, 7 nuevos por semana. Empezás enseguida y el mes dura 30&nbsp;días desde la compra. Los meses siguientes se compran aparte, sin débito automático.</span>
               <!--if:PACK_GAMES_DISCOUNT--><span class="tag">Precio normal $&nbsp;%PACK_GAMES_REGULAR% · con tus cuadernos, +&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span><!--endif-->
             </div>
@@ -71,7 +71,7 @@
               <label class="addon">
                 <input type="checkbox" name="extras" value="juegos" data-price="%PACK_GAMES_PRICE_NUM%" />
                 <span class="min-w-0 flex-1">
-                  <span class="addon-top"><b>El primer mes del Desafío de 30&nbsp;días</b><span class="addon-price">+&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span></span>
+                  <span class="addon-top"><b>1&nbsp;mes del Desafío de 30&nbsp;días</b><span class="addon-price">+&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span></span>
                   <small>Empezás enseguida y dura 30&nbsp;días desde la compra.<!--if:PACK_GAMES_DISCOUNT--> Precio normal <span class="strike">$&nbsp;%PACK_GAMES_REGULAR%</span>.<!--endif--> Los meses siguientes se compran aparte, sin débito automático.</small>
                   <!--if:PACK_GAMES_DISCOUNT--><span class="tag">Ahorrás $&nbsp;%PACK_GAMES_SAVING%</span><!--endif-->
                 </span>

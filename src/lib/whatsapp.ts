@@ -2,10 +2,10 @@
 // Argentine mobiles carry the "9" right after the "54" country code.
 export const WHATSAPP_NUMBER = '5492214817297'
 
-// The message a buyer sends to activate the 30-day Challenge. The backend matches the sender's
-// phone number against the purchase, so the wording is only a courtesy to whoever reads the chat.
+// The Challenge month runs 30 days from the PURCHASE and starts from the buyer's personal link. WhatsApp is only the fallback: the message a buyer
+// sends when there is no link (the backend matches the sender's phone number against the purchase, so the wording is a courtesy to whoever reads the chat).
 export const DESAFIO_ACTIVATION_TEXT =
-  '¡Hola! Ya compré el Desafío 30 días y quiero empezar. ¿Me mandan mi primer ejercicio? 💙'
+  '¡Hola! Ya compré el Desafío 30 días y quiero empezar. ¿Me pasan mi link? 💙'
 
 export const desafioActivationLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(DESAFIO_ACTIVATION_TEXT)}`
 

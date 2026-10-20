@@ -8,7 +8,7 @@ import { PACK_TERMS_SECTIONS } from './packTerms'
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '14 de octubre de 2026'
+const LAST_UPDATED = '19 de octubre de 2026'
 
 const TERMS_SECTIONS: LegalSection[] = [
   {

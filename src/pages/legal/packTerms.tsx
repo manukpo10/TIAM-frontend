@@ -32,7 +32,7 @@ export const PACK_TERMS_SECTIONS: LegalSection[] = [
         </p>
         <p>
           Los Cuadernos TIAM son una colección de cuatro cuadernos con 120 ejercicios de estimulación cognitiva en formato PDF, para imprimir en tamaño A4 o Carta y hacer sin
-          acompañante, con las soluciones al final de cada cuaderno. Puede sumarse, como complemento opcional, el primer mes del Desafío 30 días. Es un producto digital: no se
+          acompañante, con las soluciones al final de cada cuaderno. Puede sumarse, como complemento opcional, 1 mes del Desafío 30 días. Es un producto digital: no se
           envía nada físico. Todo lo que dice este apartado sobre el Pack aplica también a los Cuadernos TIAM.
         </p>
         {(LEGAL_ENTITY || LEGAL_ADDRESS) && (
