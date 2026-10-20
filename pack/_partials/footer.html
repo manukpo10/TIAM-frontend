@@ -1,5 +1,14 @@
 <!-- Pie compartido por las dos landings. Contacto, botón de arrepentimiento y razón social salen de la configuración (variables VITE_PACK_*, ver .env).
      Mientras una de esas variables esté vacía, su renglón no se muestra (sin marcadores); para publicar hacen falta todas: PACK_STRICT=1 falla el build si falta alguna. -->
+<!-- Franja del jardín: las 7 plantas de las áreas asomando, como al pie de las tapas de los Cuadernos TIAM. Va ARRIBA del pie, en el flujo (no tapa nada), es pura decoración
+     (aria-hidden, alt="") y perezosa; AVIF primero y WebP de respaldo. Es la misma de src/components/plants/GardenBand.tsx; los archivos salen de scripts/plantas/export_plantas.py. -->
+<div aria-hidden="true" class="pointer-events-none select-none">
+  <picture>
+    <source type="image/avif" srcset="/plantas/v1/jardin-800.avif 800w, /plantas/v1/jardin-1600.avif 1600w" sizes="(min-width: 1600px) 1600px, 100vw">
+    <source type="image/webp" srcset="/plantas/v1/jardin-800.webp 800w, /plantas/v1/jardin-1600.webp 1600w" sizes="(min-width: 1600px) 1600px, 100vw">
+    <img src="/plantas/v1/jardin-1600.webp" width="1600" height="250" alt="" loading="lazy" decoding="async" fetchpriority="low" draggable="false" class="mx-auto block h-auto w-full max-w-[1600px]">
+  </picture>
+</div>
 <footer class="border-t border-slate-100 bg-slate-50 pb-28 pt-12 md:py-12" data-watch-cta>
   <div class="wrap">
     <div class="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr]">

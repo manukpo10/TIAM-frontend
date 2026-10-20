@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { GardenBand } from '@/components/plants/GardenBand'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -101,7 +102,8 @@ export function LegalPage({ title, lastUpdated, sections, crossLinkTo, crossLink
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Footer: the garden band (the seven area plants) grows out of its top edge, as on every other page. */}
+      <GardenBand />
       <footer className="border-t border-slate-100 py-6 text-center text-xs text-slate-400">
         © 2026 TIAM Digital. Todos los derechos reservados.
       </footer>

@@ -1,9 +1,22 @@
 import { Link } from 'react-router-dom'
 import { PLATFORM_LAUNCHED } from '@/lib/platform'
+import { GardenBand } from '@/components/plants/GardenBand'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
-/** Shared footer for the public-facing pages (landing, blog). */
+/**
+ * Shared footer for the public-facing pages (landing, blog). The garden band (the seven area plants peeking up, as on the covers of the Cuadernos TIAM)
+ * sits right on top of it, in the flow, so on every page the plants grow out of the footer's edge.
+ */
 export function PublicFooter() {
+  return (
+    <>
+      <GardenBand />
+      <SiteFooter />
+    </>
+  )
+}
+
+function SiteFooter() {
   return (
     <footer className="bg-slate-900 text-slate-400">
       {/* Single tiam-blue thin line */}
