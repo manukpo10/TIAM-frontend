@@ -10,6 +10,9 @@ import { PackApiError } from './packTypes'
  * Pick a scenario with the order token (the same URLs the real flow uses):
  *   /pack/gracias?o=mock-paid                         paid, pack only
  *   /pack/gracias?o=mock-full                         paid, with the extra booklet and the games month
+ *   /pack/gracias?o=mock-cuadernos                    paid Cuadernos order with the Desafío month 2 (personal link, 30 days from the purchase)
+ *   /pack/gracias?o=mock-cuadernos-nolink             same, but the link could not be generated and the month number is missing (WhatsApp fallback)
+ *   /pack/gracias?o=mock-cuadernos-sin-juegos         paid Cuadernos order without any Desafío month (the block must not appear)
  *   /pack/gracias?o=mock-pending&status=in_process    payment still being confirmed
  *   /pack/gracias?o=mock-cash&status=pending&payment_type=ticket   cash coupon waiting to be paid
  *   /pack/gracias?o=mock-slow                         pending for two polls (8 s), then paid
@@ -48,7 +51,40 @@ const extra: PackItem = {
   ],
 }
 
+const cuadernos: PackItem = {
+  code: 'PACK',
+  title: 'Cuadernos TIAM',
+  files: [
+    { key: 'coleccion-completa-a4', label: 'Colección completa: los 4 cuadernos en 1 PDF', paper: 'A4', sizeMb: 27 },
+    { key: 'cuaderno-1-a4', label: 'Cuaderno 1 · Nivel inicial', paper: 'A4', sizeMb: 7 },
+    { key: 'coleccion-completa-carta', label: 'Colección completa: los 4 cuadernos en 1 PDF', paper: 'Carta', sizeMb: 27 },
+    { key: 'cuaderno-1-carta', label: 'Cuaderno 1 · Nivel inicial', paper: 'Carta', sizeMb: 7 },
+  ],
+}
+
 const inDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString()
+
+/** A paid Cuadernos order. `games`: 'month' = month 2 with its link, 'nolink' = month granted but no link (and no month number), 'none' = none granted. */
+const cuadernosOrder = (games: 'month' | 'nolink' | 'none'): PackOrder => ({
+  status: 'PAID',
+  firstName: 'Laura',
+  edition: 'cuadernos',
+  items: [cuadernos],
+  games:
+    games === 'none'
+      ? null
+      : {
+          link: games === 'month' ? 'https://tiamdigital.com/desafio/mock-token' : null,
+          monthsIncluded: 1,
+          ...(games === 'month' ? { month: 2 } : {}),
+          durationDays: 30,
+          startsAt: 'purchase',
+          nextMonthsPaidSeparately: true,
+          nextMonthPriceArs: 20000,
+        },
+  expiresAt: inDays(90),
+  total: games === 'none' ? 20000 : 35000,
+})
 
 /** The answer for an order that is not paid: everything is empty except the edition. */
 const unpaid = (status: PackOrder['status'], edition: PackOrder['edition']): PackOrder => ({
@@ -88,6 +124,12 @@ function order(token: string, advance: boolean): PackOrder {
       return paidOrder(false)
     case 'mock-full':
       return paidOrder(true)
+    case 'mock-cuadernos':
+      return cuadernosOrder('month')
+    case 'mock-cuadernos-nolink':
+      return cuadernosOrder('nolink')
+    case 'mock-cuadernos-sin-juegos':
+      return cuadernosOrder('none')
     case 'mock-pending':
     case 'mock-cash':
       return unpaid('PENDING', 'familias')

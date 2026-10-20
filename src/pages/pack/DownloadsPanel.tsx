@@ -3,6 +3,7 @@ import { Download, FileArchive, FileText, Gamepad2, Loader2, MessageCircle, Prin
 import { cn } from '@/lib/utils'
 import { desafioActivationLink } from '@/lib/whatsapp'
 import { Card } from './PackShell'
+import { gamesView } from './gamesView'
 import { linkButton } from './linkButton'
 import { requestFileLink, safeNavigationUrl } from './packClient'
 import type { Paper, PackFile, PackOrder } from './packTypes'
@@ -123,8 +124,14 @@ function FileRow({ file, token }: { file: PanelFile; token: string }) {
   )
 }
 
-function GamesBlock({ link }: { link?: string | null }) {
-  const href = safeNavigationUrl(link)
+/**
+ * The Desafío month that came with the order. What it says (the month number, "30 días desde la compra", start from the link or by WhatsApp,
+ * the next months) is decided by gamesView.ts, which has its tests. Nothing is rendered when no month was granted (`games` is null).
+ */
+function GamesBlock({ games }: { games: PackOrder['games'] }) {
+  const href = safeNavigationUrl(games?.link)
+  const view = gamesView(games, href)
+  if (!view) return null
   return (
     <Card className="border-t-4 border-t-tiam-green">
       <div className="flex items-start gap-3">
@@ -133,25 +140,25 @@ function GamesBlock({ link }: { link?: string | null }) {
         </span>
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-tiam-green">Incluido en tu compra</p>
-          <h2 className="mt-0.5 text-xl font-bold text-slate-900">Tu mes de juegos interactivos</h2>
+          <h2 className="mt-0.5 text-xl font-bold text-slate-900">{view.heading}</h2>
         </div>
       </div>
       <p className="mt-3 leading-relaxed text-slate-600">
-        El Desafío de 30 días se activa por WhatsApp: tocá el botón, mandá el mensaje desde el número que dejaste al comprar y te llega el primer
-        ejercicio al instante.
+        {view.startText} {view.durationText}
       </p>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-        <a href={desafioActivationLink} target="_blank" rel="noopener noreferrer" className={linkButton('whatsapp', 'w-full sm:w-auto')}>
-          <MessageCircle className="h-5 w-5" aria-hidden />
-          Activar por WhatsApp
-        </a>
-        {href && (
-          <a href={href} className={linkButton('secondary', 'w-full sm:w-auto')}>
-            Abrir mi mes de juegos
+        {view.start === 'link' && href ? (
+          <a href={href} className={linkButton('primary', 'w-full sm:w-auto')}>
+            Abrir mi mes del Desafío
+          </a>
+        ) : (
+          <a href={desafioActivationLink} target="_blank" rel="noopener noreferrer" className={linkButton('whatsapp', 'w-full sm:w-auto')}>
+            <MessageCircle className="h-5 w-5" aria-hidden />
+            Empezar por WhatsApp
           </a>
         )}
       </div>
-      {href && <p className="mt-3 text-sm text-slate-600">Si ya lo activaste, entrá directo con el segundo botón.</p>}
+      {view.nextMonthsText && <p className="mt-4 text-sm leading-relaxed text-slate-600">{view.nextMonthsText}</p>}
     </Card>
   )
 }
@@ -221,7 +228,7 @@ export function DownloadsPanel({ order, token }: DownloadsPanelProps) {
         )
       })}
 
-      {order.games && <GamesBlock link={order.games.link} />}
+      <GamesBlock games={order.games} />
 
       <p className="text-center text-sm leading-relaxed text-slate-600">
         {expires ? `Podés descargar tus archivos hasta el ${expires}. ` : ''}

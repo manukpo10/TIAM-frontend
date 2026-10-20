@@ -55,6 +55,24 @@ export interface PackItem {
   files: PackFile[]
 }
 
+/** `games` of a Pack order: only the link. */
+export interface PackGames {
+  link: string | null
+}
+
+/**
+ * `games` of a Cuadernos order (contract section 14). The month runs `durationDays` from the purchase (`startsAt` is "purchase") and the buyer
+ * starts right away from `link`. `month` is the number of the month granted and is left out when it could not be read. `startsVia` no longer exists.
+ */
+export interface CuadernosGames extends PackGames {
+  monthsIncluded: number
+  month?: number
+  durationDays: number
+  startsAt: string
+  nextMonthsPaidSeparately: boolean
+  nextMonthPriceArs: number
+}
+
 /**
  * GET /packs/orders/{token}. Every field is always present; only a PAID order fills them all in. For the other
  * states `edition` is still known (so "try again" can go back to the landing the buyer was on) and the rest is
@@ -65,8 +83,11 @@ export interface PackOrder {
   firstName: string | null
   edition: Edition | null
   items: PackItem[]
-  /** Present only when the buyer added the games month. `link` is the Challenge play page, or null if it could not be generated. */
-  games: { link: string | null } | null
+  /**
+   * Present only when the buyer added the games month AND it could be granted (otherwise null: the page says nothing about it).
+   * `link` is the Challenge play page, or null if it could not be generated. A Pack order only sends the link; a Cuadernos order sends the rest too.
+   */
+  games: PackGames | CuadernosGames | null
   /** ISO date-time after which the download link stops working. */
   expiresAt: string | null
   /** Amount charged, in ARS (29980 or 29980.00 on the wire: the same JSON number). Null unless PAID. */

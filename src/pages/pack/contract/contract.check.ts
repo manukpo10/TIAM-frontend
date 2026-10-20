@@ -19,13 +19,14 @@
  * This file is never imported by the app: it only exists for the compiler and adds nothing to any bundle.
  */
 
-import type { DownloadLink, OrderConfirmation, PackFile, PackItem, PackOrder, RegretReceipt } from '../packTypes'
+import type { CuadernosGames, DownloadLink, OrderConfirmation, PackFile, PackGames, PackItem, PackOrder, RegretReceipt } from '../packTypes'
 
 import confirmPaid from './confirm-paid.json'
 import confirmReview from './confirm-review.json'
 import downloadLink from './download-link.json'
 import orderFailed from './order-failed.json'
 import orderPaid from './order-paid.json'
+import orderPaidCuadernos from './order-paid-cuadernos.json'
 import orderPending from './order-pending.json'
 import orderReview from './order-review.json'
 import regretReceipt from './regret-receipt.json'
@@ -62,7 +63,12 @@ export type ContractChecks = [
   // ...and the nested pieces of the paid one (items, files, games).
   Expect<Matches<(typeof orderPaid.data.items)[number], PackItem>>,
   Expect<Matches<(typeof orderPaid.data.items)[number]['files'][number], PackFile>>,
-  Expect<Matches<NonNullable<typeof orderPaid.data.games>, NonNullable<PackOrder['games']>>>,
+  Expect<Matches<NonNullable<typeof orderPaid.data.games>, PackGames>>,
+
+  // A paid Cuadernos order (contract section 14). The backend repo has no fixture for it yet: order-paid-cuadernos.json is written from
+  // that section; when the backend publishes its own, copy it over this one and follow the compiler.
+  Expect<Matches<typeof orderPaidCuadernos.data, PackOrder>>,
+  Expect<Matches<typeof orderPaidCuadernos.data.games, CuadernosGames>>,
 
   // POST /packs/orders/{token}/confirm
   Expect<Matches<typeof confirmPaid.data, OrderConfirmation>>,
