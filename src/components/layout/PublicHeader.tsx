@@ -77,7 +77,7 @@ export function PublicHeader() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="TIAM Digital — inicio">
-            <img src={logoImg} alt="TIAM Digital" className="h-10 w-auto object-contain" />
+            <img src={logoImg} alt="TIAM Digital" data-brand-logo className="h-10 w-auto object-contain" />
           </Link>
 
           {/* Desktop nav links */}

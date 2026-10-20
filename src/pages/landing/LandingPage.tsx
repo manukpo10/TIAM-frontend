@@ -10,6 +10,7 @@ import desafioAbuelo from '@/assets/desafio-abuelo.webp'
 import tallerGrupal from '@/assets/taller/taller-grupal.webp'
 import materialMesa from '@/assets/material-digital/material-mesa.webp'
 import { HeroMoments } from '@/pages/landing/HeroMoments'
+import { LogoIntro } from '@/pages/landing/LogoIntro'
 
 // Links styled as buttons rather than <Link><Button/></Link>: a button nested
 // inside an anchor is invalid HTML and costs keyboard users two tab stops per CTA.
@@ -186,6 +187,8 @@ export function LandingPage() {
 
   return (
     <div className="min-h-dvh bg-white overflow-x-hidden">
+      {/* First visit of the session: the logo puts itself together, then flies into the header. */}
+      <LogoIntro />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-tiam-blue focus:shadow-md focus:ring-2 focus:ring-tiam-blue"
