@@ -10,13 +10,28 @@
 /** REVOKED never reaches the browser: a refunded or expired order answers 404, like an unknown one. */
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REVIEW'
 
-export type Edition = 'familias' | 'profesionales'
+export type Edition = 'familias' | 'profesionales' | 'cuadernos'
 
-/** The two landings the buyer can come from. Anything else the API sends is ignored. */
-export const EDITIONS: readonly Edition[] = ['familias', 'profesionales']
+/**
+ * Where each landing lives on the site. The workbooks are at /cuadernos, not under /pack. This repeats LANDING_ROUTES (pack/logic.ts) on purpose: importing it
+ * would put a shared chunk between the static landings and the app, an extra request on every landing; tests/pack-types.test.ts fails if the two ever differ.
+ */
+export const LANDING_PATHS: Record<Edition, string> = {
+  familias: '/pack/familias',
+  profesionales: '/pack/profesionales',
+  cuadernos: '/cuadernos',
+}
+
+/** The landings the buyer can come from (the two Pack editions and the workbooks). Anything else the API sends is ignored. */
+export const EDITIONS: readonly Edition[] = ['familias', 'profesionales', 'cuadernos']
 
 export function asEdition(value: unknown): Edition | null {
   return typeof value === 'string' && (EDITIONS as readonly string[]).includes(value) ? (value as Edition) : null
+}
+
+/** Where "try again" goes: the purchase card of the landing the buyer came from (the workbooks live at /cuadernos, not under /pack). */
+export function retryHref(edition: Edition | null): string {
+  return edition ? `${LANDING_PATHS[edition]}#comprar` : '/material-digital'
 }
 
 /** What the pages work with: one key per paper size. The API's spelling is {@link WirePaper}. */

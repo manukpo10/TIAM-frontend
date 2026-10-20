@@ -26,7 +26,8 @@ const portArg = args.find((a) => /^\d+$/.test(a))
 const siteIdx = args.indexOf('--site')
 const port = Number(portArg ?? 8787)
 const defaultSite = siteIdx > -1 ? args[siteIdx + 1] : 'http://localhost:4191'
-const EDITIONS = new Set(['familias', 'profesionales'])
+// Dónde vive la landing de cada edición (los cuadernos están en /cuadernos, no bajo /pack).
+const LANDING_PATHS = { familias: '/pack/familias', profesionales: '/pack/profesionales', cuadernos: '/cuadernos' }
 
 http
   .createServer((req, res) => {
@@ -44,10 +45,10 @@ http
       const body = new URLSearchParams(raw)
       const get = (k) => (body.get(k) ?? '').trim()
       const extras = body.getAll('extras')
-      const edition = EDITIONS.has(get('edicion')) ? get('edicion') : 'familias'
+      const edition = Object.hasOwn(LANDING_PATHS, get('edicion')) ? get('edicion') : 'familias'
       // Nunca se redirige a una URL que mande el cliente: el sitio sale del Origin del navegador o de --site, la página de la edición ya validada.
       const origin = req.headers.origin && /^https?:\/\/localhost(:\d+)?$/.test(req.headers.origin) ? req.headers.origin : defaultSite
-      const back = (error) => `${origin}/pack/${edition}${error ? `?error=${error}` : ''}#comprar`
+      const back = (error) => `${origin}${LANDING_PATHS[edition]}${error ? `?error=${error}` : ''}#comprar`
       const name = get('nombre').toLowerCase()
 
       console.log(`POST /packs/checkout  campos: ${[...new Set(body.keys())].join(', ')}  extras: [${extras.join(', ')}]  total: ${get('expected_total') || '-'}`)

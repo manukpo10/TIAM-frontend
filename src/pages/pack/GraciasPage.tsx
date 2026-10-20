@@ -10,7 +10,7 @@ import { contact } from './contact'
 import { linkButton } from './linkButton'
 import { confirmPayment, getOrder } from './packClient'
 import type { Edition, OrderConfirmation, PackOrder } from './packTypes'
-import { PackApiError, asEdition } from './packTypes'
+import { PackApiError, asEdition, retryHref } from './packTypes'
 import { CONFIRM_RETRY_MS, FAST_MS, SLOW_MS, decide } from './pollPolicy'
 import type { Phase } from './pollPolicy'
 import { consumeReturnParams, isPurchaseTracked, markPurchaseTracked } from './returnParams'
@@ -325,7 +325,7 @@ function ContactButton({ className }: { className?: string }) {
  */
 function Failed({ edition, onCheck }: { edition: Edition | null; onCheck: () => void }) {
   // The landings are static pages outside the app's router, hence a plain link. Without a known edition: the generic page.
-  const retryHref = edition ? `/pack/${edition}#comprar` : '/material-digital'
+  const retryUrl = retryHref(edition)
   return (
     <div className="space-y-6" role="status" aria-live="polite">
       <StateHero tone="orange" icon={CircleAlert} title="Todavía no pudimos confirmar tu pago">
@@ -342,7 +342,7 @@ function Failed({ edition, onCheck }: { edition: Edition | null; onCheck: () => 
           </li>
         </ul>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <a href={retryHref} className={linkButton('primary', 'w-full sm:w-auto')}>
+          <a href={retryUrl} className={linkButton('primary', 'w-full sm:w-auto')}>
             Volver a intentar
           </a>
           <button type="button" onClick={onCheck} className={linkButton('secondary', 'w-full sm:w-auto')}>
