@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
 import { PLATFORM_LAUNCHED } from '@/lib/platform'
+import { PromoBanner } from '@/components/layout/PromoBanner'
 import logoImg from '@/assets/logogrande-sinfondo.png'
 
 /**
@@ -58,17 +59,8 @@ export function PublicHeader() {
 
   return (
     <>
-      {/* Promo banner — not sticky on purpose, scrolls away with the page
-          while the header below (sticky) takes over the top of the
-          viewport. Site-wide, same on every page that renders PublicHeader. */}
-      <Link
-        to="/desafio-30-dias"
-        className="block bg-tiam-navy px-4 py-2 text-center text-sm font-medium text-white hover:bg-tiam-navy/90 transition-colors"
-      >
-        🎁 Nuevo: <span className="font-bold text-tiam-orange">Desafío 30 días</span> — 7 ejercicios
-        cognitivos por semana para tu ser querido, directo por WhatsApp
-        <ChevronRight className="ml-1 inline h-3.5 w-3.5" />
-      </Link>
+      {/* What's new, one notice at a time (Desafío 30 días, Cuadernos TIAM). */}
+      <PromoBanner />
 
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         {/* Thin brand accent */}
