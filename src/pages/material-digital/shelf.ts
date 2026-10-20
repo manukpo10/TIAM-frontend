@@ -1,21 +1,34 @@
 /**
  * Pure rules of the "Material digital" shelf (MaterialDigitalPage.tsx). They have their tests in tests/material-shelf.test.ts (`npm test`).
  *
- * While MATERIAL_LAUNCHED (lib/platform.ts) is false the whole shelf says "Próximamente" and no card links anywhere, EXCEPT a product that is
- * `landingOpen`: its landing page is already online (in preview, with sales off), so its card links to it even though it cannot be bought yet.
+ * While MATERIAL_LAUNCHED (lib/platform.ts) is false the whole shelf says "Próximamente": no card links anywhere and none shows a price, EXCEPT a product that is
+ * `onSale` (the Cuadernos TIAM: the owner opened their sale on 2026-10-19). Its card says "Disponible", shows its price and links to its landing.
  */
 
 export interface ShelfProduct {
   /** The product's landing: a path served outside the app (a plain <a>, never <Link>) or a full URL. */
   landing?: string
-  /** The landing is already online while the shelf is not launched: the card links to it (with a "Muy pronto" badge, no price). */
-  landingOpen?: boolean
+  /** Final price in Argentine pesos. */
+  price?: number
+  /** The product can be bought now, whatever the rest of the shelf says. */
+  onSale?: boolean
 }
 
 /** The landing a card links to right now, or undefined when it does not link anywhere. */
 export function visibleLanding(product: ShelfProduct, launched: boolean): string | undefined {
   if (!product.landing) return undefined
-  return launched || product.landingOpen ? product.landing : undefined
+  return launched || product.onSale ? product.landing : undefined
+}
+
+/** A price is shown when the product has one and it can be bought (the shelf is launched, or the product is on sale). */
+export function showsPrice(product: ShelfProduct, launched: boolean): boolean {
+  return product.price !== undefined && (launched || !!product.onSale)
+}
+
+/** The small badge over the picture while the shelf is not launched: "Disponible" for a product on sale, "Próximamente" for the rest. */
+export function shelfBadge(product: ShelfProduct, launched: boolean): string | null {
+  if (launched) return null
+  return product.onSale ? 'Disponible' : 'Próximamente'
 }
 
 /** Only absolute http(s) URLs open in a new tab; a path of the site (like /cuadernos) is a plain link in the same tab. */
@@ -26,14 +39,14 @@ const list = (names: string[]): string => (names.length < 2 ? names.join('') : `
 /**
  * The line under the shelf's title.
  * @param total how many products the shelf has
- * @param openNames the names of the products whose landing is already online (see `landingOpen`)
+ * @param onSaleNames the names of the products that can be bought now (see `onSale`)
  */
-export function shelfCount(total: number, openNames: string[], launched: boolean): string {
+export function shelfCount(total: number, onSaleNames: string[], launched: boolean): string {
   if (launched) return total === 1 ? '1 producto, en PDF para imprimir.' : `${total} productos, todos en PDF para imprimir.`
-  if (openNames.length === 0) {
+  if (onSaleNames.length === 0) {
     return total === 1 ? '1 pack, en PDF para imprimir. Todavía no se puede comprar.' : `${total} packs, todos en PDF para imprimir. Todavía no se pueden comprar.`
   }
-  const seen = `Ya podés ver ${openNames.length > 1 ? 'las páginas' : 'la página'} de ${list(openNames)}: la compra abre muy pronto.`
-  const others = openNames.length < total ? ' Los demás todavía no se pueden comprar.' : ''
-  return `${total} productos, todos en PDF para imprimir. ${seen}${others}`
+  const now = `Ya podés comprar ${list(onSaleNames)}.`
+  const others = onSaleNames.length < total ? ' Los demás todavía no se pueden comprar.' : ''
+  return `${total} productos, todos en PDF para imprimir. ${now}${others}`
 }

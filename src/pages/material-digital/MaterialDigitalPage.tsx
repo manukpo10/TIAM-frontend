@@ -10,7 +10,7 @@ import materialMesa from '@/assets/material-digital/material-mesa.webp'
 import edicionCuadernos from '@/assets/material-digital/edicion-cuadernos.webp'
 import edicionProfesionales from '@/assets/material-digital/edicion-profesionales.webp'
 import edicionCuerpo from '@/assets/material-digital/edicion-cuerpo.webp'
-import { isExternal, shelfCount, visibleLanding } from './shelf'
+import { isExternal, shelfBadge, shelfCount, showsPrice, visibleLanding } from './shelf'
 
 /**
  * "Material digital" — the library of TIAM's printable products: one card per
@@ -23,8 +23,8 @@ import { isExternal, shelfCount, visibleLanding } from './shelf'
  * While MATERIAL_LAUNCHED (lib/platform.ts) is false the whole shelf is "Próximamente": the
  * cards stay, but with no price and no link, because the material isn't finished and can't be
  * bought yet. The prices and landings below are kept for the launch. The one exception is a product
- * marked `landingOpen` (the Cuadernos TIAM): its landing is already online in preview, so its card
- * links to it (with a "Muy pronto" badge, still no price). The rule lives in shelf.ts, with its tests.
+ * marked `onSale` (the Cuadernos TIAM, on sale since 2026-10-19): its card says "Disponible", shows its
+ * price and links to its landing. The rules live in shelf.ts, with their tests.
  *
  * The pictures are TIAM's flat illustrations on purpose (the site's look); the real
  * covers and pages of each product live on its landing.
@@ -51,12 +51,10 @@ interface Product {
    */
   landing?: string
   /**
-   * The landing is already online (in preview, sales off) while the shelf is still "Próximamente": the card links to it and shows `badge`
-   * instead of "Próximamente". See shelf.ts (visibleLanding), which has its tests.
+   * The product can be bought now, while the rest of the shelf is still "Próximamente": its card says "Disponible", shows its price and links to
+   * its landing. See shelf.ts (visibleLanding, showsPrice, shelfBadge), which has its tests.
    */
-  landingOpen?: boolean
-  /** The small badge over the picture while the shelf is not launched. Default: "Próximamente". */
-  badge?: string
+  onSale?: boolean
   cta: string
 }
 
@@ -71,8 +69,7 @@ const PREVIEW = true
 
 const PRODUCTS: Product[] = [
   {
-    // The Cuadernos TIAM (the owner approved their landing on 2026-10-19). The card links to it while sales are still off (landingOpen), with a
-    // "Muy pronto" badge and no price. /cuadernos is a static page outside this app: a plain <a>, never <Link>. Its price is VITE_PACK_CUADERNOS_PRICE in
+    // The Cuadernos TIAM: on sale since 2026-10-19 (the owner opened the sale after a real test purchase). The card says "Disponible", shows the price and links to the landing. /cuadernos is a static page outside this app: a plain <a>, never <Link>. Its price is VITE_PACK_CUADERNOS_PRICE in
     // the landing's build config (20.000), kept here for the launch.
     id: 'cuadernos-tiam',
     audience: 'Para adultos mayores y familias',
@@ -89,8 +86,7 @@ const PRODUCTS: Product[] = [
     price: 20000,
     priceNote: 'pago único',
     landing: '/cuadernos',
-    landingOpen: true,
-    badge: 'Muy pronto',
+    onSale: true,
     cta: 'Ver los cuadernos',
   },
   {
@@ -146,12 +142,14 @@ const COPY = MATERIAL_LAUNCHED
       title: 'Lo que estamos preparando',
     }
 
-// The line under the title (shelf.ts, with its tests): while the shelf is not launched it says which products already have their page.
-const OPEN_NAMES = PRODUCTS.filter((product) => visibleLanding(product, false)).map((product) => product.name)
+// The line under the title (shelf.ts, with its tests): while the shelf is not launched it says which products can already be bought.
+const ON_SALE_NAMES = PRODUCTS.filter((product) => product.onSale).map((product) => product.name)
 
 function ProductCard({ product }: { product: Product }) {
-  // Not on sale: no landing to send people to, unless the product's landing is already online on purpose (landingOpen).
+  // Not on sale: no landing to send people to, unless the product is on sale already (onSale).
   const landing = visibleLanding(product, MATERIAL_LAUNCHED)
+  const canBuyNow = MATERIAL_LAUNCHED || !!product.onSale
+  const badge = shelfBadge(product, MATERIAL_LAUNCHED)
   const external = landing ? isExternal(landing) : false
   return (
     <article
@@ -177,9 +175,14 @@ function ProductCard({ product }: { product: Product }) {
         <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue shadow-sm ring-1 ring-slate-200">
           {product.audience}
         </span>
-        {!MATERIAL_LAUNCHED && (
-          <span className="absolute bottom-4 left-4 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-800 shadow">
-            {product.badge ?? 'Próximamente'}
+        {badge && (
+          <span
+            className={cn(
+              'absolute bottom-4 left-4 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide shadow',
+              product.onSale ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800',
+            )}
+          >
+            {badge}
           </span>
         )}
       </div>
@@ -197,11 +200,11 @@ function ProductCard({ product }: { product: Product }) {
         </ul>
 
         <div className="mt-auto pt-6">
-          {MATERIAL_LAUNCHED ? (
+          {canBuyNow ? (
             // flex-wrap: in a narrow card (a 320px phone, the 1024px breakpoint, 200% zoom) the price
             // and the button don't fit side by side, and overflow-hidden would clip the button.
             <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-4 border-t border-slate-100 pt-5">
-              {product.price !== undefined && (
+              {showsPrice(product, MATERIAL_LAUNCHED) && product.price !== undefined && (
                 <div>
                   <p className="text-3xl font-bold text-slate-900">{formatPrice(product.price)}</p>
                   <p className="mt-0.5 text-sm font-medium text-slate-600">{product.priceNote}</p>
@@ -228,24 +231,11 @@ function ProductCard({ product }: { product: Product }) {
               )}
             </div>
           ) : (
-            // Not on sale yet: no price. Nothing to click, unless the product's landing is already online (landingOpen):
-            // then the button leads to it (a plain <a>: the landing is a static page outside this app).
+            // Not on sale yet: no price and nothing to click.
             <div className="border-t border-slate-100 pt-5">
-              {landing ? (
-                <a
-                  href={landing}
-                  aria-label={`${product.cta}: ${product.name}`}
-                  {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-base font-semibold text-white transition-colors after:absolute after:inset-0 hover:bg-primary-hover focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                >
-                  {product.cta}
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </a>
-              ) : (
-                <p className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
-                  Próximamente
-                </p>
-              )}
+              <p className="flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-50 px-5 py-3 text-base font-semibold text-slate-600">
+                Próximamente
+              </p>
             </div>
           )}
         </div>
@@ -354,7 +344,7 @@ export function MaterialDigitalPage() {
               >
                 {COPY.title}
               </h2>
-              <p className="mt-3 text-lg text-slate-600">{shelfCount(PRODUCTS.length, OPEN_NAMES, MATERIAL_LAUNCHED)}</p>
+              <p className="mt-3 text-lg text-slate-600">{shelfCount(PRODUCTS.length, ON_SALE_NAMES, MATERIAL_LAUNCHED)}</p>
             </div>
 
             {/* Flex + justify-center rather than a grid: with two or three products the row
