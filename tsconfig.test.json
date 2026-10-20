@@ -20,5 +20,5 @@
     "noFallthroughCasesInSwitch": true,
     "strict": true
   },
-  "include": ["tests", "pack/logic.ts", "src/pages/pack/packTypes.ts", "src/pages/pack/gamesView.ts", "src/pages/material-digital/shelf.ts"]
+  "include": ["tests", "pack/logic.ts", "src/pages/pack/packTypes.ts", "src/pages/pack/gamesView.ts", "src/pages/material-digital/shelf.ts", "src/lib/areaPlants.ts", "src/lib/reveal.ts"]
 }
