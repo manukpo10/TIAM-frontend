@@ -68,6 +68,12 @@ export function PublicFooter() {
               <li><Link to="/terms" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
               <li><Link to="/privacy" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
               <li><Link to="/arrepentimiento" className="hover:text-white transition-colors">Botón de arrepentimiento</Link></li>
+              {/* Data Fiscal (ARCA F960/D): required in a visible place of the main page. The link is the owner's, exactly as given (http: it redirects to an https ARCA page). */}
+              <li>
+                <a href="http://qr.afip.gob.ar/?qr=PIsGIBwby_5J18px30h7uQ,," target="_F960AFIPInfo" rel="noopener noreferrer" className="inline-block">
+                  <img src="https://www.afip.gob.ar/images/f960/DATAWEB.jpg" alt="Data Fiscal (ARCA)" width="70" height="95" loading="lazy" className="h-auto w-[70px] rounded-sm bg-white" />
+                </a>
+              </li>
             </ul>
           </nav>
         </div>
