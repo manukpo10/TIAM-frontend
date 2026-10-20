@@ -1,11 +1,11 @@
-"""Exporta las plantas de las 7 áreas cognitivas a archivos livianos para la web: public/plantas/v1/.
+"""Exporta las plantas de las 7 áreas cognitivas a archivos livianos para la web: public/plantas/<versión>/ (por defecto v1).
 
 Las plantas son las del jardín de las tapas de los Cuadernos TIAM (TIAM-pack, `scripts/jardin_arte.py`, 2026-10-18): una planta de papel recortado por área, recoloreada
 al color exacto de su área (AREA_COLOR). Este script NO modifica nada del motor del pack: importa `prepare()` (recorte + recoloreo, con su transparencia) y solo lee
 las semillas elegidas de `assets/ilustraciones/jardin/manifest.json`.
 
 Python con numpy, cv2 y Pillow (con WebP y AVIF): el del venv de ComfyUI.
-  C:\\Users\\Manu\\ComfyUI\\venv\\Scripts\\python.exe scripts\\plantas\\export_plantas.py [--pack=<carpeta de TIAM-pack>] [--vista=<carpeta de pruebas>]
+  C:\\Users\\Manu\\ComfyUI\\venv\\Scripts\\python.exe scripts\\plantas\\export_plantas.py [--version=v1] [--pack=<carpeta de TIAM-pack>] [--vista=<carpeta de pruebas>]
 
 Salida (todo con transparencia; el nombre lleva el slug del área: orientacion, memoria, atencion, lenguaje, calculo, razonamiento, visuoespacial):
   <slug>-48.webp, <slug>-96.webp   icono en 1x y 2x (caja de 4:5; se muestra de 24 a 48 px de alto). Cada archivo, menos de 4 KB.
@@ -13,6 +13,10 @@ Salida (todo con transparencia; el nombre lleva el slug del área: orientacion, 
   jardin-800.webp / jardin-1600.webp (+ .avif)   la franja del pie de página: las 7 plantas asomando. La de 1600 px, menos de 60 KB.
 
 Las cuotas de peso las comprueba tests/plantas-assets.test.ts (npm test).
+
+CUIDADO CON LA CACHÉ: vercel.json sirve public/plantas/v1/ con `Cache-Control: immutable` por un año. Si el arte cambia, NO se pisa v1: se exporta a una carpeta nueva
+(`--version=v2`), se cambia PLANTS_DIR en src/lib/areaPlants.ts y la regla de vercel.json, y las pruebas marcan lo que quede apuntando a v1 (tests/plantas-assets.test.ts guarda
+la huella de cada archivo de la versión vigente: si cambia, falla y dice esto mismo).
 """
 from __future__ import annotations
 
@@ -27,7 +31,7 @@ import numpy as np
 from PIL import Image
 
 REPO = Path(__file__).resolve().parents[2]
-OUT = REPO / "public" / "plantas" / "v1"
+PLANTS = REPO / "public" / "plantas"
 DEFAULT_PACK = Path(r"C:\Users\Manu\OneDrive - UTN FRLP\Documentos\TIAM\TIAM-pack")
 
 # Orden de la clave de colores de las tapas (COLOR_KEY) y su slug de archivo.
@@ -159,7 +163,9 @@ def main(argv: list[str]) -> None:
     pack = Path(args.get("pack", str(DEFAULT_PACK)))
     engine = load_engine(pack)
     picked = chosen_plants(engine)
-    OUT.mkdir(parents=True, exist_ok=True)
+    version = args.get("version", "v1")
+    out = PLANTS / version
+    out.mkdir(parents=True, exist_ok=True)
     preview = Path(args["vista"]) if "vista" in args else None
     if preview:
         preview.mkdir(parents=True, exist_ok=True)
@@ -172,18 +178,18 @@ def main(argv: list[str]) -> None:
         sizes = {}
         for scale, quality, alpha_quality in ((1, 70, 70), (2, 55, 60)):
             icon = fit_in_box(cut, ICON_BOX[0] * scale, ICON_BOX[1] * scale, ICON_PAD * scale)
-            sizes[f"{ICON_BOX[0] * scale}"] = encode(icon, OUT / f"{area}-{ICON_BOX[0] * scale}.webp", quality=quality, alpha_quality=alpha_quality, method=6)
+            sizes[f"{ICON_BOX[0] * scale}"] = encode(icon, out / f"{area}-{ICON_BOX[0] * scale}.webp", quality=quality, alpha_quality=alpha_quality, method=6)
         ink = crop_to_ink(cut)
         grow = ink.resize((round(ink.width * GROW_HEIGHT / ink.height), GROW_HEIGHT), Image.LANCZOS)
-        sizes["g"] = encode(grow, OUT / f"{area}-g.webp", quality=62, alpha_quality=70, method=6)
+        sizes["g"] = encode(grow, out / f"{area}-g.webp", quality=62, alpha_quality=70, method=6)
         sizes["g_px"] = f"{grow.width}x{grow.height}"
         sizes["seed"] = picked[area]["seed"]
         report[area] = sizes
 
     for scale, name in ((0.5, "jardin-800"), (1.0, "jardin-1600")):
         band = compose_band(plants, scale)
-        webp = encode(band, OUT / f"{name}.webp", quality=50, alpha_quality=55, method=6)
-        avif = encode(band, OUT / f"{name}.avif", quality=45, speed=4)
+        webp = encode(band, out / f"{name}.webp", quality=50, alpha_quality=55, method=6)
+        avif = encode(band, out / f"{name}.avif", quality=45, speed=4)
         report[name] = {"px": f"{band.width}x{band.height}", "webp": webp, "avif": avif}
         if preview:
             for bg_name, bg in (("crema", (253, 249, 235, 255)), ("blanco", (255, 255, 255, 255)), ("pizarra", (245, 248, 252, 255))):

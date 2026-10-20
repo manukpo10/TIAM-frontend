@@ -1,6 +1,7 @@
 // The weight budget and the format of the plant files (public/plantas/v1, exported by scripts/plantas/export_plantas.py).
 // Budget of the owner's brief: each icon under 4 KB, the footer band under 60 KB, everything the home adds under 120 KB, all with transparency.
 import assert from 'node:assert/strict'
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, it } from 'node:test'
@@ -19,6 +20,38 @@ const sizeOf = (sitePath: string): number => read(sitePath).length
 function webpHasAlpha(file: Buffer): boolean {
   return file.toString('ascii', 0, 4) === 'RIFF' && file.toString('ascii', 8, 12) === 'WEBP' && file.toString('ascii', 12, 16) === 'VP8X' && (file[20] & 0x10) !== 0
 }
+
+/** Canvas size of a WebP with an extended header (VP8X): width - 1 and height - 1 as 24-bit little-endian numbers at bytes 24 and 27. */
+function webpSize(file: Buffer): { w: number; h: number } {
+  return { w: 1 + file.readUIntLE(24, 3), h: 1 + file.readUIntLE(27, 3) }
+}
+/** Size of an AVIF: its `ispe` box (image spatial extents) holds width and height as 32-bit big-endian numbers after 4 bytes of version and flags. */
+function avifSize(file: Buffer): { w: number; h: number } {
+  const at = file.indexOf('ispe')
+  assert.ok(at > -1, 'the AVIF has an ispe box')
+  return { w: file.readUInt32BE(at + 8), h: file.readUInt32BE(at + 12) }
+}
+
+describe('the size of every file is the one the code declares (a wrong number would stretch a plant or shift the layout)', () => {
+  it('the icons are 48x60 and 96x120, the 4:5 boxes plantIcon() reserves', () => {
+    for (const area of AREA_KEYS) {
+      assert.deepEqual(webpSize(read(`${PLANTS_DIR}/${area}-48.webp`)), { w: 48, h: 60 }, `${area}-48`)
+      assert.deepEqual(webpSize(read(`${PLANTS_DIR}/${area}-96.webp`)), { w: 96, h: 120 }, `${area}-96`)
+    }
+  })
+  it('each sprouting plant is 240 px tall and as wide as plantGrow() says', () => {
+    for (const area of AREA_KEYS) {
+      const native = plantGrow(area, 240)
+      assert.deepEqual(webpSize(read(native.src)), { w: native.width, h: 240 }, area)
+    }
+  })
+  it('the garden band is 1600x250 (and 800x125), in WebP and in AVIF, like GARDEN says', () => {
+    assert.deepEqual(webpSize(read(`${PLANTS_DIR}/jardin-1600.webp`)), { w: GARDEN.width, h: GARDEN.height })
+    assert.deepEqual(avifSize(read(`${PLANTS_DIR}/jardin-1600.avif`)), { w: GARDEN.width, h: GARDEN.height })
+    assert.deepEqual(webpSize(read(`${PLANTS_DIR}/jardin-800.webp`)), { w: GARDEN.width / 2, h: GARDEN.height / 2 })
+    assert.deepEqual(avifSize(read(`${PLANTS_DIR}/jardin-800.avif`)), { w: GARDEN.width / 2, h: GARDEN.height / 2 })
+  })
+})
 
 describe('the area icons', () => {
   for (const area of AREA_KEYS) {
@@ -51,7 +84,7 @@ describe('the garden band of the footer', () => {
     assert.ok(webpHasAlpha(read(`${PLANTS_DIR}/jardin-1600.webp`)))
     assert.ok(webpHasAlpha(read(`${PLANTS_DIR}/jardin-800.webp`)))
   })
-  it('is an AVIF (ftyp avif) with the declared size', () => {
+  it('is an AVIF (an ftyp box that says avif)', () => {
     const avif = read(`${PLANTS_DIR}/jardin-1600.avif`)
     assert.equal(avif.toString('ascii', 4, 8), 'ftyp')
     assert.match(avif.toString('ascii', 8, 16), /^avi[fs]/)
@@ -70,6 +103,22 @@ describe('what the home adds', () => {
       assert.ok(webpHasAlpha(read(src)), `${src} has an alpha channel`)
       assert.ok(sizeOf(src) < 12 * KB, `${src} is ${sizeOf(src)} bytes`)
     }
+  })
+})
+
+describe('the versioned folder is immutable', () => {
+  it('no file of the current version changed: a changed file never reaches the visitors who already cached it for a year', () => {
+    const version = PLANTS_DIR.split('/').pop()
+    const expected = JSON.parse(fs.readFileSync(path.join(root, 'tests', `plantas-${version}.sha256.json`), 'utf8')) as Record<string, string>
+    const dir = fileOf(PLANTS_DIR)
+    const actual = Object.fromEntries(fs.readdirSync(dir).sort().map((name) => [name, crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, name))).digest('hex')]))
+    assert.deepEqual(
+      actual,
+      expected,
+      `A file of public${PLANTS_DIR} changed. vercel.json caches this folder as immutable for a year, so do not overwrite it: export the new art to a new folder ` +
+        `(python scripts/plantas/export_plantas.py --version=v2), point PLANTS_DIR (src/lib/areaPlants.ts), the vercel.json rule and the static partials (pack/_partials/footer.html, planta-*.html) at it, ` +
+        `and add tests/plantas-v2.sha256.json.`,
+    )
   })
 })
 
