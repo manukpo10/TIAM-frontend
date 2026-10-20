@@ -1,0 +1,147 @@
+<!-- Ofertas (Cuadernos TIAM): el MISMO bloque y las mismas clases que las ofertas del Pack (ofertas.html): "Todo lo que recibís" + tarjeta de precio con la oferta al pagar y el formulario.
+     TODOS los números salen de la configuración (.env / variables de Vercel), vía los tokens de vite.config.ts: %PACK_PRICE% (VITE_PACK_CUADERNOS_PRICE: 20.000), %PACK_GAMES_PRICE%
+     (VITE_PACK_CUADERNOS_GAMES_PRICE: el PRIMER mes del Desafío al comprar junto, 15.000), %PACK_GAMES_REGULAR% (su precio normal: PRICE_ARS de Desafio30DiasPage.tsx, 20.000), %PACK_PER_SHEET%
+     y %PACK_CUADERNOS_PAGES%. Nada está escrito acá. Total: 20.000 solo, 35.000 con el primer mes del Desafío.
+     Reglas: sin cuadernillo extra (no existe para este producto), sin "valor total" inventado; la única cifra "normal" es la del mes del Desafío, que es su precio real de lista.
+     Bonos: la lista sale de VITE_PACK_CUADERNOS_BONUSES (`Título | descripción ;; Otro | descripción`); vacía = no se muestra nada, y nunca llevan un valor en pesos.
+     Con VITE_PACK_CHECKOUT_URL la tarjeta es un <form method="post"> que viaja al backend (POST /packs/checkout, edicion=cuadernos) y este responde 303 a Mercado Pago; sin esa variable es un <div> y
+     el botón baja a la sección de precio (#comprar), como en las landings del Pack. Campos: email, nombre, telefono (solo con el Desafío), edicion, extras (solo «juegos»), hp_contacto (trampa para bots,
+     tiene que llegar vacío), expected_total y utm_*/fbclid (los completa landing.ts). -->
+<section id="comprar" class="band scroll-mt-4 bg-gradient-to-b from-white to-[#e6f0fb]" aria-labelledby="t-precio">
+  <div class="wrap">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow">Tus cuadernos</p>
+      <h2 id="t-precio" class="t-h2 mt-4">Un solo pago, todo adentro</h2>
+      <!--if:PACK_PROMO-->
+      <p class="promo" data-promo-end="%PACK_PROMO_END_ISO%">Precio de lanzamiento hasta el %PACK_PROMO_END_TEXT%.</p>
+      <!--endif-->
+    </div>
+
+    <div class="offer-grid">
+      <!-- ── Todo lo que recibís ── -->
+      <section class="stack" aria-labelledby="t-recibis">
+        <h3 id="t-recibis" class="t-h3 text-2xl font-extrabold">Todo lo que recibís</h3>
+        <ul class="stack-list mt-5">
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>4 cuadernos en PDF</b><span>120 ejercicios y %PACK_CUADERNOS_PAGES% páginas: 30 ejercicios en cada cuaderno, de Inicial a Avanzado.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Una consigna clara en cada ejercicio</b><span>Letra grande, desde 16 puntos, y un ejemplo resuelto cuando hace falta.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Las soluciones al final de cada cuaderno</b><span>Para corregir sin ayuda y anotar tus aciertos.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>7 áreas, cada una con su color</b><span>Cada hoja lleva el color y el nombre de su área, y la tapa trae la clave.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>El índice y «Mi progreso»</b><span>Para encontrar cada ejercicio y su solución, y pintar los que vas terminando.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Contenido revisado por la tallerista de TIAM</b><span>Hecho a partir de un taller real de La Plata, desde 2024.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>PDF en A4 y en Carta</b><span>Para imprimir en casa o en una librería, en blanco y negro.</span></div></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>Entrega por email</b><span>Te llega apenas se acredita el pago.</span></div></li>
+        </ul>
+
+        <!--if:PACK_BONUSES-->
+        <p class="stack-sub">Bonos incluidos</p>
+        <ul class="stack-list">%PACK_BONUSES_HTML%</ul>
+        <!--endif-->
+
+        <p class="stack-sub">Opcional, al pagar</p>
+        <ul class="stack-list stack-list--opt">
+          <li>
+            <svg class="i" aria-hidden="true"><use href="#i-plus" /></svg>
+            <div>
+              <b>El primer mes del Desafío de 30&nbsp;días</b>
+              <span>30 ejercicios interactivos, 7 nuevos por semana, que se activan por WhatsApp. Los meses siguientes se compran aparte, sin débito automático.</span>
+              <!--if:PACK_GAMES_DISCOUNT--><span class="tag">Precio normal $&nbsp;%PACK_GAMES_REGULAR% · con tus cuadernos, +&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span><!--endif-->
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ── Precio y compra ── -->
+      <!--if:VITE_PACK_CHECKOUT_URL-->
+      <form id="pedido" class="price-card" method="post" action="%PACK_CHECKOUT_ACTION%" data-offer data-checkout data-base="%PACK_PRICE_NUM%" aria-label="Comprar los Cuadernos TIAM">
+      <!--endif-->
+      <!--ifnot:VITE_PACK_CHECKOUT_URL-->
+      <div class="price-card" data-offer data-base="%PACK_PRICE_NUM%">
+      <!--endif-->
+        <div class="price-head">
+          <p class="inline-flex rounded-full bg-white/15 px-3.5 py-1 text-base font-semibold">Cuadernos TIAM · los 4 cuadernos</p>
+          <p class="price-amount"><small>$</small><b>%PACK_PRICE%</b></p>
+          <p class="mt-3 font-semibold">Pago único · precio final en pesos argentinos</p>
+          <p class="mt-1 text-white">Son unos $&nbsp;%PACK_PER_SHEET% por ejercicio, con su solución al final.</p>
+        </div>
+
+        <div class="price-body">
+          <fieldset>
+            <legend class="text-lg font-extrabold">Sumá al pagar <span class="font-semibold text-slate-600">(opcional)</span></legend>
+            <div class="mt-3 flex flex-col gap-3">
+              <label class="addon">
+                <input type="checkbox" name="extras" value="juegos" data-price="%PACK_GAMES_PRICE_NUM%" />
+                <span class="min-w-0 flex-1">
+                  <span class="addon-top"><b>El primer mes del Desafío de 30&nbsp;días</b><span class="addon-price">+&nbsp;$&nbsp;%PACK_GAMES_PRICE%</span></span>
+                  <small>Se activa por WhatsApp.<!--if:PACK_GAMES_DISCOUNT--> Precio normal <span class="strike">$&nbsp;%PACK_GAMES_REGULAR%</span>.<!--endif--> Los meses siguientes se compran aparte, sin débito automático.</small>
+                  <!--if:PACK_GAMES_DISCOUNT--><span class="tag">Ahorrás $&nbsp;%PACK_GAMES_SAVING%</span><!--endif-->
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <!--if:VITE_PACK_CHECKOUT_URL-->
+          <fieldset class="buyer">
+            <legend class="text-lg font-extrabold">¿A dónde te lo enviamos?</legend>
+            <div class="field">
+              <label for="f-email">Tu email</label>
+              <input id="f-email" name="email" type="email" required maxlength="254" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="nombre@correo.com" aria-describedby="h-email" />
+              <p id="h-email" class="hint">Ahí te llega el acceso a los PDF apenas se acredita el pago.</p>
+            </div>
+            <div class="field">
+              <label for="f-nombre">Tu nombre</label>
+              <input id="f-nombre" name="nombre" type="text" required minlength="2" maxlength="100" autocomplete="name" placeholder="Nombre y apellido" />
+            </div>
+            <div class="field" data-phone>
+              <label for="f-tel">Tu WhatsApp <span class="opt" data-phone-opt>(solo si sumás el Desafío)</span></label>
+              <input id="f-tel" name="telefono" type="tel" maxlength="30" autocomplete="tel" inputmode="tel" placeholder="Ej.: 221 555 1234" aria-describedby="h-tel" />
+              <p id="h-tel" class="hint">Con código de área, sin 0 ni 15. El Desafío se activa desde este número.</p>
+            </div>
+            <!-- Trampa para bots: una persona nunca lo ve ni lo completa. El nombre `hp_contacto` lo fija el backend (ignora cualquier otro). -->
+            <div class="hp" aria-hidden="true"><label>No completar este campo <input type="text" name="hp_contacto" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore /></label></div>
+            <input type="hidden" name="edicion" value="%PACK_EDICION%" />
+            <input type="hidden" name="expected_total" value="" />
+            <input type="hidden" name="utm_source" value="" />
+            <input type="hidden" name="utm_medium" value="" />
+            <input type="hidden" name="utm_campaign" value="" />
+            <input type="hidden" name="utm_content" value="" />
+            <input type="hidden" name="utm_term" value="" />
+            <input type="hidden" name="fbclid" value="" />
+          </fieldset>
+          <!--endif-->
+
+          <p class="total"><span>Total</span><strong data-total aria-live="polite">$&nbsp;%PACK_PRICE%</strong></p>
+
+          <!--if:VITE_PACK_CHECKOUT_URL-->
+          <div class="form-error" data-form-error role="alert" hidden></div>
+          <button type="submit" data-submit data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
+            <span data-submit-label>Pagar con Mercado Pago</span>
+            <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+          </button>
+          <p class="form-status" data-form-status role="status" hidden></p>
+          <p class="mt-4 text-center text-[0.9375rem] text-slate-600">Pagás con Mercado Pago, en cuotas. TIAM no guarda los datos de tu tarjeta.</p>
+          <p class="mt-2 text-center text-[0.9375rem] text-slate-600">Al comprar aceptás los <a class="underline" href="/terms" target="_blank" rel="noopener">términos y condiciones</a> y la <a class="underline" href="/privacy" target="_blank" rel="noopener">política de privacidad</a>.</p>
+          <!--endif-->
+          <!--ifnot:VITE_PACK_CHECKOUT_URL-->
+          <a href="%PACK_BUY_URL%" data-buy data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
+            %PACK_CTA%
+            <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+          </a>
+          <p class="mt-4 text-center text-[0.9375rem] text-slate-600">Pagás con Mercado Pago, en cuotas. TIAM no guarda los datos de tu tarjeta.</p>
+          <!--endif-->
+
+          <!--if:PACK_GUARANTEE-->
+          <p class="mt-5 flex gap-3 rounded-2xl bg-slate-50 p-4 text-base text-slate-700">
+            <svg class="i mt-0.5 flex-none text-tiam-blue" aria-hidden="true"><use href="#i-shield-check" /></svg>
+            <span><strong>Garantía de %PACK_GUARANTEE_DAYS% días.</strong> Si los cuadernos no son lo que esperabas, escribinos dentro de esos días y te devolvemos el pago.</span>
+          </p>
+          <!--endif-->
+        </div>
+      <!--if:VITE_PACK_CHECKOUT_URL-->
+      </form>
+      <!--endif-->
+      <!--ifnot:VITE_PACK_CHECKOUT_URL-->
+      </div>
+      <!--endif-->
+    </div>
+  </div>
+</section>

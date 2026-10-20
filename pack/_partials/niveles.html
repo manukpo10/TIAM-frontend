@@ -1,15 +1,18 @@
 <!-- Niveles, en una sola tarjeta resumida: el dueño pidió no detallar los parámetros de cada nivel en la landing.
-     El detalle (tamaño de la sopa de letras, cifras borradas, etc.) sigue en el README de TIAM-pack y en cada cuadernillo. -->
+     El detalle (tamaño de la sopa de letras, cifras borradas, etc.) sigue en el README de TIAM-pack y en cada cuadernillo.
+     Cuadernos TIAM (PACK_CUADERNOS): la misma tarjeta, con los 4 niveles de los 4 cuadernos (Inicial, Intermedio, Intermedio alto y Avanzado, como dicen las tapas). -->
 <section id="niveles" class="band band--soft scroll-mt-4" aria-labelledby="t-niveles">
   <div class="wrap">
     <div class="mx-auto max-w-3xl rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-100 md:p-8">
       <p class="eyebrow">Niveles</p>
-      <h2 id="t-niveles" class="t-h2 mt-4">3&nbsp;niveles para ir de a poco</h2>
+      <h2 id="t-niveles" class="t-h2 mt-4"><!--ifnot:PACK_CUADERNOS-->3&nbsp;niveles para ir de a poco<!--endif--><!--if:PACK_CUADERNOS-->4&nbsp;niveles para ir de a poco<!--endif--></h2>
       <p class="lead mt-3">
         <!--if:PACK_FAMILIAS-->Cada cuadernillo es de un nivel. Empezás por el&nbsp;1 y subís cuando la ficha le resulte cómoda.<!--endif-->
         <!--if:PACK_PROFESIONALES-->Cada cuadernillo es de un nivel. Empezás por el&nbsp;1 y subís según cómo responda cada persona.<!--endif-->
+        <!--if:PACK_CUADERNOS-->Cada cuaderno es de un nivel. Empezás por el&nbsp;1 y subís cuando el cuaderno te resulte cómodo.<!--endif-->
       </p>
 
+      <!--ifnot:PACK_CUADERNOS-->
       <ul class="mt-6 grid gap-3 text-left md:grid-cols-3">
         <li class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
           <div>
@@ -35,6 +38,42 @@
       </ul>
 
       <p class="mt-5 text-base text-slate-700">Además, cada guía trae ajustes «más fácil» y «más difícil» para adaptar la ficha en el momento.</p>
+      <!--endif-->
+
+      <!--if:PACK_CUADERNOS-->
+      <ul class="mt-6 grid gap-3 text-left md:grid-cols-2">
+        <li class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+          <div>
+            <p class="font-display text-xl font-extrabold leading-tight">Cuaderno&nbsp;1</p>
+            <p class="text-base text-slate-700">Inicial</p>
+          </div>
+          <span class="dots" role="img" aria-label="Un punto de cuatro"><span class="on"></span><span></span><span></span><span></span></span>
+        </li>
+        <li class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+          <div>
+            <p class="font-display text-xl font-extrabold leading-tight">Cuaderno&nbsp;2</p>
+            <p class="text-base text-slate-700">Intermedio</p>
+          </div>
+          <span class="dots" role="img" aria-label="Dos puntos de cuatro"><span class="on"></span><span class="on"></span><span></span><span></span></span>
+        </li>
+        <li class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+          <div>
+            <p class="font-display text-xl font-extrabold leading-tight">Cuaderno&nbsp;3</p>
+            <p class="text-base text-slate-700">Intermedio alto</p>
+          </div>
+          <span class="dots" role="img" aria-label="Tres puntos de cuatro"><span class="on"></span><span class="on"></span><span class="on"></span><span></span></span>
+        </li>
+        <li class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+          <div>
+            <p class="font-display text-xl font-extrabold leading-tight">Cuaderno&nbsp;4</p>
+            <p class="text-base text-slate-700">Avanzado</p>
+          </div>
+          <span class="dots" role="img" aria-label="Cuatro puntos de cuatro"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></span>
+        </li>
+      </ul>
+
+      <p class="mt-5 text-base text-slate-700">Subir de cuaderno no es hacer lo mismo con más: cuando un ejercicio vuelve más adelante, cambia lo que hay que hacer. Por ejemplo, de reconocer palabras entre varias a escribirlas de memoria.</p>
+      <!--endif-->
     </div>
   </div>
 </section>

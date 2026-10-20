@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>120 ejercicios para hacer solo/a | Cuadernos TIAM de estimulación cognitiva</title>
+    <meta
+      name="description"
+      content="4 cuadernos con 120 ejercicios para hacer solo/a: letra grande, ejemplos resueltos y soluciones al final. PDF para imprimir, de TIAM (La Plata)."
+    />
+    <!-- Landing de campaña: no indexar mientras dure la prueba de anuncios. Sacar esta línea si se quiere que aparezca en buscadores. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://tiamdigital.com/cuadernos" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="TIAM Digital" />
+    <meta property="og:title" content="120 ejercicios para hacer solo/a, a tu ritmo" />
+    <meta property="og:description" content="4 cuadernos que suben de nivel, con letra grande, ejemplos resueltos y las soluciones al final." />
+    <meta property="og:url" content="https://tiamdigital.com/cuadernos" />
+    <meta property="og:image" content="https://tiamdigital.com/pack/og-cuadernos.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Los cuatro Cuadernos TIAM impresos sobre una mesa de madera, con el título 120 ejercicios para hacer solo/a, a tu ritmo" />
+
+    <link rel="preload" href="/pack/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/pack/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/pack/landing.css" />
+    <script type="module" src="/pack/landing.ts"></script>
+  </head>
+
+  <!-- Cuadernos TIAM (/cuadernos). Es la MISMA landing que /pack/familias, con el contenido de este producto: mismo orden de secciones, mismas partes (pack/_partials), mismo CSS.
+       data-pack-price / data-pack-content / data-pack-category: el precio de la configuración y cómo se llama el producto en el Pixel de Meta (ver pack/landing.ts). -->
+  <body data-pack="cuadernos" data-edicion="cuadernos" data-pack-price="%PACK_PRICE_NUM%" data-pack-content="cuadernos" data-pack-category="cuadernos">
+    <!--include:sprite-->
+    <a class="skip" href="#contenido">Ir al contenido</a>
+
+    <!--include:topbar-->
+
+    <main id="contenido">
+      <!-- ── 1. Hero: gancho, foto del producto, promesa, precio, botón y cifras reales ─────────────────
+           Celular: etiqueta, titular, foto (el LCP), promesa, precio con botón y las cuatro cifras. Desde 1024 px, la foto pasa a la columna de la derecha. -->
+      <section class="hero" aria-labelledby="titulo">
+        <div class="wrap hero-grid">
+          <p class="eyebrow eyebrow--dark hero-eyebrow">Cuadernos TIAM · Para hacer solo/a</p>
+          <h1 id="titulo" class="t-h1 hero-h1"><mark>120&nbsp;ejercicios</mark> para hacer solo/a, a tu ritmo</h1>
+
+          <figure class="hero-photo">
+            <!-- Maqueta: las cuatro tapas REALES impresas y engrapadas sobre una mesa de madera (scripts/pack-landings/make_mockup_cuadernos.py: la misma técnica que la maqueta del Pack, sin personas).
+                 Recorte 4:3 (1200 x 900), con su ancho y alto: sin saltos de diseño. Lo importante queda por encima del cartel de abajo. -->
+            <img
+              src="/pack/img/cuadernos-hero-480.webp"
+              srcset="/pack/img/cuadernos-hero-480.webp 480w, /pack/img/cuadernos-hero-800.webp 800w, /pack/img/cuadernos-hero-1200.webp 1200w"
+              sizes="(min-width: 1024px) 540px, (min-width: 640px) 544px, 92vw"
+              width="1200"
+              height="900"
+              alt="Los cuatro Cuadernos TIAM impresos y engrapados sobre una mesa de madera, del 1 (Inicial) al 4 (Avanzado). Tapas reales: el título, el número del cuaderno y el jardín de papel con la clave de las 7 áreas."
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+            />
+            <!-- Honestidad: lo que se vende es un PDF para imprimir en casa; la imagen muestra las tapas reales y cómo queda impreso. Este cartel va siempre pegado a la imagen. -->
+            <figcaption class="hero-tag"><svg class="i text-tiam-blue" aria-hidden="true"><use href="#i-printer" /></svg>Producto digital: PDF para imprimir en casa</figcaption>
+          </figure>
+
+          <p class="hero-lead">4&nbsp;cuadernos que suben de nivel, con letra grande, ejemplos resueltos y las soluciones al final. Los imprimís en casa y los hacés a tu ritmo.</p>
+
+          <div class="hero-buy">
+            <p class="hero-price"><strong>$&nbsp;%PACK_PRICE%</strong><span>Los 4 cuadernos · pago único</span></p>
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
+              <a href="%PACK_BUY_URL%" data-buy data-watch-cta class="btn btn-cta btn-lg">
+                %PACK_CTA%
+                <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+              </a>
+              <a href="#incluye" class="btn-link btn-link--light">Ver qué incluye</a>
+            </div>
+            <p class="text-base text-slate-300">Te llega por email apenas se acredita el pago. Pagás con Mercado&nbsp;Pago.</p>
+          </div>
+
+          <div class="hero-stats grid gap-4">
+            <ul class="stats" aria-label="Los cuadernos en cifras">
+              <li class="stat stat--memoria"><b>120</b><span>ejercicios distintos</span></li>
+              <li class="stat stat--atencion"><b>4</b><span>cuadernos</span></li>
+              <li class="stat stat--lenguaje"><b>%PACK_CUADERNOS_PAGES%</b><span>páginas en PDF</span></li>
+              <li class="stat stat--calculo"><b>7</b><span>áreas cognitivas</span></li>
+            </ul>
+            <ul class="chips">
+              <li class="chip"><svg class="i text-[#ffd23f]" aria-hidden="true"><use href="#i-check" /></svg>4&nbsp;niveles</li>
+              <li class="chip"><svg class="i text-[#ffd23f]" aria-hidden="true"><use href="#i-check" /></svg>30&nbsp;ejercicios por cuaderno</li>
+              <li class="chip"><svg class="i text-[#ffd23f]" aria-hidden="true"><use href="#i-check" /></svg>Soluciones al final</li>
+              <li class="chip"><svg class="i text-[#ffd23f]" aria-hidden="true"><use href="#i-check" /></svg>A4 y Carta</li>
+            </ul>
+          </div>
+        </div>
+        <div class="stripe" aria-hidden="true"></div>
+      </section>
+
+      <!-- ── 2. Lo que duele: la situación del comprador (nunca una condición de la persona) ────────────── -->
+      <section class="band band--paper" aria-labelledby="t-situacion">
+        <div class="wrap">
+          <h2 id="t-situacion" class="t-h2 mx-auto max-w-3xl text-center">Querés ejercitar la mente a tu ritmo. Lo difícil es encontrar algo hecho para&nbsp;vos.</h2>
+
+          <ul class="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-2 md:gap-5">
+            <li class="pain">
+              <span class="icon-tile icon-tile--warm"><svg class="i" aria-hidden="true"><use href="#i-search" /></svg></span>
+              <div>
+                <h3>Buscás y encontrás cosas para chicos</h3>
+                <p>Entre tantas opciones en internet, cuesta dar con algo que se lea bien impreso y que no parezca de jardín.</p>
+              </div>
+            </li>
+            <li class="pain">
+              <span class="icon-tile icon-tile--warm"><svg class="i" aria-hidden="true"><use href="#i-sliders-horizontal" /></svg></span>
+              <div>
+                <h3>No sabés por dónde empezar</h3>
+                <p>¿Fácil o difícil? No querés frustrarte ni aburrirte a los cinco minutos.</p>
+              </div>
+            </li>
+            <li class="pain">
+              <span class="icon-tile icon-tile--warm"><svg class="i" aria-hidden="true"><use href="#i-key-round" /></svg></span>
+              <div>
+                <h3>Las hojas no traen respuestas</h3>
+                <p>Terminás el ejercicio y nadie te dice si salió bien. Corregir se vuelve otra tarea.</p>
+              </div>
+            </li>
+            <li class="pain">
+              <span class="icon-tile icon-tile--warm"><svg class="i" aria-hidden="true"><use href="#i-clock" /></svg></span>
+              <div>
+                <h3>Querés hacerlo cuando tengas ganas</h3>
+                <p>Sin turnos ni horarios, y sin esperar a que alguien pueda sentarse con vos.</p>
+              </div>
+            </li>
+          </ul>
+
+          <div class="remedy mx-auto mt-10 max-w-4xl">
+            <div>
+              <p class="font-display text-2xl font-extrabold leading-tight md:text-3xl">Cuatro cuadernos listos para hacer solo/a.</p>
+              <p class="mt-3 text-[1.1875rem] text-white">
+                Abrís el PDF, imprimís un cuaderno y empezás. Cada ejercicio te explica qué hacer, te muestra un ejemplo resuelto cuando hace falta y tiene su solución al final. Lo importante es ejercitar la mente con gusto.
+              </p>
+            </div>
+            <!-- Las cuatro tapas REALES, del 1 al 4 (scripts/pack-landings/make_cuadernos_images.py). -->
+            <img src="/pack/img/cuadernos-tapas-480.webp" srcset="/pack/img/cuadernos-tapas-480.webp 480w, /pack/img/cuadernos-tapas-800.webp 800w" sizes="(min-width: 768px) 320px, 90vw" width="480" height="193" alt="Las tapas de los cuatro cuadernos, del 1 (Inicial) al 4 (Avanzado), con el título, el número y el jardín de papel de colores" loading="lazy" decoding="async" class="mx-auto h-auto w-full max-w-sm" />
+          </div>
+        </div>
+      </section>
+
+      <!--include:papel-pantalla-->
+
+      <!--include:coleccion-cuadernos-->
+
+      <!--include:cada-ejercicio-cuadernos-->
+
+      <!--include:niveles-->
+
+      <!-- ── 3. Cómo funciona, en 3 pasos ─────────────────────────────────────────── -->
+      <section id="como-funciona" class="band scroll-mt-4" aria-labelledby="t-como">
+        <div class="wrap">
+          <div class="mx-auto max-w-3xl text-center">
+            <p class="eyebrow">Cómo funciona</p>
+            <h2 id="t-como" class="t-h2 mt-4">Recibís, imprimís y empezás</h2>
+          </div>
+          <ol class="mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
+            <li class="step md:flex-col">
+              <span class="step-n" aria-hidden="true">1</span>
+              <img src="/pack/img/paso-recibir-240.webp" srcset="/pack/img/paso-recibir-240.webp 240w, /pack/img/paso-recibir-400.webp 400w" sizes="(min-width: 768px) 320px, 96px" width="240" height="240" alt="" loading="lazy" decoding="async" class="h-24 w-24 flex-none rounded-2xl object-cover md:aspect-[4/3] md:h-auto md:w-full md:object-[50%_58%]" />
+              <div>
+                <h3 class="t-h3">Pagás y lo recibís</h3>
+                <p class="mt-2 text-base text-slate-700">Un solo pago en pesos con Mercado&nbsp;Pago. Los 4&nbsp;cuadernos te llegan por email, en A4 y en Carta.</p>
+              </div>
+            </li>
+            <li class="step md:flex-col">
+              <span class="step-n" aria-hidden="true">2</span>
+              <img src="/pack/img/paso-imprimir-240.webp" srcset="/pack/img/paso-imprimir-240.webp 240w, /pack/img/paso-imprimir-400.webp 400w" sizes="(min-width: 768px) 320px, 96px" width="240" height="240" alt="" loading="lazy" decoding="async" class="h-24 w-24 flex-none rounded-2xl object-cover md:aspect-[4/3] md:h-auto md:w-full md:object-[50%_58%]" />
+              <div>
+                <h3 class="t-h3">Imprimís un cuaderno</h3>
+                <p class="mt-2 text-base text-slate-700">Imprimilo a una sola cara, en blanco y negro y al 100&nbsp;%. Con tinta negra alcanza. Empezás por el cuaderno&nbsp;1.</p>
+              </div>
+            </li>
+            <li class="step md:flex-col">
+              <span class="step-n" aria-hidden="true">3</span>
+              <img src="/pack/img/cuadernos-paso-progreso-240.webp" srcset="/pack/img/cuadernos-paso-progreso-240.webp 240w, /pack/img/cuadernos-paso-progreso-400.webp 400w" sizes="(min-width: 768px) 320px, 96px" width="240" height="240" alt="" loading="lazy" decoding="async" class="h-24 w-24 flex-none rounded-2xl object-cover md:aspect-[4/3] md:h-auto md:w-full md:object-[50%_50%]" />
+              <div>
+                <h3 class="t-h3">Hacés uno o dos por día</h3>
+                <p class="mt-2 text-base text-slate-700">Sin apuro. Corregís con las soluciones del final y pintás en «Mi progreso» cada ejercicio terminado.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!--include:comparacion-cuadernos-->
+
+      <!--include:ofertas-cuadernos-->
+
+      <!-- ── 4. Preguntas frecuentes ──────────────────────────────────────────────── -->
+      <section class="band band--soft" aria-labelledby="t-faq">
+        <div class="wrap">
+          <div class="mx-auto max-w-3xl text-center">
+            <p class="eyebrow">Preguntas frecuentes</p>
+            <h2 id="t-faq" class="t-h2 mt-4">Lo que suelen preguntar</h2>
+          </div>
+          <div class="mx-auto mt-10 max-w-3xl space-y-3">
+            <details class="faq" name="faq">
+              <summary>¿Necesito una impresora?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Sí, o un lugar donde imprimir, como una librería. Los cuadernos están en PDF, en A4 y en Carta, y se imprimen en blanco y negro, a una sola cara y al 100&nbsp;% («tamaño real»): no hace falta tinta de color.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Cómo los recibo?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Por email, apenas se acredita el pago. Recibís los PDF de los 4&nbsp;cuadernos, en A4 y en Carta. Los podés guardar en la compu o en el celular e imprimir cuando quieras.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Cómo pago? ¿Hay cuotas?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Con Mercado&nbsp;Pago, en pesos argentinos. Podés pagar en cuotas, según las opciones que te muestre Mercado&nbsp;Pago al pagar. Es un pago único: no hay suscripción ni renovaciones. TIAM no guarda los datos de tu tarjeta.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Necesito que alguien me acompañe?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>No. Los cuadernos están escritos para que los hagas solo/a: cada ejercicio explica qué hacer, trae un ejemplo resuelto cuando hace falta y tiene su solución al final del cuaderno. Si querés hacerlos con alguien, también se puede.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Por cuál cuaderno empiezo?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Por el&nbsp;1, el Inicial. Los cuatro suben de nivel de a uno: Inicial, Intermedio, Intermedio alto y Avanzado. Cuando un ejercicio vuelve en un cuaderno más adelante, cambia lo que hay que hacer.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Cuánto lleva cada ejercicio?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Cada hoja indica un tiempo orientativo, de 10 a 25&nbsp;minutos según el cuaderno. Los cuadernos proponen hacer uno o dos ejercicios por día, sin apuro.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Cómo funciona el primer mes del Desafío?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Es opcional y se suma al pagar. Es el Desafío de 30&nbsp;días de TIAM: 30 ejercicios interactivos, con 7 nuevos cada semana, de 10 a 15&nbsp;minutos cada uno. Se activa por WhatsApp con un toque (por eso te pedimos tu número) y se juega desde el celular, sin instalar nada.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Y después del primer mes?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>No pasa nada solo: no hay débito automático ni suscripción. Si querés seguir, cada mes siguiente se compra aparte, cuando quieras, en la página del Desafío de 30&nbsp;días, al precio normal de $&nbsp;%PACK_GAMES_REGULAR% por mes. Arrancás con el mes que sigue, con ejercicios nuevos.<a class="mt-1 flex min-h-11 items-center gap-2 font-semibold text-tiam-blue-dark underline" href="/desafio-30-dias" target="_blank" rel="noopener">Ver la página del Desafío de 30&nbsp;días<svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg></a></div>
+            </details>
+            <!--if:PACK_GUARANTEE-->
+            <details class="faq" name="faq">
+              <summary>¿Y si no me convence?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>Tenés %PACK_GUARANTEE_DAYS% días: si los cuadernos no son lo que esperabas, escribinos dentro de ese plazo y te devolvemos el pago.</div>
+            </details>
+            <!--endif-->
+            <details class="faq" name="faq">
+              <summary>¿Reemplaza a un profesional de la salud?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>No. Son ejercicios de estimulación para hacer con gusto. No reemplazan la evaluación ni el tratamiento de un profesional de la salud.</div>
+            </details>
+            <!--if:VITE_PACK_LICENSE_CUADERNOS-->
+            <details class="faq" name="faq">
+              <summary>¿Puedo imprimir los cuadernos más de una vez?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>%VITE_PACK_LICENSE_CUADERNOS%</div>
+            </details>
+            <!--endif-->
+            <details class="faq" name="faq">
+              <summary>¿En qué se diferencia del Pack Básico?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>El Pack Básico son 120 fichas con una guía para acompañar a otra persona. Los Cuadernos TIAM están escritos para hacerlos solo/a: cada ejercicio habla directamente a quien lo hace y las soluciones están al final de cada cuaderno.</div>
+            </details>
+            <details class="faq" name="faq">
+              <summary>¿Quién hizo los cuadernos?<svg class="i" aria-hidden="true"><use href="#i-chevron-down" /></svg></summary>
+              <div>TIAM, el proyecto que nació en el Taller Interactivo para Adultos Mayores de La Plata. Contenido revisado por la tallerista de TIAM.</div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 5. Cierre ────────────────────────────────────────────────────────────── -->
+      <section class="relative overflow-hidden bg-gradient-to-br from-tiam-blue to-tiam-blue-dark pb-20 pt-16 text-white md:py-24" aria-labelledby="t-cierre">
+        <div class="wrap text-center">
+          <h2 id="t-cierre" class="t-h2 mx-auto max-w-2xl">Imprimí el primero y empezá cuando quieras</h2>
+          <p class="mx-auto mt-4 max-w-xl text-[1.1875rem] text-white">Cuatro cuadernos, 120&nbsp;ejercicios y las soluciones al final. El resto lo ponés vos, a tu ritmo.</p>
+          <p class="mt-6 font-display text-5xl font-extrabold leading-none tracking-tight">$&nbsp;%PACK_PRICE%</p>
+          <p class="mt-2 text-base font-semibold text-white">Los 4 cuadernos · pago único</p>
+          <a href="%PACK_BUY_URL%" data-buy data-watch-cta class="btn btn-white btn-lg mt-6 w-full sm:w-auto">
+            %PACK_CTA%
+            <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
+          </a>
+          <p class="mt-4 text-base text-balance text-white">Pagás con Mercado&nbsp;Pago, en cuotas. Te llega por email.<!--if:PACK_GUARANTEE--> Garantía de %PACK_GUARANTEE_DAYS%&nbsp;días.<!--endif--></p>
+        </div>
+        <div class="stripe absolute inset-x-0 bottom-0" aria-hidden="true"></div>
+      </section>
+    </main>
+
+    <!--include:footer-->
+
+    <!-- Barra de compra del celular: aparece cuando no se ve ningún botón de compra -->
+    <div id="sticky-cta" class="sticky-cta" role="region" aria-label="Comprar los cuadernos">
+      <p class="leading-tight">
+        <span class="block text-sm text-slate-600">Los 4 cuadernos · pago único</span>
+        <span class="font-display text-xl font-extrabold text-slate-900">$&nbsp;%PACK_PRICE%</span>
+      </p>
+      <a href="%PACK_BUY_URL%" data-buy class="btn btn-cta btn-sm shrink-0">%PACK_CTA_SHORT%</a>
+    </div>
+  </body>
+</html>
