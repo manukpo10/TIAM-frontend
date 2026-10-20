@@ -8,6 +8,10 @@
   ],
   "headers": [
     {
+      "source": "/plantas/v1/:file",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
       "source": "/pack/descargas/:token",
       "headers": [
         { "key": "Referrer-Policy", "value": "no-referrer" },
