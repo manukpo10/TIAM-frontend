@@ -50,3 +50,14 @@ describe('Data Fiscal (ARCA)', () => {
     })
   }
 })
+
+describe('the logo of the landings links to the home page', () => {
+  const topbar = read('pack/_partials/topbar.html')
+  it('is a plain link to / with an accessible label, around the same logo', () => {
+    assert.match(topbar, /<a href="\/"[^>]*aria-label="TIAM: ir al inicio"[^>]*>\s*<img src="\/pack\/img\/logo-144\.webp"[^>]*>\s*<\/a>/)
+  })
+  it('keeps the size of the logo and a tap target of at least 44 px', () => {
+    assert.match(topbar, /<img src="\/pack\/img\/logo-144\.webp" width="144" height="81"[^>]*class="h-8 w-auto"/)
+    assert.match(topbar, /<a href="\/"[^>]*class="[^"]*min-h-11/)
+  })
+})
