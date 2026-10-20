@@ -19,31 +19,19 @@
  * esta pestaña mientras dura el viaje a Mercado Pago, para no pedirlos de nuevo si el backend vuelve con un error.
  */
 
+import { computeTotal, formErrorMessage, pesos, toNumber } from './logic.ts'
+
 // Parámetros de la visita que se guardan con el pedido. fbclid lo agrega Meta a los clics de los anuncios.
 const PASS_THROUGH = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid']
 
-const { pack = '' } = document.body.dataset
-
-const pesos = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+// data-pack: qué landing es (familias, profesionales o cuadernos). Las de los cuadernos suman data-pack-price (el precio de la
+// configuración, para el Pixel) y data-pack-content / data-pack-category (cómo se llama en el Pixel); las del Pack no los tienen.
+const { pack = '', packPrice, packContent, packCategory } = document.body.dataset
 
 const incoming = new URLSearchParams(location.search)
 
-// Avisos del backend cuando rechaza el formulario: vuelve a la landing con ?error=<código>. Los códigos que no
-// conocemos caen en el mensaje general; nunca se muestra el código tal cual.
-const FORM_ERRORS: Record<string, string> = {
-  cerrado: 'Las ventas están cerradas por el momento. Probá de nuevo más tarde o escribinos.',
-  precio: 'El precio cambió mientras mirabas la página. Recargá la página para ver el precio actualizado y volvé a intentar.',
-  pago: 'No pudimos abrir Mercado Pago y no se te cobró nada. Probá de nuevo en un momento.',
-  email: 'Revisá el email: no parece válido.',
-  nombre: 'Escribí tu nombre y apellido.',
-  telefono: 'Para sumar los juegos necesitamos tu WhatsApp, con código de área.',
-  meses: 'Ese número de WhatsApp ya tiene los meses de juegos disponibles. Sacá los juegos de tu compra o usá otro número.',
-  limite: 'Hubo muchos intentos seguidos. Esperá unos minutos y volvé a probar.',
-  edicion: 'Recargá la página y volvé a elegir tu pack.',
-  extras: 'Recargá la página y volvé a elegir lo que querés sumar.',
-  origen: 'No pudimos verificar desde dónde se envió el pedido. Recargá la página y probá de nuevo.',
-}
-const FORM_ERROR_DEFAULT = 'No pudimos procesar tu compra. Revisá los datos y probá de nuevo.'
+// Los avisos del backend (?error=<código>) y el total salen de pack/logic.ts, que tiene sus pruebas (npm test).
+const product = pack === 'cuadernos' ? 'cuadernos' : 'pack'
 
 const DRAFT_KEY = 'tiam.pack.draft'
 
@@ -109,13 +97,13 @@ if (PIXEL_ID) {
   window._fbq = fbq
 
   // Precio como número (si no está cargado, no se manda value).
-  const price = Number(String(import.meta.env.VITE_PACK_PRICE ?? '').replace(/\./g, '').replace(',', '.'))
+  const price = toNumber(packPrice ?? import.meta.env.VITE_PACK_PRICE)
   const content = {
-    content_name: `pack-${pack}`,
-    content_category: 'pack-fichas',
+    content_name: packContent ?? `pack-${pack}`,
+    content_category: packCategory ?? 'pack-fichas',
     content_type: 'product',
     currency: 'ARS',
-    ...(Number.isFinite(price) && price > 0 ? { value: price } : {}),
+    ...(price > 0 ? { value: price } : {}),
   }
 
   // Con `value` (el total del formulario, ya con las ofertas) se manda ese monto en vez del precio base.
@@ -155,8 +143,10 @@ if (offer) {
   form?.setAttribute('data-js', '')
 
   const update = () => {
-    const on = boxes.filter((box) => box.checked && !box.disabled)
-    currentTotal = base + on.reduce((sum, box) => sum + Number(box.dataset.price ?? 0), 0)
+    currentTotal = computeTotal(
+      base,
+      boxes.map((box) => ({ checked: box.checked, disabled: box.disabled, price: Number(box.dataset.price ?? 0) })),
+    )
     for (const el of totals) el.textContent = `$\u00a0${pesos(currentTotal)}`
 
     const needsPhone = !!gamesBox?.checked && !gamesBox.disabled
@@ -242,8 +232,7 @@ if (form) {
   // Vuelta del backend con un error: aviso al lado del botón, datos que ya había escrito y la tarjeta a la vista.
   const code = incoming.get('error')
   if (code) {
-    // hasOwn: un código como «constructor» o «toString» no debe leer propiedades heredadas del objeto.
-    showError(Object.hasOwn(FORM_ERRORS, code) ? FORM_ERRORS[code] : FORM_ERROR_DEFAULT)
+    showError(formErrorMessage(code, product))
     const draft = storage.read()
     if (draft) {
       const set = (name: string, value?: string) => {

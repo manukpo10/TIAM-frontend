@@ -3,6 +3,7 @@
   "rewrites": [
     { "source": "/pack/familias", "destination": "/pack/familias/index.html" },
     { "source": "/pack/profesionales", "destination": "/pack/profesionales/index.html" },
+    { "source": "/cuadernos", "destination": "/pack/cuadernos/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

@@ -3,19 +3,21 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'node:fs'
+import { LANDING_ROUTES, escapeHtml, gamesPriceEnvKey, landingIndexFor, parseBonuses, perUnit, pesos, priceEnvKey, toNumber } from './pack/logic.ts'
 
 /**
- * Landings del Pack: tiamdigital.com/pack/familias y /pack/profesionales.
+ * Landings del Pack: tiamdigital.com/pack/familias y /pack/profesionales, y la de los Cuadernos TIAM (/cuadernos).
  *
  * Son páginas HTML estáticas, no rutas de React: el SPA pesa cientos de KB de JavaScript y el
  * tráfico de los anuncios llega por celular, muchas veces con mala conexión. Cada landing es una
  * entrada más de este build (ver `input`) y carga casi nada de JavaScript (pack/landing.ts).
  *
  * En producción las sirve Vercel desde dist/pack/<slug>/index.html. vercel.json tiene un rewrite
- * explícito de /pack/<slug> (sin barra final) ANTES del catch-all del SPA: si se agrega una
- * landing, hay que sumarla en PACK_LANDINGS y en vercel.json.
+ * explícito de la ruta pública (sin barra final) ANTES del catch-all del SPA: si se agrega una
+ * landing, hay que sumarla en LANDING_ROUTES (pack/logic.ts, que tiene sus pruebas) y en vercel.json.
+ * Los Pack viven en /pack/<slug>; los cuadernos, en /cuadernos (el archivo sigue siendo pack/cuadernos/index.html).
  */
-const PACK_LANDINGS = ['familias', 'profesionales']
+const PACK_LANDINGS = Object.keys(LANDING_ROUTES)
 
 const ROOT_DIR = __dirname
 const PACK_DIR = path.resolve(ROOT_DIR, 'pack')
@@ -29,6 +31,12 @@ const PACK_SHEETS = 120
  */
 const PACK_START_PAGES = 4
 const PACK_BOOKLET_PAGES = 300
+/**
+ * Cuadernos TIAM (4 cuadernos de 30 ejercicios, `Proyecto Digitales\pack\autoaplicable\salida-color`): páginas de los 4 PDF
+ * (41 + 42 + 42 + 42, iguales en A4 y en Carta) y cantidad de ejercicios. Salen como %PACK_CUADERNOS_PAGES% y se usan para el costo por ejercicio.
+ */
+const CUADERNOS_PAGES = 167
+const CUADERNOS_EXERCISES = 120
 
 // ── Datos que hacen falta para publicar ───────────────────────────────────────────────────────
 // Ningún [[MARCADOR]] llega a la página: si un dato real falta, el espacio se oculta o se usa un texto neutro (ver los
@@ -50,6 +58,7 @@ const REQUIRED_BY_SLUG: Record<string, Pending[]> = {
     { key: 'VITE_PACK_LICENSE_PROFESIONALES', what: 'licencia de uso para profesionales' },
     { key: 'VITE_PACK_INVOICE_TEXT', what: 'cómo se pide factura' },
   ],
+  cuadernos: [...REQUIRED_COMMON, { key: 'VITE_PACK_LICENSE_CUADERNOS', what: 'licencia de uso de los cuadernos' }],
 }
 const RECOMMENDED: Pending[] = [
   { key: 'VITE_PACK_TALLERISTA_NAME', what: 'nombre de la tallerista (sin él, la página no dice quién revisa las guías)' },
@@ -61,17 +70,8 @@ const isOn = (value: unknown): boolean => {
   return text !== '' && text !== '0' && text !== 'false'
 }
 
-/** "14.990" o "14990" -> 14990. Vacío o inválido -> 0. */
-const toNumber = (value: unknown): number => {
-  const n = Number(String(value ?? '').replace(/\./g, '').replace(',', '.'))
-  return Number.isFinite(n) && n > 0 ? n : 0
-}
-
-/** 14990 -> "14.990" (punto de miles, sin depender de los datos de idioma de Node). */
-const formatPesos = (n: number): string => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-
-const escapeHtml = (text: string): string =>
-  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+// toNumber, pesos (14990 -> "14.990"), perUnit, escapeHtml y parseBonuses viven en pack/logic.ts, con sus pruebas (npm test).
+const formatPesos = pesos
 
 const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
@@ -88,22 +88,37 @@ function desafioPrice(): number {
 
 /** Variables derivadas: los precios salen todos de la configuración (.env o variables de Vercel), nunca están escritos en el HTML. */
 function packTokens(env: Record<string, string>, slug: string): Record<string, string> {
-  const price = toNumber(env.VITE_PACK_PRICE)
-  if (!price) throw new Error('[pack-landings] VITE_PACK_PRICE falta o no es un número (ejemplo: 14.990).')
-  const gamesPrice = toNumber(env.VITE_PACK_GAMES_PRICE)
+  const priceKey = priceEnvKey(slug)
+  const price = toNumber(env[priceKey])
+  if (!price) throw new Error(`[pack-landings] ${priceKey} falta o no es un número (ejemplo: 14.990).`)
+  const units = slug === 'cuadernos' ? CUADERNOS_EXERCISES : PACK_SHEETS
+  const gamesPrice = toNumber(env[gamesPriceEnvKey(slug)])
   const gamesRegular = toNumber(env.VITE_PACK_GAMES_REGULAR_PRICE) || desafioPrice()
   const extraPrice = toNumber(env.VITE_PACK_EXTRA_PRICE)
   const [y, m, d] = String(env.VITE_PACK_PROMO_END ?? '').split('-').map(Number)
   const promoOk = !!(y && m && d) && !Number.isNaN(Date.UTC(y, m - 1, d))
   return {
     PACK_EDICION: slug,
+    // Texto de los botones de compra que comparten las plantillas (barra superior).
+    PACK_CTA: slug === 'cuadernos' ? 'Quiero mis cuadernos' : 'Quiero mi pack',
+    // La versión corta es para la barra pegada del celular (a 320 px el texto largo no entra al lado del precio).
+    PACK_CTA_SHORT: slug === 'cuadernos' ? 'Los quiero' : 'Quiero mi pack',
     // A dónde van los botones de compra: con checkout, al formulario de la tarjeta de precio (#pedido); sin checkout, a la sección de precio (#comprar). Nunca salen de la página.
     PACK_BUY_URL: isOn(env.VITE_PACK_CHECKOUT_URL) ? '#pedido' : '#comprar',
     // Destino del formulario de compra: el endpoint del backend (POST /packs/checkout). Vacío mientras no haya checkout (entonces no hay formulario).
     PACK_CHECKOUT_ACTION: isOn(env.VITE_PACK_CHECKOUT_URL) ? escapeHtml(String(env.VITE_PACK_CHECKOUT_URL).trim()) : '',
     PACK_PRICE: formatPesos(price),
     PACK_PRICE_NUM: String(price),
-    PACK_PER_SHEET: formatPesos(price / PACK_SHEETS),
+    PACK_PER_SHEET: formatPesos(perUnit(price, units)),
+    // Solo cuadernos: páginas de los 4 PDF, total con el mes de juegos y lista de bonos (vacía hasta que el dueño la cargue en la configuración).
+    PACK_CUADERNOS_PAGES: String(CUADERNOS_PAGES),
+    PACK_TOTAL_WITH_GAMES: formatPesos(price + gamesPrice),
+    PACK_BONUSES_HTML: parseBonuses(env.VITE_PACK_CUADERNOS_BONUSES)
+      .map(
+        (b) =>
+          `<li><svg class="i" aria-hidden="true"><use href="#i-check" /></svg><div><b>${escapeHtml(b.title)}</b>${b.text ? `<span>${escapeHtml(b.text)}</span>` : ''}</div></li>`,
+      )
+      .join(''),
     PACK_PAGES: String(PACK_START_PAGES + PACK_BOOKLET_PAGES),
     PACK_START_PAGES: String(PACK_START_PAGES),
     PACK_GAMES_PRICE: formatPesos(gamesPrice),
@@ -128,7 +143,9 @@ function packFlags(env: Record<string, string>, slug: string): Record<string, bo
     ...flags,
     PACK_FAMILIAS: slug === 'familias',
     PACK_PROFESIONALES: slug === 'profesionales',
-    PACK_GAMES_DISCOUNT: toNumber(tokens.PACK_GAMES_SAVING.replace(/\./g, '')) > 0 && toNumber(env.VITE_PACK_GAMES_PRICE) > 0,
+    PACK_CUADERNOS: slug === 'cuadernos',
+    PACK_BONUSES: parseBonuses(env.VITE_PACK_CUADERNOS_BONUSES).length > 0,
+    PACK_GAMES_DISCOUNT: toNumber(tokens.PACK_GAMES_SAVING.replace(/\./g, '')) > 0 && toNumber(env[gamesPriceEnvKey(slug)]) > 0,
     PACK_EXTRA_PRICE_SET: toNumber(env.VITE_PACK_EXTRA_PRICE) > 0,
     PACK_GUARANTEE: !!tokens.PACK_GUARANTEE_DAYS,
     PACK_PROMO: !!tokens.PACK_PROMO_END_ISO && tokens.PACK_PROMO_END_ISO >= today,
@@ -166,14 +183,8 @@ function renderLanding(html: string, slug: string, env: Record<string, string>):
   })
 }
 
-/** `/pack/familias`, `/pack/familias/` -> `/pack/familias/index.html` (conserva el query string). */
-function toIndexHtml(url: string): string {
-  const q = url.indexOf('?')
-  const pathname = q === -1 ? url : url.slice(0, q)
-  const rest = q === -1 ? '' : url.slice(q)
-  const clean = pathname.replace(/\/+$/, '')
-  return PACK_LANDINGS.some((slug) => clean === `/pack/${slug}`) ? `${clean}/index.html${rest}` : url
-}
+/** `/pack/familias`, `/pack/familias/`, `/cuadernos` -> `/pack/<slug>/index.html` (conserva el query string). Ver `landingIndexFor` en pack/logic.ts. */
+const toIndexHtml = landingIndexFor
 
 const isLandingFile = (filename: string) =>
   path.relative(PACK_DIR, path.resolve(filename)).split(path.sep)[0] !== '..' &&
