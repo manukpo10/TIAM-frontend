@@ -8,8 +8,10 @@
       name="description"
       content="120 fichas para imprimir, con letra grande y una guía paso a paso para acompañar. Elegís una, la imprimís y se sientan juntos. Hecho en La Plata por TIAM."
     />
-    <!-- Landing de campaña: no indexar mientras dure la prueba de anuncios. Sacar esta línea si se quiere que aparezca en buscadores. -->
+    <!-- noindex y cinta de vista previa solo mientras esta landing esté en vista previa (VITE_PACK_PREVIEW prendido y no listada en VITE_PACK_LIVE): una landing en venta se indexa. -->
+    <!--if:PACK_PREVIEW-->
     <meta name="robots" content="noindex, nofollow" />
+    <!--endif-->
     <link rel="canonical" href="https://www.tiamdigital.com/pack/familias" />
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />

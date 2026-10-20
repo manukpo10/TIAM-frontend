@@ -125,3 +125,51 @@ export function landingIndexFor(url: string): string {
   }
   return url
 }
+
+/**
+ * Variable con el destino del formulario de compra de cada landing (POST /packs/checkout). Los cuadernos tienen la suya: así su formulario está activo
+ * mientras los formularios del Pack siguen apagados (VITE_PACK_CHECKOUT_URL vacía).
+ */
+export function checkoutUrlEnvKey(slug: string): string {
+  return slug === 'cuadernos' ? 'VITE_PACK_CUADERNOS_CHECKOUT_URL' : 'VITE_PACK_CHECKOUT_URL'
+}
+
+/**
+ * Estado de vista previa POR LANDING. `VITE_PACK_PREVIEW` prende la vista previa (cinta amarilla, `noindex`, datos provisorios) y `VITE_PACK_LIVE` lista las
+ * landings que ya están en venta (hoy: `cuadernos`). Una landing está en vista previa solo si el interruptor está prendido Y no figura en la lista de las que están en venta.
+ */
+export function liveSlugs(raw: unknown): LandingSlug[] {
+  const found: LandingSlug[] = []
+  for (const part of String(raw ?? '').split(',')) {
+    const slug = part.trim().toLowerCase()
+    if (Object.hasOwn(LANDING_ROUTES, slug) && !found.includes(slug as LandingSlug)) found.push(slug as LandingSlug)
+  }
+  return found
+}
+
+export function isPreview(slug: string, previewOn: boolean, live: readonly string[]): boolean {
+  return previewOn && !live.includes(slug)
+}
+
+export interface GuardResult {
+  /** Variables obligatorias que faltan. */
+  missing: readonly string[]
+  /** Marcadores [[ASÍ]] que quedaron sin completar. */
+  leftovers: readonly string[]
+}
+
+/**
+ * Qué landings hacen fallar el build de producción (el control estricto de vite.config.ts):
+ *  - una landing que está EN VENTA (no está en vista previa) falla si le falta un dato obligatorio o le quedó un marcador;
+ *  - las que siguen en vista previa se publican igual, con su cinta (el Pack, mientras no se abra);
+ *  - con el interruptor explícito (`PACK_STRICT=1`), TODAS tienen que estar completas y fuera de la vista previa.
+ */
+export function guardBlockers(results: Record<string, GuardResult>, live: readonly string[], previewOn: boolean, strictAll: boolean): string[] {
+  const blockers: string[] = []
+  for (const [slug, result] of Object.entries(results)) {
+    const incomplete = result.missing.length > 0 || result.leftovers.length > 0
+    const preview = isPreview(slug, previewOn, live)
+    if ((!preview && incomplete) || (strictAll && (incomplete || preview))) blockers.push(slug)
+  }
+  return blockers
+}

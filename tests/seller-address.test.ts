@@ -60,13 +60,15 @@ describe('the street address stays on the legal pages', () => {
       ...walk(path.join(root, 'public'), ['.html', '.xml', '.txt', '.json', '.webmanifest']),
       ...walk(path.join(root, 'scripts', 'pack-landings'), ['.mjs', '.py']),
       path.join(root, 'index.html'),
-      path.join(root, 'vite.config.ts'),
     ].filter((file) => fs.existsSync(file))
     assert.ok(files.length > 20, 'the walk found the landings')
     for (const file of files) {
       const text = fs.readFileSync(file, 'utf8')
       for (const pattern of LEAKS) assert.doesNotMatch(text, pattern, `${rel(file)} must not carry the street address (${pattern.source.length} chars)`)
     }
+    // The build config may NAME the variable (the live landing requires it) but must never hold the address itself.
+    const config = read('vite.config.ts')
+    for (const pattern of LEAKS.filter((leak) => leak.source !== 'VITE_PACK_LEGAL_ADDRESS')) assert.doesNotMatch(config, pattern, 'vite.config.ts must not carry the street address')
   })
 
   it('in the app, only the legal config and the Terms clauses know it', () => {

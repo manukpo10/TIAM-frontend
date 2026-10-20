@@ -4,7 +4,7 @@
      y %PACK_CUADERNOS_PAGES%. Nada está escrito acá. Total: 20.000 solo, 35.000 con 1 mes del Desafío.
      Reglas: sin cuadernillo extra (no existe para este producto), sin "valor total" inventado; la única cifra "normal" es la del mes del Desafío, que es su precio real de lista.
      Bonos: la lista sale de VITE_PACK_CUADERNOS_BONUSES (`Título | descripción ;; Otro | descripción`); vacía = no se muestra nada, y nunca llevan un valor en pesos.
-     Con VITE_PACK_CHECKOUT_URL la tarjeta es un <form method="post"> que viaja al backend (POST /packs/checkout, edicion=cuadernos) y este responde 303 a Mercado Pago; sin esa variable es un <div> y
+     Con VITE_PACK_CUADERNOS_CHECKOUT_URL la tarjeta es un <form method="post"> que viaja al backend (POST /packs/checkout, edicion=cuadernos) y este responde 303 a Mercado Pago; sin esa variable es un <div> y
      el botón baja a la sección de precio (#comprar), como en las landings del Pack. Campos: email, nombre, telefono (solo con el Desafío), edicion, extras (solo «juegos»), hp_contacto (trampa para bots,
      tiene que llegar vacío), expected_total y utm_*/fbclid (los completa landing.ts). -->
 <section id="comprar" class="band scroll-mt-4 bg-gradient-to-b from-white to-[#e6f0fb]" aria-labelledby="t-precio">
@@ -51,10 +51,10 @@
       </section>
 
       <!-- ── Precio y compra ── -->
-      <!--if:VITE_PACK_CHECKOUT_URL-->
+      <!--if:PACK_CHECKOUT-->
       <form id="pedido" class="price-card" method="post" action="%PACK_CHECKOUT_ACTION%" data-offer data-checkout data-base="%PACK_PRICE_NUM%" aria-label="Comprar los Cuadernos TIAM">
       <!--endif-->
-      <!--ifnot:VITE_PACK_CHECKOUT_URL-->
+      <!--ifnot:PACK_CHECKOUT-->
       <div class="price-card" data-offer data-base="%PACK_PRICE_NUM%">
       <!--endif-->
         <div class="price-head">
@@ -79,7 +79,7 @@
             </div>
           </fieldset>
 
-          <!--if:VITE_PACK_CHECKOUT_URL-->
+          <!--if:PACK_CHECKOUT-->
           <fieldset class="buyer">
             <legend class="text-lg font-extrabold">¿A dónde te lo enviamos?</legend>
             <div class="field">
@@ -111,7 +111,7 @@
 
           <p class="total"><span>Total</span><strong data-total aria-live="polite">$&nbsp;%PACK_PRICE%</strong></p>
 
-          <!--if:VITE_PACK_CHECKOUT_URL-->
+          <!--if:PACK_CHECKOUT-->
           <div class="form-error" data-form-error role="alert" hidden></div>
           <button type="submit" data-submit data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
             <span data-submit-label>Pagar con Mercado Pago</span>
@@ -121,7 +121,7 @@
           <p class="mt-4 text-center text-[0.9375rem] text-slate-600">Pagás con Mercado Pago, en cuotas. TIAM no guarda los datos de tu tarjeta.</p>
           <p class="mt-2 text-center text-[0.9375rem] text-slate-600">Al comprar aceptás los <a class="underline" href="/terms" target="_blank" rel="noopener">términos y condiciones</a> y la <a class="underline" href="/privacy" target="_blank" rel="noopener">política de privacidad</a>.</p>
           <!--endif-->
-          <!--ifnot:VITE_PACK_CHECKOUT_URL-->
+          <!--ifnot:PACK_CHECKOUT-->
           <a href="%PACK_BUY_URL%" data-buy data-watch-cta class="btn btn-cta btn-lg mt-4 w-full">
             %PACK_CTA%
             <svg class="i" aria-hidden="true"><use href="#i-arrow-right" /></svg>
@@ -136,10 +136,10 @@
           </p>
           <!--endif-->
         </div>
-      <!--if:VITE_PACK_CHECKOUT_URL-->
+      <!--if:PACK_CHECKOUT-->
       </form>
       <!--endif-->
-      <!--ifnot:VITE_PACK_CHECKOUT_URL-->
+      <!--ifnot:PACK_CHECKOUT-->
       </div>
       <!--endif-->
     </div>

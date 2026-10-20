@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'node:fs'
-import { LANDING_ROUTES, escapeHtml, gamesPriceEnvKey, landingIndexFor, parseBonuses, perUnit, pesos, priceEnvKey, toNumber } from './pack/logic.ts'
+import { LANDING_ROUTES, checkoutUrlEnvKey, escapeHtml, gamesPriceEnvKey, guardBlockers, isPreview, landingIndexFor, liveSlugs, parseBonuses, perUnit, pesos, priceEnvKey, toNumber, type GuardResult } from './pack/logic.ts'
 
 /**
  * Landings del Pack: tiamdigital.com/pack/familias y /pack/profesionales, y la de los Cuadernos TIAM (/cuadernos).
@@ -41,8 +41,10 @@ const CUADERNOS_EXERCISES = 120
 // ── Datos que hacen falta para publicar ───────────────────────────────────────────────────────
 // Ningún [[MARCADOR]] llega a la página: si un dato real falta, el espacio se oculta o se usa un texto neutro (ver los
 // <!--if:VARIABLE--> de pack/). Para que eso no pase a producción sin que nadie lo note, el build lista lo que falta y,
-// con PACK_STRICT=1 (el entorno de producción), FALLA mientras falte algo de esta lista o siga prendido VITE_PACK_PREVIEW
-// (que marca como "provisorios" el precio, la garantía y las ofertas). Lo recomendado no hace fallar el build.
+// FALLA el build de producción si a una landing EN VENTA le falta algo de esta lista. El estado de vista previa es POR LANDING: VITE_PACK_PREVIEW prende la vista
+// previa (cinta amarilla, noindex, datos provisorios) y VITE_PACK_LIVE lista las landings que ya están en venta (hoy: cuadernos). Las que siguen en vista previa
+// (el Pack) se publican igual, con su cinta; PACK_STRICT=1 exige que TODAS estén completas y fuera de la vista previa (guardBlockers, en pack/logic.ts, con pruebas).
+// Lo recomendado no hace fallar el build.
 type Pending = { key: string; what: string }
 const REQUIRED_COMMON: Pending[] = [
   { key: 'VITE_PACK_CHECKOUT_URL', what: 'URL del backend que recibe el formulario de compra (POST /packs/checkout)' },
@@ -58,7 +60,14 @@ const REQUIRED_BY_SLUG: Record<string, Pending[]> = {
     { key: 'VITE_PACK_LICENSE_PROFESIONALES', what: 'licencia de uso para profesionales' },
     { key: 'VITE_PACK_INVOICE_TEXT', what: 'cómo se pide factura' },
   ],
-  cuadernos: [...REQUIRED_COMMON, { key: 'VITE_PACK_LICENSE_CUADERNOS', what: 'licencia de uso de los cuadernos' }],
+  // Los cuadernos están en venta: su formulario tiene su propio interruptor (VITE_PACK_CUADERNOS_CHECKOUT_URL) y se exige todo el bloque legal (el pie enlaza al vendedor).
+  cuadernos: [
+    ...REQUIRED_COMMON.filter((p) => p.key !== 'VITE_PACK_CHECKOUT_URL'),
+    { key: 'VITE_PACK_CUADERNOS_CHECKOUT_URL', what: 'URL del backend que recibe el formulario de compra de los cuadernos (POST /packs/checkout)' },
+    { key: 'VITE_PACK_LEGAL_CITY', what: 'ciudad del vendedor (la ve el pie de la landing)' },
+    { key: 'VITE_PACK_LEGAL_ADDRESS', what: 'domicilio del vendedor (lo imprime el bloque «Datos del vendedor» de los Términos)' },
+    { key: 'VITE_PACK_LICENSE_CUADERNOS', what: 'licencia de uso de los cuadernos' },
+  ],
 }
 const RECOMMENDED: Pending[] = [
   { key: 'VITE_PACK_TALLERISTA_NAME', what: 'nombre de la tallerista (sin él, la página no dice quién revisa las guías)' },
@@ -92,6 +101,7 @@ function packTokens(env: Record<string, string>, slug: string): Record<string, s
   const price = toNumber(env[priceKey])
   if (!price) throw new Error(`[pack-landings] ${priceKey} falta o no es un número (ejemplo: 14.990).`)
   const units = slug === 'cuadernos' ? CUADERNOS_EXERCISES : PACK_SHEETS
+  const checkoutKey = checkoutUrlEnvKey(slug)
   const gamesPrice = toNumber(env[gamesPriceEnvKey(slug)])
   const gamesRegular = toNumber(env.VITE_PACK_GAMES_REGULAR_PRICE) || desafioPrice()
   const extraPrice = toNumber(env.VITE_PACK_EXTRA_PRICE)
@@ -104,9 +114,9 @@ function packTokens(env: Record<string, string>, slug: string): Record<string, s
     // La versión corta es para la barra pegada del celular (a 320 px el texto largo no entra al lado del precio).
     PACK_CTA_SHORT: slug === 'cuadernos' ? 'Los quiero' : 'Quiero mi pack',
     // A dónde van los botones de compra: con checkout, al formulario de la tarjeta de precio (#pedido); sin checkout, a la sección de precio (#comprar). Nunca salen de la página.
-    PACK_BUY_URL: isOn(env.VITE_PACK_CHECKOUT_URL) ? '#pedido' : '#comprar',
+    PACK_BUY_URL: isOn(env[checkoutKey]) ? '#pedido' : '#comprar',
     // Destino del formulario de compra: el endpoint del backend (POST /packs/checkout). Vacío mientras no haya checkout (entonces no hay formulario).
-    PACK_CHECKOUT_ACTION: isOn(env.VITE_PACK_CHECKOUT_URL) ? escapeHtml(String(env.VITE_PACK_CHECKOUT_URL).trim()) : '',
+    PACK_CHECKOUT_ACTION: isOn(env[checkoutKey]) ? escapeHtml(String(env[checkoutKey]).trim()) : '',
     PACK_PRICE: formatPesos(price),
     PACK_PRICE_NUM: String(price),
     PACK_PER_SHEET: formatPesos(perUnit(price, units)),
@@ -144,6 +154,9 @@ function packFlags(env: Record<string, string>, slug: string): Record<string, bo
     PACK_FAMILIAS: slug === 'familias',
     PACK_PROFESIONALES: slug === 'profesionales',
     PACK_CUADERNOS: slug === 'cuadernos',
+    // Vista previa POR LANDING (cinta, noindex) y formulario de compra de ESTA landing (cada una tiene su variable): ver pack/logic.ts
+    PACK_PREVIEW: isPreview(slug, isOn(env.VITE_PACK_PREVIEW), liveSlugs(env.VITE_PACK_LIVE)),
+    PACK_CHECKOUT: isOn(env[checkoutUrlEnvKey(slug)]),
     PACK_BONUSES: parseBonuses(env.VITE_PACK_CUADERNOS_BONUSES).length > 0,
     PACK_GAMES_DISCOUNT: toNumber(tokens.PACK_GAMES_SAVING.replace(/\./g, '')) > 0 && toNumber(env[gamesPriceEnvKey(slug)]) > 0,
     PACK_EXTRA_PRICE_SET: toNumber(env.VITE_PACK_EXTRA_PRICE) > 0,
@@ -280,35 +293,27 @@ function packLandingsBuild(): Plugin {
     closeBundle() {
       if (!pending.size) return
       const env = config.env as Record<string, string>
-      const preview = isOn(env.VITE_PACK_PREVIEW)
+      const previewOn = isOn(env.VITE_PACK_PREVIEW)
+      const live = liveSlugs(env.VITE_PACK_LIVE)
+      const strictAll = process.env.PACK_STRICT === '1'
       const lines: string[] = []
-      let blocking = false
+      const results: Record<string, GuardResult> = {}
       for (const [slug, { missing, leftovers }] of pending) {
-        const parts: string[] = []
+        results[slug] = { missing: missing.map((p) => p.key), leftovers: [...leftovers.keys()] }
+        const parts: string[] = [isPreview(slug, previewOn, live) ? 'EN VISTA PREVIA (se publica con su cinta "Vista previa: datos provisorios" y noindex)' : 'EN VENTA']
         if (missing.length) parts.push(`faltan ${missing.map((p) => `${p.key} (${p.what})`).join(', ')}`)
         if (leftovers.size) parts.push(`marcadores sin completar ${[...leftovers].map(([k, n]) => `${k.slice(2, -2)} x${n}`).join(', ')}`)
         const advice = RECOMMENDED.filter((p) => !isOn(env[p.key]))
         if (advice.length) parts.push(`recomendado: ${advice.map((p) => `${p.key} (${p.what})`).join(', ')}`)
-        if (missing.length || leftovers.size) blocking = true
-        if (parts.length) lines.push(`  pack/${slug}: ${parts.join('; ')}`)
+        lines.push(`  pack/${slug}: ${parts.join('; ')}`)
       }
-      if (preview) {
-        blocking = true
-        lines.push('  VITE_PACK_PREVIEW está prendido: el precio, la garantía y las ofertas son provisorios y la página muestra "Vista previa: datos provisorios".')
-      }
-      if (!lines.length) return
-      const message = `[pack-landings] ${blocking ? 'Las landings todavía no están listas para publicarse' : 'Las landings se pueden publicar; quedan recomendaciones'}:\n${lines.join('\n')}`
-      // En el entorno de producción de Vercel el modo estricto se prende solo: así un merge a main con datos provisorios
-      // hace fallar el build (y sigue en línea la versión anterior) aunque nadie haya cargado PACK_STRICT.
-      // Excepción: VITE_PACK_PUBLISH_PREVIEW deja publicar la vista previa en producción. El dueño lo decidió el 2026-10-13
-      // para tener las páginas en el sitio antes de que exista el cobro. Hay que sacar esa variable cuando el cobro esté
-      // listo, así este control vuelve a proteger producción. PACK_STRICT=1 siempre gana.
-      const publishPreview = isOn(env.VITE_PACK_PUBLISH_PREVIEW)
-      const strict = process.env.PACK_STRICT === '1' || (process.env.VERCEL_ENV === 'production' && !publishPreview)
-      if (strict && blocking) throw new Error(`${message}\n(modo estricto: el build falla a propósito)`)
-      if (publishPreview && blocking && process.env.VERCEL_ENV === 'production') {
-        config.logger.warn('\n[pack-landings] ATENCIÓN: se publica la VISTA PREVIA en producción (VITE_PACK_PUBLISH_PREVIEW).')
-      }
+      // Qué landings hacen fallar el build: las que están EN VENTA y están incompletas; con PACK_STRICT=1, todas (guardBlockers, con pruebas).
+      const blockers = guardBlockers(results, live, previewOn, strictAll)
+      const message = `[pack-landings] ${blockers.length ? `No se pueden publicar: ${blockers.map((slug) => `pack/${slug}`).join(', ')}` : 'Las landings se pueden publicar'}:\n${lines.join('\n')}`
+      // En el entorno de producción de Vercel el modo estricto se prende solo: un merge a main con una landing EN VENTA incompleta hace fallar el build
+      // (y sigue en línea la versión anterior). Las landings en vista previa no lo frenan: no hace falta ningún permiso global para publicarlas.
+      const strict = strictAll || process.env.VERCEL_ENV === 'production'
+      if (strict && blockers.length) throw new Error(`${message}\n(modo estricto: el build falla a propósito)`)
       config.logger.warn(`\n${message}\n`)
     },
   }

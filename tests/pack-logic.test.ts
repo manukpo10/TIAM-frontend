@@ -8,8 +8,11 @@ import {
   computeTotal,
   escapeHtml,
   formErrorMessage,
-  gamesPriceEnvKey,
+  checkoutUrlEnvKey,
+  gamesPriceEnvKey,  guardBlockers,
+  isPreview,
   landingIndexFor,
+  liveSlugs,
   parseBonuses,
   perUnit,
   pesos,
@@ -151,6 +154,53 @@ describe('gamesPriceEnvKey (first month of the Desafío, bought together)', () =
     assert.equal(gamesPriceEnvKey('cuadernos'), 'VITE_PACK_CUADERNOS_GAMES_PRICE')
     assert.equal(gamesPriceEnvKey('familias'), 'VITE_PACK_GAMES_PRICE')
     assert.equal(gamesPriceEnvKey('profesionales'), 'VITE_PACK_GAMES_PRICE')
+  })
+})
+
+describe('checkoutUrlEnvKey (each landing has its own checkout switch)', () => {
+  it('gives the workbooks their own variable, so their form can be live while the Pack forms stay off', () => {
+    assert.equal(checkoutUrlEnvKey('cuadernos'), 'VITE_PACK_CUADERNOS_CHECKOUT_URL')
+    assert.equal(checkoutUrlEnvKey('familias'), 'VITE_PACK_CHECKOUT_URL')
+    assert.equal(checkoutUrlEnvKey('profesionales'), 'VITE_PACK_CHECKOUT_URL')
+  })
+})
+
+describe('per-landing preview state (VITE_PACK_PREVIEW + VITE_PACK_LIVE)', () => {
+  it('reads the list of live landings, ignoring spaces, case, duplicates and names that are not landings', () => {
+    assert.deepEqual(liveSlugs('cuadernos'), ['cuadernos'])
+    assert.deepEqual(liveSlugs(' Cuadernos , familias,cuadernos '), ['cuadernos', 'familias'])
+    assert.deepEqual(liveSlugs(''), [])
+    assert.deepEqual(liveSlugs(undefined), [])
+    assert.deepEqual(liveSlugs('otra, constructor, __proto__'), [])
+  })
+  it('keeps a landing in preview only while the preview switch is on AND it is not on the live list', () => {
+    assert.equal(isPreview('familias', true, ['cuadernos']), true)
+    assert.equal(isPreview('profesionales', true, ['cuadernos']), true)
+    assert.equal(isPreview('cuadernos', true, ['cuadernos']), false)
+    assert.equal(isPreview('cuadernos', true, []), true)
+    assert.equal(isPreview('familias', false, []), false) // preview switched off: nothing is in preview
+  })
+})
+
+describe('guardBlockers (what makes the production build fail)', () => {
+  const complete = { missing: [], leftovers: [] }
+  const incomplete = { missing: ['VITE_PACK_CONTACT_URL'], leftovers: [] }
+  const live = ['cuadernos']
+
+  it('lets the Pack landings go out in preview while the live landing is complete', () => {
+    assert.deepEqual(guardBlockers({ cuadernos: complete, familias: incomplete, profesionales: incomplete }, live, true, false), [])
+  })
+  it('blocks when the LIVE landing lacks required data or has leftover markers', () => {
+    assert.deepEqual(guardBlockers({ cuadernos: incomplete, familias: incomplete }, live, true, false), ['cuadernos'])
+    assert.deepEqual(guardBlockers({ cuadernos: { missing: [], leftovers: ['[[X]]'] } }, live, true, false), ['cuadernos'])
+  })
+  it('with the explicit strict switch (PACK_STRICT=1) every landing must be complete and out of preview', () => {
+    assert.deepEqual(guardBlockers({ cuadernos: complete, familias: incomplete }, live, true, true), ['familias'])
+    assert.deepEqual(guardBlockers({ cuadernos: complete, familias: complete }, live, true, true), ['familias']) // still in preview
+    assert.deepEqual(guardBlockers({ cuadernos: complete, familias: complete }, ['cuadernos', 'familias'], true, true), [])
+  })
+  it('with the preview switch off nothing is in preview: every incomplete landing blocks', () => {
+    assert.deepEqual(guardBlockers({ cuadernos: complete, familias: incomplete }, [], false, false), ['familias'])
   })
 })
 
