@@ -94,22 +94,6 @@ export function priceEnvKey(slug: string): string {
 }
 
 /**
- * Variable con el destino del formulario de compra de cada landing (POST /packs/checkout). Los cuadernos tienen la suya: así se puede prender su formulario
- * (por ejemplo, para una compra de prueba) sin prender nunca los formularios del Pack, que siguen con VITE_PACK_CHECKOUT_URL.
- */
-export function checkoutUrlEnvKey(slug: string): string {
-  return slug === 'cuadernos' ? 'VITE_PACK_CUADERNOS_CHECKOUT_URL' : 'VITE_PACK_CHECKOUT_URL'
-}
-
-/**
- * ¿Se muestra la referencia «precio normal» junto al mes del Desafío? Solo si de verdad se ahorra algo (el complemento cuesta menos que el precio normal) y no se
- * la ocultó a propósito (VITE_PACK_HIDE_GAMES_REGULAR: con un precio de prueba de 1.000 al lado de un precio normal de 20.000 la comparación no tendría sentido).
- */
-export function showGamesDiscount(regular: number, price: number, hidden: boolean): boolean {
-  return !hidden && price > 0 && regular - price > 0
-}
-
-/**
  * Variable de configuración con lo que cuesta sumar el primer mes del Desafío de 30 días al comprar. Los Pack tienen la suya (10.000);
  * los cuadernos, otra (15.000). El precio normal del mes (20.000) no está acá: sale de PRICE_ARS de la página del Desafío.
  */

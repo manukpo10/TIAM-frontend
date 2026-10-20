@@ -5,7 +5,6 @@ import { describe, it } from 'node:test'
 
 import {
   LANDING_ROUTES,
-  checkoutUrlEnvKey,
   computeTotal,
   escapeHtml,
   formErrorMessage,
@@ -15,7 +14,6 @@ import {
   perUnit,
   pesos,
   priceEnvKey,
-  showGamesDiscount,
   toNumber,
 } from '../pack/logic.ts'
 
@@ -153,30 +151,6 @@ describe('gamesPriceEnvKey (first month of the Desafío, bought together)', () =
     assert.equal(gamesPriceEnvKey('cuadernos'), 'VITE_PACK_CUADERNOS_GAMES_PRICE')
     assert.equal(gamesPriceEnvKey('familias'), 'VITE_PACK_GAMES_PRICE')
     assert.equal(gamesPriceEnvKey('profesionales'), 'VITE_PACK_GAMES_PRICE')
-  })
-})
-
-describe('checkoutUrlEnvKey (each landing has its own checkout switch)', () => {
-  it('gives the workbooks their own variable, so turning their form on never turns the Pack forms on', () => {
-    assert.equal(checkoutUrlEnvKey('cuadernos'), 'VITE_PACK_CUADERNOS_CHECKOUT_URL')
-    assert.equal(checkoutUrlEnvKey('familias'), 'VITE_PACK_CHECKOUT_URL')
-    assert.equal(checkoutUrlEnvKey('profesionales'), 'VITE_PACK_CHECKOUT_URL')
-  })
-})
-
-describe('showGamesDiscount (the "precio normal" reference next to the Desafío add-on)', () => {
-  it('shows it when the add-on costs less than the normal price', () => {
-    assert.equal(showGamesDiscount(20000, 15000, false), true)
-    assert.equal(showGamesDiscount(20000, 10000, false), true)
-  })
-  it('hides it when there is nothing saved: the add-on costs the same or more than the normal price, or has no price', () => {
-    assert.equal(showGamesDiscount(20000, 20000, false), false)
-    assert.equal(showGamesDiscount(20000, 25000, false), false)
-    assert.equal(showGamesDiscount(20000, 0, false), false)
-    assert.equal(showGamesDiscount(0, 1000, false), false)
-  })
-  it('can be hidden on purpose, e.g. while a test price is on (1.000 next to a normal 20.000 would read as nonsense)', () => {
-    assert.equal(showGamesDiscount(20000, 1000, true), false)
   })
 })
 

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'node:fs'
-import { LANDING_ROUTES, checkoutUrlEnvKey, escapeHtml, gamesPriceEnvKey, landingIndexFor, parseBonuses, perUnit, pesos, priceEnvKey, showGamesDiscount, toNumber } from './pack/logic.ts'
+import { LANDING_ROUTES, escapeHtml, gamesPriceEnvKey, landingIndexFor, parseBonuses, perUnit, pesos, priceEnvKey, toNumber } from './pack/logic.ts'
 
 /**
  * Landings del Pack: tiamdigital.com/pack/familias y /pack/profesionales, y la de los Cuadernos TIAM (/cuadernos).
@@ -58,12 +58,7 @@ const REQUIRED_BY_SLUG: Record<string, Pending[]> = {
     { key: 'VITE_PACK_LICENSE_PROFESIONALES', what: 'licencia de uso para profesionales' },
     { key: 'VITE_PACK_INVOICE_TEXT', what: 'cómo se pide factura' },
   ],
-  // Los cuadernos tienen su propio interruptor del formulario (VITE_PACK_CUADERNOS_CHECKOUT_URL): prenderlo no prende los formularios del Pack.
-  cuadernos: [
-    ...REQUIRED_COMMON.filter((p) => p.key !== 'VITE_PACK_CHECKOUT_URL'),
-    { key: 'VITE_PACK_CUADERNOS_CHECKOUT_URL', what: 'URL del backend que recibe el formulario de compra de los cuadernos (POST /packs/checkout)' },
-    { key: 'VITE_PACK_LICENSE_CUADERNOS', what: 'licencia de uso de los cuadernos' },
-  ],
+  cuadernos: [...REQUIRED_COMMON, { key: 'VITE_PACK_LICENSE_CUADERNOS', what: 'licencia de uso de los cuadernos' }],
 }
 const RECOMMENDED: Pending[] = [
   { key: 'VITE_PACK_TALLERISTA_NAME', what: 'nombre de la tallerista (sin él, la página no dice quién revisa las guías)' },
@@ -97,7 +92,6 @@ function packTokens(env: Record<string, string>, slug: string): Record<string, s
   const price = toNumber(env[priceKey])
   if (!price) throw new Error(`[pack-landings] ${priceKey} falta o no es un número (ejemplo: 14.990).`)
   const units = slug === 'cuadernos' ? CUADERNOS_EXERCISES : PACK_SHEETS
-  const checkoutKey = checkoutUrlEnvKey(slug)
   const gamesPrice = toNumber(env[gamesPriceEnvKey(slug)])
   const gamesRegular = toNumber(env.VITE_PACK_GAMES_REGULAR_PRICE) || desafioPrice()
   const extraPrice = toNumber(env.VITE_PACK_EXTRA_PRICE)
@@ -110,9 +104,9 @@ function packTokens(env: Record<string, string>, slug: string): Record<string, s
     // La versión corta es para la barra pegada del celular (a 320 px el texto largo no entra al lado del precio).
     PACK_CTA_SHORT: slug === 'cuadernos' ? 'Los quiero' : 'Quiero mi pack',
     // A dónde van los botones de compra: con checkout, al formulario de la tarjeta de precio (#pedido); sin checkout, a la sección de precio (#comprar). Nunca salen de la página.
-    PACK_BUY_URL: isOn(env[checkoutKey]) ? '#pedido' : '#comprar',
+    PACK_BUY_URL: isOn(env.VITE_PACK_CHECKOUT_URL) ? '#pedido' : '#comprar',
     // Destino del formulario de compra: el endpoint del backend (POST /packs/checkout). Vacío mientras no haya checkout (entonces no hay formulario).
-    PACK_CHECKOUT_ACTION: isOn(env[checkoutKey]) ? escapeHtml(String(env[checkoutKey]).trim()) : '',
+    PACK_CHECKOUT_ACTION: isOn(env.VITE_PACK_CHECKOUT_URL) ? escapeHtml(String(env.VITE_PACK_CHECKOUT_URL).trim()) : '',
     PACK_PRICE: formatPesos(price),
     PACK_PRICE_NUM: String(price),
     PACK_PER_SHEET: formatPesos(perUnit(price, units)),
@@ -151,9 +145,7 @@ function packFlags(env: Record<string, string>, slug: string): Record<string, bo
     PACK_PROFESIONALES: slug === 'profesionales',
     PACK_CUADERNOS: slug === 'cuadernos',
     PACK_BONUSES: parseBonuses(env.VITE_PACK_CUADERNOS_BONUSES).length > 0,
-    PACK_GAMES_DISCOUNT: showGamesDiscount(toNumber(tokens.PACK_GAMES_REGULAR.replace(/\./g, '')), toNumber(env[gamesPriceEnvKey(slug)]), isOn(env.VITE_PACK_HIDE_GAMES_REGULAR)),
-    // ¿Está prendido el formulario de compra de ESTA landing? (cada una tiene su variable: checkoutUrlEnvKey)
-    PACK_CHECKOUT: isOn(env[checkoutUrlEnvKey(slug)]),
+    PACK_GAMES_DISCOUNT: toNumber(tokens.PACK_GAMES_SAVING.replace(/\./g, '')) > 0 && toNumber(env[gamesPriceEnvKey(slug)]) > 0,
     PACK_EXTRA_PRICE_SET: toNumber(env.VITE_PACK_EXTRA_PRICE) > 0,
     PACK_GUARANTEE: !!tokens.PACK_GUARANTEE_DAYS,
     PACK_PROMO: !!tokens.PACK_PROMO_END_ISO && tokens.PACK_PROMO_END_ISO >= today,
