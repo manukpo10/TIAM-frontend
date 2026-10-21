@@ -168,3 +168,35 @@ describe('where the Pixel is configured and how it is loaded (source-level check
     assert.match(gracias, /purchaseEventId/)
   })
 })
+
+describe('the privacy page discloses the Pixel', () => {
+  const privacy = read('src/pages/legal/PrivacyPage.tsx').replace(/\s+/g, ' ')
+  it('says what the Pixel is and what it is used for', () => {
+    assert.match(privacy, /Píxel de Meta, un código de Meta Platforms/)
+    assert.match(privacy, /mide las visitas y las compras/)
+    assert.match(privacy, /mostrar y medir (nuestros|los) anuncios/)
+  })
+  it('says which pages carry it, and that it stays out of the rest of the site', () => {
+    assert.match(privacy, /páginas de venta/)
+    assert.match(privacy, /página de agradecimiento/)
+    assert.match(privacy, /no se carga (en la página de descargas|en el resto)/)
+  })
+  it('says that the email, the name, the phone and the access link are not sent', () => {
+    assert.match(privacy, /no incluyen el email, el nombre, el teléfono ni el enlace personal/)
+  })
+  it('explains how to opt out, in Meta and in the browser', () => {
+    assert.match(privacy, /preferencias de anuncios/i)
+    assert.match(privacy, /navegador/)
+  })
+  it('discloses the browser storage used to count each purchase once', () => {
+    assert.match(privacy, /almacenamiento local[^.]*compra[^.]*una sola vez|una sola vez[^.]*almacenamiento local/i)
+  })
+  it('only the thank-you page starts the Pixel inside the SPA (nothing else may load it)', () => {
+    const importers = ['src', 'pack']
+      .flatMap((dir) => fs.readdirSync(path.join(root, dir), { recursive: true, encoding: 'utf8' }).map((f) => path.join(dir, f)))
+      .filter((f) => /\.(ts|tsx)$/.test(f) && !f.endsWith('metaPixel.ts'))
+      .filter((f) => /startMetaPixel/.test(read(f)))
+      .map((f) => f.replaceAll('\\', '/'))
+    assert.deepEqual(importers, ['src/pages/pack/GraciasPage.tsx'])
+  })
+})

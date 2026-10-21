@@ -69,9 +69,9 @@ describe('how the pages talk about the Desafío month', () => {
 })
 
 describe('the legal pages', () => {
-  it('Terms and Privacy carry the date of this update', () => {
+  it('Terms and Privacy carry the date of their last update (Privacy: the Meta Pixel paragraph, 2026-10-20)', () => {
     assert.match(fs.readFileSync(path.join(root, 'src/pages/legal/TermsPage.tsx'), 'utf8'), /const LAST_UPDATED = '19 de octubre de 2026'/)
-    assert.match(fs.readFileSync(path.join(root, 'src/pages/legal/PrivacyPage.tsx'), 'utf8'), /const LAST_UPDATED = '19 de octubre de 2026'/)
+    assert.match(fs.readFileSync(path.join(root, 'src/pages/legal/PrivacyPage.tsx'), 'utf8'), /const LAST_UPDATED = '20 de octubre de 2026'/)
   })
 
   it('Privacy covers the people who buy the Cuadernos and says the Desafío starts from the personal link', () => {

@@ -4,12 +4,12 @@ import { CONTACT_EMAIL, LEGAL_ENTITY, PIXEL_ENABLED } from './legalConfig'
 // PENDING LEGAL REVIEW: everything about buyers of the Packs and the 30-day Challenge (clause 1's seller line,
 // 2d, the purchase items of 3, 4, 6 and 8, and the purchase/Pixel items of 10) is a DRAFT written from how the
 // sale really works. See src/pages/legal/legalConfig.ts for what the lawyer must confirm before the sale opens.
-// Also check, in Meta Events Manager, whether "Automatic Advanced Matching" is on: it can read form fields
-// (email, phone) on the landing pages, which this policy says TIAM's own events do not send.
+// The Pixel is loaded with its automatic configuration off (src/lib/metaPixel.ts, pack/landing.ts), so it does not read form fields
+// (email, phone) on the landing pages; keep "Automatic Advanced Matching" off in Meta Events Manager as well.
 
 // ─── Static section data (hoisted outside component) ─────────────────────────
 
-const LAST_UPDATED = '19 de octubre de 2026'
+const LAST_UPDATED = '20 de octubre de 2026'
 
 // Contact address for privacy requests and unsubscribes. Every clause that
 // mentions it renders this link; the address itself comes from legalConfig.ts.
@@ -394,12 +394,25 @@ const PRIVACY_SECTIONS: LegalSection[] = [
             hasta cerrar la pestaña) el identificador del pedido y lo escrito en el formulario, para no pedirlo de nuevo si algo falla.
             También puede recordar el tamaño de papel elegido.
           </li>
+          {PIXEL_ENABLED && (
+            <li>
+              <strong>Medición de compras:</strong> el navegador guarda en el almacenamiento local, sin cookies, un código opaco de cada
+              compra ya informada a Meta (no contiene el email ni el enlace de acceso), para contarla una sola vez aunque se vuelva a
+              abrir la página de agradecimiento.
+            </li>
+          )}
         </ul>
         {PIXEL_ENABLED && (
           <p>
-            Las páginas de venta de los packs usan el Píxel de Meta para medir el resultado de los anuncios: informa a Meta qué
-            páginas se visitan y cuándo se inicia o se completa una compra, con el importe. Los eventos que TIAM Digital envía no
-            incluyen el email, el nombre ni el teléfono del comprador. El Píxel no se carga en la página de descargas.
+            Las páginas de venta (por ejemplo, la de los Cuadernos TIAM) y la página de agradecimiento que se abre después de pagar usan
+            el Píxel de Meta, un código de Meta Platforms que mide las visitas y las compras para poder mostrar y medir nuestros anuncios
+            en Facebook e Instagram. Informa a Meta qué páginas se visitan y cuándo se inicia o se completa una compra, con el importe y
+            la moneda. Meta puede además recibir datos técnicos del navegador, como la dirección IP, y usar sus propias cookies. Los
+            eventos que TIAM Digital envía no incluyen el email, el nombre, el teléfono ni el enlace personal de acceso del comprador, y
+            TIAM Digital desactiva la lectura automática de formularios del Píxel. El Píxel no se carga en la página de descargas ni en
+            el resto del sitio. El usuario puede dejar de recibir anuncios basados en su actividad cambiando sus preferencias de anuncios
+            en su cuenta de Meta (Facebook o Instagram), o bloquear el Píxel desde su navegador, con la configuración de privacidad o un
+            bloqueador de contenido.
           </p>
         )}
         <p>
