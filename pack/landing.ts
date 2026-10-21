@@ -115,6 +115,9 @@ if (PIXEL_ID) {
     script.async = true
     script.src = 'https://connect.facebook.net/en_US/fbevents.js'
     document.head.appendChild(script)
+    // Sin configuración automática: leería los campos del formulario (email, nombre, teléfono), los textos de los botones y los metadatos de la página.
+    // Solo viajan los eventos que se mandan acá.
+    fbq('set', 'autoConfig', 'false', PIXEL_ID)
     fbq('init', PIXEL_ID)
     fbq('track', 'PageView')
     track('ViewContent')

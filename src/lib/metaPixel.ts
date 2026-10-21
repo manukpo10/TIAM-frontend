@@ -7,6 +7,8 @@
  * No Pixel ID configured (VITE_META_PIXEL_ID) = nothing is loaded and every call is a no-op.
  */
 
+import { trackArgs } from './pixelEvents.ts'
+
 type Fbq = {
   (...args: unknown[]): void
   callMethod?: (...args: unknown[]) => void
@@ -14,6 +16,7 @@ type Fbq = {
   loaded: boolean
   version: string
   push: Fbq
+  disablePushState?: boolean
 }
 
 type PixelWindow = Window & { fbq?: Fbq; _fbq?: Fbq }
@@ -36,12 +39,16 @@ export function startMetaPixel(): boolean {
     fbq.loaded = true
     fbq.version = '2.0'
     fbq.queue = []
+    // The Pixel never follows client-side navigation: a later route can carry a token or a patient link, and the Pixel reads the address.
+    fbq.disablePushState = true
     w.fbq = fbq
     w._fbq = fbq
     const script = document.createElement('script')
     script.async = true
     script.src = 'https://connect.facebook.net/en_US/fbevents.js'
     document.head.appendChild(script)
+    // No automatic configuration: it would scrape form fields (advanced matching), button text and page metadata. Only the events sent here go out.
+    fbq('set', 'autoConfig', 'false', PIXEL_ID)
     fbq('init', PIXEL_ID)
     fbq('track', 'PageView')
   }
@@ -49,7 +56,8 @@ export function startMetaPixel(): boolean {
   return true
 }
 
-export function trackMetaPixel(event: string, params?: Record<string, unknown>): void {
+/** Sends a standard event. `eventId` goes as `eventID`, so Meta drops the same event if it ever arrives twice. */
+export function trackMetaPixel(event: string, params?: Record<string, unknown>, eventId?: string | null): void {
   if (!ready) return
-  ;(window as PixelWindow).fbq?.('track', event, params)
+  ;(window as PixelWindow).fbq?.(...trackArgs(event, params, eventId))
 }
