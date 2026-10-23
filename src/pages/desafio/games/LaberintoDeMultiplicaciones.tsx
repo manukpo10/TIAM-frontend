@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, RotateCcw, ArrowRight, ArrowDown, Sparkles, Pencil } from 'lucide-react'
+import { Check, RotateCcw, ArrowRight, ArrowDown, Sparkles, Pencil, Undo2 } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -37,10 +37,19 @@ import type { GameProps } from '@/lib/challengeProgress'
  * A filler cell can still accidentally offer a legal-but-dead-end detour
  * (e.g. a bigger neighbour that itself has no bigger neighbour ahead) — that
  * is a normal maze property, not a solvability bug, because it is always
- * recoverable: tapping the cell the player just came from undoes that last
- * step (see `tap()`). A wrong-but-legal detour only costs a couple of extra
- * taps, never the round — only an actually illegal tap (wrong direction, or
- * not a bigger result) counts as a mistake.
+ * recoverable: a visible "Volver un paso" button (or tapping the cell the
+ * player just came from) undoes that last step (see `undo()`). A
+ * wrong-but-legal detour only costs a couple of extra taps, never the round —
+ * only an actually illegal tap (wrong direction, or not a bigger result)
+ * counts as a mistake.
+ *
+ * A DEAD END MUST NEVER READ AS A SOFT-LOCK. It used to: the board said "tocá
+ * la celda anterior para volver", but the next tap anywhere replaced that
+ * line with an error hint ("sólo podés avanzar a la derecha o abajo") that is
+ * impossible to follow from a dead end, and a player (older adults, a bigger
+ * 5×5 board) stayed stuck and counted mistakes. Now, stuck, the board shows
+ * its own panel with the button, taps on other cells change nothing and cost
+ * nothing, and the undo button is also there, smaller, on any detour.
  *
  * HOW-TO SCREEN FIRST. The rule sounds simple in one line ("un resultado más
  * grande") but hides two things a player has to notice on their own: every
@@ -205,7 +214,6 @@ const NOT_GREATER_HINTS = [
   'Casi. Te hace falta un resultado más grande que el actual.',
   'Todavía no — fijate cuál de las dos da un número más alto.',
 ]
-const STUCK_HINT = 'No te queda ningún paso válido desde acá. Tocá la celda anterior para volver.'
 const PRAISE = ['¡Muy bien!', '¡Excelente camino!', '¡Así se hace!', '¡Perfecto recorrido!']
 
 /** The "Empezá acá" pill + down arrow that points at the start cell. Used
@@ -352,14 +360,27 @@ export function LaberintoDeMultiplicaciones({ day: _day, onComplete }: GameProps
     if (done) setPraise(pickOne(PRAISE))
   }, [done])
 
+  // Undo: one step back — never a mistake, this is what makes a
+  // legal-but-dead-end detour recoverable instead of a soft-lock (see file
+  // header). Reached from the "Volver un paso" button and from tapping the
+  // cell just before the current one.
+  function undo() {
+    if (path.length < 2) return
+    setPath((p) => p.slice(0, -1))
+    setHint(null)
+  }
+
   function tap(index: number) {
     if (done || index === currentIndex) return
 
-    // Undo: tapping the cell just before the current one steps back — never
-    // a mistake, this is what makes a legal-but-dead-end detour recoverable
-    // instead of a soft-lock (see file header).
     if (path.length >= 2 && index === path[path.length - 2]) {
-      setPath((p) => p.slice(0, -1))
+      undo()
+      return
+    }
+
+    // From a dead end no tap but the way back can be right, so none of them is
+    // a mistake and none replaces the panel that says how to get out.
+    if (stuck) {
       setHint(null)
       return
     }
@@ -505,8 +526,43 @@ export function LaberintoDeMultiplicaciones({ day: _day, onComplete }: GameProps
         })}
       </div>
 
-      {!done && (hint || stuck) && (
-        <p className="mt-4 text-center text-base font-medium text-slate-500">{hint ?? STUCK_HINT}</p>
+      {/* Dead end: say it plainly and put the way out in a button. */}
+      {!done && stuck && (
+        <div
+          role="status"
+          className="mt-4 rounded-2xl border border-tiam-blue/20 bg-tiam-blue/5 p-4 text-center"
+        >
+          <p className="text-lg font-bold text-slate-900">Por acá no se puede seguir.</p>
+          <p className="mt-1 text-base text-slate-600">
+            Ni la celda de la derecha ni la de abajo dan un resultado más grande.
+          </p>
+          <button
+            type="button"
+            onClick={undo}
+            className="mt-3 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white transition hover:bg-tiam-blue-dark"
+          >
+            <Undo2 className="h-4 w-4" aria-hidden="true" />
+            Volver un paso
+          </button>
+        </div>
+      )}
+
+      {!done && !stuck && hint && (
+        <p className="mt-4 text-center text-base font-medium text-slate-500">{hint}</p>
+      )}
+
+      {/* Any wrong turn can be taken back, dead end or not. */}
+      {!done && !stuck && path.length > 1 && (
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            onClick={undo}
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            <Undo2 className="h-4 w-4" aria-hidden="true" />
+            Volver un paso
+          </button>
+        </div>
       )}
 
       {/* Completion */}
