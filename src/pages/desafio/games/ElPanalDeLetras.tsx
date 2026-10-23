@@ -15,8 +15,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * CLUES, NOT AN OPEN SEARCH, the way Flor de palabra learned to be: every word of the
  * round comes with a short, concrete clue and its length. One clue shows at a time and
  * "Otra pista" moves on to the next one not found yet. Any unfound word of the round is
- * accepted whichever clue is showing (two clues can fit the same boxes: ASADO and
- * PASTA are both "una comida de 5 letras"), so forming the other one still counts
+ * accepted whichever clue is showing (two clues could fit the same boxes), so forming
+ * the other one still counts
  * ("¡También vale!") instead of reading as a mistake. A real word that is not on the
  * list but that a clue can call to mind (TRES for CERO, MANTO for MANTA, PALA or TAPA for
  * PAVA) is told so — "Esa palabra existe, pero no es la de esta pista." — and costs
@@ -41,9 +41,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * Letters and words are plain A-Z (no accents, no Ñ), the convention of the whole
  * catalog: CAMION-style straight string comparison, so every word here is one that
- * is written without accents anyway. Ramp: 3 words (3-4 letters, A in the middle) →
- * 4 words (4-5 letters, a consonant in the middle) → 5 words (5-6 letters, another
- * consonant). ONE honeycomb per level: each level has two authored ones and one is
+ * is written without accents anyway. Ramp: 3 words in EVERY level (the tallerista asked
+ * for 3 per level, no more) of 3-4 letters (A in the middle) → 4-5 letters (a consonant
+ * in the middle) → 5-6 letters (another consonant). ONE honeycomb per level: each level has two authored ones and one is
  * picked ONCE at mount (`epoch`); the letters never move, so "Repetir" replays exactly
  * the same three. Both honeycombs of a level ask for the same number of words, and
  * between them they use every one of the seven letters. A throwaway Node script (not
@@ -131,7 +131,6 @@ const LEVELS: LevelDef[] = [
           { word: 'SODA', kind: 'Una bebida', hint: 'Agua con burbujas, de sifón' },
           { word: 'ASADO', kind: 'Una comida', hint: 'Se hace en la parrilla, con amigos' },
           { word: 'POSTE', kind: 'Un palo', hint: 'Sostiene los cables de la luz' },
-          { word: 'PASTA', kind: 'Una comida', hint: 'Los fideos y los ravioles son de este tipo' },
         ],
       },
       {
@@ -139,7 +138,6 @@ const LEVELS: LevelDef[] = [
         outer: ['A', 'C', 'E', 'O', 'S', 'T'],
         words: [
           { word: 'CERO', kind: 'Un número', hint: 'El que no suma nada', soft: ['TRES'] },
-          { word: 'ROCA', kind: 'Una piedra', hint: 'De las grandes, que no se mueven' },
           { word: 'CARTA', kind: 'Un papel', hint: 'Se escribe, va en un sobre y se manda' },
           { word: 'ROSCA', kind: 'Un pan dulce', hint: 'Tiene forma de aro y se come en Pascua' },
         ],
@@ -155,8 +153,6 @@ const LEVELS: LevelDef[] = [
         words: [
           { word: 'COSTA', kind: 'Un paisaje', hint: 'La orilla del mar, con playas' },
           { word: 'CANTO', kind: 'Un sonido', hint: 'Lo que hacen los pájaros al amanecer' },
-          { word: 'CINTA', kind: 'Una tira', hint: 'De tela, para atar el moño de un regalo' },
-          { word: 'OCASO', kind: 'Un momento', hint: 'Cuando el sol se esconde, al final de la tarde' },
           { word: 'COCINA', kind: 'Una habitación', hint: 'Ahí se prepara la comida' },
         ],
       },
@@ -166,8 +162,6 @@ const LEVELS: LevelDef[] = [
         words: [
           { word: 'MONTE', kind: 'Un lugar', hint: 'Terreno con muchos árboles y arbustos' },
           { word: 'MENTA', kind: 'Una hierba', hint: 'Da un sabor fresco a las infusiones' },
-          { word: 'MANTA', kind: 'Algo para la cama', hint: 'Abriga cuando hace frío', soft: ['MANTO'] },
-          { word: 'TOMATE', kind: 'Una verdura', hint: 'Es roja y va en la ensalada' },
           { word: 'SEMANA', kind: 'Un período', hint: 'Siete días, de lunes a domingo' },
         ],
       },
