@@ -7,8 +7,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * stays on screen for the whole level, and customers come in one at a time with
  * an order ("Doña Marta pide: 3 medialunas, 1 pan y 2 alfajores"). The player
  * works out what the customer has to pay and taps the right total among four.
- * Same idea as month 4's El puesto de comida, in a bakery, with quantities and
- * Argentine decimal prices.
+ * Same idea as month 4's El puesto de comida, in a bakery, with quantities.
  *
  * No study phase: the board IS the material and never goes away, so there is
  * nothing to memorize — the game never depends on knowing what anything costs.
@@ -16,17 +15,19 @@ import type { GameProps } from '@/lib/challengeProgress'
  * shopping games already ship (lista-mercado: medialunas, pan, tostadas, galletitas,
  * grisines; el-vuelto: alfajor), picked one by one in the glob so no other file is pulled in.
  *
- * Ramp: level 1, whole prices and two items; level 2, the SAME board but three
- * items with quantities (2 panes, 3 medialunas…), so the new thing is only the
- * multiplying; level 3, a new board where every price ends in ",50" (the
- * Argentine decimal comma: $12,50) — so totals can be whole or end in ",50".
+ * Ramp: level 1, two items; level 2, the SAME board but three items with
+ * quantities (2 panes, 3 medialunas…), so the new thing is only the multiplying;
+ * level 3, a new board with bigger prices and bigger quantities (up to 5). Every
+ * price and every total is a whole number of pesos: the tallerista asked for no
+ * figures with commas (the "$12,50" board this level used to have), and the totals
+ * stay under $1000 so no figure carries a thousands dot either. TWO orders per
+ * level (she found three too long).
  *
  * The four options are the right total and three near misses that are the
- * slips people really make: a "tens" slip (±$10) and small ones (±$5, ±$1,
- * ±$0,50 — "forgetting the fifty cents"). Where the right total ranks among
- * the four varies from order to order (smallest, second, third or largest:
- * 4, 5, 4 and 5 of the 18 orders), so "it is never the biggest" or "never the
- * smallest" is no way to rule options out; the options are then shown in a
+ * slips people really make: a "tens" slip (±$10) and small ones (±$5, ±$1).
+ * Where the right total ranks among the four varies from order to order
+ * (smallest, second, third or largest), so "it is never the biggest" or "never
+ * the smallest" is no way to rule options out; the options are then shown in a
  * shuffled order, ONCE at mount. A wrong option greys out (never red), costs
  * one mistake and turns on a scaffold: the products of the order light up on
  * the board and the hint says how to tackle it.
@@ -34,13 +35,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Money is kept in CENTS (integers), so $12,50 + $37,50 is exact; a throwaway
  * Node script (not committed) recomputes every total independently, checks the
  * four options (distinct, positive, the total among them, every wrong one a
- * realistic near miss) and the ramp (whole / ",50" prices, item and quantity
+ * realistic near miss) and the ramp (whole prices and totals, item and quantity
  * rules).
  *
- * ONE set of orders per level: each level has two authored sets of three orders
+ * ONE set of orders per level: each level has two authored sets of two orders
  * and one is picked ONCE at mount (`epoch`, together with each order's option
- * order), so "Repetir" replays exactly the same customers and options. The 18
- * customers have 18 different names, so no name comes back within a run.
+ * order), so "Repetir" replays exactly the same customers and options. The 12
+ * customers have 12 different names, so no name comes back within a run.
  * Per-level state lives in <LevelView>, keyed by run + level.
  *
  * Double taps: every tap within SETTLE_MS of the tap that brought the level (judged
@@ -98,9 +99,9 @@ interface LevelDef {
   tip: string
 }
 
-// Level 1 and 2 share the board; level 3 has its own, all ending in ",50".
+// Level 1 and 2 share the board; level 3 has its own, with bigger prices. Whole pesos everywhere.
 const WHOLE_PRICES: Prices = { medialuna: 1500, pan: 4000, alfajor: 2500, galletitas: 3000, grisines: 2000, tostadas: 3500 }
-const HALF_PRICES: Prices = { medialuna: 1250, pan: 3750, alfajor: 2250, galletitas: 1750, grisines: 1450, tostadas: 2750 }
+const BIG_PRICES: Prices = { medialuna: 4500, pan: 8500, alfajor: 6000, galletitas: 7500, grisines: 5500, tostadas: 9500 }
 
 const LEVELS: LevelDef[] = [
   {
@@ -111,12 +112,10 @@ const LEVELS: LevelDef[] = [
       [
         { customer: 'Doña Marta', lines: [{ item: 'medialuna', qty: 1 }, { item: 'alfajor', qty: 1 }], wrong: [-10_00, 5_00, 10_00] },
         { customer: 'Don Ramón', lines: [{ item: 'pan', qty: 1 }, { item: 'galletitas', qty: 1 }], wrong: [-5_00, -10_00, -15_00] },
-        { customer: 'Susana', lines: [{ item: 'grisines', qty: 1 }, { item: 'tostadas', qty: 1 }], wrong: [5_00, 10_00, 15_00] },
       ],
       [
         { customer: 'Elvira', lines: [{ item: 'alfajor', qty: 1 }, { item: 'tostadas', qty: 1 }], wrong: [-5_00, -10_00, 5_00] },
         { customer: 'Don Mario', lines: [{ item: 'medialuna', qty: 1 }, { item: 'pan', qty: 1 }], wrong: [-5_00, -10_00, -15_00] },
-        { customer: 'Graciela', lines: [{ item: 'galletitas', qty: 1 }, { item: 'grisines', qty: 1 }], wrong: [-5_00, 5_00, 10_00] },
       ],
     ],
   },
@@ -136,11 +135,6 @@ const LEVELS: LevelDef[] = [
           lines: [{ item: 'pan', qty: 2 }, { item: 'grisines', qty: 1 }, { item: 'galletitas', qty: 2 }],
           wrong: [-5_00, -10_00, -20_00],
         },
-        {
-          customer: 'Cristina',
-          lines: [{ item: 'medialuna', qty: 4 }, { item: 'tostadas', qty: 2 }, { item: 'grisines', qty: 1 }],
-          wrong: [10_00, 5_00, 20_00],
-        },
       ],
       [
         {
@@ -153,28 +147,37 @@ const LEVELS: LevelDef[] = [
           lines: [{ item: 'grisines', qty: 3 }, { item: 'pan', qty: 1 }, { item: 'tostadas', qty: 2 }],
           wrong: [5_00, 10_00, 20_00],
         },
-        {
-          customer: 'Nora',
-          lines: [{ item: 'galletitas', qty: 2 }, { item: 'medialuna', qty: 3 }, { item: 'pan', qty: 1 }],
-          wrong: [-5_00, 5_00, 10_00],
-        },
       ],
     ],
   },
   {
     name: 'Nivel 3',
-    prices: HALF_PRICES,
-    tip: 'Los precios tienen cincuenta centavos: sumá primero los pesos y después los centavos.',
+    prices: BIG_PRICES,
+    tip: 'Multiplicá cada cantidad por su precio y sumá de a una cosa por vez, con calma.',
     sets: [
       [
-        { customer: 'Doña Lidia', lines: [{ item: 'medialuna', qty: 2 }, { item: 'pan', qty: 1 }], wrong: [-50, -1_00, -10_00] },
-        { customer: 'Don Hugo', lines: [{ item: 'alfajor', qty: 3 }, { item: 'galletitas', qty: 1 }], wrong: [-50, 50, -10_00] },
-        { customer: 'Rosa', lines: [{ item: 'tostadas', qty: 1 }, { item: 'pan', qty: 1 }, { item: 'medialuna', qty: 1 }], wrong: [-50, 10_00, 1_00] },
+        {
+          customer: 'Doña Lidia',
+          lines: [{ item: 'medialuna', qty: 3 }, { item: 'pan', qty: 2 }, { item: 'alfajor', qty: 1 }],
+          wrong: [-5_00, 10_00, -10_00],
+        },
+        {
+          customer: 'Don Hugo',
+          lines: [{ item: 'alfajor', qty: 4 }, { item: 'galletitas', qty: 2 }, { item: 'tostadas', qty: 1 }],
+          wrong: [-10_00, 5_00, 10_00],
+        },
       ],
       [
-        { customer: 'Don Ernesto', lines: [{ item: 'alfajor', qty: 2 }, { item: 'grisines', qty: 1 }], wrong: [-50, 50, -10_00] },
-        { customer: 'Mabel', lines: [{ item: 'medialuna', qty: 3 }, { item: 'pan', qty: 1 }], wrong: [50, 1_00, 10_00] },
-        { customer: 'Don Julio', lines: [{ item: 'galletitas', qty: 1 }, { item: 'tostadas', qty: 1 }, { item: 'alfajor', qty: 1 }], wrong: [-50, -1_00, -10_00] },
+        {
+          customer: 'Don Ernesto',
+          lines: [{ item: 'grisines', qty: 2 }, { item: 'pan', qty: 3 }, { item: 'galletitas', qty: 1 }],
+          wrong: [-10_00, -5_00, 10_00],
+        },
+        {
+          customer: 'Mabel',
+          lines: [{ item: 'medialuna', qty: 5 }, { item: 'tostadas', qty: 2 }, { item: 'alfajor', qty: 2 }],
+          wrong: [5_00, 10_00, 15_00],
+        },
       ],
     ],
   },
