@@ -544,7 +544,7 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
 
   // ── Días 22-26 — built ────────────────────────────────────────────────────
   { day: 22, type: 'game', area: 'ejecutivas', title: 'Palabras con condiciones',
-    instructions: 'Un juego de razonamiento: leé la condición, como «termina en L» o «rima con coche», y tocá la única palabra, entre cuatro, que la cumple. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: leé la condición, por ejemplo «tiene tres sílabas y no termina en A», y tocá la única palabra que cumple todo lo que pide. Subís de dificultad a medida que avanzás.' },
   { day: 23, type: 'game', area: 'lenguaje', title: 'La pirámide de letras',
     instructions: 'Un juego de lenguaje: armá una pirámide de palabras donde cada fila es la de arriba con una letra más, guiándote por las pistas. Subís de dificultad a medida que avanzás.' },
   { day: 24, type: 'game', area: 'calculo', title: 'Dale color a los números',

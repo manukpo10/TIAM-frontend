@@ -11,13 +11,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * word that CONTAINS the letter but does not end in it, a word with one B instead of
  * two, a word that looks symmetrical and is not.
  *
- * Three questions per level, with a gentle ramp: ONE visible feature (how it
- * starts, how it ends, how long it is) → letters and sounds (a letter that occurs
- * twice, a palindrome, a rhyme; the vowels, the same letter at both ends, the
- * syllables) → TWO conditions at once, where the word must meet both. At level 3 the
- * decoys are built on purpose: for every question there is one word that meets the
- * first condition only, one that meets the second only, one that meets neither and
- * the answer that meets both.
+ * Three questions per level, with a ramp. The tallerista found the game too easy ("no
+ * piensan nada": looking at the first letter of four words is no thinking), so the
+ * single-feature questions (how it starts, how it ends, how long it is) are gone as
+ * questions of their own: level 1 is letters and sounds (a letter that occurs twice, a
+ * palindrome, a rhyme; the vowels, the same letter at both ends, the syllables); level 2
+ * is TWO conditions at once, where the word must meet both; level 3 is THREE conditions
+ * at once, one of them negative ("tiene tres sílabas, empieza con la letra T y no termina
+ * en A"), with FIVE words. The decoys are built on purpose: for every question there is
+ * one word that fails only the first condition, one that fails only the second, one that
+ * fails only the third, one that fails all of them, and the answer that meets every one.
  *
  * THE RULES ARE DATA AND THE CHECK IS THE RULE. A condition is a small object
  * (`starts`, `ends`, `length`, `count`, `vowels`, `mirror`, `sameEnds`, `syllables`,
@@ -65,7 +68,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  */
 
 // ── data:start ──
-type Simple =
+type Base =
   | { kind: 'starts'; letter: string } // empieza con la letra M
   | { kind: 'startsVowel' } // empieza con vocal
   | { kind: 'ends'; letter: string } // termina en L
@@ -76,7 +79,8 @@ type Simple =
   | { kind: 'sameEnds' } // empieza y termina con la misma letra
   | { kind: 'syllables'; n: number } // tiene tres sílabas
   | { kind: 'rhyme'; word: string; tail: string } // rima con «coche»
-type Rule = Simple | { kind: 'both'; a: Simple; b: Simple }
+type Simple = Base | { kind: 'not'; rule: Base } // NO termina en A
+type Rule = Simple | { kind: 'both'; a: Simple; b: Simple } | { kind: 'all'; parts: Simple[] }
 
 interface Question {
   rule: Rule
@@ -90,25 +94,12 @@ interface LevelDef {
 }
 
 const both = (a: Simple, b: Simple): Rule => ({ kind: 'both', a, b })
+const all = (...parts: Simple[]): Rule => ({ kind: 'all', parts })
+const not = (rule: Base): Simple => ({ kind: 'not', rule })
 
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
-    sets: [
-      [
-        { rule: { kind: 'ends', letter: 'L' }, options: ['papel', 'libro', 'plato', 'mesa'] },
-        { rule: { kind: 'starts', letter: 'M' }, options: ['mano', 'lima', 'campo', 'sopa'] },
-        { rule: { kind: 'length', n: 5 }, options: ['perro', 'gato', 'conejo', 'pez'] },
-      ],
-      [
-        { rule: { kind: 'ends', letter: 'R' }, options: ['flor', 'radio', 'carta', 'taza'] },
-        { rule: { kind: 'starts', letter: 'S' }, options: ['silla', 'pasta', 'vaso', 'luna'] },
-        { rule: { kind: 'length', n: 6 }, options: ['tijera', 'reloj', 'tenedor', 'sol'] },
-      ],
-    ],
-  },
-  {
-    name: 'Nivel 2',
     sets: [
       [
         { rule: { kind: 'count', letter: 'B', n: 2 }, options: ['bombero', 'cubo', 'tobillo', 'ventana'] },
@@ -123,7 +114,7 @@ const LEVELS: LevelDef[] = [
     ],
   },
   {
-    name: 'Nivel 3',
+    name: 'Nivel 2',
     sets: [
       [
         {
@@ -155,6 +146,41 @@ const LEVELS: LevelDef[] = [
       ],
     ],
   },
+  {
+    name: 'Nivel 3',
+    sets: [
+      // Three conditions, one of them negative, five words: the answer, one that fails only the 1st, one only the
+      // 2nd, one only the 3rd, and one that fails all of them.
+      [
+        {
+          rule: all({ kind: 'starts', letter: 'T' }, not({ kind: 'ends', letter: 'A' }), { kind: 'syllables', n: 3 }),
+          options: ['tenedor', 'animal', 'tostada', 'toro', 'cinta'],
+        },
+        {
+          rule: all({ kind: 'starts', letter: 'M' }, { kind: 'ends', letter: 'A' }, not({ kind: 'length', n: 6 })),
+          options: ['mapa', 'bolsa', 'moto', 'maceta', 'sartén'],
+        },
+        {
+          rule: all(not({ kind: 'syllables', n: 3 }), { kind: 'starts', letter: 'P' }, { kind: 'ends', letter: 'A' }),
+          options: ['pera', 'pizarra', 'regla', 'pato', 'borrador'],
+        },
+      ],
+      [
+        {
+          rule: all({ kind: 'starts', letter: 'C' }, not({ kind: 'ends', letter: 'A' }), { kind: 'length', n: 4 }),
+          options: ['codo', 'arco', 'cara', 'cartero', 'escalera'],
+        },
+        {
+          rule: all(not({ kind: 'ends', letter: 'A' }), { kind: 'starts', letter: 'S' }, { kind: 'syllables', n: 3 }),
+          options: ['sombrero', 'semana', 'azúcar', 'sol', 'uva'],
+        },
+        {
+          rule: all({ kind: 'length', n: 5 }, { kind: 'count', letter: 'A', n: 1 }, { kind: 'starts', letter: 'P' }),
+          options: ['plato', 'pan', 'perro', 'banco', 'tubo'],
+        },
+      ],
+    ],
+  },
 ]
 
 // Every set of a level has the same number of questions, so TOTAL_QUESTIONS never
@@ -175,6 +201,21 @@ const SYLLABLES: Record<string, string> = {
   papá: 'pa-pá',
   elefante: 'e-le-fan-te',
   teléfono: 'te-lé-fo-no',
+  tenedor: 'te-ne-dor',
+  animal: 'a-ni-mal',
+  tostada: 'tos-ta-da',
+  toro: 'to-ro',
+  cinta: 'cin-ta',
+  pera: 'pe-ra',
+  pizarra: 'pi-za-rra',
+  regla: 're-gla',
+  pato: 'pa-to',
+  borrador: 'bo-rra-dor',
+  sombrero: 'som-bre-ro',
+  semana: 'se-ma-na',
+  azúcar: 'a-zú-car',
+  sol: 'sol',
+  uva: 'u-va',
 }
 
 /** Lowercase, accents removed: the letters the rules count. */
@@ -214,12 +255,16 @@ function meetsSimple(rule: Simple, word: string): boolean {
       return syllablesOf(word).split('-').length === rule.n
     case 'rhyme':
       return plain(word).endsWith(rule.tail)
+    case 'not':
+      return !meetsSimple(rule.rule, word)
   }
 }
 
 /** Does the word satisfy the condition (all of its parts)? */
 function meets(rule: Rule, word: string): boolean {
-  return rule.kind === 'both' ? meetsSimple(rule.a, word) && meetsSimple(rule.b, word) : meetsSimple(rule, word)
+  if (rule.kind === 'both') return meetsSimple(rule.a, word) && meetsSimple(rule.b, word)
+  if (rule.kind === 'all') return rule.parts.every((part) => meetsSimple(part, word))
+  return meetsSimple(rule, word)
 }
 
 const NUMBER_WORDS = ['cero', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez']
@@ -246,12 +291,49 @@ function describeSimple(rule: Simple): string {
       return `tiene ${NUMBER_WORDS[rule.n]} ${rule.n === 1 ? 'sílaba' : 'sílabas'}`
     case 'rhyme':
       return `rima con «${rule.word}»`
+    case 'not':
+      return describeNot(rule.rule)
   }
+}
+
+/** The negative of a condition: "no termina en A". */
+function describeNot(rule: Base): string {
+  switch (rule.kind) {
+    case 'starts':
+      return `no empieza con la letra ${rule.letter}`
+    case 'startsVowel':
+      return 'no empieza con vocal'
+    case 'ends':
+      return `no termina en ${rule.letter}`
+    case 'length':
+      return `no tiene ${NUMBER_WORDS[rule.n]} letras`
+    case 'count':
+      return rule.n === 0
+        ? `no tiene la letra ${rule.letter}`
+        : `no tiene ${NUMBER_WORDS[rule.n]} ${rule.n === 1 ? 'letra' : 'letras'} ${rule.letter}`
+    case 'vowels':
+      return `no tiene ${NUMBER_WORDS[rule.n]} vocales`
+    case 'mirror':
+      return 'no se lee igual al revés'
+    case 'sameEnds':
+      return 'no empieza y termina con la misma letra'
+    case 'syllables':
+      return `no tiene ${NUMBER_WORDS[rule.n]} sílabas`
+    case 'rhyme':
+      return `no rima con «${rule.word}»`
+  }
+}
+
+/** "a", "a y b", "a, b y c". */
+function joinWithY(items: string[]): string {
+  return items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`
 }
 
 /** The sentence of a condition, as the player reads it after "Tocá la palabra que …". */
 function describe(rule: Rule): string {
-  return rule.kind === 'both' ? `${describeSimple(rule.a)} y ${describeSimple(rule.b)}` : describeSimple(rule)
+  if (rule.kind === 'both') return joinWithY([describeSimple(rule.a), describeSimple(rule.b)])
+  if (rule.kind === 'all') return joinWithY(rule.parts.map(describeSimple))
+  return describeSimple(rule)
 }
 
 /** What is true of the word for ONE condition, to finish "«PALABRA» …". */
@@ -291,12 +373,17 @@ function factsSimple(rule: Simple, word: string): string {
     }
     case 'rhyme':
       return ok ? `rima con «${rule.word}»: las dos terminan en «-${rule.tail}»` : `no rima con «${rule.word}»`
+    case 'not':
+      // The facts are the same as for the condition it denies: what the word really is.
+      return factsSimple(rule.rule, word)
   }
 }
 
 /** Why a word does or does not fit, whichever the condition: «PALABRA» + this + ".". */
 function facts(rule: Rule, word: string): string {
-  return rule.kind === 'both' ? `${factsSimple(rule.a, word)} y ${factsSimple(rule.b, word)}` : factsSimple(rule, word)
+  if (rule.kind === 'both') return joinWithY([factsSimple(rule.a, word), factsSimple(rule.b, word)])
+  if (rule.kind === 'all') return joinWithY(rule.parts.map((part) => factsSimple(part, word)))
+  return factsSimple(rule, word)
 }
 // ── data:end ──
 
@@ -338,7 +425,7 @@ const SETTLE_MS = 400
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   // Two short steps and a small example keep "Empezar" on screen on a 740px-tall phone.
   const steps = [
-    'Leé la condición de arriba: una sola de las cuatro palabras la cumple.',
+    'Leé la condición de arriba: una sola de las palabras la cumple.',
     'Tocala. Si no es, esa palabra se apaga y probás con otra.',
   ]
   // Words that are not in the game itself.
@@ -489,8 +576,10 @@ function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRe
             <h2 className="mt-3 text-balance text-xl font-bold leading-snug text-slate-900 sm:text-2xl">
               Tocá la palabra que <span className="text-indigo-700">{describe(rule)}</span>
             </h2>
-            {rule.kind === 'both' && (
-              <p className="mt-1 text-base font-medium text-slate-500">Tiene que cumplir las dos cosas.</p>
+            {(rule.kind === 'both' || rule.kind === 'all') && (
+              <p className="mt-1 text-base font-medium text-slate-500">
+                Tiene que cumplir {rule.kind === 'both' ? 'las dos cosas' : 'las tres cosas'}.
+              </p>
             )}
           </>
         )}
