@@ -45,15 +45,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * The diagram is an SVG for the lines and tags, with the circles as buttons
  * placed on the same 240×240 coordinates (percentages, so they follow the drawing
  * at any width). Ramp: a CROSS (2 lines sharing the centre, 3 numbers to place)
- * → a STAR (3 lines through the centre, 4 numbers) → a TRIANGLE with two
+ * → a STAR (3 lines through a centre that comes filled, 4 numbers) → a TRIANGLE with two
  * circles per side (3 lines of 4 circles, corners counting for two lines, 5
  * numbers). Both triangles leave a corner empty (one has two empty corners), so
  * the circle two sides share has to be planned for, like the centre before it. A
  * throwaway Node script (not committed) solved every puzzle by brute force over
  * all the ways to place its bank: each has at least one valid arrangement (one
- * for most, two for the second cross and the second triangle, whose side numbers
- * can swap), the bank has exactly one number per empty circle, and all the
- * numbers of a diagram are different.
+ * for most, two for the second cross, both stars (the two numbers of the free
+ * line can swap) and the second triangle, whose side numbers can swap), the bank
+ * has exactly one number per empty circle, and all the numbers of a diagram are
+ * different.
  *
  * ONE diagram per level: each level has two authored puzzles and one is picked
  * ONCE at mount (`epoch`, together with the order of the bank), so "Repetir"
@@ -183,8 +184,11 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 2',
     shape: buildStar(),
     puzzles: [
-      { total: 15, givens: { 0: 2, 4: 7, 2: 4 }, bank: [3, 5, 6, 8] },
-      { total: 14, givens: { 3: 9, 1: 4, 5: 6 }, bank: [2, 3, 5, 7] },
+      // The centre (circle 6) comes filled: the tallerista found the star too complex when one number of
+      // the centre decided all three lines at once. Two lines have one empty circle (it is decided at
+      // once); the third has two (any pair that adds up, so the two numbers can swap).
+      { total: 15, givens: { 0: 2, 1: 4, 6: 5 }, bank: [3, 6, 7, 8] },
+      { total: 14, givens: { 1: 2, 2: 1, 6: 4 }, bank: [3, 7, 8, 9] },
     ],
   },
   {
