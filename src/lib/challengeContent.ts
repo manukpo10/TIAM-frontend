@@ -493,7 +493,7 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 4, type: 'game', area: 'atencion', title: '¿Quién se sienta dónde?',
     instructions: 'Un juego de atención: en un aula hay chicos y chicas sentados y una lista de pistas, por ejemplo «Julia se sienta justo detrás de Alberto». Leelas con calma, tocá cada nombre y después el asiento donde va. Subís de dificultad a medida que avanzás.' },
   { day: 5, type: 'game', area: 'ejecutivas', title: 'Dos de cada grupo',
-    instructions: 'Un juego de razonamiento: leé la condición, por ejemplo «son de tela» o «flotan en el agua», y tocá los dos objetos que la cumplen. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: leé la condición, que tiene dos partes, por ejemplo «son de madera y sirven para sentarse», y tocá los dos objetos que cumplen las dos cosas a la vez. Subís de dificultad a medida que avanzás.' },
   { day: 6, type: 'game', area: 'orientacion', title: 'Forma y color',
     instructions: 'Un ejercicio de orientación: cada figura de color esconde una letra en la tabla. Buscá la fila de la forma y la columna del color, tocá donde se cruzan y descubrí la palabra. Subís de dificultad a medida que avanzás.' },
   { day: 7, type: 'game', area: 'lenguaje', title: 'Refranes sin vocales',
