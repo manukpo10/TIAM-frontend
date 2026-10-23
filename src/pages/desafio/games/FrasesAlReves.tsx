@@ -40,7 +40,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  * that button was); and while the right option shows its check every option is off, which
  * swallows a double tap on the RIGHT one before the next word's options replace it.
  *
- * Ramp: a 4-word everyday phrase → a 5-word refrán → a 7-word refrán. ONE
+ * Ramp: a 4-word everyday phrase → a 5-word refrán → an 8-word sentence. Level 3 used to be a
+ * well-known refrán ("Los trapitos sucios se lavan en casa") and the tallerista found it easier
+ * than level 1: a saying is guessed from its first words, so the player stops reading backwards.
+ * It is now an ordinary sentence of long words that cannot be guessed, with look-alike options
+ * (hermana / hermano / hermanas, visitamos / visitemos / visitaban). ONE
  * phrase per level: each level has two authored ones and one is picked ONCE at
  * mount (`epoch`, together with the order of every word's options), so
  * "Repetir" replays exactly the same three. Per-level state lives in
@@ -120,27 +124,29 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 3',
     phrases: [
       {
-        display: 'Los trapitos sucios se lavan en casa.',
+        display: 'Mi hermana compra manzanas verdes en el mercado.',
         words: [
-          { word: 'los', wrong: ['sol', 'las'] },
-          { word: 'trapitos', wrong: ['trapecio', 'trapiche'] },
-          { word: 'sucios', wrong: ['sucias', 'suelos'] },
-          { word: 'se', wrong: ['es', 'si'] },
-          { word: 'lavan', wrong: ['lavar', 'lavas'] },
+          { word: 'mi', wrong: ['me', 'si'] },
+          { word: 'hermana', wrong: ['hermano', 'hermanas'] },
+          { word: 'compra', wrong: ['compro', 'compre'] },
+          { word: 'manzanas', wrong: ['manzana', 'manzanos'] },
+          { word: 'verdes', wrong: ['verde', 'verdad'] },
           { word: 'en', wrong: ['el', 'un'] },
-          { word: 'casa', wrong: ['cosa', 'saca'] },
+          { word: 'el', wrong: ['le', 'la'] },
+          { word: 'mercado', wrong: ['mercadeo', 'mercader'] },
         ],
       },
       {
-        display: 'No hay mal que dure cien años.',
+        display: 'Ayer visitamos una granja con muchos animales grandes.',
         words: [
-          { word: 'no', wrong: ['ni', 'si'] },
-          { word: 'hay', wrong: ['hoy', 'ley'] },
-          { word: 'mal', wrong: ['mar', 'mil'] },
-          { word: 'que', wrong: ['fue', 'ver'] },
-          { word: 'dure', wrong: ['dura', 'duro'] },
-          { word: 'cien', wrong: ['cine', 'sien'] },
-          { word: 'años', wrong: ['aros', 'ajos'] },
+          { word: 'ayer', wrong: ['aire', 'arde'] },
+          { word: 'visitamos', wrong: ['visitemos', 'visitaban'] },
+          { word: 'una', wrong: ['uno', 'unas'] },
+          { word: 'granja', wrong: ['granjas', 'grande'] },
+          { word: 'con', wrong: ['son', 'don'] },
+          { word: 'muchos', wrong: ['muchas', 'mucho'] },
+          { word: 'animales', wrong: ['animal', 'animalito'] },
+          { word: 'grandes', wrong: ['grande', 'grandeza'] },
         ],
       },
     ],
