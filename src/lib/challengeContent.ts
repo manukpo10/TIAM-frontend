@@ -561,8 +561,8 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: leé la pista que describe una palabra. Te damos la primera letra y cuántas letras tiene, y la escribís con el teclado de la pantalla. Subís de dificultad a medida que avanzás.' },
   { day: 29, type: 'game', area: 'atencion', title: 'Pintá según el código',
     instructions: 'Un juego de atención: el código te dice qué formas se pintan y de qué color, por ejemplo «triángulos = rojo». Recorré el tablero y tocá cada forma del código para pintarla. Subís de dificultad a medida que avanzás.' },
-  { day: 30, type: 'game', area: 'calculo', title: 'La estrella de sumas',
-    instructions: 'Último día: una estrella con un total en el centro, donde los dos números de cada rama suman ese total. Descubrí cuál falta en cada una y tocalo entre las opciones. Subís de dificultad a medida que avanzás.' },
+  { day: 30, type: 'game', area: 'lenguaje', title: 'Palabra y significado',
+    instructions: 'Último día: un juego de lenguaje. Tocá una palabra y después el significado que le corresponde. En los niveles siguientes puede sobrar algún significado. Subís de dificultad a medida que avanzás.' },
 ]
 
 /** Content joined with its per-day illustration (matched by day number). */

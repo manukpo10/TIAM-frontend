@@ -145,7 +145,7 @@ import { FormalOInformal } from './FormalOInformal'
 import { ElPanalDeLetras } from './ElPanalDeLetras'
 import { UnaPalabraPorLetra } from './UnaPalabraPorLetra'
 import { PintaSegunElCodigo } from './PintaSegunElCodigo'
-import { LaEstrellaDeSumas } from './LaEstrellaDeSumas'
+import { PalabraYSignificado } from './PalabraYSignificado'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -332,7 +332,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     27: ElPanalDeLetras,
     28: UnaPalabraPorLetra,
     29: PintaSegunElCodigo,
-    30: LaEstrellaDeSumas,
+    30: PalabraYSignificado,
   },
 }
 
