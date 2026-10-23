@@ -5,6 +5,7 @@ import { startMetaPixel, trackMetaPixel } from '@/lib/metaPixel'
 import { browserStore, purchaseEventId, purchaseParams, rememberPurchase, wasPurchaseSent } from '@/lib/pixelEvents'
 import { Card, PackShell, StateHero } from './PackShell'
 import { DownloadsPanel } from './DownloadsPanel'
+import { EmailNotice } from './EmailNotice'
 import { FilesUnavailable } from './FilesUnavailable'
 import { orderHasFiles } from './orderRules'
 import { ContactLink } from './ContactLink'
@@ -258,21 +259,12 @@ function Paid({ order, token }: { order: PackOrder; token: string }) {
 
       <DownloadsPanel order={order} token={token} />
 
-      <Card className="bg-slate-50">
-        <div className="flex items-start gap-3">
-          <Mail className="mt-0.5 h-5 w-5 shrink-0 text-tiam-blue" aria-hidden />
-          <div className="text-slate-600">
-            <p className="font-semibold text-slate-900">También te lo mandamos por email</p>
-            <p className="mt-1 leading-relaxed">
-              Te llega el mismo acceso por correo, para que puedas volver cuando quieras. Si en unos minutos no lo ves, revisá la carpeta de spam o de promociones.
-            </p>
-            {/* A plain link on purpose: a full page load, so the Pixel started on this page never sees the token's address. */}
-            <a href={`/pack/descargas/${encodeURIComponent(token)}`} className="mt-3 inline-flex min-h-11 items-center font-medium text-tiam-blue underline underline-offset-2">
-              Abrir mi página de descargas
-            </a>
-          </div>
-        </div>
-      </Card>
+      <EmailNotice>
+        {/* A plain link on purpose: a full page load, so the Pixel started on this page never sees the token's address. */}
+        <a href={`/pack/descargas/${encodeURIComponent(token)}`} className="mt-3 inline-flex min-h-11 items-center font-medium text-tiam-blue underline underline-offset-2">
+          Abrir mi página de descargas
+        </a>
+      </EmailNotice>
     </div>
   )
 }
