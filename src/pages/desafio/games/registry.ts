@@ -120,7 +120,7 @@ import { LosVecinos } from './LosVecinos'
 import { OrdenaLaOracion } from './OrdenaLaOracion'
 import { LeeYRecorda } from './LeeYRecorda'
 import { ElNumeroSecreto } from './ElNumeroSecreto'
-import { LeeEnOrden } from './LeeEnOrden'
+import { QuienSeSientaDonde } from './QuienSeSientaDonde'
 import { DosDeCadaGrupo } from './DosDeCadaGrupo'
 import { FormaYColor } from './FormaYColor'
 import { RefranesSinVocales } from './RefranesSinVocales'
@@ -306,7 +306,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     1: OrdenaLaOracion,
     2: LeeYRecorda,
     3: ElNumeroSecreto,
-    4: LeeEnOrden,
+    4: QuienSeSientaDonde,
     5: DosDeCadaGrupo,
     6: FormaYColor,
     7: RefranesSinVocales,
