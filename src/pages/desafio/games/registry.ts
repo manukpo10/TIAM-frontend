@@ -141,7 +141,7 @@ import { PalabrasConCondiciones } from './PalabrasConCondiciones'
 import { SoyUnNumero } from './SoyUnNumero'
 import { DaleColorALosNumeros } from './DaleColorALosNumeros'
 import { ArmaLaMariposa } from './ArmaLaMariposa'
-import { LosDepartamentos } from './LosDepartamentos'
+import { FormalOInformal } from './FormalOInformal'
 import { ElPanalDeLetras } from './ElPanalDeLetras'
 import { CuentasEnLaTabla } from './CuentasEnLaTabla'
 import { PintaSegunElCodigo } from './PintaSegunElCodigo'
@@ -328,7 +328,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     23: SoyUnNumero,
     24: DaleColorALosNumeros,
     25: ArmaLaMariposa,
-    26: LosDepartamentos,
+    26: FormalOInformal,
     27: ElPanalDeLetras,
     28: CuentasEnLaTabla,
     29: PintaSegunElCodigo,

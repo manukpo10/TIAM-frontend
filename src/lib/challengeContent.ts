@@ -551,8 +551,8 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de cálculo: hacé la cuenta de cada pista y pintá, del color que te piden, el número que da el resultado. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'praxias', title: 'Armá la mariposa',
     instructions: 'Un juego visoespacial: encajá las piezas de colores, sin girarlas, hasta llenar el dibujo sin que sobre ni falte ningún cuadradito. Vas a armar distintos dibujos, y el último es la mariposa. Subís de dificultad a medida que avanzás.' },
-  { day: 26, type: 'game', area: 'ejecutivas', title: 'Los departamentos',
-    instructions: 'Un juego de razonamiento: leé las pistas y deducí quién vive en cada piso del edificio y qué mascota tiene. Tocá una palabra de la lista y después la casilla donde creés que va. En el segundo nivel se suma la afición de cada vecino, y es un poco más difícil.' },
+  { day: 26, type: 'game', area: 'ejecutivas', title: 'Formal o informal',
+    instructions: 'Un juego de lenguaje y razonamiento: leé la frase o la situación y elegí cómo se dice. El lenguaje formal es el del respeto y el cuidado, por ejemplo con el médico o en una carta; el informal es el de todos los días, con la gente de confianza. Subís de dificultad a medida que avanzás.' },
 
   // ── Días 27-30 — built (the last four) ────────────────────────────────────
   { day: 27, type: 'game', area: 'lenguaje', title: 'El panal de letras',
