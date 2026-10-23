@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Check, Pencil, RotateCcw, RotateCw, Sparkles } from 'lucide-react'
+import { ArrowRight, Delete as BackspaceIcon, Pencil, RotateCcw, RotateCw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
@@ -13,7 +13,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * can be checked from a tap: most requests have many valid answers ("una fruta
  * con M" fits manzana, mandarina, melón…), and the retrieval effort in the
  * player's own head is the exercise. So there are no mistakes: each request is
- * closed with a "Ya la pensé" tap and `onComplete` reports `mistakes: 0` with
+ * closed with "Listo" (or "La pensé sin escribir") and `onComplete` reports `mistakes: 0` with
  * one attempt per request, exactly like TiraElDado does. The `examples` of each
  * set are documentation only — they show anyone editing the data that every
  * letter + category pair has real, easy answers, and they are never rendered
@@ -46,6 +46,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  * wheel stops at once and the requests take the place of "Girar la ruleta" (its second tap
  * would tick the first request off), and the card with its button takes the place of the
  * requests (the second tap on the one that closes the level would skip the result).
+ *
+ * WRITING THE WORDS. The tallerista asked for an alphabet on screen so players can write the word the
+ * request asks for (a country, a name…). So the requests now come ONE AT A TIME: the request in turn and
+ * the wheel's letter (already in the answer, as its first letter), an on-screen alphabet (A-Z, Ñ and the
+ * accented vowels, 8 keys per row so every key is wide enough to hit) with space and backspace, and
+ * "Listo". What is written is never checked, and a player who would rather say it out loud or use paper
+ * taps "La pensé sin escribir"; both close the request. The words show again on the result card.
  *
  * totalAttempts = every request of the day (TOTAL_PROMPTS, derived), mistakes 0.
  */
@@ -157,6 +164,18 @@ function prefersReducedMotion(): boolean {
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
+// The on-screen alphabet: 4 rows of 8, so a key is still wide enough to hit on a 320px phone.
+const ALPHABET = [
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+  'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O',
+  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+  'X', 'Y', 'Z', 'Á', 'É', 'Í', 'Ó', 'Ú',
+]
+/** The longest word that can be written ("Papúa Nueva Guinea" fits). */
+const MAX_WORD = 24
+const KEY_CLASS =
+  'flex min-h-[44px] items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-lg font-bold text-slate-800 transition hover:border-tiam-blue/40 active:bg-tiam-blue/10 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 [@media(max-height:700px)]:min-h-[40px]'
+
 /** ['a', 'b', 'c'] → "a, b y c" */
 function listWithY(items: string[]): string {
   if (items.length < 2) return items.join('')
@@ -240,8 +259,8 @@ function Pointer() {
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   const steps = [
     'Tocá «Girar la ruleta»: se detiene en una letra.',
-    'Para cada pedido, como «una fruta», pensá una palabra que empiece con esa letra. Decila en voz alta o anotala en un papel.',
-    'Cuando la tengas, tocá «Ya la pensé».',
+    'Para cada pedido, como «una fruta» o «un país», pensá una palabra que empiece con esa letra y escribila con el abecedario de la pantalla.',
+    'Cuando la escribas, tocá «Listo». Si preferís decirla en voz alta o anotarla en un papel, tocá «La pensé sin escribir».',
   ]
   return (
     <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-5 sm:p-6">
@@ -307,7 +326,10 @@ function LevelView({ levelIdx, set, since, onSolved, onNext, onRepeat }: LevelVi
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [rotation, setRotation] = useState(0)
-  const [thought, setThought] = useState<number[]>([])
+  // What the player wrote for each request so far, in order (null = thought it without writing), and the word
+  // being written now, without its first letter (that one is the wheel's).
+  const [answers, setAnswers] = useState<(string | null)[]>([])
+  const [draft, setDraft] = useState('')
   const [praise, setPraise] = useState(PRAISE[0])
   const spinTimerRef = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(spinTimerRef.current), [])
@@ -318,7 +340,7 @@ function LevelView({ levelIdx, set, since, onSolved, onNext, onRepeat }: LevelVi
   const resultRef = useRef<HTMLDivElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
 
-  const solved = thought.length >= total
+  const solved = answers.length >= total
   const landed = phase === 'landed'
 
   // A new level opens at its top, not wherever the previous result card left the scroll (a short phone).
@@ -353,13 +375,33 @@ function LevelView({ levelIdx, set, since, onSolved, onNext, onRepeat }: LevelVi
     spinTimerRef.current = window.setTimeout(() => setPhase('landed'), SPIN_MS + 60)
   }
 
-  function handleThought(i: number, at: number) {
-    // Under reduced motion the requests replace the spin button at once: a tap right after it is its double tap.
-    if (!landed || solved || thought.includes(i) || at - swapAtRef.current < SETTLE_MS) return
-    const next = [...thought, i]
-    setThought(next)
+  // Every key waits out the same window as the other buttons: the keyboard takes the place of "Girar la ruleta"
+  // (and the next request's keyboard takes the place of the last one), so the second tap of a double tap on those
+  // must not type a letter or close a request by itself.
+  const settled = (at: number) => landed && !solved && at - swapAtRef.current >= SETTLE_MS
+
+  function typeLetter(letter: string, at: number) {
+    if (!settled(at)) return
+    setDraft((d) => (d.length >= MAX_WORD ? d : d + letter))
+  }
+  function typeSpace(at: number) {
+    if (!settled(at)) return
+    setDraft((d) => (d.length === 0 || d.endsWith(' ') || d.length >= MAX_WORD ? d : d + ' '))
+  }
+  function backspace(at: number) {
+    if (!settled(at)) return
+    setDraft((d) => d.slice(0, -1))
+  }
+  /** Closes the request in turn: with the word that was written, or (written = false) without one. */
+  function finish(written: boolean, at: number) {
+    if (!settled(at)) return
+    const word = draft.trim()
+    if (written && word.length < 1) return
+    const next = [...answers, written ? set.letter + word : null]
+    setAnswers(next)
+    setDraft('')
+    swapAtRef.current = at
     if (next.length >= total) {
-      swapAtRef.current = at
       setPraise(pickOne(PRAISE))
       onSolved()
     }
@@ -393,16 +435,16 @@ function LevelView({ levelIdx, set, since, onSolved, onNext, onRepeat }: LevelVi
         {landed && !solved && (
           <>
             <p className="mt-1.5 text-balance text-base text-slate-500">
-              Pensá palabras que empiecen con esa letra. Decilas en voz alta o anotalas en un papel.
+              Pensá una palabra para cada pedido y escribila con el abecedario.
             </p>
             <div className="mx-auto mt-2 flex w-full max-w-xs items-center gap-3">
               <p className="shrink-0 text-base font-semibold text-slate-500">
-                Llevás {thought.length} de {total}
+                Llevás {answers.length} de {total}
               </p>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-tiam-green transition-[width] duration-300"
-                  style={{ width: `${(thought.length / total) * 100}%` }}
+                  style={{ width: `${(answers.length / total) * 100}%` }}
                 />
               </div>
             </div>
@@ -452,47 +494,76 @@ function LevelView({ levelIdx, set, since, onSolved, onNext, onRepeat }: LevelVi
       )}
 
       {landed && !solved && (
-        <>
-          {/* One row per request, closed with a tap */}
-          <div className="mx-auto mt-3 flex max-w-md flex-col gap-2.5 [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:gap-2">
-            {set.categories.map((category, i) => {
-              const isDone = thought.includes(i)
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  disabled={isDone || solved}
-                  onClick={(e) => handleThought(i, e.timeStamp)}
-                  className={[
-                    'flex min-h-[56px] items-center gap-3 rounded-2xl border-2 px-3 py-2 text-left transition [@media(max-height:700px)]:min-h-[52px] [@media(max-height:700px)]:py-1.5',
-                    'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
-                    isDone
-                      ? 'border-tiam-green bg-tiam-green/10'
-                      : 'border-slate-200 bg-white hover:-translate-y-0.5 hover:border-tiam-blue/40 hover:shadow-md active:translate-y-0',
-                  ].join(' ')}
-                >
-                  <span
-                    className={[
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2',
-                      isDone ? 'border-tiam-green bg-tiam-green text-white' : 'border-slate-300',
-                    ].join(' ')}
-                    aria-hidden="true"
-                  >
-                    {isDone && <Check className="h-4 w-4" strokeWidth={3} />}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-lg font-bold leading-tight text-slate-900">{capitalize(category)}</span>
-                    <span
-                      className={['block text-sm font-bold', isDone ? 'text-green-700' : 'text-tiam-blue'].join(' ')}
-                    >
-                      {isDone ? 'Listo' : 'Ya la pensé'}
-                    </span>
-                  </span>
-                </button>
-              )
-            })}
+        <div className="mx-auto mt-3 w-full max-w-md [@media(max-height:700px)]:mt-2">
+          {/* The request in turn: what to think of, and the letter it has to start with */}
+          <div className="rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-2.5 text-center [@media(max-height:700px)]:py-1.5">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Pedido {answers.length + 1} de {total}
+            </p>
+            <p className="text-2xl font-extrabold leading-tight text-slate-900 [@media(max-height:700px)]:text-xl">
+              {capitalize(set.categories[answers.length])}
+            </p>
+            <p className="text-base font-semibold text-tiam-blue">que empiece con la «{set.letter}»</p>
           </div>
-        </>
+
+          {/* What is written so far: the first letter is the wheel's */}
+          <div
+            role="status"
+            aria-label={`Tu respuesta: ${set.letter}${draft}`}
+            className="mt-2 flex min-h-[52px] items-center rounded-2xl border-2 border-slate-200 bg-white px-4 text-2xl font-bold tracking-wide text-slate-900 [@media(max-height:700px)]:min-h-[46px]"
+          >
+            <span className="text-tiam-blue">{set.letter}</span>
+            <span className="whitespace-pre">{draft}</span>
+            <span aria-hidden="true" className="ml-0.5 inline-block h-6 w-0.5 bg-tiam-blue motion-safe:animate-pulse" />
+          </div>
+
+          <div role="group" aria-label="Abecedario" className="mt-2 grid grid-cols-8 gap-1.5">
+            {ALPHABET.map((letter) => (
+              <button
+                key={letter}
+                type="button"
+                onClick={(e) => typeLetter(letter.toLowerCase(), e.timeStamp)}
+                className={KEY_CLASS}
+              >
+                {letter}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={(e) => typeSpace(e.timeStamp)}
+              className={`${KEY_CLASS} col-span-3 text-base`}
+            >
+              espacio
+            </button>
+            <button
+              type="button"
+              aria-label="Borrar la última letra"
+              onClick={(e) => backspace(e.timeStamp)}
+              className={`${KEY_CLASS} col-span-2`}
+            >
+              <BackspaceIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              disabled={draft.trim().length < 1}
+              onClick={(e) => finish(true, e.timeStamp)}
+              className="col-span-3 flex min-h-[44px] items-center justify-center rounded-xl bg-tiam-blue px-2 text-lg font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500 [@media(max-height:700px)]:min-h-[40px]"
+            >
+              Listo
+            </button>
+          </div>
+
+          {/* Saying it out loud or using paper stays a way to close the request */}
+          <div className="mt-2 text-center">
+            <button
+              type="button"
+              onClick={(e) => finish(false, e.timeStamp)}
+              className="min-h-[44px] rounded-xl px-4 text-base font-semibold text-tiam-blue underline underline-offset-4 hover:bg-tiam-blue/5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50"
+            >
+              La pensé sin escribir
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Level complete */}
@@ -506,6 +577,11 @@ function LevelView({ levelIdx, set, since, onSolved, onNext, onRepeat }: LevelVi
             Pensaste palabras con la «{set.letter}» para {listWithY(set.categories)}. ¡Completaste el{' '}
             {level.name.toLowerCase()}!
           </p>
+          {answers.some((a) => a !== null) && (
+            <p className="mt-3 rounded-2xl bg-white px-4 py-3 text-lg font-bold leading-snug text-slate-800">
+              {listWithY(answers.filter((a): a is string => a !== null))}
+            </p>
+          )}
           <div className="mt-5 flex justify-center">
             {isLast ? (
               <button

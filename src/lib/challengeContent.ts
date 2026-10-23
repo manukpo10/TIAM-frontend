@@ -503,7 +503,7 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 8, type: 'game', area: 'calculo', title: 'Suma hasta 30',
     instructions: 'Un juego de cálculo: en la grilla hay parejas de números vecinos (uno al lado del otro o uno arriba del otro) que suman 30. Tocá los dos números de cada pareja hasta encontrarlas todas. Subís de dificultad a medida que avanzás.' },
   { day: 9, type: 'game', area: 'memoria', title: 'La ruleta de letras',
-    instructions: 'Un juego de memoria: girá la ruleta, mirá en qué letra se detiene y pensá palabras que empiecen con ella, por ejemplo una fruta o un nombre. Podés decirlas en voz alta o anotarlas en un papel. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de memoria: girá la ruleta, mirá en qué letra se detiene y pensá palabras que empiecen con ella, por ejemplo una fruta o un país. Escribilas con el abecedario de la pantalla, o decilas en voz alta o anotalas en un papel. Subís de dificultad a medida que avanzás.' },
   { day: 10, type: 'game', area: 'atencion', title: 'Mensaje cifrado',
     instructions: 'Un juego de atención: en el mensaje, algunas letras se cambiaron por números. Mirá la clave, buscá el número resaltado y tocá la letra que le corresponde hasta descifrar el mensaje. Subís de dificultad a medida que avanzás.' },
   { day: 11, type: 'game', area: 'calculo', title: '¿Qué número es?',
