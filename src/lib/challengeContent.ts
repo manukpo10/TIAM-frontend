@@ -557,8 +557,8 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Días 27-30 — built (the last four) ────────────────────────────────────
   { day: 27, type: 'game', area: 'lenguaje', title: 'El panal de letras',
     instructions: 'Un juego de lenguaje: leé la pista, fijate cuántas letras tiene la palabra y armala tocando las letras del panal. Podés repetir una letra, y la letra dorada del medio va en todas las palabras. Subís de dificultad a medida que avanzás.' },
-  { day: 28, type: 'game', area: 'calculo', title: 'Cuentas en la tabla',
-    instructions: 'Un juego de cálculo: cada fila de la tabla arranca con un número y hay que sumarle 100, restarle 50, calcular su mitad y su doble. Tocá el resultado correcto entre cuatro opciones parecidas. Subís de dificultad a medida que avanzás.' },
+  { day: 28, type: 'game', area: 'lenguaje', title: 'Una palabra por letra',
+    instructions: 'Un juego de lenguaje: leé la pista que describe una palabra. Te damos la primera letra y cuántas letras tiene, y la escribís con el teclado de la pantalla. Subís de dificultad a medida que avanzás.' },
   { day: 29, type: 'game', area: 'atencion', title: 'Pintá según el código',
     instructions: 'Un juego de atención: el código te dice qué formas se pintan y de qué color, por ejemplo «triángulos = rojo». Recorré el tablero y tocá cada forma del código para pintarla. Subís de dificultad a medida que avanzás.' },
   { day: 30, type: 'game', area: 'calculo', title: 'La estrella de sumas',

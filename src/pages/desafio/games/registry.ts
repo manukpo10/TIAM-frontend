@@ -143,7 +143,7 @@ import { DaleColorALosNumeros } from './DaleColorALosNumeros'
 import { ArmaLaMariposa } from './ArmaLaMariposa'
 import { FormalOInformal } from './FormalOInformal'
 import { ElPanalDeLetras } from './ElPanalDeLetras'
-import { CuentasEnLaTabla } from './CuentasEnLaTabla'
+import { UnaPalabraPorLetra } from './UnaPalabraPorLetra'
 import { PintaSegunElCodigo } from './PintaSegunElCodigo'
 import { LaEstrellaDeSumas } from './LaEstrellaDeSumas'
 
@@ -330,7 +330,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     25: ArmaLaMariposa,
     26: FormalOInformal,
     27: ElPanalDeLetras,
-    28: CuentasEnLaTabla,
+    28: UnaPalabraPorLetra,
     29: PintaSegunElCodigo,
     30: LaEstrellaDeSumas,
   },
