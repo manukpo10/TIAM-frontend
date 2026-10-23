@@ -138,7 +138,7 @@ import { PalabrasDesordenadas } from './PalabrasDesordenadas'
 import { LaPanaderia } from './LaPanaderia'
 import { LaFlorQueMasSeRepite } from './LaFlorQueMasSeRepite'
 import { PalabrasConCondiciones } from './PalabrasConCondiciones'
-import { LaPiramideDeLetras } from './LaPiramideDeLetras'
+import { SoyUnNumero } from './SoyUnNumero'
 import { DaleColorALosNumeros } from './DaleColorALosNumeros'
 import { ArmaLaMariposa } from './ArmaLaMariposa'
 import { LosDepartamentos } from './LosDepartamentos'
@@ -325,7 +325,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     20: LaPanaderia,
     21: LaFlorQueMasSeRepite,
     22: PalabrasConCondiciones,
-    23: LaPiramideDeLetras,
+    23: SoyUnNumero,
     24: DaleColorALosNumeros,
     25: ArmaLaMariposa,
     26: LosDepartamentos,

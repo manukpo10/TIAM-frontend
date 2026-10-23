@@ -545,8 +545,8 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Días 22-26 — built ────────────────────────────────────────────────────
   { day: 22, type: 'game', area: 'ejecutivas', title: 'Palabras con condiciones',
     instructions: 'Un juego de razonamiento: leé la condición, por ejemplo «tiene tres sílabas y no termina en A», y tocá la única palabra que cumple todo lo que pide. Subís de dificultad a medida que avanzás.' },
-  { day: 23, type: 'game', area: 'lenguaje', title: 'La pirámide de letras',
-    instructions: 'Un juego de lenguaje: armá una pirámide de palabras donde cada fila es la de arriba con una letra más, guiándote por las pistas. Subís de dificultad a medida que avanzás.' },
+  { day: 23, type: 'game', area: 'lenguaje', title: 'Soy un número',
+    instructions: 'Un juego de lenguaje y números: leé la pista de un número que habla de sí mismo, por ejemplo «soy el número que viene justo antes del 4.500», y escribí cuál es con el teclado de la pantalla. Subís de dificultad a medida que avanzás.' },
   { day: 24, type: 'game', area: 'calculo', title: 'Dale color a los números',
     instructions: 'Un juego de cálculo: hacé la cuenta de cada pista y pintá, del color que te piden, el número que da el resultado. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'praxias', title: 'Armá la mariposa',
