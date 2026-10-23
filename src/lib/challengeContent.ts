@@ -534,7 +534,7 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 17, type: 'game', area: 'orientacion', title: 'Colores en la grilla',
     instructions: 'Un ejercicio de orientación: en una grilla de cuadraditos de colores, cada fila tiene una letra y cada columna un número. Te preguntamos de qué color es una casilla, por ejemplo C4: buscá dónde se cruzan la fila C y la columna 4 y tocá el color que corresponde. Subís de dificultad a medida que avanzás.' },
   { day: 18, type: 'game', area: 'agnosias', title: 'Partes del cuerpo',
-    instructions: 'Un juego de reconocimiento: te pedimos una parte del cuerpo, por ejemplo la rodilla, y la tocás sobre el dibujo de una persona. Al final la vemos de espaldas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de reconocimiento: te pedimos una parte del cuerpo, primero por su nombre y después con una pista, por ejemplo «la parte donde se dobla el brazo», y la tocás sobre el dibujo de una persona. Al final la vemos de espaldas. Subís de dificultad a medida que avanzás.' },
   { day: 19, type: 'game', area: 'lenguaje', title: 'Palabras desordenadas',
     instructions: 'Un juego de lenguaje: las letras de cada palabra están desordenadas. Con la pista y la cantidad de letras, tocalas en orden para armar la palabra. Subís de dificultad a medida que avanzás.' },
   { day: 20, type: 'game', area: 'calculo', title: 'La panadería',

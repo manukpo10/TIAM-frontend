@@ -38,11 +38,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  * around it (the ear zone reaches up into the hair, the heel one up to the ankle).
  *
  * The level is a view: levels 1 and 2 show her from the FRONT, level 3 from the
- * BACK (espalda, nuca, talón, pantorrilla, codo). Ramp: big parts (cabeza,
- * mano, pie) → finer ones (oreja, cuello, hombro, codo, rodilla) → the back
- * view. The questions of a level are shuffled ONCE at mount (`epoch`), so
- * "Repetir" asks exactly the same questions in the same order. Per-level state
- * lives in <LevelView>, keyed by run + level.
+ * BACK (espalda, nuca, talón, pantorrilla, codo, mano). Ramp, made harder at the
+ * tallerista's request (the game was too easy): level 1 asks 4 parts BY NAME
+ * (cabeza, mano, pie, oreja); levels 2 and 3 ask 6 parts each BY A CLUE ("Tocá la
+ * parte donde se dobla el brazo"), so the player has to work out the part first
+ * (CLUES: every clue points at one part only: the knee is "la parte que se dobla a
+ * la mitad de la pierna", because the hip bends the leg too). The name comes back
+ * when the part is found, in the hint and on the result card. The questions of a
+ * level are shuffled ONCE at mount (`epoch`), so "Repetir" asks exactly the same
+ * questions in the same order. Per-level state lives in <LevelView>, keyed by run + level.
  *
  * Feedback: a wrong tap puts a gray marker where the finger landed, outlines the
  * part that was touched in gray and says its name; the hint then names what to
@@ -196,13 +200,29 @@ interface LevelDef {
   view: ViewId
   /** The parts to find, as ids of that view's parts. */
   asks: string[]
+  /** Ask for each part by a clue (CLUES) instead of by its name. */
+  byClue: boolean
 }
 
 const LEVELS: LevelDef[] = [
-  { name: 'Nivel 1', view: 'frente', asks: ['cabeza', 'mano', 'pie'] },
-  { name: 'Nivel 2', view: 'frente', asks: ['oreja', 'cuello', 'hombro', 'codo', 'rodilla'] },
-  { name: 'Nivel 3', view: 'espalda', asks: ['nuca', 'espalda', 'codo', 'talon', 'pantorrilla'] },
+  { name: 'Nivel 1', view: 'frente', byClue: false, asks: ['cabeza', 'mano', 'pie', 'oreja'] },
+  { name: 'Nivel 2', view: 'frente', byClue: true, asks: ['cuello', 'hombro', 'codo', 'rodilla', 'pie', 'mano'] },
+  { name: 'Nivel 3', view: 'espalda', byClue: true, asks: ['nuca', 'espalda', 'codo', 'talon', 'pantorrilla', 'mano'] },
 ]
+
+/** What completes "Tocá …" when a part is asked by a clue: each one points at that part and no other. */
+const CLUES: Record<string, string> = {
+  cuello: 'la parte que une la cabeza con el cuerpo',
+  hombro: 'el lugar donde apoyás la correa de una cartera',
+  codo: 'la parte donde se dobla el brazo',
+  rodilla: 'la parte que se dobla a la mitad de la pierna',
+  pie: 'el lugar donde te ponés los zapatos',
+  mano: 'lo que usás para agarrar una taza',
+  nuca: 'la parte de atrás del cuello',
+  espalda: 'el lugar donde apoyás el respaldo de la silla',
+  talon: 'la parte de atrás del pie',
+  pantorrilla: 'la parte de atrás de la pierna, debajo de la rodilla',
+}
 
 const TOTAL_QUESTIONS = LEVELS.reduce((sum, lvl) => sum + lvl.asks.length, 0)
 
@@ -373,6 +393,9 @@ function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRe
 
   const askedId = content.asks[questionIdx]
   const asked = partOf(level.view, askedId)
+  // How the part is asked: by its name ("el codo") or by a clue ("la parte donde se dobla el brazo").
+  const clue = level.byClue ? CLUES[askedId] : undefined
+  const askedText = clue ?? `${asked.article} ${asked.label}`
 
   function handleFigureTap(e: MouseEvent<HTMLButtonElement>) {
     // A keyboard "click" has no position on the picture: this is a game for fingers.
@@ -387,7 +410,7 @@ function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRe
 
     if (hit.kind === 'target') {
       setFeedback({ kind: 'right', zone: hit.zone })
-      setHint(`¡Eso es! Encontraste ${asked.article} ${asked.label}.`)
+      setHint(clue ? `¡Eso es! Es ${asked.article} ${asked.label}.` : `¡Eso es! Encontraste ${asked.article} ${asked.label}.`)
       setAdvancing(true)
       // The only timer in the game: a short pause so the green ring registers.
       advanceTimerRef.current = window.setTimeout(() => {
@@ -413,7 +436,7 @@ function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRe
 
     const named = hit.kind === 'part' ? { part: hit.part, shape: hit.shape } : null
     const misses = wrongInQuestion + 1
-    const look = `Buscá ${asked.article} ${asked.label}`
+    const look = clue ? `Seguí buscando ${clue}` : `Buscá ${asked.article} ${asked.label}`
     // From the second miss on, point the way.
     const where = misses >= 2 ? directionHint(asked, x, y) : ''
     setFeedback({ kind: 'wrong', x, y, named })
@@ -439,10 +462,17 @@ function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRe
               Pregunta {questionIdx + 1} de {total}
             </span>
             <h2 className="mt-2.5 text-balance text-2xl font-bold leading-snug text-slate-900">
-              Tocá {asked.article}{' '}
-              <span className="inline-block rounded-lg border-2 border-tiam-blue bg-tiam-blue/5 px-2 text-tiam-blue">
-                {asked.label}
-              </span>
+              Tocá{' '}
+              {clue ? (
+                <span className="text-tiam-blue">{clue}</span>
+              ) : (
+                <>
+                  {asked.article}{' '}
+                  <span className="inline-block rounded-lg border-2 border-tiam-blue bg-tiam-blue/5 px-2 text-tiam-blue">
+                    {asked.label}
+                  </span>
+                </>
+              )}
             </h2>
             {level.view === 'espalda' && <p className="mt-1 text-base text-slate-500">Ahora la vemos de espaldas.</p>}
           </>
@@ -503,7 +533,7 @@ function LevelView({ levelIdx, content, since, onMistake, onSolved, onNext, onRe
               <button
                 type="button"
                 onClick={handleFigureTap}
-                aria-label={`Figura de una mujer vista ${level.view === 'espalda' ? 'de espaldas' : 'de frente'}. Tocá ${asked.article} ${asked.label}.`}
+                aria-label={`Figura de una mujer vista ${level.view === 'espalda' ? 'de espaldas' : 'de frente'}. Tocá ${askedText}.`}
                 className="absolute inset-0 h-full w-full cursor-pointer touch-manipulation select-none focus:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-tiam-blue/40"
               />
             </div>
