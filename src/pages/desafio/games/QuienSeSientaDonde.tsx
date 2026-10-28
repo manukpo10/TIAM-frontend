@@ -33,15 +33,16 @@ import b5 from '@/assets/desafio/games/quien-se-sienta-donde/b5.webp'
  * UNIQUENESS INVARIANT. Each puzzle's clue set was proven, by exhaustively enumerating every placement of
  * the names that respects the genders (at most 5!·4! = 2880), to admit EXACTLY ONE solution, and then
  * pruned until no clue could be removed without admitting a second one. Level 1 reveals the answer fast
- * (2×3 desks, positive clues); level 3 reveals it slowly (more, weaker clues, with "no se sienta en la
- * misma fila" and "rodeado por sus compañeros").
+ * (2×3 desks, positive clues); level 2 (3×3 desks) needs more clues and more care. There used to be a third
+ * level with weaker clues ("no se sienta en la misma fila", "rodeado por sus compañeros"): the tallerista
+ * asked to leave the day at TWO levels, so it was removed.
  *
  * NEVER A HARD FAIL. When every desk has a name, the board is checked: the names that are right turn green
  * and stay, the wrong ones flash and go back to the bank, and each wrong one costs one mistake. Nothing is
  * ever red, nothing blocks, no timers. Tapping a placed name takes it back; tapping a clue ticks it off.
  *
  * ONE puzzle per level; each level has two authored puzzles of the same size and one is picked ONCE at
- * mount (`epoch`, together with the bank's order), so "Repetir" replays exactly the same three puzzles.
+ * mount (`epoch`, together with the bank's order), so "Repetir" replays exactly the same two puzzles.
  * Per-level state lives in <LevelView>, keyed by run + level.
  *
  * Double taps: every tap within SETTLE_MS of the tap that brought the level (judged by the click's own
@@ -136,43 +137,6 @@ const LEVELS: LevelDef[] = [
           'Elena se sienta en la fila de adelante.',
           'Silvia se sienta al lado de un chico.',
           'Carlos se sienta justo detrás de Luis.',
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Nivel 3',
-    puzzles: [
-      {
-        rows: 3,
-        cols: 3,
-        seats: 'ggbggbbbb',
-        solution: ['Marta', 'Teresa', 'Oscar', 'Graciela', 'Marisa', 'Jorge', 'Carlos', 'Luis', 'Daniel'],
-        art: ['g2', 'g5', 'b3', 'g1', 'g3', 'b5', 'b1', 'b4', 'b2'],
-        clues: [
-          'Carlos y Luis se sientan uno al lado del otro.',
-          'Teresa está más cerca del pizarrón que Graciela.',
-          'Marisa se sienta al lado de un chico.',
-          'Teresa se sienta entre un chico y una chica.',
-          'Graciela y Jorge se sientan en la misma fila.',
-          'Carlos se sienta en una esquina.',
-          'Daniel se sienta justo detrás de Jorge.',
-        ],
-      },
-      {
-        rows: 3,
-        cols: 3,
-        seats: 'bggbbbggb',
-        solution: ['Jorge', 'Silvia', 'Teresa', 'Oscar', 'Raúl', 'Hugo', 'Alicia', 'Marta', 'Alberto'],
-        art: ['b1', 'g2', 'g5', 'b3', 'b2', 'b5', 'g4', 'g3', 'b4'],
-        clues: [
-          'Alberto y Teresa no se sientan en la misma fila.',
-          'Hugo se sienta en la fila del medio.',
-          'Silvia está más cerca del pizarrón que Raúl.',
-          'Silvia se sienta entre un chico y una chica.',
-          'Marta se sienta al lado de un chico.',
-          'Alicia se sienta justo detrás de Oscar.',
-          'Raúl está rodeado por sus compañeros.',
         ],
       },
     ],
