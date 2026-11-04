@@ -166,6 +166,7 @@ import { UnaDeCadaUna } from './UnaDeCadaUna'
 import { MandalaDeLaN } from './MandalaDeLaN'
 import { RefranesEnImagenes } from './RefranesEnImagenes'
 import { ArmaLaFigura } from './ArmaLaFigura'
+import { AnagramasEnElTexto } from './AnagramasEnElTexto'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -378,6 +379,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     18: MandalaDeLaN,
     20: RefranesEnImagenes,
     19: ArmaLaFigura,
+    22: AnagramasEnElTexto,
   },
 }
 
