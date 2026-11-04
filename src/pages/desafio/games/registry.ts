@@ -155,6 +155,7 @@ import { ElEsqueleto } from './ElEsqueleto'
 import { NombresEscondidos } from './NombresEscondidos'
 import { DesarmaElNumero } from './DesarmaElNumero'
 import { CadenaDePalabras } from './CadenaDePalabras'
+import { TodasLasLetras } from './TodasLasLetras'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -356,6 +357,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     7: NombresEscondidos,
     8: DesarmaElNumero,
     10: CadenaDePalabras,
+    12: TodasLasLetras,
   },
 }
 
