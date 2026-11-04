@@ -18,6 +18,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * OPEN, NO ERROR: `mistakes: 0` and `totalAttempts` = the number of requests. Nothing is timed and an answer can be
  * as short as one word. Both buttons are always in view (they stick to the bottom of the card).
+ * An answer can also be long and have no spaces (the box allows 80 characters, 80 "W" were tried): the list breaks the
+ * line anywhere (`overflow-wrap:anywhere`), so it never pushes the card sideways.
  *
  * ORIGINAL CONTENT. Only the mechanic is borrowed. None of the worksheet's requests, nor its categories, is used:
  * the requests ask for places, people, shopping, food, music, holidays and gifts of adult life (a throwaway script,
@@ -94,7 +96,7 @@ function AnswerList({ rows }: { rows: { tag: string; answer: Answer }[] }) {
       {rows.map((r) => (
         <li key={r.tag} className="flex items-start gap-2 rounded-xl bg-white px-3 py-2">
           <Check className="mt-1 h-4 w-4 shrink-0 text-tiam-green" strokeWidth={3} aria-hidden="true" />
-          <span>
+          <span className="min-w-0 [overflow-wrap:anywhere]">
             <span className="text-slate-500">{r.tag}: </span>
             <span className="font-bold text-slate-900">{r.answer ?? 'lo pensaste'}</span>
           </span>
