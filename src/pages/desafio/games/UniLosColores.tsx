@@ -13,9 +13,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * here (a throwaway script, not committed, checks that every series uses each number once, that its numbers exist in
  * the key of the level, that no two series of the day are the same and that none is one of the worksheet's).
  *
- * THE KEY NAMES THE COLOUR. Every entry of the key is a dot, its number AND the name of the colour ("2 Rojo"), so the
- * key never depends on telling shades apart by sight alone, and every dot of the board has the name of its colour as
- * its accessible label. The numbers are not on the dots: turning a number into a colour is the exercise.
+ * THE COLOUR IS NEVER THE ONLY SIGNAL. Every entry of the key is a dot, its number AND the name of the colour ("2 Rojo"),
+ * and every colour also has its own SHAPE (azul círculo, rojo cuadrado, verde triángulo, amarillo rombo, violeta estrella,
+ * naranja hexágono, rosa corazón, marrón cruz), drawn in white with a dark outline inside its dot in the key AND on the
+ * board, so red and green, blue and violet or orange and brown can be told apart without seeing the shade. Every dot of
+ * the board also has the name of its colour as its accessible label. The numbers are not on the dots: turning a number
+ * into a colour is the exercise.
  *
  * A wrong dot costs ONE mistake (a double tap counts one: the first tap is judged and the wrong dot is only marked, in
  * muted gray, never red, until the next tap) and says which colour it was and which number comes now; a second miss on
@@ -35,21 +38,24 @@ import type { GameProps } from '@/lib/challengeProgress'
  */
 
 // ── data:start ──
+type Shape = 'circulo' | 'cuadrado' | 'triangulo' | 'rombo' | 'estrella' | 'hexagono' | 'corazon' | 'cruz'
 interface ColorDef {
   num: number
   name: string
   hex: string
+  /** The second signal of the colour: its shape, in the key and on the dot, so the colour is never the only cue. */
+  shape: Shape
 }
 /** The key of the day: the numbers 1 to 8. A level uses the first `colors` of them. */
 const COLORS: ColorDef[] = [
-  { num: 1, name: 'Azul', hex: '#2563EB' },
-  { num: 2, name: 'Rojo', hex: '#DC2626' },
-  { num: 3, name: 'Verde', hex: '#16A34A' },
-  { num: 4, name: 'Amarillo', hex: '#FACC15' },
-  { num: 5, name: 'Violeta', hex: '#9333EA' },
-  { num: 6, name: 'Naranja', hex: '#F97316' },
-  { num: 7, name: 'Rosa', hex: '#F472B6' },
-  { num: 8, name: 'Marrón', hex: '#92400E' },
+  { num: 1, name: 'Azul', hex: '#2563EB', shape: 'circulo' },
+  { num: 2, name: 'Rojo', hex: '#DC2626', shape: 'cuadrado' },
+  { num: 3, name: 'Verde', hex: '#16A34A', shape: 'triangulo' },
+  { num: 4, name: 'Amarillo', hex: '#FACC15', shape: 'rombo' },
+  { num: 5, name: 'Violeta', hex: '#9333EA', shape: 'estrella' },
+  { num: 6, name: 'Naranja', hex: '#F97316', shape: 'hexagono' },
+  { num: 7, name: 'Rosa', hex: '#F472B6', shape: 'corazon' },
+  { num: 8, name: 'Marrón', hex: '#92400E', shape: 'cruz' },
 ]
 interface LevelDef {
   name: string
@@ -150,8 +156,31 @@ const ADVANCE_MS = 1500
  * double tap, and it must not choose a dot: the board sits where that button was. */
 const SETTLE_MS = 400
 
-function Dot({ hex, size = 20 }: { hex: string; size?: number }) {
-  return <span className="inline-block shrink-0 rounded-full border border-black/10" style={{ background: hex, width: size, height: size }} aria-hidden="true" />
+const SHAPE_PATH: Record<Shape, string> = {
+  circulo: 'M12 5a7 7 0 1 0 0 14a7 7 0 1 0 0-14z',
+  cuadrado: 'M5.5 5.5h13v13h-13z',
+  triangulo: 'M12 4.5 20.5 19.5h-17z',
+  rombo: 'M12 3 21 12 12 21 3 12z',
+  estrella: 'M12 2.8l2.8 6 6.5.7-4.9 4.4 1.4 6.4-5.8-3.3-5.8 3.3 1.4-6.4-4.9-4.4 6.5-.7z',
+  hexagono: 'M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z',
+  corazon: 'M12 20.5C4.5 14.5 3.5 9.8 6.3 6.8 8.7 4.4 11 5.8 12 7.8c1-2 3.3-3.4 5.7-1 2.8 3 1.8 7.7-5.7 13.7z',
+  cruz: 'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
+}
+/** The shape of a colour, white with a dark outline so it reads on any of the eight colours. */
+function Glyph({ shape, className }: { shape: Shape; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path d={SHAPE_PATH[shape]} fill="#fff" stroke="#1e293b" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+/** A colour as it shows in the key: its dot with its shape inside. */
+function Dot({ hex, shape, size = 28 }: { hex: string; shape: Shape; size?: number }) {
+  return (
+    <span className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/10" style={{ background: hex, width: size, height: size }} aria-hidden="true">
+      <Glyph shape={shape} className="h-[68%] w-[68%]" />
+    </span>
+  )
 }
 
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
@@ -174,7 +203,7 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
         <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
           {EXAMPLE_KEY.map((c) => (
             <li key={c.num} className="flex items-center gap-1.5 text-base font-semibold text-slate-800">
-              <Dot hex={c.hex} />
+              <Dot hex={c.hex} shape={c.shape} />
               {c.num} {c.name}
             </li>
           ))}
@@ -315,17 +344,13 @@ function LevelView({ levelIdx, boards, since, onMistake, onSolved, onNext, onRep
 
       {!done && (
         <>
-          <h2 className="mt-3 text-balance text-center text-xl font-bold leading-snug text-slate-900 sm:text-2xl">
-            Tocá los puntos en el orden de la serie
-          </h2>
-
           {/* The series: the number to join now is ringed */}
-          <ol aria-label="Serie" className="mx-auto mt-3 flex max-w-md flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
+          <ol aria-label="Serie" className="mx-auto mt-2 flex max-w-md flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
             {series.map((n, i) => (
-              <li key={i} className="flex items-center gap-1.5">
+              <li key={i} className="flex items-center gap-1">
                 <span
                   className={[
-                    'flex h-10 w-10 items-center justify-center rounded-full border-2 text-xl font-extrabold',
+                    'flex h-9 w-9 items-center justify-center rounded-full border-2 text-xl font-extrabold',
                     i < step
                       ? 'border-tiam-green bg-tiam-green/10 text-slate-500'
                       : i === step
@@ -335,16 +360,17 @@ function LevelView({ levelIdx, boards, since, onMistake, onSolved, onNext, onRep
                 >
                   {n}
                 </span>
-                {i < series.length - 1 && <ArrowRight className="h-4 w-4 text-slate-400" aria-hidden="true" />}
+                {/* the arrows only when they fit: six numbers need the whole width of a 320px phone */}
+                {i < series.length - 1 && series.length <= 4 && <ArrowRight className="h-4 w-4 text-slate-400" aria-hidden="true" />}
               </li>
             ))}
           </ol>
 
           {/* The key */}
-          <ul aria-label="Clave de colores" className="mx-auto mt-3 grid max-w-xs grid-cols-2 gap-x-4 gap-y-1 rounded-2xl bg-slate-50 px-4 py-2">
+          <ul aria-label="Clave de colores" className="mx-auto mt-2 grid max-w-xs grid-cols-2 gap-x-2 gap-y-0.5 rounded-2xl bg-slate-50 px-3 py-1.5">
             {key.map((c) => (
-              <li key={c.num} className="flex items-center gap-2 text-base font-semibold text-slate-800">
-                <Dot hex={c.hex} size={20} />
+              <li key={c.num} className="flex items-center gap-1.5 whitespace-nowrap text-base font-semibold text-slate-800">
+                <Dot hex={c.hex} shape={c.shape} size={26} />
                 <span>
                   {c.num} <span className="font-medium text-slate-600">{c.name}</span>
                 </span>
@@ -353,7 +379,7 @@ function LevelView({ levelIdx, boards, since, onMistake, onSolved, onNext, onRep
           </ul>
 
           {/* The board: the line grows with every dot joined */}
-          <div className="relative mx-auto mt-3 aspect-[4/3] w-full max-w-[340px] rounded-2xl border-2 border-slate-100 bg-white">
+          <div className="relative mx-auto mt-2 aspect-[4/3] w-full max-w-[340px] rounded-2xl border-2 border-slate-100 bg-white">
             <svg viewBox="0 0 100 75" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
               {joined.slice(1).map((n, i) => {
                 const [x1, y1] = place[joined[i]]
@@ -391,14 +417,14 @@ function LevelView({ levelIdx, boards, since, onMistake, onSolved, onNext, onRep
                     isJoined ? 'border-slate-700 ring-2 ring-slate-700/30' : isWrong ? 'border-slate-400 opacity-60 ring-4 ring-slate-300' : 'border-black/10 hover:scale-105',
                   ].join(' ')}
                 >
-                  {isJoined && <Check className="h-5 w-5 text-white drop-shadow" strokeWidth={3.5} aria-hidden="true" />}
+                  {isJoined ? <Check className="h-5 w-5 text-white drop-shadow" strokeWidth={3.5} aria-hidden="true" /> : <Glyph shape={c.shape} className="h-7 w-7" />}
                 </button>
               )
             })}
           </div>
           <p
             role="status"
-            className={`mx-auto mt-3 min-h-[3.5rem] max-w-md text-center text-base font-medium ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
+            className={`mx-auto mt-1 min-h-[2.75rem] max-w-md text-center text-base font-medium ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
           >
             {hint?.text}
           </p>
