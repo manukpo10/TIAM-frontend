@@ -20,8 +20,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * THE RAMP is how alike the wrong halves are. Level 1: four different people. Level 2: the same person drawn with two
  * features changed (the hair and the clothes, the glasses and the skin…). Level 3: the same person with ONE feature
- * changed each time (the glasses, the moustache, the earrings, the shade of the hair), so the player has to compare
- * the details one by one. Nothing is timed, nothing asks for a name.
+ * changed each time (the glasses, the moustache, the beard, the earrings, the shade of the hair), so the player has to
+ * compare the details one by one. A bald face has hair only in two small tufts at the sides, so its puzzles never
+ * differ in the shade of the hair (gray and white tufts are hard to tell apart): they differ in glasses, moustache,
+ * beard, skin or clothes. Nothing is timed, nothing asks for a name.
  *
  * A WRONG HALF costs ONE mistake: it goes next to the left half for a moment so the player can see it does not fit, then
  * it is switched off (muted gray, never red). The hint grows with the misses: what to look at, which feature does not
@@ -118,14 +120,14 @@ const LEVELS: LevelDef[] = [
       group(BASE_2A, vary(BASE_2A, { hair: 'negro', top: 'verde' }), vary(BASE_2A, { glasses: 'cuadrados', skin: 'morena' }), vary(BASE_2A, { style: 'carre', top: 'mostaza' })),
       group(BASE_2B, vary(BASE_2B, { mustache: false, glasses: 'redondos' }), vary(BASE_2B, { hair: 'gris', top: 'verde' }), vary(BASE_2B, { beard: true, skin: 'clara' })),
       group(BASE_2C, vary(BASE_2C, { glasses: 'no', hair: 'negro' }), vary(BASE_2C, { style: 'largo', top: 'celeste' }), vary(BASE_2C, { skin: 'clara', glasses: 'cuadrados' })),
-      group(BASE_2D, vary(BASE_2D, { beard: false, mustache: true }), vary(BASE_2D, { glasses: 'cuadrados', hair: 'gris' }), vary(BASE_2D, { skin: 'trigueña', top: 'verde' })),
+      group(BASE_2D, vary(BASE_2D, { beard: false, mustache: true }), vary(BASE_2D, { glasses: 'cuadrados', top: 'celeste' }), vary(BASE_2D, { skin: 'trigueña', top: 'verde' })),
     ],
   },
   {
     name: 'Nivel 3',
     differ: { min: 1, max: 1 },
     pool: [
-      group(BASE_3A, vary(BASE_3A, { glasses: 'cuadrados' }), vary(BASE_3A, { mustache: false }), vary(BASE_3A, { hair: 'blanco' })),
+      group(BASE_3A, vary(BASE_3A, { glasses: 'cuadrados' }), vary(BASE_3A, { mustache: false }), vary(BASE_3A, { beard: true })),
       group(BASE_3B, vary(BASE_3B, { earrings: false }), vary(BASE_3B, { glasses: 'redondos' }), vary(BASE_3B, { top: 'violeta' })),
       group(BASE_3C, vary(BASE_3C, { beard: false }), vary(BASE_3C, { glasses: 'redondos' }), vary(BASE_3C, { skin: 'trigueña' })),
       group(BASE_3D, vary(BASE_3D, { glasses: 'cuadrados' }), vary(BASE_3D, { hair: 'blanco' }), vary(BASE_3D, { top: 'mostaza' })),
@@ -150,9 +152,17 @@ const FEATURE_LABEL: Record<Feature, string> = {
 function differences(a: FaceDef, b: FaceDef): Feature[] {
   return FEATURES.filter((f) => a[f] !== b[f])
 }
+const STYLE_LABEL: Record<Style, string> = {
+  corto: 'corto',
+  calvo: 'calvo, sin pelo arriba',
+  carre: 'carré',
+  largo: 'largo',
+  rulos: 'con rulos',
+  rodete: 'con rodete',
+}
 /** The face in words, for a screen reader. */
 function describe(f: FaceDef): string {
-  const parts = [`pelo ${f.hair}${f.style === 'calvo' ? ' a los costados' : ''}`, `piel ${f.skin}`, `ropa ${f.top}`]
+  const parts = [`peinado ${STYLE_LABEL[f.style]}`, `pelo ${f.hair}${f.style === 'calvo' ? ' a los costados' : ''}`, `piel ${f.skin}`, `ropa ${f.top}`]
   if (f.glasses !== 'no') parts.push(`anteojos ${f.glasses}`)
   if (f.mustache) parts.push('bigote')
   if (f.beard) parts.push('barba')
