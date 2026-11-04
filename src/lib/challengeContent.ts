@@ -602,7 +602,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 6, type: 'game', area: 'memoria', title: 'El esqueleto',
     instructions: 'Un juego de memoria: mirá el esqueleto con el nombre de cada hueso y, cuando estés listo, tocá «Ya lo miré»: los nombres desaparecen y tenés que volver a ponerlos. En el último nivel se pregunta para qué sirve cada hueso. Subís de dificultad a medida que avanzás.' },
   { day: 7, type: 'game', area: 'lenguaje', title: 'Nombres escondidos',
-    instructions: 'Un juego de lenguaje: entre las letras sueltas se esconden tres nombres de herramientas, árboles o aves. Con la pista y la cantidad de letras, tocá las letras en orden para armar cada uno. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: entre las letras sueltas se esconden tres nombres de cosas de ferretería, árboles o aves. Con la pista y la cantidad de letras, tocá las letras en orden para armar cada uno. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 2 — to build (14 is the card below) ────────────────────────────
   { day: 8, type: 'game', area: 'calculo', title: 'Desarmá el número',

@@ -10,12 +10,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * with a block of loose letters and the instruction to name flowers that can be formed by mixing them; here the
  * letters come from three names written for the level, each with a clue and a length.
  *
- * ORIGINAL CONTENT. Only the idea is borrowed. The categories (tools, trees, birds of Argentina), the names and the
+ * ORIGINAL CONTENT. Only the idea is borrowed. The categories (hardware-store things, trees, birds of Argentina), the names and the
  * clues are TIAM's own, and the category of the worksheet (flowers) is not used. Level 1 is NOT fruits: month 4's
  * "Anagramas por categoría" already has a fruits band (PERA, KIWI…), and none of the names here is in that game. A
  * throwaway script (not committed) checks that the loose letters are exactly the letters of the three names, that no
  * name of the worksheet is here and, the important one, that the letters of a level cannot also form ANOTHER name of
- * the category from a list of about eighty tools, trees and birds: a word that is a tool too would be a right answer
+ * the category from a list of about eighty hardware-store things, trees and birds: a word that is one of them too would be a right answer
  * the game could not accept.
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word from a hidden list with nothing to go on): each name has
@@ -26,7 +26,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * grows with the misses on the same row: a nudge, then the first letter, then the name itself. Nothing is red and
  * nothing is timed but a short pause so the last name is seen.
  *
- * THREE NAMES A LEVEL, as the tallerista likes the days short. The ramp is the category and the length: three tools of
+ * THREE NAMES A LEVEL, as the tallerista likes the days short. The ramp is the category and the length: three hardware-store things of
  * four and five letters (14 letters), three trees of five letters (15) and three birds of five, six and seven (18).
  * Only the clue being answered shows, with its boxes (a found name takes its tab), so the heap of
  * letters is on screen on a short phone, and the "Listo" bar sticks to the bottom of the card.
@@ -61,7 +61,7 @@ interface LevelDef {
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
-    category: 'Herramientas',
+    category: 'Cosas de ferretería',
     names: [
       { word: 'PALA', display: 'pala', clue: 'Herramienta de mango largo y hoja ancha que sirve para cavar la tierra.', tip: 'Se usa en la huerta y en la obra.' },
       { word: 'CLAVO', display: 'clavo', clue: 'Pieza de metal fina y con punta que se golpea para unir dos maderas.', tip: 'Tiene un extremo con cabeza plana.' },
