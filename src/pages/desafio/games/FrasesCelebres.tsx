@@ -3,33 +3,37 @@ import { ArrowRight, ChevronLeft, ChevronRight, RotateCcw, Sparkles } from 'luci
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Frases célebres" — día 11, mes 6, atención. A famous phrase is hidden letter by letter. The alphabet is laid out
+ * "La frase en la rueda" — día 11, mes 6, atención. A famous phrase is hidden letter by letter. The alphabet is laid out
  * on a WHEEL and each letter of the phrase comes as a number: the number says how many letters to COUNT on the wheel
- * from the last letter found (the first one is counted from the start of the alphabet, where A is the 1). The player
- * counts, picks the letter on the wheel and confirms it; the letter falls into its box and the next number comes up.
- * The mechanic comes from a worksheet where a phrase is written as numbers under blank lines and an alphabet ring
- * explains how to count; here the phrase is found one letter at a time.
+ * from the last letter found, FORWARD (▶, the way the alphabet goes) or BACKWARD (◀), whichever way is shorter, so a
+ * count is never more than 13. The first letter is counted from the start of the alphabet: forward the A is the 1,
+ * backward the Z is the 1. The player counts, picks the letter on the wheel and confirms it; the letter falls into its
+ * box and the next number comes up. The mechanic comes from a worksheet where a phrase is written as numbers under
+ * blank lines and an alphabet ring explains how to count; here the phrase is found one letter at a time and the count
+ * can go either way.
  *
  * ORIGINAL CONTENT. Only the idea (a numeric cryptogram counted on an alphabet ring) is borrowed. The phrases are
- * three well-known sayings that belong to nobody: a popular saying, an inscription of the temple of Apolo in Delfos
- * (ancient Greece) and the first words of "Don Quijote de la Mancha" (Cervantes, 1605). None of them is the phrase of
- * the worksheet. The numbers are NOT written by hand: they are derived from the phrase (`stepsOf`), and a throwaway
- * script (not committed) counts them again letter by letter, as a person would, and checks that the wheel gives back
- * exactly each phrase.
+ * three sayings that belong to nobody: a maxim of Roman law ("suum cuique", «A cada uno lo suyo») and two popular
+ * sayings («El amor todo lo puede», «El tiempo lo cura todo»). None of them is the phrase of the worksheet. The numbers
+ * are NOT written by hand: they are derived from the phrase (`stepsOf`), and a throwaway script (not committed) counts
+ * them again letter by letter, as a person would, and checks that the wheel gives back exactly each phrase.
  *
  * THE WHEEL. 27 letters (A to Z with the Ñ after the N), clockwise from the top. 27 letters cannot be 44 px buttons on a
- * ring that fits a phone, so the wheel is ONE touch area: a tap picks the nearest letter, and the big buttons in its
- * centre (◀ ▶ to move the pick one letter, "Es esta" to confirm) are the 44 px+ targets. ▶ also works as a counting
- * aid: with nothing picked it goes to the letter that is the 1. Counting wraps around: after the Z comes the A.
+ * ring that fits a phone, so the wheel is ONE touch area: a tap picks the nearest letter, the picked letter is shown big
+ * in the middle and ringed on the wheel, and the big buttons in its centre (◀ ▶ to move the pick one letter, "Es esta"
+ * to confirm) are the 44 px+ targets. A tap never confirms: if it landed on the neighbour, ◀ ▶ fix it before "Es esta".
+ * With nothing picked, ◀ and ▶ go to the letter that is the 1 in their direction. Counting wraps around: after the Z
+ * comes the A.
  *
  * A WRONG LETTER costs ONE mistake (muted gray, never red), clears the pick and the hint grows with the misses on the
- * same letter: where to start counting, then the first stretch of the count is tinted, then the letter is ringed. A
- * double tap on "Es esta" cannot count twice: the first tap clears the pick and the button is off until a new pick.
+ * same letter: where and which way to count, then the first stretch of the count is tinted, then the letter is ringed.
+ * A double tap on "Es esta" cannot count twice: the first tap clears the pick and the button is off until a new pick.
  * Nothing is timed.
  *
- * ONE PHRASE A LEVEL, as the tallerista likes the days short. The ramp is the length: 13, 16 and 19 letters. The
- * "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back and replays the same three phrases (they are
- * fixed, there is nothing to draw). Per-level state lives in <LevelView>, keyed by run + level. Every tap within
+ * ONE PHRASE A LEVEL, as the tallerista likes the days short. The ramp is the phrase AND the numbers: 14 letters with
+ * an average count of 3.9 and a largest of 10, then 17 letters (5.8, largest 12), then 18 letters (7.1, largest 13).
+ * The "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back and replays the same three phrases (they
+ * are fixed, there is nothing to draw). Per-level state lives in <LevelView>, keyed by run + level. Every tap within
  * SETTLE_MS of the tap that brought the level is ignored.
  *
  * totalAttempts = mistakes + every letter of the day (TOTAL_LETTERS, derived).
@@ -51,9 +55,9 @@ interface LevelDef {
 }
 
 const LEVELS: LevelDef[] = [
-  { name: 'Nivel 1', phrase: { display: 'Querer es poder', author: 'Dicho popular' } },
-  { name: 'Nivel 2', phrase: { display: 'Conócete a ti mismo', author: 'Inscripción del templo de Apolo, en Delfos' } },
-  { name: 'Nivel 3', phrase: { display: 'En un lugar de la Mancha', author: 'Miguel de Cervantes, «Don Quijote de la Mancha» (1605)' } },
+  { name: 'Nivel 1', phrase: { display: 'A cada uno lo suyo', author: 'Máxima del derecho romano (suum cuique)' } },
+  { name: 'Nivel 2', phrase: { display: 'El amor todo lo puede', author: 'Dicho popular' } },
+  { name: 'Nivel 3', phrase: { display: 'El tiempo lo cura todo', author: 'Dicho popular' } },
 ]
 
 /** The letters of a phrase without accents, spaces or signs: what the wheel can give. */
@@ -64,17 +68,33 @@ function lettersOf(display: string): string[] {
 function wordsOf(display: string): string[][] {
   return display.split(' ').map(lettersOf)
 }
-/** The numbers of a phrase: how many letters to count, from the last one found, to reach each letter (1 to 27). The first
- * one is counted from before the A, so the A is the 1. */
-function stepsOf(letters: string[]): number[] {
-  const steps: number[] = []
+/** One number of a phrase: how many letters to count and in which direction (1 forward, towards the Z; -1 backward,
+ * towards the A). The shorter way is always the one asked for, so a count never goes past 13. */
+interface Step {
+  n: number
+  dir: 1 | -1
+}
+/** The numbers of a phrase, from the last letter found to each letter. The first one is counted from the start of the
+ * alphabet: forward the A is the 1, backward the Z is the 1. A repeated letter (LL, RR) would be a full lap of 27, so
+ * the phrases of the game have none, and none starts with the N (14 either way). */
+function stepsOf(letters: string[]): Step[] {
+  const steps: Step[] = []
   let last = -1
   for (const ch of letters) {
     const at = ALPHABET.indexOf(ch)
-    steps.push((((at - last) % 27) + 27) % 27 || 27)
+    if (last < 0) {
+      steps.push(at + 1 <= 27 - at ? { n: at + 1, dir: 1 } : { n: 27 - at, dir: -1 })
+    } else {
+      const d = (((at - last) % 27) + 27) % 27
+      steps.push(d <= 13 ? { n: d, dir: 1 } : { n: 27 - d, dir: -1 })
+    }
     last = at
   }
   return steps
+}
+/** Where a count starts: the last letter found, or, at the beginning, just before the A (forward) or after the Z (back). */
+function baseOf(last: number, dir: 1 | -1): number {
+  return last >= 0 ? last : dir === 1 ? -1 : 27
 }
 const TOTAL_LETTERS = LEVELS.reduce((sum, lvl) => sum + lettersOf(lvl.phrase.display).length, 0)
 // ── data:end ──
@@ -96,9 +116,18 @@ function pos(i: number, radius: number) {
 }
 const RING_R = 41
 
-/** What the player is told to count, in words. */
-function countText(n: number, last: number): string {
-  return last < 0 ? `Contá ${n} desde el principio: la A es la 1.` : `Contá ${n} desde la ${ALPHABET[last]}: la que sigue es la 1.`
+/** Said after every pick, so a tap that landed on the neighbour of the letter meant is seen and can be moved. */
+function pickedHint(at: number): { text: string; ok: boolean } {
+  return { text: `Elegiste la ${ALPHABET[at]}. Si no es, usá las flechas.`, ok: false }
+}
+
+/** What the player is told to count, in two lines: how many and which way, and where the count starts. */
+function countLines(step: Step, last: number): { main: string; from: string } {
+  const main = `Contá ${step.n} hacia ${step.dir === 1 ? 'adelante' : 'atrás'}`
+  if (last < 0) {
+    return { main, from: step.dir === 1 ? 'Desde el principio: la A es la 1.' : 'Desde el final: la Z es la 1.' }
+  }
+  return { main, from: `Desde la ${ALPHABET[last]}: la ${step.dir === 1 ? 'siguiente' : 'anterior'} es la 1.` }
 }
 
 /** The boxes of the phrase, grouped by word; the letters found so far are filled in. */
@@ -131,8 +160,8 @@ function PhraseBoxes({ words, found, current }: { words: string[][]; found: numb
 
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   const steps = [
-    'La frase está escondida. Cada número te dice cuántas letras contar en la rueda del abecedario, empezando por la letra que sigue a la última que encontraste.',
-    'La primera vez se cuenta desde el principio: la A es la 1. Tocá la rueda para elegir la letra, movela con las flechas si hace falta y apretá «Es esta».',
+    'La frase está escondida. Cada número te dice cuántas letras contar en la rueda del abecedario, a partir de la última que encontraste. Puede ser hacia adelante (▶, como va el abecedario) o hacia atrás (◀).',
+    'La primera vez se cuenta desde el principio de la rueda. Tocá la rueda para elegir la letra, movela con las flechas si hace falta y apretá «Es esta».',
   ]
   return (
     <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-4 sm:p-6">
@@ -149,8 +178,8 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
       </ol>
       <div className="mt-3 rounded-2xl bg-white p-3 text-center">
         <p className="text-base font-semibold text-slate-500">Por ejemplo:</p>
-        <p className="mt-1 text-lg font-bold leading-snug text-slate-900">Si la última letra fue la C y el número es 3, contás D, E, F: la letra es la F.</p>
-        <p className="mt-1 text-base text-slate-600">Al llegar a la Z se sigue con la A.</p>
+        <p className="mt-1 text-lg font-bold leading-snug text-slate-900">Si la última letra fue la C y el número es 3: hacia adelante contás D, E, F (la F); hacia atrás, B, A, Z (la Z).</p>
+        <p className="mt-1 text-base text-slate-600">Al llegar a la Z se sigue con la A, y al revés.</p>
       </div>
       <div className="sticky bottom-3 z-10 mt-4 text-center">
         <button
@@ -209,11 +238,12 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
   }, [done])
 
   const last = found === 0 ? -1 : ALPHABET.indexOf(letters[found - 1])
-  const n = steps[Math.min(found, total - 1)]
+  const step = steps[Math.min(found, total - 1)]
+  const n = step.n
   const target = ALPHABET.indexOf(letters[Math.min(found, total - 1)])
   // The first stretch of the count, tinted from the second miss on (the last three letters are left to the player).
   const tinted = new Set<number>()
-  if (misses >= 2) for (let s = 1; s <= n - 3; s++) tinted.add((last + s + 27) % 27)
+  if (misses >= 2) for (let s = 1; s <= n - 3; s++) tinted.add(((baseOf(last, step.dir) + step.dir * s) % 27 + 27) % 27)
 
   function pickFromWheel(e: ReactMouseEvent<HTMLDivElement>) {
     if (done || e.timeStamp - since < SETTLE_MS) return
@@ -225,13 +255,16 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
     // Taps in the hole (where the buttons are) or well outside the ring do nothing.
     if (r < box.width * (RING_R / 100) * 0.72 || r > box.width * 0.56) return
     const deg = ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360
-    setPicked(Math.floor(deg / STEP_DEG) % 27)
-    setHint(null)
+    const at = Math.floor(deg / STEP_DEG) % 27
+    setPicked(at)
+    setHint(pickedHint(at))
   }
   function nudge(by: 1 | -1, at: number) {
     if (done || at - since < SETTLE_MS) return
-    setPicked((p) => (p === null ? (by === 1 ? (last + 1 + 27) % 27 : null) : (p + by + 27) % 27))
-    setHint(null)
+    // With nothing picked the arrows go to the letter that is the 1 in their direction.
+    const to = picked === null ? (baseOf(last, by) + by + 27) % 27 : (picked + by + 27) % 27
+    setPicked(to)
+    setHint(pickedHint(to))
   }
   function confirm(at: number) {
     if (done || picked === null || at - since < SETTLE_MS) return
@@ -256,17 +289,17 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
     setHint({
       text:
         m === 1
-          ? `Esa no es. ${last < 0 ? 'Empezá a contar desde el principio: la A es la 1.' : `Empezá a contar desde la letra que sigue a la ${ALPHABET[last]}: esa es la 1.`}`
+          ? `Esa no es. Volvé a contar ${n} hacia ${step.dir === 1 ? 'adelante' : 'atrás'}${last < 0 ? '' : ` desde la ${ALPHABET[last]}`}.`
           : m === 2
-            ? 'Esa tampoco. Te marcamos el comienzo del camino: seguí contando desde ahí.'
-            : `Es la ${ALPHABET[target]}: tocala en la rueda y apretá «Es esta».`,
+            ? 'Esa tampoco. Mirá el camino marcado y seguí desde ahí.'
+            : `Es la ${ALPHABET[target]}: tocala y apretá «Es esta».`,
       ok: false,
     })
     onMistake()
   }
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-3 pt-2.5 sm:p-7">
       {/* Header */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
@@ -287,7 +320,12 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
 
           {/* The number to count */}
           <div className="mx-auto mt-1.5 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-3 py-1 text-center">
-            <p className="text-lg font-bold leading-snug text-slate-900">{countText(n, last)}</p>
+            <p className="flex items-center justify-center gap-1.5 text-lg font-bold leading-snug text-slate-900">
+              {step.dir === -1 && <ChevronLeft className="h-5 w-5 shrink-0 text-tiam-blue" strokeWidth={3} aria-hidden="true" />}
+              {countLines(step, last).main}
+              {step.dir === 1 && <ChevronRight className="h-5 w-5 shrink-0 text-tiam-blue" strokeWidth={3} aria-hidden="true" />}
+            </p>
+            <p className="text-base leading-snug text-slate-700">{countLines(step, last).from}</p>
           </div>
 
           <p
@@ -342,7 +380,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
                 <button
                   type="button"
                   aria-label="Letra anterior"
-                  disabled={done || picked === null}
+                  disabled={done}
                   onClick={(e) => {
                     e.stopPropagation()
                     nudge(-1, e.timeStamp)
