@@ -361,7 +361,7 @@ function LevelView({ levelIdx, flowers, since, onMistake, onSolved, onNext, onRe
                         : `${PETAL_TINT[place]} border-dashed border-slate-400`,
                   ].join(' ')}
                 >
-                  <span className="text-[13px] font-bold text-slate-700">{PLACES[place].label}</span>
+                  <span className="text-base font-bold leading-tight text-slate-700">{PLACES[place].label}</span>
                   <span className={`text-xl font-extrabold ${chip ? 'text-slate-900' : 'text-slate-400'}`}>{chip ? fmt(chip.value) : '?'}</span>
                 </button>
               )
