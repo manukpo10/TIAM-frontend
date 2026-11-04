@@ -3,7 +3,7 @@ import { ArrowRight, Check, RotateCcw, Sparkles, X } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Refranes en imágenes" — día 20, mes 6, lenguaje. An illustration with no words in it and four refranes (popular
+ * "El refrán del dibujo" — día 20, mes 6, lenguaje. An illustration with no words in it and four refranes (popular
  * sayings): the player taps the one the picture stands for. The mechanic comes from a worksheet where each refrán is
  * drawn as a rebus of little pictures and the player says which refrán it is; here the nine pictures are TIAM's own
  * Flux illustrations (src/assets/desafio/games/refranes-en-imagenes), one scene for each refrán, and the refranes
@@ -11,21 +11,23 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ORIGINAL CONTENT AND CARE WITH THE PICTURES. The worksheet shows its pictures and writes the answer of only one of
  * them (a saying about God): that one is not used, nor are the drawings or the rebus of the worksheet. The refranes
- * were chosen for pictures of TIAM's own; none names a religious figure, nothing is violent (no noose, no
- * straitjacket) and "Querer es poder", already the phrase of month 6 día 11, does not appear. Every picture was looked
- * at after being generated and shows, visibly, what its `why` line says: a crooked young tree next to a straight old
- * one, sheep standing in pairs, a wall with an ear on each side of its window, a big fish with its mouth open in front
- * of a tiny one, a loud trumpet beside only two walnuts, a horse with a gift ribbon whose teeth are looked at with a
- * magnifying glass, a shrimp asleep on a leaf that the current carries, a bird in a hand with a flock flying away and
- * a smiling face under a red umbrella in a downpour. Each picture was made to fit ONE refrán of its options and not
+ * were chosen for pictures of TIAM's own; none names a religious figure and nothing is violent (no noose, no
+ * straitjacket). Every picture was looked at after being generated and shows, visibly, what its `why` line says: a cat
+ * with red mittens on its front paws next to a mouse, sheep standing in pairs, a wall with an ear on each side of its
+ * window, a big fish with its mouth open in front of a tiny one, a loud trumpet beside only two walnuts, a horse with a
+ * gift ribbon whose teeth are looked at with a magnifying glass, a shrimp asleep on a leaf that the current carries, a
+ * clay jug with a zig-zag crack that leaks drops at the edge of a well and a smiling face under a red umbrella in a
+ * downpour. The answers were searched in every game of src/pages/desafio/games (months 1 to 6) and none of the nine
+ * refranes is the answer of another game; two refranes (a tree that is born crooked, a bird in the hand) were replaced
+ * because month 2's "Dichos a medias" already has them. Each picture was made to fit ONE refrán of its options and not
  * the other three (the wrong options of a question are never the right answer of another). A throwaway script (not
  * committed) checks that the four options of every question are different, that no refrán is the right answer of two
  * questions and that no wrong option is the right answer of another one.
  *
  * THREE PICTURES A LEVEL, as the tallerista likes the days short. The ramp is the options: in level 1 the four
  * refranes are about different things, in level 2 they share some theme with the picture (animals, noise, a gift) and
- * in level 3 ALL four are about the same subject as the picture (the river, the rooster and the birds, the weather),
- * so the picture has to be read, not just recognised. The order of the questions of each level and of the options of
+ * in level 3 the options stay close to the picture's subject (the river, water and the kitchen, the weather), so the
+ * picture has to be read, not just recognised. The order of the questions of each level and of the options of
  * each question is chosen ONCE at mount (`epoch`), so "Repetir" replays exactly the same nine pictures.
  *
  * A wrong refrán costs ONE mistake, turns muted gray (never red) and stays off; the right one can still be tapped.
@@ -62,11 +64,11 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 1',
     questions: [
       {
-        image: 'arbol',
-        alt: 'Ilustración de dos árboles en un prado: a la izquierda uno joven con el tronco curvado y torcido, y a la derecha uno grande con el tronco derecho.',
-        answer: 'Árbol que nace torcido, jamás su tronco endereza.',
-        wrong: ['Más vale tarde que nunca.', 'El que espera, desespera.', 'No por mucho madrugar amanece más temprano.'],
-        why: 'El arbolito de la izquierda creció torcido, y el árbol grande de la derecha, derecho.',
+        image: 'gato',
+        alt: 'Ilustración de un gato gris sentado en el piso de una habitación, con las dos patas delanteras metidas en grandes mitones rojos, y un ratoncito marrón parado muy cerca.',
+        answer: 'Gato con guantes no caza ratones.',
+        wrong: ['Lo cortés no quita lo valiente.', 'Piedra que rueda no cría moho.', 'Cada loco con su tema.'],
+        why: 'El gato tiene las patas metidas en mitones rojos y el ratón está al lado, tranquilo.',
       },
       {
         image: 'ovejas',
@@ -79,7 +81,7 @@ const LEVELS: LevelDef[] = [
         image: 'paredes',
         alt: 'Ilustración de una pared de ladrillos con una ventana de postigos abiertos y una oreja rosada enorme a cada lado de la ventana.',
         answer: 'Las paredes oyen.',
-        wrong: ['Ojos que no ven, corazón que no siente.', 'Gallina vieja hace buen caldo.', 'No hay mal que por bien no venga.'],
+        wrong: ['Ojos que no ven, corazón que no siente.', 'Gallina vieja hace buen caldo.', 'Mal de muchos, consuelo de tontos.'],
         why: 'La pared tiene una oreja a cada lado de la ventana, como si escuchara.',
       },
     ],
@@ -91,14 +93,14 @@ const LEVELS: LevelDef[] = [
         image: 'pez',
         alt: 'Ilustración bajo el agua: un pez grande y naranja con la boca abierta nada hacia un pez amarillo muy chiquito que está justo delante.',
         answer: 'El pez grande se come al chico.',
-        wrong: ['El pez por la boca muere.', 'Al perro flaco, todo son pulgas.', 'Perro que ladra, no muerde.'],
+        wrong: ['El pez por la boca muere.', 'Al perro flaco, todo son pulgas.', 'Lo que abunda no daña.'],
         why: 'El pez grande tiene la boca abierta frente al pececito amarillo.',
       },
       {
         image: 'nueces',
         alt: 'Ilustración de una trompeta que suena fuerte, con rayas de sonido a su alrededor, y al lado, sobre una tabla, solo dos nueces.',
         answer: 'Mucho ruido y pocas nueces.',
-        wrong: ['A palabras necias, oídos sordos.', 'Del dicho al hecho hay mucho trecho.', 'A buen entendedor, pocas palabras.'],
+        wrong: ['Hablando se entiende la gente.', 'Del dicho al hecho hay mucho trecho.', 'A buen entendedor, pocas palabras.'],
         why: 'La trompeta hace muchísimo ruido, pero sobre la tabla hay apenas dos nueces.',
       },
       {
@@ -121,11 +123,11 @@ const LEVELS: LevelDef[] = [
         why: 'El camarón duerme sobre la hoja y el agua se lo lleva.',
       },
       {
-        image: 'pajaro',
-        alt: 'Ilustración de una mano abierta con un pajarito azul posado en la palma y, arriba en el cielo, una bandada de diez pájaros que se alejan volando.',
-        answer: 'Más vale pájaro en mano que ciento volando.',
-        wrong: ['Una golondrina no hace verano.', 'Gallo que no canta, algo tiene en la garganta.', 'Cada gallo en su gallinero.'],
-        why: 'En la mano hay un pájaro seguro y arriba vuelan muchos que ya no se pueden agarrar.',
+        image: 'canta',
+        alt: 'Ilustración de un cántaro grande de barro con una grieta en zigzag de la que caen gotas, apoyado en el borde de un pozo de piedra con un balde de madera colgado.',
+        answer: 'Tanto va el cántaro a la fuente que al fin se rompe.',
+        wrong: ['Agua que no has de beber, déjala correr.', 'No se puede nadar y guardar la ropa.', 'Cada olla tiene su tapa.'],
+        why: 'El cántaro de barro ya tiene una grieta y pierde agua: de tanto ir a la fuente, se está rompiendo.',
       },
       {
         image: 'maltiempo',

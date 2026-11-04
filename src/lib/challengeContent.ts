@@ -641,7 +641,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de lenguaje: en un mándala, pintá cada palabra del color que corresponde según la letra que sigue a la N. En los niveles siguientes se suma la M antes de B y P. Subís de dificultad a medida que avanzás.' },
   { day: 19, type: 'game', area: 'praxias', title: 'Armá la figura',
     instructions: 'Un juego visoespacial: mirá la figura punteada y tocá cada pieza de color y el lugar donde encaja, hasta armarla completa. Subís de dificultad a medida que avanzás.' },
-  { day: 20, type: 'game', area: 'lenguaje', title: 'Refranes en imágenes',
+  { day: 20, type: 'game', area: 'lenguaje', title: 'El refrán del dibujo',
     instructions: 'Un juego de lenguaje: mirá la ilustración y elegí, entre cuatro refranes, el que representa. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'memoria', title: 'Una de cada una',
     instructions: 'Un juego de memoria: te pedimos de a una cosas de tu vida, por ejemplo un lugar al que fuiste esta semana. Escribilas, o pensalas y tocá «La pensé». Al final te mostramos tu lista. Subís de dificultad a medida que avanzás.' },
