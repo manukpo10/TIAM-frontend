@@ -166,6 +166,7 @@ import { UnaDeCadaUna } from './UnaDeCadaUna'
 import { MandalaDeLaN } from './MandalaDeLaN'
 import { RefranesEnImagenes } from './RefranesEnImagenes'
 import { ArmaLaFigura } from './ArmaLaFigura'
+import { ElTicketDelDia } from './ElTicketDelDia'
 import { EstrellaDeLetras } from './EstrellaDeLetras'
 import { FrasesConTruco } from './FrasesConTruco'
 import { CualEsLaPalabra } from './CualEsLaPalabra'
@@ -382,6 +383,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     18: MandalaDeLaN,
     20: RefranesEnImagenes,
     19: ArmaLaFigura,
+    30: ElTicketDelDia,
     29: EstrellaDeLetras,
     26: FrasesConTruco,
     25: CualEsLaPalabra,

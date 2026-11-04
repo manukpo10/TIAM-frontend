@@ -85,7 +85,7 @@ function findWalk(letters: string, word: string): number[] | null {
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
-    letters: 'FZENMOAATOLR',
+    letters: 'ATFOSNZARLED',
     words: [
       {
         word: 'TAZA',
@@ -94,16 +94,16 @@ const LEVELS: LevelDef[] = [
         tip: 'Se apoya sobre un platito.',
       },
       {
-        word: 'MONTE',
-        display: 'monte',
-        clue: 'Terreno con muchos árboles, lejos de las casas.',
-        tip: 'Es más alto y más salvaje que el campo.',
-      },
-      {
         word: 'FAROL',
         display: 'farol',
         clue: 'Luz de la calle o del auto que se prende de noche.',
         tip: 'En la calle hay uno cada tanto.',
+      },
+      {
+        word: 'SENDA',
+        display: 'senda',
+        clue: 'Caminito angosto entre el pasto, hecho de tanto pasar.',
+        tip: 'Es más angosta que un camino.',
       },
     ],
   },

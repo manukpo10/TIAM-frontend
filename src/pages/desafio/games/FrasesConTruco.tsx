@@ -10,13 +10,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * WHAT MAKES IT A DIFFERENT ACTIVITY FROM THE OTHER LETTER GAMES OF THE MONTH (días 7, 12, 16): the bank of letters is not
  * a separate tray, a tally or a ring of tiles: it is the PHRASE itself, written in two rows (one per word), and a tapped
- * letter is greyed out where it stands. The surprise of the game is that two ordinary words ("cien dados", "cree duro")
+ * letter is greyed out where it stands. The surprise of the game is that two ordinary words ("cien dados", "alma cero")
  * contain another word, so the player reads the phrase before looking at its letters.
  *
  * ORIGINAL CONTENT AND READ ALOUD. Only the idea (a phrase that hides a word) is borrowed. Each phrase is built so that
  * its letters are EXACTLY those of the hidden word, accents and spaces aside (a throwaway script, not committed, checks
  * it, and that no clue contains the hidden word or a word of its phrase), and each is a plain Spanish phrase that reads
- * naturally out loud in Rioplatense Spanish ("gris tero", "che son", "mirá tela": the accent on "mirá" is not shown,
+ * naturally out loud in Rioplatense Spanish ("gris tero", "che son", "con nieta", "mirá tela": the accent on "mirá" is not shown,
  * the letters are the same). Nothing in them is rude. The hidden words are also not answers elsewhere in the month.
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word with nothing to go on): every word has a clue, a second
@@ -28,7 +28,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * THREE PHRASES A LEVEL. The ramp is the length of the hidden word (6 to 7 letters, then 8, then 8 to 9) and how
  * abstract it is: level 1 asks for things that can be pictured (the nights, socks, a fish), level 3 for words that are
- * ideas (a record, a memory, something hidden), whose clue describes a meaning instead of an object. Each level has
+ * ideas (a record, attention, something hidden), whose clue describes a meaning instead of an object. Each level has
  * one authored set of three, in a fixed order, so "Repetir" replays exactly the same nine phrases.
  *
  * A short "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back. Per-level state lives in <LevelView>,
@@ -120,11 +120,11 @@ const LEVELS: LevelDef[] = [
         tip: 'Los consultorios y los comercios llevan uno.',
       },
       {
-        phrase: 'CREE DURO',
-        word: 'RECUERDO',
-        display: 'recuerdo',
-        clue: 'Imagen de algo vivido que la memoria guarda.',
-        tip: 'También se llama así al objeto que se trae de un viaje.',
+        phrase: 'CON NIETA',
+        word: 'ATENCION',
+        display: 'atención',
+        clue: 'Lo que ponemos para escuchar sin distraernos.',
+        tip: 'Se pide cuando alguien necesita que lo escuchen.',
       },
       {
         phrase: 'CIEN DADOS',
