@@ -4,7 +4,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Quién vive acá?" — día 13, mes 6, razonamiento. A block of buildings and a neighbour who says what their building
- * is like ("Vivo en un edificio que tiene cuatro pisos y no tiene escalera"). The player reads the statement and taps the
+ * is like ("Vivo en un edificio que tiene planta baja más tres pisos y no tiene escalera"). The player reads the statement and taps the
  * building that fits; the neighbour's name is put on it and the next neighbour speaks. The mechanic comes from a
  * worksheet with eight buildings and speech bubbles, where the name of each person was written next to the building
  * they describe; here the buildings are drawn in code and the neighbours speak one at a time.
@@ -17,7 +17,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * wait in a bank and the whole assignment is checked at the end: here ONE neighbour speaks at a time and each tap is
  * checked at once; the clues describe what the building LOOKS like (floors, windows, balconies, stairs, awning, roof,
  * colour) and not where it is on a grid, and from the middle of a level on the statements compare with the building of a
- * neighbour who was already placed ("es más bajo que el de Estela"), which is how the player reasons.
+ * neighbour who was already placed ("es más bajo que el de Graciela"), which is how the player reasons.
  *
  * EVERY PUZZLE HAS ONE SOLUTION. The statements are GENERATED from structured conditions (`say`), never typed apart, and a
  * throwaway script (not committed) checks, for every level, that at each step exactly one of the buildings still free
@@ -125,10 +125,10 @@ const LEVELS: LevelDef[] = [
       b('rosa', 2, 'arco', true, false, false, 'en punta'),
     ],
     residents: [
-      { name: 'Estela', home: 1, conds: [{ k: 'floors', v: 4 }, { k: 'stairs', v: false }] },
-      { name: 'Gabriel', home: 0, conds: [{ k: 'floorsVs', cmp: 'lt', who: 'Estela' }, { k: 'balcony', v: true }, { k: 'windows', v: 'cuadradas' }] },
+      { name: 'Graciela', home: 1, conds: [{ k: 'floors', v: 4 }, { k: 'stairs', v: false }] },
+      { name: 'Gabriel', home: 0, conds: [{ k: 'floorsVs', cmp: 'lt', who: 'Graciela' }, { k: 'balcony', v: true }, { k: 'windows', v: 'cuadradas' }] },
       { name: 'Julia', home: 3, conds: [{ k: 'balcony', v: false }, { k: 'windows', v: 'arco' }] },
-      { name: 'Ramiro', home: 4, conds: [{ k: 'floorsVs', cmp: 'eq', who: 'Estela' }] },
+      { name: 'Ramiro', home: 4, conds: [{ k: 'floorsVs', cmp: 'eq', who: 'Graciela' }] },
       { name: 'Olga', home: 5, conds: [{ k: 'floors', v: 2 }, { k: 'balcony', v: true }] },
       { name: 'Víctor', home: 2, conds: [{ k: 'wall', v: 'menta' }] },
     ],
@@ -136,7 +136,8 @@ const LEVELS: LevelDef[] = [
 ]
 const TOTAL_NEIGHBOURS = LEVELS.reduce((sum, lvl) => sum + lvl.residents.length, 0)
 
-const FLOOR_WORD = { 2: 'dos', 3: 'tres', 4: 'cuatro' } as const
+/** The floors in words, with the ground floor named, so «tiene dos pisos» cannot mean ground floor plus two. */
+const FLOORS_TEXT = { 2: 'planta baja más un piso', 3: 'planta baja más dos pisos', 4: 'planta baja más tres pisos' } as const
 
 /** What a condition says, in words (the statement is built from these, never typed apart). */
 function say(c: Cond): string {
@@ -144,7 +145,7 @@ function say(c: Cond): string {
     case 'wall':
       return `es de color ${c.v}`
     case 'floors':
-      return `tiene ${FLOOR_WORD[c.v]} pisos`
+      return `tiene ${FLOORS_TEXT[c.v]}`
     case 'floorsVs':
       return c.cmp === 'lt' ? `es más bajo que el de ${c.who}` : c.cmp === 'gt' ? `es más alto que el de ${c.who}` : `tiene tantos pisos como el de ${c.who}`
     case 'windows':
@@ -192,7 +193,7 @@ function fits(c: Cond, bd: BuildingDef, homes: Record<string, BuildingDef | unde
 }
 /** The building in words, for a screen reader. */
 function describe(bd: BuildingDef): string {
-  return [`color ${bd.wall}`, `${FLOOR_WORD[bd.floors]} pisos`, `ventanas ${bd.windows === 'arco' ? 'con arco' : 'cuadradas'}`, bd.balcony ? 'con balcones' : 'sin balcones', bd.stairs ? 'con escalera' : 'sin escalera', bd.awning ? 'con toldo' : 'sin toldo', `techo ${bd.roof}`].join(', ')
+  return [`color ${bd.wall}`, FLOORS_TEXT[bd.floors], `ventanas ${bd.windows === 'arco' ? 'con arco' : 'cuadradas'}`, bd.balcony ? 'con balcones' : 'sin balcones', bd.stairs ? 'con escalera' : 'sin escalera', bd.awning ? 'con toldo' : 'sin toldo', `techo ${bd.roof}`].join(', ')
 }
 
 /** The neighbour of the how-to screen: not in the game. */
@@ -276,7 +277,7 @@ function Building({ bd, className }: { bd: BuildingDef; className?: string }) {
 
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   const steps = [
-    'Un vecino te cuenta cómo es su edificio: los pisos, las ventanas, los balcones, la escalera, el toldo, el techo o el color.',
+    'Un vecino te cuenta cómo es su edificio: la planta baja y los pisos, las ventanas, los balcones, la escalera, el toldo, el techo o el color.',
     'Tocá el edificio que le corresponde. Su nombre queda en el edificio y habla el próximo vecino.',
   ]
   return (
@@ -297,7 +298,7 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
         <p className="mt-1 text-lg font-bold leading-snug text-slate-900">
           {EXAMPLE.name}: «{statement(EXAMPLE.conds)}»
         </p>
-        <p className="mt-1 text-base text-slate-600">Hay que buscar el edificio con tres pisos y escalera.</p>
+        <p className="mt-1 text-base text-slate-600">Hay que buscar el edificio con planta baja más dos pisos y escalera.</p>
       </div>
       <div className="sticky bottom-3 z-10 mt-4 text-center">
         <button
@@ -397,7 +398,7 @@ function LevelView({ levelIdx, order, since, onMistake, onSolved, onNext, onRepe
         n === 1
           ? `No es. Ese edificio no cumple con esto: «${failing ? say(failing) : ''}».`
           : n === 2
-            ? `Tampoco. Quedan ${free.length - n} edificios sin probar: leé de nuevo lo que dice ${current.name}.`
+            ? `Tampoco. ${free.length - n === 1 ? 'Queda 1 edificio sin probar' : `Quedan ${free.length - n} edificios sin probar`}: leé de nuevo lo que dice ${current.name}.`
             : `Queda uno solo que cumple todo lo que dice ${current.name}.`,
       ok: false,
     })
