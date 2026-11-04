@@ -644,7 +644,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 20, type: 'game', area: 'lenguaje', title: 'Refranes en imágenes',
     instructions: 'Un juego de lenguaje: mirá la ilustración y elegí, entre cuatro refranes, el que representa. Subís de dificultad a medida que avanzás.' },
   { day: 21, type: 'game', area: 'memoria', title: 'Una de cada una',
-    instructions: 'Un juego de memoria: te pedimos de a una cosas de la vida diaria, por ejemplo algo que desayunes. Escribilas o pensalas y marcá «La pensé». Al final te mostramos tu lista. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de memoria: te pedimos de a una cosas de tu vida, por ejemplo un lugar al que fuiste esta semana. Escribilas, o pensalas y tocá «La pensé». Al final te mostramos tu lista. Subís de dificultad a medida que avanzás.' },
 
   // ── Semana 4 — to build (23 and 27 are undecided) ─────────────────────────
   { day: 22, type: 'game', area: 'atencion', title: 'Anagramas en el texto',

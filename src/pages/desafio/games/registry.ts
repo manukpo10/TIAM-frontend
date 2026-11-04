@@ -162,6 +162,7 @@ import { QuienViveAca } from './QuienViveAca'
 import { SilabasPorColor } from './SilabasPorColor'
 import { NumerosRevueltos } from './NumerosRevueltos'
 import { EstoNoEs } from './EstoNoEs'
+import { UnaDeCadaUna } from './UnaDeCadaUna'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -370,6 +371,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     15: SilabasPorColor,
     16: NumerosRevueltos,
     17: EstoNoEs,
+    21: UnaDeCadaUna,
   },
 }
 
