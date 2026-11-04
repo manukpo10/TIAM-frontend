@@ -149,6 +149,7 @@ import { PalabraYSignificado } from './PalabraYSignificado'
 import { LaCamisetaCorrecta } from './LaCamisetaCorrecta'
 import { MiraElDibujo } from './MiraElDibujo'
 import { LaSilabaDelMedio } from './LaSilabaDelMedio'
+import { UniLosColores } from './UniLosColores'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -344,6 +345,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     1: LaCamisetaCorrecta,
     2: MiraElDibujo,
     3: LaSilabaDelMedio,
+    4: UniLosColores,
   },
 }
 
