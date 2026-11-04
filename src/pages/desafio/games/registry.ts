@@ -153,6 +153,7 @@ import { UniLosColores } from './UniLosColores'
 import { EnMiBarrio } from './EnMiBarrio'
 import { ElEsqueleto } from './ElEsqueleto'
 import { NombresEscondidos } from './NombresEscondidos'
+import { DesarmaElNumero } from './DesarmaElNumero'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -352,6 +353,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     5: EnMiBarrio,
     6: ElEsqueleto,
     7: NombresEscondidos,
+    8: DesarmaElNumero,
   },
 }
 
