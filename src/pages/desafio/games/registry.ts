@@ -146,6 +146,7 @@ import { ElPanalDeLetras } from './ElPanalDeLetras'
 import { UnaPalabraPorLetra } from './UnaPalabraPorLetra'
 import { PintaSegunElCodigo } from './PintaSegunElCodigo'
 import { PalabraYSignificado } from './PalabraYSignificado'
+import { LaCamisetaCorrecta } from './LaCamisetaCorrecta'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -338,6 +339,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
   // CARD (no component); días 23 and 27 are undecided (see challengeContent.ts), and día 28 gets its
   // lápiz-y-papel component with its batch. A day without an entry renders as its instructions card.
   6: {
+    1: LaCamisetaCorrecta,
   },
 }
 
