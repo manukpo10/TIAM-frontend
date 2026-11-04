@@ -620,7 +620,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // Lápiz y papel: finishing a story has no closed answer set to validate, so —
   // like month 3's día 14, month 4's día 18 and month 5's día 14 — it is a CARD.
   { day: 14, type: 'card', area: 'lenguaje', title: 'Terminá la historia',
-    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada comienzo con tus propias palabras. Podés escribir una frase o seguir con una historia entera. No hay respuestas correctas ni incorrectas: lo que importa es animarte a escribir. 📝',
+    instructions: 'Hoy es un día de lápiz y papel: agarrá una hoja y un lápiz, copiá uno de los comienzos de abajo y terminá la historia con tus palabras. Alcanza con una frase, o podés seguir con una historia entera. No hay respuestas correctas ni incorrectas: lo que importa es animarte a escribir. 📝',
     worksheet: [
       { label: 'Esa mañana, al abrir la ventana, vi…' },
       { label: 'El sábado me encontré con un viejo amigo y…' },
