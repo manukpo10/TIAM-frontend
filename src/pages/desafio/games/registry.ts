@@ -164,6 +164,7 @@ import { NumerosRevueltos } from './NumerosRevueltos'
 import { EstoNoEs } from './EstoNoEs'
 import { UnaDeCadaUna } from './UnaDeCadaUna'
 import { MandalaDeLaN } from './MandalaDeLaN'
+import { RefranesEnImagenes } from './RefranesEnImagenes'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -374,6 +375,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     17: EstoNoEs,
     21: UnaDeCadaUna,
     18: MandalaDeLaN,
+    20: RefranesEnImagenes,
   },
 }
 
