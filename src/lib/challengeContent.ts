@@ -635,7 +635,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de atención: en una tabla de sílabas de colores, cada tira de un mismo color forma una palabra. Buscá las sílabas y armá cada palabra. Subís de dificultad a medida que avanzás.' },
   { day: 16, type: 'game', area: 'lenguaje', title: 'Números revueltos',
     instructions: 'Un juego de lenguaje y números: con la pista, armá con las letras el nombre de un número y después tocalo escrito en cifras. Subís de dificultad a medida que avanzás.' },
-  { day: 17, type: 'game', area: 'ejecutivas', title: 'Esto no es…',
+  { day: 17, type: 'game', area: 'ejecutivas', title: '¿Qué más podría ser?',
     instructions: 'Un juego de razonamiento creativo: mirá una forma que dice qué no es, por ejemplo «esto no es un sobre», y pensá en qué más podría convertirse. Podés escribirlo o pensarlo, y después te mostramos ideas de ejemplo. No hay respuestas equivocadas. Subís de dificultad a medida que avanzás.' },
   { day: 18, type: 'game', area: 'lenguaje', title: 'Mándala de la N',
     instructions: 'Un juego de lenguaje: en un mándala, pintá cada palabra del color que corresponde según la letra que sigue a la N. En los niveles siguientes se suma la M antes de B y P. Subís de dificultad a medida que avanzás.' },

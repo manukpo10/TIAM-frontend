@@ -3,7 +3,7 @@ import { ArrowRight, Check, Lightbulb, RotateCcw, Sparkles } from 'lucide-react'
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Esto no es…" — día 17, mes 6, ejecutivas (razonamiento creativo). A plain shape and a sentence that says what it is
+ * "¿Qué más podría ser?" — día 17, mes 6, ejecutivas (razonamiento creativo). A plain shape and a sentence that says what it is
  * NOT: "Esto no es una pelota. ¿Qué más podría ser?". The player invents another thing the shape could be, writes it or just
  * thinks it, and only AFTER answering do a few example ideas appear. The mechanic comes from a worksheet of outline
  * drawings that each "are not" something and ask what they are instead; here the shapes (drawn in SVG), the sentences
@@ -13,9 +13,11 @@ import type { GameProps } from '@/lib/challengeProgress'
  * `mistakes: 0` and `totalAttempts` = the number of shapes. The player either writes the idea in the box and taps
  * "Listo" or taps "La pensé" for an idea that was only in the head (a screen keyboard is not always welcome). In both
  * cases the example ideas then appear, as a few more possibilities and never as "the answer". What was written is
- * shown back, and at the end of the level the player's own ideas are listed.
+ * shown back, and at the end of the level the player's own ideas are listed. A written idea can be long and have no
+ * spaces (a box allows 60 characters; 80 were tried): the places that show it break the line anywhere
+ * (`overflow-wrap:anywhere`) so it never pushes the card sideways.
  *
- * ORIGINAL CONTENT. Only the mechanic is borrowed, and with it the pattern "Esto no es…" (the day's title). None of
+ * ORIGINAL CONTENT. Only the mechanic is borrowed, and with it the pattern "Esto no es…" (the sentence each shape carries; it is no longer the day's title). None of
  * the objects of the worksheet's sentences or drawings, and none of the rest of its wording, is used: the shapes are
  * a circle, a bar, a triangle, a crescent, a thick cross, a wavy band and three irregular blobs, and the sentences
  * and the example ideas were written for them. A throwaway script (not committed) rejects the worksheet's objects
@@ -332,8 +334,8 @@ function LevelView({ levelIdx, shapes, since, onSolved, onNext, onRepeat }: Leve
               ))}
             </div>
           ) : (
-            <div ref={ideasRef} role="status" className="mt-2 scroll-mb-20 rounded-2xl border border-tiam-green/30 bg-tiam-green/5 px-3 py-2 text-base text-slate-700">
-              <p className="font-semibold text-slate-900">
+            <div ref={ideasRef} role="status" className="mt-2 min-w-0 scroll-mb-20 rounded-2xl border border-tiam-green/30 bg-tiam-green/5 px-3 py-2 text-base text-slate-700">
+              <p className="font-semibold text-slate-900 [overflow-wrap:anywhere]">
                 {answer.length ? `Tu idea: ${answer.map((a) => `«${a}»`).join(' y ')}.` : '¡Muy bien, la pensaste!'}
               </p>
               <p className="mt-1 flex items-start gap-1.5">
@@ -390,7 +392,7 @@ function LevelView({ levelIdx, shapes, since, onSolved, onNext, onRepeat }: Leve
             {shapes.map((s, i) => (
               <li key={s.not} className="flex items-start gap-2 rounded-xl bg-white px-3 py-2">
                 <Check className="mt-1 h-4 w-4 shrink-0 text-tiam-green" strokeWidth={3} aria-hidden="true" />
-                <span>
+                <span className="min-w-0 [overflow-wrap:anywhere]">
                   <span className="text-slate-500">No es {s.not}: </span>
                   <span className="font-bold text-slate-900">{history[i] ? history[i]!.join(' · ') : 'lo pensaste'}</span>
                 </span>
