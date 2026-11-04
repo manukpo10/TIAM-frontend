@@ -5,8 +5,9 @@ import type { GameProps } from '@/lib/challengeProgress'
 /**
  * "En mi barrio" — día 5, mes 6, orientación. The places of a neighbourhood and what each one is for. Level 1: a
  * drawing of a place and three names, tap the one that names it. Level 2: an errand ("Necesitás un kilo de tomates y
- * una lechuga") and three places drawn with their names: tap where you would go. Level 3: errands again, but with four
- * places that sell or do similar things. It comes from a worksheet where the places of a neighbourhood are joined with
+ * una lechuga") and three places drawn with their names: tap where you would go. Level 3: errands again, but the four
+ * options are always the four food shops, so the errand has to be read for what it really asks (a cut of beef, fruit,
+ * something baked, an ice-cream flavour). It comes from a worksheet where the places of a neighbourhood are joined with
  * their pictures; none of its drawings, its list of places or its text is here, and its places are Spanish ones
  * (a metro station, a university) while these are the ones of an Argentine barrio: panadería, verdulería, kiosco, plaza.
  *
@@ -14,7 +15,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * style, no signs with writing) and every one was looked at: what the errands say can really be told from the picture
  * (bread and loaves in the bakery window, tools and a ladder at the hardware store, a green cross at the pharmacy).
  * The second and third level never put in the options a place that also sells what the errand asks for: the kiosco,
- * which sells a bit of everything, is left out of them. A throwaway script (not committed)
+ * which sells a bit of everything, is left out of them, and in level 3 only the right shop sells what the errand
+ * names (the answers of the day are also all different, so each place is the right one once). A throwaway script (not committed)
  * checks that no right place is repeated in the day, that the options of an item are different and contain the right
  * one and that every picture exists.
  *
@@ -96,44 +98,48 @@ interface LevelDef {
 
 const QUESTIONS_PER_LEVEL = 3
 
+const FOOD_SHOPS: PlaceId[] = ['panaderia', 'carniceria', 'verduleria', 'heladeria']
+
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
     kind: 'picture',
     pool: [
-      { answer: 'panaderia', options: ['panaderia', 'farmacia', 'banco'], tip: 'En la vitrina hay panes y facturas.' },
       { answer: 'farmacia', options: ['farmacia', 'ferreteria', 'plaza'], tip: 'Ahí se compran los remedios.' },
-      { answer: 'plaza', options: ['plaza', 'banco', 'heladeria'], tip: 'Tiene árboles, bancos para sentarse y juegos.' },
+      { answer: 'plaza', options: ['plaza', 'heladeria', 'correo'], tip: 'Tiene árboles, asientos para descansar y juegos.' },
       { answer: 'kiosco', options: ['kiosco', 'floreria', 'banco'], tip: 'Venden diarios, revistas, golosinas y gaseosas.' },
       { answer: 'correo', options: ['correo', 'carniceria', 'zapateria'], tip: 'Ahí se mandan las cartas y los paquetes.' },
+      { answer: 'banco', options: ['banco', 'panaderia', 'libreria'], tip: 'Ahí se guarda y se retira el dinero.' },
     ],
   },
   {
     name: 'Nivel 2',
     kind: 'errand',
     pool: [
-      { answer: 'verduleria', options: ['verduleria', 'correo', 'peluqueria'], errand: 'Necesitás un kilo de tomates y una lechuga para la ensalada.', tip: 'Ahí se venden las frutas y las verduras.' },
-      { answer: 'carniceria', options: ['carniceria', 'banco', 'floreria'], errand: 'Querés comprar un kilo de asado para el domingo.', tip: 'Ahí se vende la carne.' },
       { answer: 'peluqueria', options: ['peluqueria', 'farmacia', 'verduleria'], errand: 'Querés cortarte el pelo para la fiesta del sábado.', tip: 'Ahí hay tijeras, peines y espejos.' },
-      { answer: 'banco', options: ['banco', 'panaderia', 'zapateria'], errand: 'Tenés que cobrar la jubilación y sacar plata.', tip: 'Ahí se guarda y se retira el dinero.' },
+      { answer: 'floreria', options: ['floreria', 'banco', 'carniceria'], errand: 'Querés llevarle un ramo de flores a tu hermana para su cumpleaños.', tip: 'Ahí se venden ramos y plantas.' },
+      { answer: 'zapateria', options: ['zapateria', 'correo', 'plaza'], errand: 'Se te gastaron las zapatillas y necesitás un par nuevo.', tip: 'Ahí se compran zapatos, zapatillas y pantuflas.' },
+      { answer: 'ferreteria', options: ['ferreteria', 'heladeria', 'correo'], errand: 'Se te rompió la canilla y necesitás una llave y un caño nuevo.', tip: 'Ahí se venden herramientas y materiales para arreglar la casa.' },
+      { answer: 'libreria', options: ['libreria', 'farmacia', 'plaza'], errand: 'Tu nieta necesita carpeta, hojas y lapiceras para el colegio.', tip: 'Ahí se venden libros, cuadernos y útiles.' },
     ],
   },
+  // Level 3: the four options are ALWAYS the four food shops, so the errand has to be read for what it asks (a cut of meat,
+  // fruit, something baked, an ice cream flavour) and does not name the shop or what it sells in general.
   {
     name: 'Nivel 3',
     kind: 'errand',
     pool: [
-      { answer: 'ferreteria', options: ['ferreteria', 'libreria', 'zapateria', 'floreria'], errand: 'Se te rompió la canilla y necesitás una llave y un caño nuevo.', tip: 'Ahí se venden herramientas y materiales para arreglar la casa.' },
-      { answer: 'heladeria', options: ['heladeria', 'panaderia', 'verduleria', 'carniceria'], errand: 'Es un día de calor y querés un cuarto kilo de helado para el postre.', tip: 'Ahí se vende helado de todos los gustos.' },
-      { answer: 'floreria', options: ['floreria', 'verduleria', 'libreria', 'ferreteria'], errand: 'Para el cumpleaños de tu hermana querés llevarle un ramo de flores.', tip: 'Ahí se venden ramos y plantas.' },
-      { answer: 'zapateria', options: ['zapateria', 'peluqueria', 'ferreteria', 'libreria'], errand: 'Se te gastaron las zapatillas y necesitás un par nuevo para caminar.', tip: 'Ahí se compran zapatos, zapatillas y pantuflas.' },
-      { answer: 'libreria', options: ['libreria', 'floreria', 'zapateria', 'ferreteria'], errand: 'Tu nieta necesita una carpeta, hojas y lapiceras para el colegio.', tip: 'Ahí se venden libros, cuadernos y útiles.' },
+      { answer: 'panaderia', options: FOOD_SHOPS, errand: 'Querés unas medialunas calentitas para acompañar el mate.', tip: 'Ahí se hornean los panes, las facturas y las medialunas.' },
+      { answer: 'carniceria', options: FOOD_SHOPS, errand: 'Para el guiso del domingo necesitás un kilo de peceto.', tip: 'El peceto es un corte de carne.' },
+      { answer: 'verduleria', options: FOOD_SHOPS, errand: 'Para la ensalada de frutas necesitás duraznos, bananas y manzanas.', tip: 'Las frutas se compran donde venden las verduras.' },
+      { answer: 'heladeria', options: FOOD_SHOPS, errand: 'Para el postre del cumpleaños querés un cuarto kilo de dulce de leche granizado.', tip: 'El granizado es un gusto de helado.' },
     ],
   },
 ]
 const TOTAL_QUESTIONS = LEVELS.length * QUESTIONS_PER_LEVEL
 
 /** The errand of the how-to screen: it is not in the game. */
-const EXAMPLE = { errand: 'Querés comprar medio kilo de pan.', place: 'panaderia' as PlaceId }
+const EXAMPLE = { errand: 'Querés comprar el diario y una revista.', place: 'kiosco' as PlaceId }
 // ── data:end ──
 
 function shuffle<T>(arr: T[]): T[] {
@@ -302,13 +308,13 @@ function LevelView({ levelIdx, items, since, onMistake, onSolved, onNext, onRepe
 
       {!done && byPicture && (
         <>
-          <h2 className="mt-3 text-balance text-center text-xl font-bold leading-snug text-slate-900 sm:text-2xl">¿Qué lugar del barrio es este?</h2>
+          <h2 className="mt-2 text-balance text-center text-lg font-bold leading-snug text-slate-900 sm:text-2xl">¿Qué lugar es este?</h2>
           <img
             src={imageFor(current.def.answer)}
             alt="Dibujo de un lugar del barrio"
-            className="mx-auto mt-3 aspect-[4/3] w-full max-w-[280px] rounded-2xl border-2 border-slate-100 bg-white object-cover"
+            className="mx-auto mt-2 aspect-[16/10] w-full max-w-[300px] rounded-2xl border-2 border-slate-100 bg-white object-cover"
           />
-          <div role="group" aria-label="Nombres" className="mx-auto mt-3 flex max-w-md flex-col gap-2">
+          <div role="group" aria-label="Nombres" className="mx-auto mt-2 flex max-w-md flex-col gap-1.5">
             {current.options.map((place) => {
               const isRight = right === place
               const isWrong = wrong.includes(place)
@@ -319,7 +325,7 @@ function LevelView({ levelIdx, items, since, onMistake, onSolved, onNext, onRepe
                   disabled={busy || isWrong}
                   onClick={(e) => choose(place, e.timeStamp)}
                   className={[
-                    'flex min-h-[56px] items-center justify-center gap-2 rounded-2xl border-2 px-3 text-xl font-bold transition',
+                    'flex min-h-[48px] items-center justify-center gap-2 rounded-2xl border-2 px-3 text-xl font-bold transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                     isRight
                       ? 'border-tiam-green bg-tiam-green/10 text-slate-900'
@@ -339,19 +345,20 @@ function LevelView({ levelIdx, items, since, onMistake, onSolved, onNext, onRepe
 
       {!done && !byPicture && (
         <>
-          <h2 className="mt-3 text-balance text-center text-xl font-bold leading-snug text-slate-900 sm:text-2xl">¿A dónde vas?</h2>
-          <div className="mx-auto mt-3 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-3 text-center">
-            <p className="text-sm font-bold uppercase tracking-wide text-tiam-blue">Tu mandado</p>
-            <p className="mt-1 text-xl font-bold leading-snug text-slate-900 sm:text-2xl">{current.def.errand}</p>
+          <div className="mx-auto mt-2 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-1.5 text-center">
+            <p className="text-xl font-bold leading-snug text-slate-900">{current.def.errand}</p>
           </div>
+          {/* Three places: one under the other, each with a big drawing at its side (a row of three does not fit the names
+              of a 320px phone). Four places: two by two. */}
           <div
             role="group"
             aria-label="Lugares"
-            className={`mx-auto mt-3 grid max-w-md gap-2 ${current.options.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}
+            className={`mx-auto mt-2 grid max-w-md gap-1.5 ${current.options.length === 3 ? 'grid-cols-1' : 'grid-cols-2'}`}
           >
             {current.options.map((place) => {
               const isRight = right === place
               const isWrong = wrong.includes(place)
+              const row = current.options.length === 3
               return (
                 <button
                   key={place}
@@ -360,7 +367,7 @@ function LevelView({ levelIdx, items, since, onMistake, onSolved, onNext, onRepe
                   aria-label={PLACE_NAMES[place]}
                   onClick={(e) => choose(place, e.timeStamp)}
                   className={[
-                    'relative flex flex-col items-center rounded-2xl border-2 p-1.5 transition',
+                    row ? 'relative flex items-center gap-3 rounded-2xl border-2 p-1.5 text-left transition' : 'relative flex flex-col items-center rounded-2xl border-2 p-1.5 transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                     isRight
                       ? 'border-tiam-green bg-tiam-green/10 ring-2 ring-tiam-green/30'
@@ -372,9 +379,9 @@ function LevelView({ levelIdx, items, since, onMistake, onSolved, onNext, onRepe
                   <img
                     src={imageFor(place)}
                     alt=""
-                    className={`aspect-[4/3] w-full rounded-xl object-cover ${isWrong ? 'opacity-35 grayscale' : ''}`}
+                    className={`rounded-xl object-cover ${row ? 'aspect-[4/3]' : 'aspect-[16/10]'} ${row ? 'w-20 shrink-0' : 'w-full'} ${isWrong ? 'opacity-35 grayscale' : ''}`}
                   />
-                  <span className={`mt-1 text-base font-bold leading-tight ${isWrong ? 'text-slate-400' : 'text-slate-900'}`}>{PLACE_NAMES[place]}</span>
+                  <span className={`${row ? 'text-xl' : 'mt-1 text-base'} font-bold leading-tight ${isWrong ? 'text-slate-400' : 'text-slate-900'}`}>{PLACE_NAMES[place]}</span>
                   {isRight && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-tiam-green text-white shadow">
                       <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />
@@ -390,7 +397,7 @@ function LevelView({ levelIdx, items, since, onMistake, onSolved, onNext, onRepe
       {!done && (
         <p
           role="status"
-          className={`mx-auto mt-3 min-h-[3.5rem] max-w-md text-center text-base font-medium ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
+          className={`mx-auto mt-1 min-h-[2.5rem] max-w-md text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
         >
           {hint?.text}
         </p>
