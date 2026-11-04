@@ -17,8 +17,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ORIGINAL CONTENT. Only the idea (a long word whose letters are all given) is borrowed. The nine words and the clues
  * are TIAM's own, everyday words for adults. A throwaway script (not committed) checks that the sorted letters are
- * exactly those of the word, that the word of the post is not here, that no clue contains its word and that no word is a
- * right answer elsewhere in the month (nor one of "Palabras desordenadas").
+ * exactly those of the word, that the word of the post is not here, that no clue contains its word and that none of the
+ * nine words appears as a whole string (an answer or an option) in any other game of src/pages/desafio/games, months 1
+ * to 6, "Palabras desordenadas" included. A word that only shows up inside someone else's sentence is not counted.
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word from its letters with nothing to go on): every word has a
  * clue, a second tip and its boxes on screen, so its length is visible. A wrong word costs ONE mistake (a double tap on
@@ -57,24 +58,24 @@ const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
     words: [
-      { word: 'BUFANDA', display: 'bufanda', clue: 'Prenda larga de lana que se enrolla alrededor del cuello en invierno.', tip: 'Abriga el cuello y se usa con el gorro.' },
-      { word: 'ESCALERA', display: 'escalera', clue: 'Conjunto de peldaños que sirve para subir de un piso al otro.', tip: 'Si el ascensor no anda, hay que usarla.' },
-      { word: 'ALMOHADA', display: 'almohada', clue: 'Se apoya en la cama para descansar la cabeza al dormir.', tip: 'Tiene funda y se rellena con plumas o espuma.' },
+      { word: 'BUFANDA', display: 'bufanda', clue: 'Prenda larga de lana que se enrolla al cuello.', tip: 'Abriga el cuello y se usa con el gorro.' },
+      { word: 'ESCALERA', display: 'escalera', clue: 'Peldaños para subir de un piso al otro.', tip: 'Si el ascensor no anda, hay que usarla.' },
+      { word: 'ALMOHADA', display: 'almohada', clue: 'Se apoya en la cama para descansar la cabeza.', tip: 'Tiene funda y se rellena con plumas o espuma.' },
     ],
   },
   {
     name: 'Nivel 2',
     words: [
-      { word: 'BICICLETA', display: 'bicicleta', clue: 'Vehículo de dos ruedas que se mueve pedaleando.', tip: 'Se maneja con manubrio y tiene cadena.' },
-      { word: 'CALENDARIO', display: 'calendario', clue: 'Hoja o librito que muestra los días, las semanas y los meses del año.', tip: 'Ahí se marcan los cumpleaños.' },
-      { word: 'MERMELADA', display: 'mermelada', clue: 'Dulce espeso de fruta que se unta en el pan.', tip: 'La de durazno o la de ciruela son muy comunes.' },
+      { word: 'LAVARROPAS', display: 'lavarropas', clue: 'Aparato que lava la ropa y la centrifuga.', tip: 'Se carga con la ropa sucia y se le echa jabón líquido.' },
+      { word: 'CALENDARIO', display: 'calendario', clue: 'Muestra los días y los meses del año.', tip: 'Ahí se marcan los cumpleaños.' },
+      { word: 'ENSALADERA', display: 'ensaladera', clue: 'Recipiente hondo para servir lechuga y tomate.', tip: 'Puede ser de vidrio o de madera y va en el centro de la mesa.' },
     ],
   },
   {
     name: 'Nivel 3',
     words: [
-      { word: 'ELECTRICISTA', display: 'electricista', clue: 'Persona que arregla la luz, los enchufes y los cables de una casa.', tip: 'Se lo llama cuando salta la térmica.' },
-      { word: 'COMPUTADORA', display: 'computadora', clue: 'Máquina con pantalla y teclado para escribir, mirar el correo y navegar por internet.', tip: 'Puede ser de escritorio o portátil.' },
+      { word: 'ELECTRICISTA', display: 'electricista', clue: 'Arregla la luz, los enchufes y los cables.', tip: 'Se lo llama cuando salta la térmica.' },
+      { word: 'COMPUTADORA', display: 'computadora', clue: 'Tiene pantalla y teclado y sirve para navegar.', tip: 'Puede ser de escritorio o portátil.' },
       { word: 'CALEFACCION', display: 'calefacción', clue: 'Sistema de la casa que da calor en invierno.', tip: 'Puede ser a gas, con estufas o con radiadores.' },
     ],
   },
@@ -281,10 +282,10 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
   const remaining = current.word.length - typed.length
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-2 pt-2.5 sm:p-7">
       {/* Header */}
       <div className="text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-tiam-blue">
           {level.name}
         </span>
         {!done && (
@@ -297,7 +298,7 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
       {!done && (
         <>
           {/* The clue and the boxes */}
-          <div className="mx-auto mt-2 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-3 py-2 text-center">
+          <div className="mx-auto mt-1.5 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-3 py-1.5 text-center">
             <p className="text-base font-semibold leading-snug text-slate-800">{current.clue}</p>
             <p className="mt-1 text-base font-bold uppercase tracking-wide text-tiam-blue">{current.word.length} letras</p>
             <div className="mt-1">
@@ -324,7 +325,7 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
                   aria-label={`Letra ${ch}, quedan ${rest}`}
                   onClick={(e) => tapKey(ch, count, e.timeStamp)}
                   className={[
-                    'flex min-h-[60px] flex-col items-center justify-center rounded-xl border-2 leading-tight transition',
+                    'flex min-h-[56px] flex-col items-center justify-center rounded-xl border-2 leading-tight transition',
                     'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50',
                     rest <= 0 ? 'border-slate-100 bg-slate-50 text-slate-300' : 'border-slate-300 bg-white text-slate-800 hover:border-tiam-blue/40 active:bg-tiam-blue/10',
                   ].join(' ')}
@@ -336,13 +337,13 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
             })}
           </div>
 
-          <div className="mx-auto mt-2 flex max-w-md gap-2">
+          <div className="sticky bottom-0 z-10 mx-auto mt-1.5 flex max-w-md gap-2 bg-white/95 pb-0.5 pt-1">
             <button
               type="button"
               aria-label="Borrar la última letra"
               disabled={busy || typed.length === 0}
               onClick={(e) => backspace(e.timeStamp)}
-              className="flex min-h-[52px] w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-700 transition hover:border-tiam-blue/40 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 disabled:border-slate-200 disabled:text-slate-300"
+              className="flex min-h-[48px] w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-700 transition hover:border-tiam-blue/40 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 disabled:border-slate-200 disabled:text-slate-300"
             >
               <BackspaceIcon className="h-6 w-6" aria-hidden="true" />
             </button>
@@ -350,7 +351,7 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
               type="button"
               disabled={busy || !full}
               onClick={(e) => submit(e.timeStamp)}
-              className="flex min-h-[52px] flex-1 items-center justify-center rounded-2xl bg-tiam-blue px-4 text-xl font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500"
+              className="flex min-h-[48px] flex-1 items-center justify-center rounded-2xl bg-tiam-blue px-4 text-xl font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500"
             >
               Listo
             </button>
