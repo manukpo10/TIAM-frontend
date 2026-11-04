@@ -636,7 +636,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 16, type: 'game', area: 'lenguaje', title: 'Números revueltos',
     instructions: 'Un juego de lenguaje y números: con la pista, armá con las letras el nombre de un número y después tocalo escrito en cifras. Subís de dificultad a medida que avanzás.' },
   { day: 17, type: 'game', area: 'ejecutivas', title: 'Esto no es…',
-    instructions: 'Un juego de razonamiento creativo: mirá una forma y pensá qué podría ser, por ejemplo «esto no es un paraguas, ¿qué es?». Podés escribirlo o pensarlo, y te mostramos ideas de ejemplo. No hay respuestas equivocadas. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento creativo: mirá una forma que dice qué no es, por ejemplo «esto no es un sobre», y pensá qué otra cosa podría ser. Podés escribirlo o pensarlo, y después te mostramos ideas de ejemplo. No hay respuestas equivocadas. Subís de dificultad a medida que avanzás.' },
   { day: 18, type: 'game', area: 'lenguaje', title: 'Mándala de la N',
     instructions: 'Un juego de lenguaje: en un mándala, pintá cada palabra del color que corresponde según la letra que sigue a la N. En los niveles siguientes se suma la M antes de B y P. Subís de dificultad a medida que avanzás.' },
   { day: 19, type: 'game', area: 'praxias', title: 'Armá la figura',
