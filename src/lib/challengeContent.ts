@@ -655,11 +655,11 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 23, type: 'game', area: 'calculo', title: 'Por definir',
     instructions: 'Este día todavía no está definido.' },
   { day: 24, type: 'game', area: 'lenguaje', title: 'El rosco',
-    instructions: 'Un juego de lenguaje: en una rueda de letras, leé la definición de cada una y escribí la palabra con el teclado de la pantalla. Si no te sale, tocá «Paso» y seguí. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: en una rueda de letras, leé la definición de cada una y escribí la palabra con el teclado de la pantalla. La pista dice si empieza con esa letra o si solo la contiene. Si no te sale, tocá «Paso»: esa letra vuelve más tarde. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'ejecutivas', title: '¿Cuál es?',
-    instructions: 'Un juego de razonamiento: las pistas aparecen de a una y se van tachando las palabras que no cumplen, hasta que queda la única. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: las pistas aparecen de a una. Tachá, tocándolas, las palabras que no la cumplen, hasta que quede una sola. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'lenguaje', title: 'Frases con truco',
-    instructions: 'Un juego de lenguaje: dos palabras graciosas esconden otra. Con la pista, descubrí cuál es. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: una frase de dos palabras graciosas esconde otra palabra. Con la pista, tocá las letras de la frase en el orden que arma la palabra escondida. Subís de dificultad a medida que avanzás.' },
   // UNDECIDED (the user has not chosen yet): the worksheet planned for this day,
   // "Relaciona", is the same one month 5 already used on its día 30. Proposal:
   // "La agenda de la semana" (study a week's agenda, then answer without it).
@@ -671,9 +671,9 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 28, type: 'game', area: 'lenguaje', title: 'La ciudad en oraciones',
     instructions: 'Hoy es un día de lápiz y papel: mirá la ilustración de una ciudad y, con una hoja, escribí una oración para cada consigna. No hay respuestas correctas ni incorrectas: lo que importa es animarte a escribir. 📝' },
   { day: 29, type: 'game', area: 'ejecutivas', title: 'Estrella de letras',
-    instructions: 'Un juego de razonamiento: recorré las líneas de la estrella para formar palabras. Con la pista y la cantidad de letras, descubrí cuáles son. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de razonamiento: recorré las líneas de la estrella, de letra en letra y sin repetir ninguna, para formar palabras. Con la pista y la cantidad de letras, descubrí cuáles son. Subís de dificultad a medida que avanzás.' },
   { day: 30, type: 'game', area: 'calculo', title: 'El ticket del día',
-    instructions: 'Último día: tres tickets del día, cada uno con cinco preguntas cortas de ortografía, sinónimos, orden, cálculo mental y un problema. ¡A cerrar el desafío! 🎉' },
+    instructions: 'Último día: tres tickets del día, cada uno con cinco preguntas cortas de ortografía, sinónimos, ordenar números, cálculo mental y un problema. ¡A cerrar el desafío! 🎉' },
 ]
 
 /** Content joined with its per-day illustration (matched by day number). */
