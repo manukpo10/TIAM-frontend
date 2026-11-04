@@ -3,30 +3,33 @@ import { ArrowRight, Check, Delete as BackspaceIcon, RotateCcw, Sparkles } from 
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Nombres escondidos" — día 7, mes 6, lenguaje. A heap of loose letters and a category (frutas, árboles, aves): the
+ * "Nombres escondidos" — día 7, mes 6, lenguaje. A heap of loose letters and a category (herramientas, árboles, aves): the
  * letters hide THREE names of that category, and each name comes with a clue and its boxes (so its length is visible).
  * The player taps letters, in order, to fill the boxes of a name, then taps "Listo"; the letters of a name that is right
  * are used up, so the heap that is left is the one of the names still to be found. The mechanic comes from a worksheet
  * with a block of loose letters and the instruction to name flowers that can be formed by mixing them; here the
  * letters come from three names written for the level, each with a clue and a length.
  *
- * ORIGINAL CONTENT. Only the idea is borrowed. The categories (fruits, trees, birds of Argentina), the names and the
- * clues are TIAM's own, and the category of the worksheet (flowers) is not used. A throwaway script (not committed)
- * checks that the loose letters are exactly the letters of the three names, that no name of the worksheet is here and,
- * the important one, that the letters of a level cannot also form ANOTHER name of the category from a list of about
- * forty fruits, trees and birds: a word that is a fruit too would be a right answer the game could not accept.
+ * ORIGINAL CONTENT. Only the idea is borrowed. The categories (tools, trees, birds of Argentina), the names and the
+ * clues are TIAM's own, and the category of the worksheet (flowers) is not used. Level 1 is NOT fruits: month 4's
+ * "Anagramas por categoría" already has a fruits band (PERA, KIWI…), and none of the names here is in that game. A
+ * throwaway script (not committed) checks that the loose letters are exactly the letters of the three names, that no
+ * name of the worksheet is here and, the important one, that the letters of a level cannot also form ANOTHER name of
+ * the category from a list of about eighty tools, trees and birds: a word that is a tool too would be a right answer
+ * the game could not accept.
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word from a hidden list with nothing to go on): each name has
- * its clue and one box per letter. The three names are on screen together and any of them can be started first, and a
+ * its clue and one box per letter. The three clues are tabs and any of them can be opened first, and a
  * name is accepted whichever of the three clues was being answered: the player may have built the name of ANOTHER
  * clue, and that is a right answer too. A wrong name costs ONE mistake (a double tap on "Listo" cannot count twice: the
  * first tap empties the boxes and "Listo" is off until they fill again), puts the letters back in the heap and the clue
  * grows with the misses on the same row: a nudge, then the first letter, then the name itself. Nothing is red and
  * nothing is timed but a short pause so the last name is seen.
  *
- * THREE NAMES A LEVEL, as the tallerista likes the days short. The ramp is the category and the length: three fruits of
- * four and five letters (13 letters), three trees of five letters (15) and three birds of six, seven and eight (21).
- * Every clue is at most two lines on a phone, so the three names and the whole heap of letters stay on one screen.
+ * THREE NAMES A LEVEL, as the tallerista likes the days short. The ramp is the category and the length: three tools of
+ * four and five letters (14 letters), three trees of five letters (15) and three birds of five, six and seven (18).
+ * Only the clue being answered shows, with its boxes (a found name takes its tab), so the heap of
+ * letters is on screen on a short phone, and the "Listo" bar sticks to the bottom of the card.
  * Every level has ONE authored set, and the order of the letters in the heap is chosen ONCE at mount (`epoch`), so
  * "Repetir" replays exactly the same nine names.
  *
@@ -58,11 +61,11 @@ interface LevelDef {
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
-    category: 'Frutas',
+    category: 'Herramientas',
     names: [
-      { word: 'PERA', display: 'pera', clue: 'Fruta más ancha abajo que arriba, de pulpa blanda y jugosa.', tip: 'Se come cruda o cocida en almíbar.' },
-      { word: 'KIWI', display: 'kiwi', clue: 'Fruta de cáscara marrón con pelitos y pulpa verde.', tip: 'Se corta al medio y se come con cucharita.' },
-      { word: 'PALTA', display: 'palta', clue: 'Fruta verde de carozo grande y pulpa cremosa, para tostadas.', tip: 'En otros países se llama aguacate.' },
+      { word: 'PALA', display: 'pala', clue: 'Herramienta de mango largo y hoja ancha que sirve para cavar la tierra.', tip: 'Se usa en la huerta y en la obra.' },
+      { word: 'CLAVO', display: 'clavo', clue: 'Pieza de metal fina y con punta que se golpea para unir dos maderas.', tip: 'Tiene un extremo con cabeza plana.' },
+      { word: 'LLAVE', display: 'llave', clue: 'Herramienta de metal que se encaja en una tuerca para apretarla o aflojarla.', tip: 'La llamada «inglesa» se ajusta a distintos tamaños.' },
     ],
   },
   {
@@ -79,7 +82,7 @@ const LEVELS: LevelDef[] = [
     category: 'Aves',
     names: [
       { word: 'HORNERO', display: 'hornero', clue: 'Ave nacional de la Argentina; su nido de barro parece una casita.', tip: 'Es de color marrón y se la ve en los postes.' },
-      { word: 'CARANCHO', display: 'carancho', clue: 'Ave de rapiña de cabeza oscura, común en el campo y las rutas.', tip: 'Se alimenta de animales muertos.' },
+      { word: 'CISNE', display: 'cisne', clue: 'Ave acuática de cuello largo y curvo y plumaje blanco que nada con elegancia en los lagos.', tip: 'Suele verse en los lagos de los parques.' },
       { word: 'CONDOR', display: 'cóndor', clue: 'Ave enorme de los Andes, de alas gigantes y collar blanco.', tip: 'Vuela muy alto, sobre las montañas.' },
     ],
   },
@@ -87,7 +90,7 @@ const LEVELS: LevelDef[] = [
 const TOTAL_NAMES = LEVELS.reduce((sum, lvl) => sum + lvl.names.length, 0)
 
 /** The name of the how-to screen: it is not in the game. */
-const EXAMPLE = { clue: 'Fruta que crece en racimos y de la que sale el vino', word: 'UVA' }
+const EXAMPLE = { clue: 'Herramienta de filo ancho que sirve para cortar leña', word: 'HACHA' }
 // ── data:end ──
 
 function shuffle<T>(arr: T[]): T[] {
@@ -127,7 +130,7 @@ const SETTLE_MS = 400
 
 /** One box per letter of a name. */
 function Boxes({ word, letters, right }: { word: string; letters: string[]; right: boolean }) {
-  const long = word.length > 7
+  const long = word.length > 6
   return (
     <div className="flex flex-wrap justify-center gap-1" aria-hidden="true">
       {[...word].map((_, i) => (
@@ -234,8 +237,8 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
   }, [done])
 
   const busy = advancing || done
-  // The 21 letters of level 3 would need five rows at full size: 44px tiles fit six to a row on a 375px phone.
-  const compact = tiles.length > 15
+  // The 18 letters of level 3 would need four rows at full size: 44px tiles fit six to a row on a 375px phone.
+  const compact = tiles.length > 12
   const used = new Set(typed.flat())
   const tileChar = (id: number) => tiles.find((t) => t.id === id)?.ch ?? ''
   const activeWord = level.names[active]
@@ -299,19 +302,18 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
         </span>
         {!done && (
           <span className="ml-3 align-middle text-base font-semibold text-slate-500">
-            Llevás {found.length} de {total}
+            {level.category}: llevás {found.length} de {total}
           </span>
         )}
       </div>
 
       {!done && (
         <>
-          <h2 className="mt-2 text-center text-lg font-bold leading-snug text-slate-900 sm:text-2xl">
-            Tres nombres de <span className="text-tiam-blue">{level.category.toLowerCase()}</span>
-          </h2>
 
-          {/* The three names, each with its clue and its boxes */}
-          <div className="mx-auto mt-2 flex max-w-md flex-col gap-2">
+
+          {/* The three clues as tabs (a found name takes its tab), and the clue being answered with its boxes: one clue at
+              a time keeps the letters and "Listo" on screen on a short phone. Any tab can be opened first. */}
+          <div className="mx-auto mt-2 grid max-w-md grid-cols-3 gap-1.5" role="group" aria-label="Pistas">
             {level.names.map((n, i) => {
               const isFound = found.includes(i)
               const isActive = active === i && !busy
@@ -321,20 +323,28 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
                   type="button"
                   disabled={busy || isFound}
                   aria-pressed={isActive}
+                  aria-label={isFound ? `Pista ${i + 1}: ${n.display}` : `Pista ${i + 1}, ${n.word.length} letras`}
                   onClick={(e) => pickRow(i, e.timeStamp)}
                   className={[
-                    'rounded-2xl border-2 px-3 py-1.5 text-center transition',
+                    'flex min-h-[44px] items-center justify-center rounded-2xl border-2 px-1 text-base font-bold transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
-                    isFound ? 'border-tiam-green bg-tiam-green/5' : isActive ? 'border-tiam-blue bg-tiam-blue/5' : 'border-slate-200 bg-white hover:border-tiam-blue/40',
+                    isFound
+                      ? 'border-tiam-green bg-tiam-green/10 text-slate-900'
+                      : isActive
+                        ? 'border-tiam-blue bg-tiam-blue text-white'
+                        : 'border-slate-300 bg-white text-slate-700 hover:border-tiam-blue/40',
                   ].join(' ')}
                 >
-                  <span className="block text-base font-semibold leading-snug text-slate-800">{n.clue}</span>
-                  <span className="mt-1 block">
-                    <Boxes word={n.word} letters={typed[i].map(tileChar)} right={isFound} />
-                  </span>
+                  {isFound ? n.display : `Pista ${i + 1}`}
                 </button>
               )
             })}
+          </div>
+          <div className="mx-auto mt-1.5 max-w-md rounded-2xl border-2 border-tiam-blue bg-tiam-blue/5 px-3 py-1.5 text-center">
+            <span className="block text-base font-semibold leading-snug text-slate-800">{level.names[active].clue}</span>
+            <span className="mt-1 block">
+              <Boxes word={level.names[active].word} letters={typed[active].map(tileChar)} right={found.includes(active)} />
+            </span>
           </div>
 
           <p
@@ -345,7 +355,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
           </p>
 
           {/* The heap of letters: a letter in a box, or in a name already found, is used up */}
-          <div role="group" aria-label="Letras sueltas" className={`mx-auto flex max-w-md flex-wrap justify-center ${compact ? 'gap-1.5' : 'gap-2'}`}>
+          <div role="group" aria-label="Letras sueltas" className={`mx-auto flex max-w-md flex-wrap justify-center ${compact ? 'gap-1' : 'gap-2'}`}>
             {tiles.map((t) => {
               const isUsed = used.has(t.id)
               return (
@@ -368,7 +378,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
             })}
           </div>
 
-          <div className="mx-auto mt-2 flex max-w-md gap-2">
+          <div className="sticky bottom-0 z-10 mx-auto mt-1 flex max-w-md gap-2 bg-white/95 pb-0.5 pt-1">
             <button
               type="button"
               aria-label="Borrar la última letra"
