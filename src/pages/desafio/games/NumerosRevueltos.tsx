@@ -120,7 +120,9 @@ function buildEpoch(): ItemEpoch[][] {
   return LEVELS.map((lvl) =>
     lvl.numbers.map((n) => {
       let letters = shuffle([...n.word])
-      while (letters.join('') === n.word) letters = shuffle([...n.word])
+      // Never start already solved (a bounded retry; a rotation settles the odd case where the shuffle keeps the order).
+      for (let tries = 0; tries < 8 && letters.join('') === n.word; tries++) letters = shuffle([...n.word])
+      if (letters.join('') === n.word) letters = [...letters.slice(1), letters[0]]
       return { tiles: letters.map((ch, id) => ({ id, ch })), figures: shuffle([n.value, ...n.wrong]) }
     }),
   )

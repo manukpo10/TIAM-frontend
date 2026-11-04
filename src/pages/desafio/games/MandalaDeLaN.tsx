@@ -42,12 +42,12 @@ type RuleId = 'nf' | 'nv' | 'nc' | 'nch' | 'mb' | 'mp'
 type PatternId = 'rayas' | 'puntos' | 'cuadricula' | 'horizontales' | 'verticales' | 'ondas'
 
 const RULES: Record<RuleId, { label: string; long: string; fill: string; pattern: PatternId }> = {
-  nf: { label: 'NF', long: 'La N va antes de la F', fill: '#F4A6A0', pattern: 'rayas' },
-  nv: { label: 'NV', long: 'La N va antes de la V', fill: '#9EC8F5', pattern: 'puntos' },
-  nc: { label: 'NC', long: 'La N va antes de la C', fill: '#A7DDA2', pattern: 'cuadricula' },
-  nch: { label: 'NCH', long: 'La N va antes de CH', fill: '#CDB5F0', pattern: 'horizontales' },
-  mb: { label: 'MB', long: 'La M va antes de la B', fill: '#F9CB8B', pattern: 'verticales' },
-  mp: { label: 'MP', long: 'La M va antes de la P', fill: '#F6B3D2', pattern: 'ondas' },
+  nf: { label: 'NF', long: 'La N seguida de la F', fill: '#F4A6A0', pattern: 'rayas' },
+  nv: { label: 'NV', long: 'La N seguida de la V', fill: '#9EC8F5', pattern: 'puntos' },
+  nc: { label: 'NC', long: 'La N seguida de la C', fill: '#A7DDA2', pattern: 'cuadricula' },
+  nch: { label: 'NCH', long: 'La N seguida de CH', fill: '#CDB5F0', pattern: 'horizontales' },
+  mb: { label: 'MB', long: 'La M seguida de la B', fill: '#F9CB8B', pattern: 'verticales' },
+  mp: { label: 'MP', long: 'La M seguida de la P', fill: '#F6B3D2', pattern: 'ondas' },
 }
 
 interface WordDef {
@@ -97,7 +97,7 @@ const LEVELS: LevelDef[] = [
       { word: 'infante', rule: 'nf', ring: 0 },
       { word: 'enviar', rule: 'nv', ring: 0 },
       { word: 'invento', rule: 'nv', ring: 0 },
-      { word: 'blanco', rule: 'nc', ring: 0 },
+      { word: 'pincel', rule: 'nc', ring: 0 },
       { word: 'lancha', rule: 'nch', ring: 0 },
     ],
   },
@@ -111,12 +111,12 @@ const LEVELS: LevelDef[] = [
     ],
     words: [
       { word: 'hombre', rule: 'mb', ring: 0 },
-      { word: 'ancho', rule: 'nch', ring: 0 },
-      { word: 'tiempo', rule: 'mp', ring: 0 },
-      { word: 'cinco', rule: 'nc', ring: 0 },
+      { word: 'pancho', rule: 'nch', ring: 0 },
+      { word: 'campo', rule: 'mp', ring: 0 },
+      { word: 'ancla', rule: 'nc', ring: 0 },
       { word: 'enfermo', rule: 'nf', ring: 1 },
-      { word: 'invierno', rule: 'nv', ring: 1 },
-      { word: 'lámpara', rule: 'mp', ring: 1 },
+      { word: 'convivir', rule: 'nv', ring: 1 },
+      { word: 'empanada', rule: 'mp', ring: 1 },
       { word: 'tambor', rule: 'mb', ring: 1 },
     ],
   },

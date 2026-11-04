@@ -4,7 +4,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "Esto no es…" — día 17, mes 6, ejecutivas (razonamiento creativo). A plain shape and a sentence that says what it is
- * NOT: "Esto no es una pelota. ¿Qué otra cosa podría ser?". The player invents another thing the shape could be, writes it or just
+ * NOT: "Esto no es una pelota. ¿Qué más podría ser?". The player invents another thing the shape could be, writes it or just
  * thinks it, and only AFTER answering do a few example ideas appear. The mechanic comes from a worksheet of outline
  * drawings that each "are not" something and ask what they are instead; here the shapes (drawn in SVG), the sentences
  * and the example ideas are TIAM's own.
@@ -59,14 +59,14 @@ const LEVELS: LevelDef[] = [
         paths: [{ d: 'M100 14a56 56 0 1 0 0.01 0z' }],
         not: 'una pelota',
         asks: ['Tu idea'],
-        ideas: ['un reloj de pared', 'un plato', 'la luna llena', 'una rueda'],
+        ideas: ['un reloj de pared', 'un plato', 'una moneda gigante', 'una rueda'],
       },
       {
         alt: 'Una figura larga, baja y de esquinas rectas.',
         paths: [{ d: 'M18 46h164v48H18z' }],
         not: 'una regla',
         asks: ['Tu idea'],
-        ideas: ['un puente', 'una barra de chocolate', 'un banco de plaza', 'una cama vista de costado'],
+        ideas: ['un puente', 'un ladrillo', 'un banco de plaza', 'una cama vista de costado'],
       },
       {
         alt: 'Una figura con tres lados y una punta hacia arriba.',
@@ -173,7 +173,7 @@ function ShapeArt({ shape, className = '' }: { shape: ShapeDef; className?: stri
 
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   const steps = [
-    'Mirá la forma y leé lo que dice: «Esto no es…». Pensá qué otra cosa podría ser.',
+    'Mirá la forma y leé lo que dice: «Esto no es…». Pensá en qué más podría convertirse.',
     'Escribí tu idea y tocá «Listo», o tocá «La pensé» si la pensaste sin escribirla.',
     'Después te mostramos otras ideas, solo para inspirarte. No hay respuestas equivocadas.',
   ]
@@ -192,7 +192,7 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
       </ol>
       <div className="mt-3 rounded-2xl bg-white p-3 text-center">
         <p className="text-base font-semibold text-slate-500">Por ejemplo:</p>
-        <p className="mt-1 text-lg font-bold leading-snug text-slate-900">Esto no es {EXAMPLE_NOT}. ¿Qué otra cosa podría ser?</p>
+        <p className="mt-1 text-lg font-bold leading-snug text-slate-900">Esto no es {EXAMPLE_NOT}. ¿Qué más podría ser?</p>
       </div>
       <div className="sticky bottom-3 z-10 mt-4 text-center">
         <button
@@ -311,7 +311,7 @@ function LevelView({ levelIdx, shapes, since, onSolved, onNext, onRepeat }: Leve
           <p className="mt-2 text-center text-lg font-bold leading-snug text-slate-900">
             Esto no es {shape.not}.
             <span className="block text-base font-semibold text-slate-600">
-              ¿Qué otra cosa podría ser?{shape.asks.length > 1 ? ' Pensá dos ideas distintas.' : ''}
+              ¿Qué más podría ser?{shape.asks.length > 1 ? ' Pensá dos ideas distintas.' : ''}
             </span>
           </p>
 
