@@ -17,7 +17,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ORIGINAL CONTENT AND IMAGE. The skeleton is TIAM's own Flux illustration (src/assets/desafio/games/el-esqueleto,
  * soft flat style, nothing written on it), and each pin was checked by laying the circles over the picture. The names
- * are plain anatomy and the functions are written for this game: none contains the name of its bone (a throwaway
+ * are plain anatomy and the functions are written in our own words for this game (no sentence of the worksheet, not
+ * even the ones that state a plain fact): none contains the name of its bone (a throwaway
  * script, not committed, also checks that no bone repeats in the day, that every pin is far enough from the others of
  * its level to be tapped apart on a phone 320px wide and that the labels sit inside the picture; the labels were also
  * measured in the browser at 375 and 320px).
@@ -66,17 +67,17 @@ const IMG_W = 832
 const IMG_H = 1216
 
 const BONES: Record<BoneId, BoneDef> = {
-  craneo: { id: 'craneo', name: 'Cráneo', fn: 'Protege el cerebro.', tip: 'Está en la parte de arriba de la cabeza.', pin: [420, 105], label: { side: 'r', edge: 540, y: 105 } },
-  costillas: { id: 'costillas', name: 'Costillas', fn: 'Protegen el corazón y los pulmones.', tip: 'Están en el pecho.', pin: [375, 410], label: { side: 'r', edge: 600, y: 395 } },
-  femur: { id: 'femur', name: 'Fémur', fn: 'Es el hueso más largo del cuerpo.', tip: 'Está en el muslo, entre la cadera y la rodilla.', pin: [345, 740], label: { side: 'l', edge: 290, y: 800 } },
+  craneo: { id: 'craneo', name: 'Cráneo', fn: 'Forma la cabeza y guarda lo que usamos para pensar y recordar.', tip: 'Está en la parte de arriba de la cabeza.', pin: [420, 105], label: { side: 'r', edge: 540, y: 105 } },
+  costillas: { id: 'costillas', name: 'Costillas', fn: 'Arman una especie de jaula en el pecho y se mueven un poco cuando respiramos.', tip: 'Están en el pecho.', pin: [375, 410], label: { side: 'r', edge: 545, y: 395 } },
+  femur: { id: 'femur', name: 'Fémur', fn: 'Es el hueso del muslo y aguanta casi todo el peso al caminar.', tip: 'Está en el muslo, entre la cadera y la rodilla.', pin: [345, 740], label: { side: 'l', edge: 290, y: 800 } },
   clavicula: { id: 'clavicula', name: 'Clavícula', fn: 'Une el hombro con el pecho.', tip: 'Está en la base del cuello, hacia el hombro.', pin: [365, 277], label: { side: 'l', edge: 330, y: 190 } },
-  columna: { id: 'columna', name: 'Columna vertebral', fn: 'Sostiene el cuerpo y protege la médula.', tip: 'Baja por el medio de la espalda.', pin: [418, 465], label: { side: 'r', edge: 600, y: 480 } },
-  pelvis: { id: 'pelvis', name: 'Pelvis', fn: 'Une las piernas con el tronco.', tip: 'Está en la cadera.', pin: [335, 590], label: { side: 'l', edge: 290, y: 770 } },
-  humero: { id: 'humero', name: 'Húmero', fn: 'Es el hueso del brazo, entre el hombro y el codo.', tip: 'Está en la parte de arriba del brazo.', pin: [268, 385], label: { side: 'l', edge: 215, y: 330 } },
+  columna: { id: 'columna', name: 'Columna vertebral', fn: 'Es una fila de huesitos apilados que mantiene el cuerpo erguido y cuida los nervios de la espalda.', tip: 'Baja por el medio de la espalda.', pin: [418, 465], label: { side: 'r', edge: 548, y: 500 } },
+  pelvis: { id: 'pelvis', name: 'Pelvis', fn: 'Forma la cadera y sostiene el peso de la parte de arriba del cuerpo cuando estamos de pie.', tip: 'Está en la cadera.', pin: [335, 590], label: { side: 'l', edge: 290, y: 770 } },
+  humero: { id: 'humero', name: 'Húmero', fn: 'Es el hueso del brazo, entre el hombro y el codo.', tip: 'Está en la parte de arriba del brazo.', pin: [268, 385], label: { side: 'l', edge: 242, y: 320 } },
   mandibula: { id: 'mandibula', name: 'Mandíbula', fn: 'Se mueve para masticar y para hablar.', tip: 'Está en la cara, abajo de la boca.', pin: [420, 210], label: { side: 'r', edge: 540, y: 215 } },
-  antebrazo: { id: 'antebrazo', name: 'Radio y cúbito', fn: 'Forman el antebrazo y permiten girar la muñeca.', tip: 'Están entre el codo y la muñeca.', pin: [235, 548], label: { side: 'l', edge: 222, y: 495 } },
-  mano: { id: 'mano', name: 'Mano', fn: 'Permiten agarrar objetos, escribir y tejer.', tip: 'Están al final del brazo.', pin: [222, 695], label: { side: 'l', edge: 150, y: 715 } },
-  pie: { id: 'pie', name: 'Pie', fn: 'Sostienen el peso del cuerpo y permiten caminar.', tip: 'Están abajo de todo, donde apoyás en el piso.', pin: [335, 1118], label: { side: 'l', edge: 255, y: 1130 } },
+  antebrazo: { id: 'antebrazo', name: 'Radio y cúbito', fn: 'Forman el antebrazo y permiten girar la muñeca.', tip: 'Están entre el codo y la muñeca.', pin: [235, 548], label: { side: 'l', edge: 214, y: 495 } },
+  mano: { id: 'mano', name: 'Huesos de la mano', fn: 'Dan agarre para tomar objetos, escribir y tejer.', tip: 'Están al final del brazo.', pin: [222, 695], label: { side: 'l', edge: 262, y: 860 } },
+  pie: { id: 'pie', name: 'Huesos del pie', fn: 'Reparten el peso del cuerpo y dan equilibrio al caminar.', tip: 'Están abajo de todo, donde apoyás en el piso.', pin: [335, 1118], label: { side: 'l', edge: 262, y: 1130 } },
 }
 
 interface LevelDef {
@@ -159,7 +160,23 @@ function LevelView({ levelIdx, order, since, onMistake, onSolved, onNext, onRepe
   const advanceTimerRef = useRef<number | undefined>(undefined)
   const resultRef = useRef<HTMLDivElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
+  const boardRef = useRef<HTMLDivElement>(null)
+  // Is the end of the drawing below the bottom of the screen? Then the recall says so, instead of leaving it to be guessed.
+  const [cut, setCut] = useState(false)
   useEffect(() => () => window.clearTimeout(advanceTimerRef.current), [])
+  useEffect(() => {
+    const measure = () => {
+      const r = boardRef.current?.getBoundingClientRect()
+      setCut(!!r && r.bottom > window.innerHeight - 8)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', measure, true)
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', measure, true)
+    }
+  }, [phase])
 
   // A new level, and the recall that follows the study, open at the top, not wherever the previous button left the scroll.
   useEffect(() => {
@@ -235,8 +252,8 @@ function LevelView({ levelIdx, order, since, onMistake, onSolved, onNext, onRepe
             <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Mirá bien el esqueleto</h2>
             <p className="mt-2 text-base text-slate-500">
               {byFunction
-                ? 'Fijate dónde está cada hueso y para qué sirve. Después te preguntamos por el hueso de cada función, sin los nombres.'
-                : 'Fijate dónde está cada hueso y cómo se llama. Después te preguntamos dónde está cada uno, sin las etiquetas.'}
+                ? 'Fijate dónde está cada hueso y para qué sirve: las funciones están debajo del dibujo.'
+                : 'Fijate dónde está cada hueso y cómo se llama.'}
             </p>
           </>
         )}
@@ -248,18 +265,38 @@ function LevelView({ levelIdx, order, since, onMistake, onSolved, onNext, onRepe
         )}
       </div>
 
-      {/* Recall: the one question, always on top of the drawing */}
+      {/* Recall: the one question and its hint, in a band that stays at the top while the drawing scrolls under it, so the
+          question is never lost when the drawing is taller than the phone */}
       {phase === 'recall' && (
-        <div className="mx-auto mt-3 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-3 text-center">
-          <p className="text-sm font-bold uppercase tracking-wide text-tiam-blue">
-            {byFunction ? 'Tocá el punto que corresponde a esto:' : 'Tocá el punto donde está…'}
+        <div className="sticky top-0 z-20 -mx-5 bg-white px-5 pb-1 pt-2 sm:-mx-7 sm:px-7">
+          <div className="mx-auto max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-3 py-1.5 text-center">
+            <p className="text-base font-semibold text-slate-600">{byFunction ? 'Tocá el punto que corresponde a esto:' : 'Tocá el punto donde está…'}</p>
+            <p className={`font-bold leading-snug text-slate-900 ${byFunction ? 'text-lg' : 'text-xl'}`}>{byFunction ? current.fn : current.name}</p>
+          </div>
+          <p
+            role="status"
+            className={`mx-auto mt-1 min-h-[2.5rem] max-w-md text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
+          >
+            {hint?.text ?? (cut ? 'Deslizá hacia abajo: el dibujo sigue.' : '')}
           </p>
-          <p className="mt-1 text-xl font-bold leading-snug text-slate-900 sm:text-2xl">{byFunction ? current.fn : current.name}</p>
+        </div>
+      )}
+
+      {phase === 'study' && (
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            onClick={(e) => startRecall(e.timeStamp)}
+            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-2"
+          >
+            Ya lo miré
+            <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
       )}
 
       {phase !== 'done' && (
-        <div className="relative mx-auto mt-3 w-full max-w-[340px] overflow-hidden rounded-2xl border-2 border-slate-100 bg-[#cce5ea]" style={{ aspectRatio: `${IMG_W} / ${IMG_H}` }}>
+        <div ref={boardRef} className="relative mx-auto mt-1 w-full max-w-[340px] overflow-hidden rounded-2xl border-2 border-slate-100 bg-[#cce5ea]" style={{ aspectRatio: `${IMG_W} / ${IMG_H}` }}>
           <img src={SKELETON} alt="Ilustración de un esqueleto humano visto de frente" className="absolute inset-0 h-full w-full object-cover" />
 
           {/* Study: a label on each bone, joined to it by a thin line */}
@@ -282,7 +319,7 @@ function LevelView({ levelIdx, order, since, onMistake, onSolved, onNext, onRepe
                 return (
                   <span
                     key={id}
-                    className="absolute max-w-[78px] -translate-y-1/2 rounded-lg border-2 border-tiam-blue bg-white px-1 py-1 text-center text-[13px] font-bold leading-tight text-slate-900 shadow-sm"
+                    className="absolute max-w-[84px] -translate-y-1/2 rounded-lg border-2 border-tiam-blue bg-white px-1 py-0.5 text-center text-base font-bold leading-tight text-slate-900 shadow-sm"
                     style={{
                       top: pct(b.label.y, IMG_H),
                       ...(b.label.side === 'l' ? { right: pct(IMG_W - b.label.edge, IMG_W) } : { left: pct(b.label.edge, IMG_W) }),
@@ -338,28 +375,6 @@ function LevelView({ levelIdx, order, since, onMistake, onSolved, onNext, onRepe
           ))}
         </ul>
       )}
-      {phase === 'study' && (
-        <div className="sticky bottom-3 z-10 mt-4 text-center">
-          <button
-            type="button"
-            onClick={(e) => startRecall(e.timeStamp)}
-            className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-2"
-          >
-            Ya lo miré
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {phase === 'recall' && (
-        <p
-          role="status"
-          className={`mx-auto mt-2 min-h-[3rem] max-w-md text-center text-base font-medium ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
-        >
-          {hint?.text}
-        </p>
-      )}
-
       {/* Level complete: the names come back as a recap, now that nothing is at stake */}
       {phase === 'done' && (
         <div ref={resultRef} className="mt-5 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-6 text-center">
