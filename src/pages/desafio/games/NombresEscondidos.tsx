@@ -10,7 +10,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * with a block of loose letters and the instruction to name flowers that can be formed by mixing them; here the
  * letters come from three names written for the level, each with a clue and a length.
  *
- * ORIGINAL CONTENT. Only the idea is borrowed. The categories (hardware-store things, trees, birds of Argentina), the names and the
+ * ORIGINAL CONTENT. Only the idea is borrowed. The categories (hardware-store things, trees, birds), the names and the
  * clues are TIAM's own, and the category of the worksheet (flowers) is not used. Level 1 is NOT fruits: month 4's
  * "Anagramas por categoría" already has a fruits band (PERA, KIWI…), and none of the names here is in that game. A
  * throwaway script (not committed) checks that the loose letters are exactly the letters of the three names, that no
@@ -27,7 +27,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * nothing is timed but a short pause so the last name is seen.
  *
  * THREE NAMES A LEVEL, as the tallerista likes the days short. The ramp is the category and the length: three hardware-store things of
- * four and five letters (14 letters), three trees of five letters (15) and three birds of five, six and seven (18).
+ * four and five letters (14 letters), three trees of five letters (15) and three birds of four, four and seven (15).
+ * Every heap is three rows of tiles on a 320px phone, which is what lets the letters and the "Listo" bar share the card.
  * Only the clue being answered shows, with its boxes (a found name takes its tab), so the heap of
  * letters is on screen on a short phone, and the "Listo" bar sticks to the bottom of the card.
  * Every level has ONE authored set, and the order of the letters in the heap is chosen ONCE at mount (`epoch`), so
@@ -63,9 +64,9 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 1',
     category: 'Cosas de ferretería',
     names: [
-      { word: 'PALA', display: 'pala', clue: 'Herramienta de mango largo y hoja ancha que sirve para cavar la tierra.', tip: 'Se usa en la huerta y en la obra.' },
-      { word: 'CLAVO', display: 'clavo', clue: 'Pieza de metal fina y con punta que se golpea para unir dos maderas.', tip: 'Tiene un extremo con cabeza plana.' },
-      { word: 'LLAVE', display: 'llave', clue: 'Herramienta de metal que se encaja en una tuerca para apretarla o aflojarla.', tip: 'La llamada «inglesa» se ajusta a distintos tamaños.' },
+      { word: 'PALA', display: 'pala', clue: 'Herramienta de mango largo para cavar la tierra.', tip: 'Se usa en la huerta y en la obra.' },
+      { word: 'CLAVO', display: 'clavo', clue: 'Pieza de metal con punta que se golpea con martillo.', tip: 'Tiene un extremo con cabeza plana.' },
+      { word: 'LLAVE', display: 'llave', clue: 'Herramienta que aprieta o afloja las tuercas.', tip: 'La llamada «inglesa» se ajusta a distintos tamaños.' },
     ],
   },
   {
@@ -81,9 +82,9 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 3',
     category: 'Aves',
     names: [
-      { word: 'HORNERO', display: 'hornero', clue: 'Ave nacional de la Argentina; su nido de barro parece una casita.', tip: 'Es de color marrón y se la ve en los postes.' },
-      { word: 'CISNE', display: 'cisne', clue: 'Ave acuática de cuello largo y curvo y plumaje blanco que nada con elegancia en los lagos.', tip: 'Suele verse en los lagos de los parques.' },
-      { word: 'CONDOR', display: 'cóndor', clue: 'Ave enorme de los Andes, de alas gigantes y collar blanco.', tip: 'Vuela muy alto, sobre las montañas.' },
+      { word: 'HORNERO', display: 'hornero', clue: 'Ave nacional; su nido de barro parece una casita.', tip: 'Es de color marrón y se la ve en los postes.' },
+      { word: 'PAVO', display: 'pavo', clue: 'Ave de granja con papada roja, que se come en Navidad.', tip: 'Hace «glu glu» y es más grande que una gallina.' },
+      { word: 'BUHO', display: 'búho', clue: 'Ave de ojos enormes que de noche caza ratones.', tip: 'Casi puede girar la cabeza hasta atrás.' },
     ],
   },
 ]
@@ -117,7 +118,7 @@ function buildEpoch(): Tile[][] {
 /** The hint after a wrong name: it grows with every miss on the same row, and from the third one it says the name. */
 function missHint(n: NameDef, misses: number): string {
   if (misses === 1) return `No es. ${n.tip}`
-  if (misses === 2) return `No es. ${n.tip} Empieza con «${n.word[0]}».`
+  if (misses === 2) return `No es. Empieza con «${n.word[0]}».`
   return `Es «${n.display}»: armala para seguir.`
 }
 
@@ -237,7 +238,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
   }, [done])
 
   const busy = advancing || done
-  // The 18 letters of level 3 would need four rows at full size: 44px tiles fit six to a row on a 375px phone.
+  // 44px tiles: five to a row on a 320px phone, six on a 375px one. Every level has 14 or 15 letters, three rows at 320.
   const compact = tiles.length > 12
   const used = new Set(typed.flat())
   const tileChar = (id: number) => tiles.find((t) => t.id === id)?.ch ?? ''
@@ -294,10 +295,10 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
   }
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7">
+    <div ref={topRef} className="px-5 pb-2 pt-2.5 sm:p-7">
       {/* Header */}
       <div className="text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-tiam-blue">
           {level.name}
         </span>
         {!done && (
@@ -313,7 +314,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
 
           {/* The three clues as tabs (a found name takes its tab), and the clue being answered with its boxes: one clue at
               a time keeps the letters and "Listo" on screen on a short phone. Any tab can be opened first. */}
-          <div className="mx-auto mt-2 grid max-w-md grid-cols-3 gap-1.5" role="group" aria-label="Pistas">
+          <div className="mx-auto mt-1.5 grid max-w-md grid-cols-3 gap-1.5" role="group" aria-label="Pistas">
             {level.names.map((n, i) => {
               const isFound = found.includes(i)
               const isActive = active === i && !busy
@@ -340,7 +341,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
               )
             })}
           </div>
-          <div className="mx-auto mt-1.5 max-w-md rounded-2xl border-2 border-tiam-blue bg-tiam-blue/5 px-3 py-1.5 text-center">
+          <div className="mx-auto mt-1 max-w-md rounded-2xl border-2 border-tiam-blue bg-tiam-blue/5 px-3 py-1 text-center">
             <span className="block text-base font-semibold leading-snug text-slate-800">{level.names[active].clue}</span>
             <span className="mt-1 block">
               <Boxes word={level.names[active].word} letters={typed[active].map(tileChar)} right={found.includes(active)} />
@@ -349,7 +350,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
 
           <p
             role="status"
-            className={`mx-auto mt-1 min-h-[2.25rem] max-w-md text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
+            className={`mx-auto mt-0.5 min-h-[2.75rem] max-w-md text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
           >
             {hint?.text ?? (found.length === 0 ? 'Tocá las letras para armar un nombre.' : '')}
           </p>
@@ -384,7 +385,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
               aria-label="Borrar la última letra"
               disabled={busy || !rowOpen || typed[active].length === 0}
               onClick={(e) => backspace(e.timeStamp)}
-              className="flex min-h-[52px] w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-700 transition hover:border-tiam-blue/40 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 disabled:border-slate-200 disabled:text-slate-300"
+              className="flex min-h-[48px] w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-700 transition hover:border-tiam-blue/40 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 disabled:border-slate-200 disabled:text-slate-300"
             >
               <BackspaceIcon className="h-6 w-6" aria-hidden="true" />
             </button>
@@ -392,7 +393,7 @@ function LevelView({ levelIdx, tiles, since, onMistake, onSolved, onNext, onRepe
               type="button"
               disabled={busy || !rowOpen || !activeFull}
               onClick={(e) => submit(e.timeStamp)}
-              className="flex min-h-[52px] flex-1 items-center justify-center rounded-2xl bg-tiam-blue px-4 text-xl font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500"
+              className="flex min-h-[48px] flex-1 items-center justify-center rounded-2xl bg-tiam-blue px-4 text-xl font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500"
             >
               Listo
             </button>
