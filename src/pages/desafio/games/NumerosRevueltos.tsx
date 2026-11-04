@@ -22,8 +22,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * name itself. The wrong figure of the second step costs one mistake and is muted gray (never red); it stays off and
  * the right one can still be tapped. Nothing is timed.
  *
- * Level 3 is harder for real: the clues are calculations, not facts that name the number, the names are long and the
- * wrong figures are the typical slips (a zero too many or too few, the digits swapped).
+ * Level 3 is harder for real: levels 1 and 2 give ONE operation (6 por 2, 30 menos 7) and level 3 gives TWO steps (100 por 4,
+ * más 100; 800 menos la mitad de 200; 3 por 250, más 150), the names are long and the wrong figures are the typical
+ * slips (a zero too many or too few, the digits swapped).
  *
  * Only one number is on screen at a time (its clue, its boxes and its letters), so everything the step needs and its
  * buttons are in view on a short phone, and the button bar sticks to the bottom of the card. The order of the letters
@@ -75,9 +76,9 @@ const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 3',
     numbers: [
-      { value: 500, word: 'QUINIENTOS', display: 'quinientos', clue: 'Un número de tres cifras: 5 por 100.', tip: 'Es la mitad de 1.000.', wrong: [50, 505, 550] },
-      { value: 700, word: 'SETECIENTOS', display: 'setecientos', clue: 'Un número de tres cifras: 1.000 menos 300.', tip: 'Es 7 por 100.', wrong: [70, 707, 770] },
-      { value: 900, word: 'NOVECIENTOS', display: 'novecientos', clue: 'Un número de tres cifras: 1.000 menos 100.', tip: 'Es 9 por 100.', wrong: [90, 909, 990] },
+      { value: 500, word: 'QUINIENTOS', display: 'quinientos', clue: 'Un número de tres cifras: 100 por 4, más 100.', tip: 'Es la mitad de 1.000.', wrong: [50, 505, 550] },
+      { value: 700, word: 'SETECIENTOS', display: 'setecientos', clue: 'Un número de tres cifras: 800 menos la mitad de 200.', tip: 'Es 7 por 100.', wrong: [70, 707, 770] },
+      { value: 900, word: 'NOVECIENTOS', display: 'novecientos', clue: 'Un número de tres cifras: 3 por 250, más 150.', tip: 'Es 9 por 100.', wrong: [90, 909, 990] },
     ],
   },
 ]
