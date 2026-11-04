@@ -81,7 +81,7 @@ const LEVELS: LevelDef[] = [
     words: [
       { syllables: ['fo', 'to', 'gra', 'fí', 'a'], clue: 'Imagen que se saca con una cámara y se guarda en un álbum.', tip: 'Las fotos viejas son un recuerdo.', options: ['gra', 'cra', 'bra', 'dra'] },
       { syllables: ['ma', 'ra', 'vi', 'llo', 'so'], clue: 'Algo tan lindo o tan extraordinario que deja a todos asombrados.', tip: 'Es como decir «espectacular».', options: ['vi', 'bi', 'fi', 'ni'] },
-      { syllables: ['ma', 'te', 'má', 'ti', 'ca'], clue: 'Materia que trabaja con números y cuentas.', tip: 'Ahí se estudian la suma y la multiplicación.', options: ['má', 'ná', 'rá', 'lá'] },
+      { syllables: ['a', 'ni', 'ver', 'sa', 'rio'], clue: 'Fecha que se festeja una vez al año, por ejemplo la de la boda.', tip: 'Se festeja con torta y brindis.', options: ['ver', 'var', 'vir', 'vor'] },
       { syllables: ['cal', 'cu', 'la', 'do', 'ra'], clue: 'Aparatito con teclas para hacer cuentas.', tip: 'Se usa en el almacén y en el banco.', options: ['la', 'le', 'li', 'lo'] },
       { syllables: ['car', 'pin', 'te', 'rí', 'a'], clue: 'Taller donde se trabaja la madera y se arman puertas y muebles.', tip: 'Ahí se usa el serrucho y el martillo.', options: ['te', 'ta', 'to', 'tu'] },
     ],
@@ -141,9 +141,13 @@ function WordBoxes({
 }) {
   const mid = Math.floor(syllables.length / 2)
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5" role="group" aria-label={`Palabra de ${syllables.length} sílabas`}>
+    <div className="flex flex-wrap items-center justify-center gap-1" role="group" aria-label={`Palabra de ${syllables.length} sílabas`}>
       {syllables.map((s, i) => {
-        const box = 'flex h-14 min-w-[52px] items-center justify-center rounded-xl border-2 px-1.5 text-2xl font-extrabold uppercase'
+        // Five syllables must stay on ONE line on a 320px phone: smaller boxes.
+        const box =
+          syllables.length >= 5
+            ? 'flex h-12 min-w-[44px] items-center justify-center rounded-xl border-2 px-1 text-xl font-extrabold uppercase'
+            : 'flex h-14 min-w-[52px] items-center justify-center rounded-xl border-2 px-1.5 text-2xl font-extrabold uppercase'
         if (i !== mid) {
           return (
             <span key={i} className={`${box} border-slate-300 bg-white text-slate-900`}>
@@ -244,6 +248,8 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
   // The same keys, but readable at once: a double tap lands before React has repainted the chip as disabled.
   const lockedRef = useRef<Set<string>>(new Set())
   const lastChipTapRef = useRef({ syl: '', at: -Infinity })
+  // A double tap on the gap must not run twice: the second tap would replace the hint of the first one.
+  const lastGapTapRef = useRef(-Infinity)
   const advanceTimerRef = useRef<number | undefined>(undefined)
   const resultRef = useRef<HTMLDivElement>(null)
   const topRef = useRef<HTMLDivElement>(null)
@@ -271,12 +277,15 @@ function LevelView({ levelIdx, words, since, onMistake, onSolved, onNext, onRepe
     // The second tap of a double tap on the chosen syllable is not "take it back".
     if (last.syl === syl && at - last.at < SETTLE_MS) return
     lastChipTapRef.current = { syl, at }
+    lastGapTapRef.current = -Infinity
     setSelected((cur) => (cur === syl ? null : syl))
     setHint(null)
   }
 
   function tapGap(at: number) {
     if (busy || at - since < SETTLE_MS) return
+    if (at - lastGapTapRef.current < SETTLE_MS) return
+    lastGapTapRef.current = at
     if (!selected) {
       setHint({ text: 'Primero tocá una sílaba de abajo.', ok: false })
       return
