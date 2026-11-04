@@ -158,6 +158,7 @@ import { CadenaDePalabras } from './CadenaDePalabras'
 import { TodasLasLetras } from './TodasLasLetras'
 import { FrasesCelebres } from './FrasesCelebres'
 import { LasDosMitades } from './LasDosMitades'
+import { QuienViveAca } from './QuienViveAca'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -362,6 +363,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     12: TodasLasLetras,
     11: FrasesCelebres,
     9: LasDosMitades,
+    13: QuienViveAca,
   },
 }
 
