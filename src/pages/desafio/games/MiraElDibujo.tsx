@@ -64,7 +64,7 @@ const LEVELS: LevelDef[] = [
     sentences: [
       { text: 'Sobre la mesa hay una tetera.', truth: true, why: 'La tetera roja está en el medio de la mesa.' },
       { text: 'Hay un perro durmiendo en una silla.', truth: false, why: 'En la silla duerme un gato, no un perro.' },
-      { text: 'Hay una planta en la ventana.', truth: true, why: 'La planta está en una maceta, sobre el borde de la ventana.' },
+      { text: 'La olla está sobre la cocina, a la derecha de la señora.', truth: true, why: 'La olla está sobre la cocina azul, del lado derecho del dibujo.' },
     ],
   },
   {
@@ -284,12 +284,11 @@ function LevelView({ levelIdx, sentences, since, onMistake, onSolved, onNext, on
             <p className="mt-3 text-center text-base font-medium text-slate-500">Respondé de memoria, sin mirar el dibujo.</p>
           )}
 
-          <div className="mx-auto mt-3 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-3 text-center">
-            <p className="text-sm font-bold uppercase tracking-wide text-tiam-blue">¿Verdadero o falso?</p>
-            <p className="mt-1 text-xl font-bold leading-snug text-slate-900 sm:text-2xl">{current.text}</p>
+          <div className="mx-auto mt-2 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-2 text-center">
+            <p className="text-xl font-bold leading-snug text-slate-900 sm:text-2xl">{current.text}</p>
           </div>
 
-          <div role="group" aria-label="Respuesta" className="mx-auto mt-3 grid max-w-md grid-cols-2 gap-3">
+          <div role="group" aria-label="Respuesta" className="mx-auto mt-2 grid max-w-md grid-cols-2 gap-3">
             {[true, false].map((value) => {
               const chosen = answer === value
               const isTheRight = answered && current.truth === value
@@ -300,7 +299,7 @@ function LevelView({ levelIdx, sentences, since, onMistake, onSolved, onNext, on
                   disabled={answered}
                   onClick={(e) => answerWith(value, e.timeStamp)}
                   className={[
-                    'flex min-h-[56px] items-center justify-center gap-1.5 rounded-2xl border-2 text-lg font-bold transition',
+                    'flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border-2 text-lg font-bold transition',
                     'focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-1',
                     isTheRight
                       ? 'border-tiam-green bg-tiam-green/10 text-slate-900'
@@ -318,7 +317,8 @@ function LevelView({ levelIdx, sentences, since, onMistake, onSolved, onNext, on
             })}
           </div>
 
-          <div role="status" className="mx-auto mt-3 min-h-[5.5rem] max-w-md text-center">
+          {/* The explanation and "Seguir" stick to the bottom of the card, so the way on is always in view on a short phone. */}
+          <div role="status" className="sticky bottom-0 z-10 mx-auto mt-2 min-h-[5rem] max-w-md bg-white/95 pb-1 pt-1 text-center">
             {answered && (
               <>
                 <p className={`text-base font-semibold ${right ? 'text-green-700' : 'text-slate-600'}`}>
@@ -327,7 +327,7 @@ function LevelView({ levelIdx, sentences, since, onMistake, onSolved, onNext, on
                 <button
                   type="button"
                   onClick={(e) => next(e.timeStamp)}
-                  className="mt-3 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-2"
+                  className="mt-2 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-tiam-blue px-6 font-semibold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus:ring-2 focus:ring-tiam-blue/40 focus:ring-offset-2"
                 >
                   Seguir
                   <ArrowRight className="h-4 w-4" />
