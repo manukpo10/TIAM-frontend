@@ -12,8 +12,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  * tile a whole silhouette, with many possible tilings and a search to say whether the figure could still be closed:
  * here there is nothing to tile and nothing to search. Every piece has its OWN dotted shape, with the exact outline
  * (rectangles, a trapezoid, triangles, a square), so the task is to compare shape, size and direction, and there is
- * exactly one place for each piece. The ramp: four pieces of different shapes (a boat), five pieces where three of them
- * are rectangles of different proportions (a train), and six pieces where four are the SAME triangle and are told apart
+ * exactly one place for each piece. The ramp: four pieces of different shapes (a boat), five pieces where two of them
+ * are rectangles of different proportions and two are eight-sided wheels told apart only by their size (a steam
+ * train: boiler, cab, chimney and two wheels, redrawn after a first version with a tall block and a pointed roof
+ * that read as a castle), and six pieces where four are the SAME triangle and are told apart
  * only by where its right angle is, and two are mirror triangles (a kite). The pieces are drawn in the direction they go in
  * (nothing rotates) and the colour is only decoration: every piece is told by its outline.
  *
@@ -26,7 +28,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * Every figure was drawn on a plain grid of units, with every piece a polygon with no overlap with the others (checked
  * by a throwaway script, not committed, that also measures the smallest piece, the shapes being all different within
  * a figure, and that every polygon is convex). The figure is sized to the screen, so that the figure, the hint and the
- * pieces are in view on a short phone. The pieces in the tray are shown at 0.6 of the size of the figure.
+ * pieces are in view on a short phone. The pieces in the tray are shown at 0.5 of the size of the figure.
  * One figure per level; the order of the pieces in the tray is chosen ONCE at mount (`epoch`), so "Repetir" replays the same
  * three figures (the pieces in the same order).
  *
@@ -64,19 +66,19 @@ const LEVELS: LevelDef[] = [
       { pts: [[30, 160], [270, 160], [230, 220], [70, 220]], fill: '#9EC8F5', name: 'el trapecio ancho, más grande arriba que abajo' },
       { pts: [[95, 110], [205, 110], [205, 160], [95, 160]], fill: '#F9CB8B', name: 'el rectángulo' },
       { pts: [[150, 24], [205, 110], [95, 110]], fill: '#F6B3D2', name: 'el triángulo con la punta hacia arriba' },
-      { pts: [[40, 114], [86, 114], [86, 160], [40, 160]], fill: '#A7DDA2', name: 'el cuadrado' },
+      { pts: [[38, 110], [88, 110], [88, 160], [38, 160]], fill: '#A7DDA2', name: 'el cuadrado' },
     ],
   },
   {
     name: 'Nivel 2',
     figure: 'el tren',
-    box: [10, 4, 290, 186],
+    box: [10, 24, 240, 186],
     pieces: [
-      { pts: [[20, 120], [165, 120], [165, 180], [20, 180]], fill: '#F4A6A0', name: 'el rectángulo largo y bajo' },
-      { pts: [[165, 70], [235, 70], [235, 180], [165, 180]], fill: '#9EC8F5', name: 'el rectángulo alto y angosto' },
-      { pts: [[36, 70], [84, 70], [94, 120], [26, 120]], fill: '#CDB5F0', name: 'el trapecio, más angosto arriba que abajo' },
-      { pts: [[165, 70], [235, 70], [200, 14]], fill: '#F9CB8B', name: 'el triángulo con la punta hacia arriba' },
-      { pts: [[240, 130], [290, 130], [290, 180], [240, 180]], fill: '#A7DDA2', name: 'el cuadrado' },
+      { pts: [[20, 80], [170, 80], [170, 140], [20, 140]], fill: '#F4A6A0', name: 'el rectángulo largo y bajo' },
+      { pts: [[170, 40], [240, 40], [240, 140], [170, 140]], fill: '#9EC8F5', name: 'el rectángulo alto y angosto' },
+      { pts: [[24, 34], [96, 34], [84, 80], [36, 80]], fill: '#CDB5F0', name: 'el trapecio, más ancho arriba que abajo' },
+      { pts: [[236, 184], [218, 202], [192, 202], [174, 184], [174, 158], [192, 140], [218, 140], [236, 158]], fill: '#F9CB8B', name: 'la figura de ocho lados, la más grande' },
+      { pts: [[98, 173], [85, 186], [65, 186], [52, 173], [52, 153], [65, 140], [85, 140], [98, 153]], fill: '#A7DDA2', name: 'la figura de ocho lados, la más chica' },
     ],
   },
   {
@@ -96,7 +98,7 @@ const LEVELS: LevelDef[] = [
 const TOTAL_PIECES = LEVELS.reduce((sum, lvl) => sum + lvl.pieces.length, 0)
 
 /** The size of the pieces of the tray, against the figure. */
-const TRAY_SCALE = 0.6
+const TRAY_SCALE = 0.5
 
 /** The example of the how-to screen: it is not in the game. */
 const EXAMPLE: { pts: Pt[]; fill: string } = { pts: [[8, 44], [56, 44], [72, 8], [24, 8]], fill: '#9EC8F5' }
