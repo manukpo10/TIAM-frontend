@@ -11,10 +11,13 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ORIGINAL CONTENT. Only the idea is borrowed. A throwaway script (not committed) checks that none of the worksheet's
  * words is here, that the syllables of a table are all different (so a syllable marks exactly one square), that every
- * word is made of the syllables of its table and that no word of the day repeats a word of an earlier game of the month.
+ * word is made of the syllables of its table and that no word repeats another word of month 6. The nine words were also
+ * searched in every game of src/pages/desafio/games (months 1 to 6): six everyday ones (PAPA, PUMA, MANZANA, LIBRETA,
+ * ESCOBA, TELEFONO) are still an answer or an option of some other game, the other three are not.
  *
  * COLOUR IS NEVER THE ONLY SIGNAL. Every square has its own colour AND its own shape (círculo, estrella, luna…),
- * drawn on the square of the table and on the matching square of the strip, so a player who cannot tell two blues
+ * drawn (24 px in the table, 28 px in the strip) on the square of the table and on the matching square of the
+ * strip, so a player who cannot tell two blues
  * apart can follow the shape. The colours of a level are all different, and so are its shapes. After a miss the hint
  * names the colour and the shape.
  *
@@ -158,9 +161,9 @@ const LEVELS: LevelDef[] = [
       { syl: 'LE', color: 'azul', shape: 'circulo' },
       { syl: 'FO', color: 'verde', shape: 'cuadrado' },
       { syl: 'NO', color: 'lima', shape: 'triangulo' },
-      { syl: 'CHO', color: 'rosa', shape: 'corazon' },
-      { syl: 'CO', color: 'rojo', shape: 'rombo' },
-      { syl: 'LA', color: 'violeta', shape: 'luna' },
+      { syl: 'AL', color: 'rosa', shape: 'corazon' },
+      { syl: 'PAR', color: 'rojo', shape: 'rombo' },
+      { syl: 'GA', color: 'violeta', shape: 'luna' },
       { syl: 'PA', color: 'lila', shape: 'hexagono' },
       { syl: 'PE', color: 'amarillo', shape: 'cruz' },
       { syl: 'RA', color: 'mostaza', shape: 'gota' },
@@ -169,11 +172,11 @@ const LEVELS: LevelDef[] = [
       { syl: 'BE', color: 'naranja', shape: 'pentagono' },
       { syl: 'TU', color: 'marron', shape: 'rayo' },
       { syl: 'RI', color: 'gris', shape: 'semicirculo' },
-      { syl: 'MA', color: 'crema', shape: 'equis' },
+      { syl: 'TA', color: 'crema', shape: 'equis' },
     ],
     words: [
       { word: 'TELEFONO', display: 'teléfono', syllables: ['TE', 'LE', 'FO', 'NO'] },
-      { word: 'CHOCOLATE', display: 'chocolate', syllables: ['CHO', 'CO', 'LA', 'TE'] },
+      { word: 'ALPARGATA', display: 'alpargata', syllables: ['AL', 'PAR', 'GA', 'TA'] },
       { word: 'PAPELERA', display: 'papelera', syllables: ['PA', 'PE', 'LE', 'RA'] },
     ],
   },
@@ -445,17 +448,15 @@ function LevelView({ levelIdx, epoch, since, onMistake, onSolved, onNext, onRepe
                   aria-label={`${c.syl}, ${COLORS[c.color].label}, ${SHAPES[c.shape].label}`}
                   onClick={(e) => tapCell(i, e.timeStamp)}
                   className={[
-                    'relative flex min-h-[50px] items-center justify-center rounded-xl border-2 text-xl font-extrabold text-slate-900 transition',
+                    'flex min-h-[56px] flex-col items-center justify-center gap-0.5 rounded-xl border-2 text-xl font-extrabold leading-none text-slate-900 transition',
                     'focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50',
                     flash === i ? 'border-slate-300 opacity-40' : 'border-slate-400/60 active:brightness-95',
                     isTarget ? 'ring-4 ring-tiam-blue' : '',
                   ].join(' ')}
                   style={{ backgroundColor: COLORS[c.color].hex }}
                 >
-                  <span className="absolute left-1 top-0.5">
-                    <ShapeIcon shape={c.shape} className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="pt-3">{c.syl}</span>
+                  <ShapeIcon shape={c.shape} className="h-6 w-6" />
+                  <span>{c.syl}</span>
                 </button>
               )
             })}
