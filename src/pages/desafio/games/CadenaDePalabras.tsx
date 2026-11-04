@@ -20,11 +20,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  * «RANCHO» (RAN·CHO) is never offered, because a reader could fairly say it starts with «RA». The traps start with the
  * same FIRST LETTER (level 1: TE → TAXI, TIJERA, TUBO), or with the same first TWO letters when the syllable has three
  * (level 2: TOR → TOLDO, TOSTADA, TÓMBOLA), which is why the player has to read the syllable and not only the first
- * letter. The previous word is shown cut into syllables with the last one in colour; the options are plain words.
+ * letter. In level 1 the previous word is shown cut into syllables with the last one in colour and the question names the
+ * syllable; the options are plain words.
  *
  * A wrong word costs ONE mistake, is switched off (muted gray, never red) and gets a hint that grows with the misses:
  * what the word has to begin with, reading it aloud, and the last one standing. Nothing is timed but a short pause so
  * the new link is seen.
+ *
+ * THE SYLLABLE IS NOT GIVEN AWAY AFTER LEVEL 1. Level 2 shows the word of the chain cut into syllables with none in
+ * colour and asks only "¿Qué palabra sigue en la cadena?"; level 3 shows it written whole, so the player cuts it and
+ * finds its last syllable alone. The hints do not name the syllable until the third miss.
  *
  * THREE LINKS A LEVEL, as the tallerista likes the days short. The ramp is the syllable asked for: level 1 asks for
  * two-letter syllables (TE, CHO, ZO) and the traps share the first letter; level 2 mixes three-letter ones (TOR, SOL)
@@ -110,7 +115,12 @@ function buildEpoch(): Word[][][] {
 }
 
 /** The hint after a wrong word: it grows with every miss on the same link, and from the third one only one is left. */
-function missHint(syl: string, misses: number): string {
+function missHint(syl: string, misses: number, prev: Word, namesSyllable: boolean): string {
+  if (!namesSyllable) {
+    if (misses === 1) return 'Esa no encaja. Fijate cómo termina la palabra de la cadena.'
+    if (misses === 2) return `Tiene que empezar con la última sílaba de «${text(prev).toUpperCase()}». Probá leer cada palabra en voz alta.`
+    return `La sílaba es «${syl.toUpperCase()}». Queda una sola que empieza con ella.`
+  }
   if (misses === 1) return `Esa no empieza con «${syl.toUpperCase()}». Fijate bien cómo empieza.`
   if (misses === 2) return `Tiene que empezar justo con «${syl.toUpperCase()}». Probá leer cada palabra en voz alta.`
   return `Queda una sola: la que empieza con «${syl.toUpperCase()}».`
@@ -124,7 +134,15 @@ const ADVANCE_MS = 1500
 const SETTLE_MS = 400
 
 /** A word on the chain, cut into syllables. The syllables that join with its neighbours are in colour. */
-function ChainWord({ word, joinStart, joinEnd }: { word: Word; joinStart: boolean; joinEnd: boolean }) {
+function ChainWord({ word, joinStart, joinEnd, plain = false }: { word: Word; joinStart: boolean; joinEnd: boolean; plain?: boolean }) {
+  // plain: the word written whole, with no syllable cut and none in colour (the player has to cut it).
+  if (plain) {
+    return (
+      <span className="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-3 py-1.5 text-xl font-extrabold uppercase text-slate-900">
+        {text(word)}
+      </span>
+    )
+  }
   return (
     <span className="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-3 py-1.5 text-xl font-extrabold uppercase text-slate-900">
       {word.map((s, i) => {
@@ -142,7 +160,7 @@ function ChainWord({ word, joinStart, joinEnd }: { word: Word; joinStart: boolea
 
 function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   const steps = [
-    'Mirá la última sílaba de la palabra de la cadena: está en color.',
+    'Mirá la última sílaba de la palabra de la cadena. En el primer nivel está en color; después la buscás vos.',
     'Tocá la palabra que EMPIEZA con esa sílaba. Ojo: otras empiezan con la misma letra, pero no encajan.',
   ]
   return (
@@ -233,6 +251,11 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
   const chain: Word[] = [level.start, ...level.links.slice(0, qIdx + (placed ? 1 : 0)).map((l) => l.word)]
   const link = level.links[qIdx]
   const asked = lastOf(chain[qIdx])
+  // Level 1 names the syllable and paints it. From level 2 the player works it out from the word of the chain: level 2
+  // shows it cut into syllables with none in colour, level 3 shows it whole.
+  const namesSyllable = levelIdx === 0
+  const colourJoins = levelIdx === 0
+  const plainWords = levelIdx >= 2
 
   function tapWord(word: Word, at: number) {
     if (busy || at - since < SETTLE_MS) return
@@ -260,7 +283,7 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
     }
     const n = tried.length + 1
     setTried((t) => [...t, text(word)])
-    setHint({ text: missHint(asked, n), ok: false })
+    setHint({ text: missHint(asked, n, chain[qIdx], namesSyllable), ok: false })
     onMistake()
   }
 
@@ -289,20 +312,24 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
             {chain.map((w, i) => (
               <span key={i} className="inline-flex items-center gap-1.5">
                 {i > 0 && <Link2 className="h-5 w-5 text-slate-400" aria-hidden="true" />}
-                <ChainWord word={w} joinStart={i > 0} joinEnd={i < chain.length - 1 || !placed} />
+                <ChainWord word={w} joinStart={colourJoins && i > 0} joinEnd={colourJoins && (i < chain.length - 1 || !placed)} plain={plainWords} />
               </span>
             ))}
           </div>
 
           <p className="mx-auto mt-3 max-w-md text-center text-xl font-bold leading-snug text-slate-900">
-            ¿Qué palabra empieza con <span className="uppercase text-tiam-blue">{asked}</span>?
+            {namesSyllable ? (
+              <>¿Qué palabra empieza con <span className="uppercase text-tiam-blue">{asked}</span>?</>
+            ) : (
+              <>¿Qué palabra sigue en la cadena?</>
+            )}
           </p>
 
           <p
             role="status"
             className={`mx-auto mt-1 min-h-[3rem] max-w-md text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-500'}`}
           >
-            {hint?.text ?? 'Tocá la palabra que sigue en la cadena.'}
+            {hint?.text ?? (namesSyllable ? 'Tocá la palabra que sigue en la cadena.' : 'Tiene que empezar con la última sílaba de la palabra anterior.')}
           </p>
 
           {/* The four words */}
