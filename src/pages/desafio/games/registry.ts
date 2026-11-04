@@ -334,6 +334,11 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     29: PintaSegunElCodigo,
     30: PalabraYSignificado,
   },
+  // Month 6 ships in weekly batches of 7. Built so far: días 1-7 (semana 1). Día 14 is a lápiz-y-papel
+  // CARD (no component); días 23 and 27 are undecided (see challengeContent.ts), and día 28 gets its
+  // lápiz-y-papel component with its batch. A day without an entry renders as its instructions card.
+  6: {
+  },
 }
 
 // Deliberately NOT wrapped in a `getGameComponent(month, day)` helper: the

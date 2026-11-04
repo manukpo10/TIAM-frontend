@@ -565,6 +565,117 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Último día: un juego de lenguaje. Tocá una palabra y después el significado que le corresponde. En los niveles siguientes puede sobrar algún significado. Subís de dificultad a medida que avanzás.' },
 ]
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Month 6 — sixth independent 30-day catalog. Day 14 is a lápiz-y-papel CARD
+// (seis comienzos de historia para completar) and day 28 a lápiz-y-papel GAME
+// (an illustrated city plus prompts to write; the component comes with its
+// batch). The mechanics were taken from third-party reference worksheets, but
+// every text, number set, word and drawing in the games is original.
+//
+// Like month 5, all 30 days are declared up front, and the BACKEND catalog
+// (ChallengeDayCatalog) has to declare all 30 too with the same type/area per
+// day. The games ship in weekly batches of 7, and a 'game' day with no entry in
+// registry.ts's GAMES_BY_MONTH[6] renders as a plain instructions card as soon
+// as its week unlocks; that is why the month cannot go on sale (backend
+// MONTHS_ON_SALE, frontend CHALLENGE_MONTHS_AVAILABLE) until every batch has
+// shipped.
+//   Built so far: días 1-7 (semana 1). The instructions of the days still to
+//   come are written from the plan and will be adjusted to the real game when
+//   each one is built (keep type/area/title as they are).
+//   Días 23 and 27 are UNDECIDED: the plan found their worksheets repeated
+//   from earlier months (Insectos = month 4 "Anagramas por categoría",
+//   Relaciona = month 5 día 30), so they hold the proposed area and the title
+//   "Por definir" until the user chooses what replaces them.
+// ─────────────────────────────────────────────────────────────────────────────
+const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
+  // ── Semana 1 — built ──────────────────────────────────────────────────────
+  { day: 1, type: 'game', area: 'calculo', title: 'La camiseta correcta',
+    instructions: 'Un juego de cálculo: hacé la cuenta, con papel y lápiz si te ayuda, y tocá la camiseta que tiene el resultado correcto: se pinta. Los resultados se parecen mucho, así que hay que revisar bien. Subís de dificultad a medida que avanzás.' },
+  { day: 2, type: 'game', area: 'atencion', title: 'Mirá el dibujo',
+    instructions: 'Un juego de atención: mirá un dibujo con calma y decidí si cada frase es verdadera o falsa. En el último nivel el dibujo se esconde después de mirarlo y hay que responder de memoria. Subís de dificultad a medida que avanzás.' },
+  { day: 3, type: 'game', area: 'lenguaje', title: 'La sílaba del medio',
+    instructions: 'Un juego de lenguaje: a cada palabra le falta la sílaba del medio. Leé la pista, tocá la sílaba que la completa y después tocá el hueco de la palabra. Subís de dificultad a medida que avanzás.' },
+  { day: 4, type: 'game', area: 'ejecutivas', title: 'Uní los colores',
+    instructions: 'Un juego de razonamiento: la clave dice qué número le corresponde a cada color. Seguí la serie de números, tocá los puntos de esos colores en ese orden y se va dibujando una línea. Subís de dificultad a medida que avanzás.' },
+  { day: 5, type: 'game', area: 'orientacion', title: 'En mi barrio',
+    instructions: 'Un ejercicio de orientación: reconocé los lugares del barrio, como la panadería, la farmacia o la plaza, y elegí a dónde irías para hacer cada mandado. Subís de dificultad a medida que avanzás.' },
+  { day: 6, type: 'game', area: 'memoria', title: 'El esqueleto',
+    instructions: 'Un juego de memoria: mirá el esqueleto con el nombre de cada hueso y, cuando estés listo, tocá «Ya lo miré»: los nombres desaparecen y tenés que volver a ponerlos. En el último nivel se pregunta para qué sirve cada hueso. Subís de dificultad a medida que avanzás.' },
+  { day: 7, type: 'game', area: 'lenguaje', title: 'Nombres escondidos',
+    instructions: 'Un juego de lenguaje: entre las letras sueltas se esconden tres nombres de frutas, árboles o aves. Con la pista y la cantidad de letras, tocá las letras en orden para armar cada uno. Subís de dificultad a medida que avanzás.' },
+
+  // ── Semana 2 — to build (14 is the card below) ────────────────────────────
+  { day: 8, type: 'game', area: 'calculo', title: 'Desarmá el número',
+    instructions: 'Un juego de cálculo: en una flor, el número está en el centro y cada pétalo es una parte: unidades de mil, centenas, decenas o unidades. Completá los pétalos para desarmar el número. Subís de dificultad a medida que avanzás.' },
+  { day: 9, type: 'game', area: 'agnosias', title: 'Las dos mitades',
+    instructions: 'Un juego de reconocimiento: mirá la mitad de una cara y buscá la otra mitad que le corresponde. A medida que avanzás, las caras se parecen cada vez más. Subís de dificultad a medida que avanzás.' },
+  { day: 10, type: 'game', area: 'lenguaje', title: 'Cadena de palabras',
+    instructions: 'Un juego de lenguaje: elegí la palabra que empieza con la última sílaba de la anterior y armá una cadena. Ojo con las que empiezan con la misma letra pero no encajan. Subís de dificultad a medida que avanzás.' },
+  { day: 11, type: 'game', area: 'atencion', title: 'Frases célebres',
+    instructions: 'Un juego de atención: en una rueda con el abecedario, cada número te dice cuántas letras contar desde la última que encontraste. Descubrí las letras y armá la frase. Subís de dificultad a medida que avanzás.' },
+  { day: 12, type: 'game', area: 'lenguaje', title: 'Todas las letras',
+    instructions: 'Un juego de lenguaje: con la pista y todas las letras de una palabra larga, tocalas en orden para armarla. Subís de dificultad a medida que avanzás.' },
+  { day: 13, type: 'game', area: 'ejecutivas', title: '¿Quién vive acá?',
+    instructions: 'Un juego de razonamiento: leé las pistas sobre las ventanas, la puerta o la escalera de cada edificio y tocá el nombre y el edificio donde vive cada persona. Subís de dificultad a medida que avanzás.' },
+  // Lápiz y papel: finishing a story has no closed answer set to validate, so —
+  // like month 3's día 14, month 4's día 18 and month 5's día 14 — it is a CARD.
+  { day: 14, type: 'card', area: 'lenguaje', title: 'Terminá la historia',
+    instructions: 'Hoy es un día de lápiz y papel: elegí una hoja y completá cada comienzo con tus propias palabras. Podés escribir una frase o seguir con una historia entera. No hay respuestas correctas ni incorrectas: lo que importa es animarte a escribir. 📝',
+    worksheet: [
+      { label: 'Esa mañana, al abrir la ventana, vi…' },
+      { label: 'El sábado me encontré con un viejo amigo y…' },
+      { label: 'En el mercado, de repente escuché…' },
+      { label: 'Cuando llegué a casa, me esperaba…' },
+      { label: 'Aquella tarde de lluvia decidí…' },
+      { label: 'Lo mejor del viaje fue cuando…' },
+    ] },
+
+  // ── Semana 3 — to build ───────────────────────────────────────────────────
+  { day: 15, type: 'game', area: 'atencion', title: 'Sílabas por color',
+    instructions: 'Un juego de atención: en una tabla de sílabas de colores, cada tira de un mismo color forma una palabra. Buscá las sílabas y armá cada palabra. Subís de dificultad a medida que avanzás.' },
+  { day: 16, type: 'game', area: 'lenguaje', title: 'Números revueltos',
+    instructions: 'Un juego de lenguaje y números: con la pista, armá con las letras el nombre de un número y después tocalo escrito en cifras. Subís de dificultad a medida que avanzás.' },
+  { day: 17, type: 'game', area: 'ejecutivas', title: 'Esto no es…',
+    instructions: 'Un juego de razonamiento creativo: mirá una forma y pensá qué podría ser, por ejemplo «esto no es un paraguas, ¿qué es?». Podés escribirlo o pensarlo, y te mostramos ideas de ejemplo. No hay respuestas equivocadas. Subís de dificultad a medida que avanzás.' },
+  { day: 18, type: 'game', area: 'lenguaje', title: 'Mándala de la N',
+    instructions: 'Un juego de lenguaje: en un mándala, pintá cada palabra del color que corresponde según la letra que sigue a la N. En los niveles siguientes se suma la M antes de B y P. Subís de dificultad a medida que avanzás.' },
+  { day: 19, type: 'game', area: 'praxias', title: 'Armá la figura',
+    instructions: 'Un juego visoespacial: mirá la figura punteada y tocá cada pieza de color y el lugar donde encaja, hasta armarla completa. Subís de dificultad a medida que avanzás.' },
+  { day: 20, type: 'game', area: 'lenguaje', title: 'Refranes en imágenes',
+    instructions: 'Un juego de lenguaje: mirá la ilustración y elegí, entre cuatro refranes, el que representa. Subís de dificultad a medida que avanzás.' },
+  { day: 21, type: 'game', area: 'memoria', title: 'Una de cada una',
+    instructions: 'Un juego de memoria: te pedimos de a una cosas de la vida diaria, por ejemplo algo que desayunes. Escribilas o pensalas y marcá «La pensé». Al final te mostramos tu lista. Subís de dificultad a medida que avanzás.' },
+
+  // ── Semana 4 — to build (23 and 27 are undecided) ─────────────────────────
+  { day: 22, type: 'game', area: 'atencion', title: 'Anagramas en el texto',
+    instructions: 'Un juego de atención: leé un texto y tocá las palabras que tienen exactamente las mismas letras. Subís de dificultad a medida que avanzás.' },
+  // UNDECIDED (the user has not chosen yet): the worksheet planned for this day,
+  // "Insectos", repeats month 4's "Anagramas por categoría". Proposal: "El
+  // calendario" (if today is Tuesday the 12th, which day falls in 10 days?).
+  { day: 23, type: 'game', area: 'calculo', title: 'Por definir',
+    instructions: 'Este día todavía no está definido.' },
+  { day: 24, type: 'game', area: 'lenguaje', title: 'El rosco',
+    instructions: 'Un juego de lenguaje: en una rueda de letras, leé la definición de cada una y escribí la palabra con el teclado de la pantalla. Si no te sale, tocá «Paso» y seguí. Subís de dificultad a medida que avanzás.' },
+  { day: 25, type: 'game', area: 'ejecutivas', title: '¿Cuál es?',
+    instructions: 'Un juego de razonamiento: las pistas aparecen de a una y se van tachando las palabras que no cumplen, hasta que queda la única. Subís de dificultad a medida que avanzás.' },
+  { day: 26, type: 'game', area: 'lenguaje', title: 'Frases con truco',
+    instructions: 'Un juego de lenguaje: dos palabras graciosas esconden otra. Con la pista, descubrí cuál es. Subís de dificultad a medida que avanzás.' },
+  // UNDECIDED (the user has not chosen yet): the worksheet planned for this day,
+  // "Relaciona", is the same one month 5 already used on its día 30. Proposal:
+  // "La agenda de la semana" (study a week's agenda, then answer without it).
+  { day: 27, type: 'game', area: 'memoria', title: 'Por definir',
+    instructions: 'Este día todavía no está definido.' },
+  // Lápiz y papel, but a 'game' day (not a card): an illustration of a city and
+  // prompts to write about it, so the component shows the picture. No entry in
+  // registry.ts until it is built.
+  { day: 28, type: 'game', area: 'lenguaje', title: 'La ciudad en oraciones',
+    instructions: 'Hoy es un día de lápiz y papel: mirá la ilustración de una ciudad y, con una hoja, escribí una oración para cada consigna. No hay respuestas correctas ni incorrectas: lo que importa es animarte a escribir. 📝' },
+  { day: 29, type: 'game', area: 'ejecutivas', title: 'Estrella de letras',
+    instructions: 'Un juego de razonamiento: recorré las líneas de la estrella para formar palabras. Con la pista y la cantidad de letras, descubrí cuáles son. Subís de dificultad a medida que avanzás.' },
+  { day: 30, type: 'game', area: 'calculo', title: 'El ticket del día',
+    instructions: 'Último día: tres tickets del día, cada uno con cinco preguntas cortas de ortografía, sinónimos, orden, cálculo mental y un problema. ¡A cerrar el desafío! 🎉' },
+]
+
 /** Content joined with its per-day illustration (matched by day number). */
 export const CHALLENGE_DAYS: ChallengeDayContent[] = MONTH_1_DAYS_CONTENT.map((d) => ({
   ...d,
@@ -583,6 +694,7 @@ export const CHALLENGE_CONTENT_BY_MONTH: Record<number, ChallengeDayContent[]> =
   3: MONTH_3_DAYS_CONTENT,
   4: MONTH_4_DAYS_CONTENT,
   5: MONTH_5_DAYS_CONTENT,
+  6: MONTH_6_DAYS_CONTENT,
 }
 
 /** Content catalog for a given challenge month, falling back to month 1 for an
