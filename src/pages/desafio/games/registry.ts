@@ -148,6 +148,7 @@ import { PintaSegunElCodigo } from './PintaSegunElCodigo'
 import { PalabraYSignificado } from './PalabraYSignificado'
 import { LaCamisetaCorrecta } from './LaCamisetaCorrecta'
 import { MiraElDibujo } from './MiraElDibujo'
+import { LaSilabaDelMedio } from './LaSilabaDelMedio'
 
 /**
  * Interactive games keyed by (challenge month, day). A day whose `type` is 'game'
@@ -342,6 +343,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
   6: {
     1: LaCamisetaCorrecta,
     2: MiraElDibujo,
+    3: LaSilabaDelMedio,
   },
 }
 
