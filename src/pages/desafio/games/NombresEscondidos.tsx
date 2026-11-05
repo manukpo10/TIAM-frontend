@@ -27,7 +27,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * nothing is timed but a short pause so the last name is seen.
  *
  * THREE NAMES A LEVEL, as the tallerista likes the days short. The ramp is the category and the length: three hardware-store things of
- * four and five letters (14 letters), three trees of five letters (15) and three birds of four, four and seven (15).
+ * four, four and four letters (12 letters), three trees of five letters (15) and three birds of four, four and seven (15).
  * Every heap is three rows of tiles on a 320px phone, which is what lets the letters and the "Listo" bar share the card.
  * Only the clue being answered shows, with its boxes (a found name takes its tab), so the heap of
  * letters is on screen on a short phone, and the "Listo" bar sticks to the bottom of the card.
@@ -65,8 +65,8 @@ const LEVELS: LevelDef[] = [
     category: 'Cosas de ferretería',
     names: [
       { word: 'PALA', display: 'pala', clue: 'Herramienta de mango largo para cavar la tierra.', tip: 'Se usa en la huerta y en la obra.' },
-      { word: 'CLAVO', display: 'clavo', clue: 'Pieza de metal con punta que se golpea con martillo.', tip: 'Tiene un extremo con cabeza plana.' },
-      { word: 'LLAVE', display: 'llave', clue: 'Herramienta que aprieta o afloja las tuercas.', tip: 'La llamada «inglesa» se ajusta a distintos tamaños.' },
+      { word: 'SOGA', display: 'soga', clue: 'Cuerda gruesa que sirve para atar o arrastrar cosas pesadas.', tip: 'Es más gruesa que un hilo y se guarda enrollada.' },
+      { word: 'LIJA', display: 'lija', clue: 'Papel áspero, con arena pegada, que se usa para alisar la madera.', tip: 'Se frota sobre la superficie antes de pintarla.' },
     ],
   },
   {
