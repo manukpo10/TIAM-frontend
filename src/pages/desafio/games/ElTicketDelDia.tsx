@@ -391,14 +391,14 @@ function NumberQuestion({ q, onMistake, onSolved, setHint, locked, since }: QPro
       >
         {digits ? fmt(Number(digits)) : <span className="text-base font-medium text-slate-500">Escribí tu respuesta</span>}
       </div>
-      <div role="group" aria-label="Teclado de números" className="mt-2 grid grid-cols-5 gap-1.5">
+      <div role="group" aria-label="Teclado de números" className="mt-2 grid grid-cols-5 gap-1">
         {[...'1234567890'].map((d) => (
           <button key={d} type="button" disabled={locked} aria-label={`Número ${d}`} onClick={(e) => press(d, e.timeStamp)} className={keyClass}>
             {d}
           </button>
         ))}
       </div>
-      <div className="mt-1.5 flex gap-1.5">
+      <div className="mt-1 flex gap-1">
         <button
           type="button"
           aria-label="Borrar el último número"
@@ -508,9 +508,9 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
   const common = { onMistake, onSolved: solved, setHint, locked, since }
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-3">
+    <div ref={topRef} className="px-3 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-3">
       {/* The ticket */}
-      <div className="mx-auto max-w-md rounded-3xl border-2 border-dashed border-tiam-blue/40 bg-white px-4 pb-4 pt-3 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-2">
+      <div className="mx-auto max-w-md rounded-3xl border-2 border-dashed border-tiam-blue/40 bg-white px-3 pb-4 pt-3 sm:px-4 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-2">
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1.5 text-sm font-extrabold uppercase tracking-wide text-tiam-blue">
             <Ticket className="h-5 w-5" aria-hidden="true" />
