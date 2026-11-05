@@ -4,14 +4,14 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "¿Cuál es?" — día 25, mes 6, ejecutivas (razonamiento). A board of words and a list of clues that come out ONE AT A
- * TIME. Each new clue is a rule ("Tiene tres sílabas", "No termina en A"): the player crosses out, by tapping them, every
+ * TIME. Each new clue is a rule ("Se separa en tres sílabas", "No termina en A"): the player crosses out, by tapping them, every
  * word that does not meet it; when all of them are crossed the next clue arrives, and when the last clue has been
  * applied exactly one word is left. The mechanic comes from a worksheet where a word is sought among many by a list of
  * its features; here the board, the clues and their order are TIAM's own, and the clues are revealed gradually.
  *
  * WHAT MAKES IT A DIFFERENT ACTIVITY FROM "Palabras con condiciones" (mes 5), which also checks words against a rule:
  * there each question has four words, ONE rule (or two or three at once) and the player taps the single word that
- * meets it. Here the board is bigger (8 to 10 words), the clues are cumulative and arrive one by one, the player's
+ * meets it. Here the board is bigger (8 words), the clues are cumulative and arrive one by one, the player's
  * action is to DISCARD (cross out what fails, not pick what fits) and what stays on the board after each clue is the
  * input of the next one. None of its words is used here (the check script rejects them).
  *
@@ -157,7 +157,7 @@ function meets(key: string, rule: Rule): boolean {
 function describe(rule: Rule): string {
   switch (rule.kind) {
     case 'syllables':
-      return `Tiene ${NUMBER_WORDS[rule.n]} sílabas.`
+      return `Se separa en ${NUMBER_WORDS[rule.n]} sílabas.`
     case 'length':
       return `Tiene ${NUMBER_WORDS[rule.n]} letras.`
     case 'atLeast':
