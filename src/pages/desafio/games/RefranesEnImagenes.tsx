@@ -67,7 +67,7 @@ const LEVELS: LevelDef[] = [
         image: 'gato',
         alt: 'Ilustración de un gato gris sentado en el piso de una habitación, con las dos patas delanteras metidas en grandes mitones rojos, y un ratoncito marrón parado muy cerca.',
         answer: 'Gato con guantes no caza ratones.',
-        wrong: ['Lo cortés no quita lo valiente.', 'Piedra que rueda no cría moho.', 'Más vale maña que fuerza.'],
+        wrong: ['Lo cortés no quita lo valiente.', 'Piedra que rueda no cría moho.', 'Más vale solo que mal acompañado.'],
         why: 'El gato tiene las patas metidas en mitones rojos y el ratón está al lado, tranquilo.',
       },
       {
