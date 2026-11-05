@@ -7,7 +7,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * week's agenda is shown for as long as the player wants, until "Ya la miré" (no clock: looking speed varies a lot in this
  * audience); then it disappears and three questions are asked one at a time, with 3 or 4 options to tap. Level 1: three
  * entries, a day and an activity. Level 2: four entries with day, hour and activity (hours in Argentine style, "10 h",
- * "16.30 h"). Level 3: five entries with an hour and a person or a place, and questions that combine facts: which thing
+ * "15.30 h"). Level 3: five entries with an hour and a person or a place, and questions that combine facts: which thing
  * you have the day AFTER another one, which of four starts earliest in the day regardless of the day (the day order and
  * the hour order disagree on purpose), and how many things fall between two hours.
  *
@@ -16,7 +16,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * EVERYTHING ASKED IS ON THE STUDY SCREEN (a memory game never depends on what the player already knows), and every
  * wrong option is another real entry of the same agenda (another day, another hour, another activity), so nothing can be
- * ruled out for being unfamiliar. Each level has its own agenda and no activity repeats in the day. A throwaway script (not
+ * ruled out for being unfamiliar; the one exception is the count question of level 3, whose options are the numbers
+ * Una to Cuatro. Each level has its own agenda and no activity repeats in the day. A throwaway script (not
  * committed) rebuilds every answer from the agenda with its own code and compares it with `answerOf`, checks that every
  * question has exactly one right option and that the options are different, that the questions are different, that the
  * texts say what their `spec` computes, and the level ramp. Known weakness of level 1: with only three entries the last
@@ -117,7 +118,7 @@ const LEVELS: LevelDef[] = [
         why: 'El té con Mirta es el viernes; el sábado cenás en lo de Beto.',
       },
       {
-        prompt: 'Sin mirar el día, solo la hora: ¿cuál empieza más temprano?',
+        prompt: 'Sin importar el día, solo por la hora: ¿cuál de estas empieza más temprano?',
         spec: { kind: 'earliestOf', among: [1, 2, 3, 4] },
         why: 'El yoga es a las 10\u00a0h: es la más temprana de las cuatro.',
       },
@@ -225,7 +226,7 @@ function Agenda({ entries, compact = false }: { entries: Entry[]; compact?: bool
         {entries.map((e) => (
           <li key={e.day} className={`flex items-baseline gap-2 px-3 text-base leading-tight ${compact ? 'py-1' : 'py-1.5'}`}>
             <span className="w-[5.5rem] shrink-0 font-bold text-slate-900">{e.day}</span>
-            <span className="min-w-0 text-slate-800">
+            <span className="min-w-0 flex-1 [overflow-wrap:anywhere] text-slate-800">
               {e.time && <span className="mr-1.5 font-bold text-tiam-blue-dark">{fmtTime(e.time)}</span>}
               {e.what}
             </span>
@@ -295,6 +296,7 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
   const timerRef = useRef<number | undefined>(undefined)
   const topRef = useRef<HTMLDivElement>(null)
   const resultRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => () => window.clearTimeout(timerRef.current), [])
   // Every screen opens at the top, not wherever the previous button left the scroll.
   useEffect(() => {
@@ -305,6 +307,8 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
     if (phase !== 'done' || !card) return
     card.scrollIntoView({ block: 'nearest' })
     card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+    // ...but never with the title half under the dialog header: it is brought back if it was left above.
+    titleRef.current?.scrollIntoView({ block: 'nearest' })
   }, [phase])
 
   const q = level.questions[qIdx]
@@ -359,10 +363,10 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
         <div className="text-center">
           {pill}
           <h2 className="mt-1.5 text-xl font-bold leading-tight text-slate-900 sm:text-2xl">
-            {phase === 'study' ? 'Mirá bien tu agenda' : 'Mirala de nuevo'}
+            {phase === 'study' ? 'Tu agenda de la semana' : 'Mirala de nuevo'}
           </h2>
           <p className="mt-0.5 text-base leading-snug text-slate-600">
-            {phase === 'study' ? 'Mirala bien: después desaparece.' : 'No cuenta como error.'}
+            {phase === 'study' ? 'Mirala con calma: después desaparece.' : 'No cuenta como error.'}
           </p>
         </div>
         <div className="mt-2">
@@ -380,17 +384,17 @@ function LevelView({ levelIdx, options, since, onMistake, onSolved, onNext, onRe
 
   if (phase === 'done') {
     return (
-      <div ref={topRef} className="px-4 pb-5 pt-4 sm:p-7">
+      <div ref={topRef} className="px-2 pb-3 pt-2 sm:p-7">
         <div className="text-center">
           {pill}
-          <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¡Completaste el {level.name.toLowerCase()}!</h2>
+          <h2 ref={titleRef} className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">¡Completaste el {level.name.toLowerCase()}!</h2>
           <p className="mt-1 text-base font-semibold text-slate-500">{praise}</p>
         </div>
-        <div ref={resultRef} className="mt-4 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-4 text-center">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-tiam-green/15">
+        <div ref={resultRef} className="mt-3 rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-2 text-center sm:p-4">
+          <div className="mx-auto flex h-10 w-10 [@media(max-height:600px)]:hidden items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-5 w-5 text-tiam-green" />
           </div>
-          <p className="mt-2 text-slate-600">La agenda de este nivel:</p>
+          <p className="mt-2 text-slate-600 [@media(max-height:600px)]:hidden">La agenda de este nivel:</p>
           <div className="mt-2 text-left">
             <Agenda entries={level.agenda} compact />
           </div>
