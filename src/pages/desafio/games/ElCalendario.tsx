@@ -4,7 +4,7 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "El calendario" — día 23, mes 6, cálculo. A page of a wall calendar (month name, seven columns, weeks that start on
- * Monday, "Lu Ma Mi Ju Vi Sa Do") and one situation at a time: "Dentro de 3 días tenés turno con la doctora". The player
+ * Monday, "Lu Ma Mi Ju Vi Sa Do") and one situation at a time: "Dentro de 3 días viene el gasista a revisar la cocina". The player
  * counts from the cell marked "Hoy" and taps the day it falls on. Three situations per level, one month page and one
  * "Hoy" per level. Nothing is timed.
  *
@@ -15,9 +15,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  * THE RAMP. Level 1: 3 to 6 days forward inside the month (the neighbouring months' days only fill the grid and cannot
  * be tapped). Level 2: weeks plus days forward (a week and two days, two weeks and a day) and one situation backwards
  * ("hace 9 días"), so the player has to use "a week is 7 days" and go up a row. Level 3 is harder for real: "Hoy" is
- * at the end of the month, so every answer is in the NEXT month (those cells, shown muted, are tappable here), and two
- * of the three need two steps (walking with a friend every 3 days, three times; "hace 5 días... lista a los 12 días"). The month's
- * length is stated in the text where it matters.
+ * at the end of the month, so every answer is in the NEXT month (those cells, shown muted, are tappable here, and a line
+ * says so) and every situation takes more than counting a few days: a week and a day (8), three outings 3 days apart
+ * (9) and "hace 5 días... lista a los 12 días" (-5 + 12). The month's length is stated once, in the first situation of
+ * level 3 (the others are answered by counting cells).
  *
  * Every answer is computed, not typed: a situation is a list of `moves` (signed days, summed from "Hoy"), and the
  * answer is the cell at today's position plus that sum. A throwaway script (not committed) rebuilds every month page
@@ -28,14 +29,16 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * NO DEAD END, NOTHING RED. A wrong cell is greyed (muted gray, with the number struck through, never red) and costs ONE
  * mistake (once per cell). The message says what that cell is (its weekday and date and how far it is from "Hoy"); "Hoy"
- * gets its own message. The hint grows on the same situation: first how to count (a week is 7 days), then a narrower
+ * gets its own message and, like a muted cell of another month on levels 1 and 2 (it says which month it is from), costs
+ * nothing and does not advance the hint; "Hoy" always keeps its solid look. The hint grows on the same situation: first how to count (a week is 7 days), then a narrower
  * clue (which weekday and which row), and from the third miss the right cell gets a ring and gently pulses. A right
  * answer says the full date with its weekday and, after a short pause (the only timer), the next situation comes; any tap
  * in the first 400 ms of a situation is ignored so a double tap never answers the next one.
  *
  * "Hoy" is marked by the word, a solid fill and a thicker border, never by colour alone; the neighbouring months'
  * days carry their month's abbreviation. Cells are 44 px tall and as wide as the screen allows (the card's side padding
- * is small on phones so seven columns get the most room); every number and text is 16 px or more.
+ * is small on phones so seven columns get the most room); the numbers, the messages and the hints are 16 px or more (only the small level pill, 12 px, and the numbered badges of the
+ * how-to screen, 14 px, are labels).
  *
  * "Repetir" replays the same nine situations: everything is authored once, nothing is drawn at mount. A short
  * "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back. Per-level state lives in <LevelView>, keyed by
@@ -131,16 +134,16 @@ const LEVELS: LevelDef[] = [
     month: { name: 'Abril', prevName: 'Marzo', nextName: 'Mayo', length: 30, prevLength: 31, firstDow: 0, today: 26, tappableNeighbours: true },
     situations: [
       {
-        text: 'La cuota del gimnasio vence dentro de 6 días. Abril tiene 30 días. ¿Qué día vence?',
+        text: 'La cuota del gimnasio vence dentro de una semana y un día. Abril tiene 30 días. ¿Qué día vence?',
         short: 'Vence la cuota del gimnasio',
-        moves: [6],
-        howToCount: 'Contá desde mañana. Cuando termine abril (30 días), seguí con el 1 del mes que viene.',
+        moves: [7, 1],
+        howToCount: 'Una semana son 7 días: bajá una fila y quedás en el mismo día que Hoy. Después sumá 1 día.',
       },
       {
-        text: 'Salís a caminar con una amiga cada 3 días y hoy ya salieron. ¿Qué día salen por tercera vez a partir de hoy?',
-        short: 'Caminata con tu amiga',
+        text: 'Salís a caminar con una amiga cada 3 días y hoy ya salieron. ¿Qué día les toca la tercera salida después de la de hoy?',
+        short: 'Tercera salida con tu amiga',
         moves: [3, 3, 3],
-        howToCount: 'Sumá de a 3 días: 3 para la primera vez, 3 más para la segunda y otros 3 para la tercera.',
+        howToCount: 'Sumá de a 3 días desde Hoy: 3 para la primera salida, 3 más para la segunda y otros 3 para la tercera.',
       },
       {
         text: 'Hace 5 días dejaste un pantalón en el arreglo y estará listo a los 12 días de haberlo dejado. ¿Qué día lo retirás?',
@@ -277,6 +280,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
   const bornRef = useRef(0)
   const topRef = useRef<HTMLDivElement>(null)
   const resultRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => () => window.clearTimeout(timerRef.current), [])
   useEffect(() => {
     topRef.current?.scrollIntoView({ block: 'start' })
@@ -290,6 +294,8 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
     if (!done || !card) return
     card.scrollIntoView({ block: 'nearest' })
     card.querySelector('button')?.scrollIntoView({ block: 'nearest' })
+    // ...but never with the title half under the dialog header: it is brought back if it was left above.
+    titleRef.current?.scrollIntoView({ block: 'nearest' })
   }, [done])
 
   const situation = level.situations[step]
@@ -304,6 +310,20 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
 
   function tap(i: number, at: number) {
     if (locked || tried.includes(i) || at - bornRef.current < SETTLE_MS || at - since < SETTLE_MS) return
+    // "Hoy" is where the counting starts: it only says so (no mistake, no hint advance, it stays as it is).
+    if (i === tIdx) {
+      setMsg((m) => ({ what: 'Ese es Hoy: desde ahí empezás a contar.', hint: m && !m.ok ? m.hint : '', ok: false }))
+      return
+    }
+    // A muted cell of another month where the answer cannot be: it only explains (no mistake, no hint advance).
+    if (grid[i].kind !== 'cur' && !month.tappableNeighbours) {
+      setMsg((m) => ({
+        what: `Ese día es de ${monthOf(month, grid[i]).toLowerCase()}. La respuesta está en ${month.name.toLowerCase()}, el mes de este calendario.`,
+        hint: m && !m.ok ? m.hint : '',
+        ok: false,
+      }))
+      return
+    }
     if (i === aIdx) {
       setSolvedAt(i)
       setMsg({ what: `¡Eso es! ${cap(dateLabel(month, grid, i))}.`, hint: '', ok: true })
@@ -325,10 +345,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
     setTried((t) => [...t, i])
     onMistake()
     const diff = i - tIdx
-    const what =
-      i === tIdx
-        ? 'Ese es Hoy: desde ahí empezás a contar.'
-        : `Ese es el ${WEEKDAYS[i % 7]} ${grid[i].day}${grid[i].kind === 'cur' ? '' : ` de ${monthOf(month, grid[i]).toLowerCase()}`}: ${distanceText(diff)} ${diff > 0 ? 'después' : 'antes'} de Hoy.`
+    const what = `Ese es el ${WEEKDAYS[i % 7]} ${grid[i].day}${grid[i].kind === 'cur' ? '' : ` de ${monthOf(month, grid[i]).toLowerCase()}`}: ${distanceText(diff)} ${diff > 0 ? 'después' : 'antes'} de Hoy.`
     const hint = n === 1 ? situation.howToCount : n < RING_AFTER ? narrowClue(month, grid, situation) : 'Mirá el casillero con aro: ahí es.'
     setMsg({ what, hint, ok: false })
   }
@@ -346,7 +363,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
         )}
         {done && (
           <>
-            <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">¡Completaste el {level.name.toLowerCase()}!</h2>
+            <h2 ref={titleRef} className="mt-3 scroll-mt-2 text-xl font-bold text-slate-900 sm:text-2xl">¡Completaste el {level.name.toLowerCase()}!</h2>
             <p className="mt-1 text-base font-semibold text-slate-500">{praise}</p>
           </>
         )}
@@ -365,7 +382,10 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
                   {msg.hint && <p className="text-slate-600">{msg.hint}</p>}
                 </>
               ) : (
-                <p className="text-slate-500">Tocá en el calendario el día que corresponde.</p>
+                <p className="text-slate-500">
+                  Tocá en el calendario el día que corresponde.
+                  {month.tappableNeighbours && ' Los días del mes que viene también se pueden tocar.'}
+                </p>
               )}
             </div>
           </div>
@@ -398,28 +418,36 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
                   ) : null
                   if (!tappable) {
                     return (
-                      <div key={i} aria-label={dateLabel(month, grid, i)} className={`${base} bg-slate-50 text-slate-500`}>
+                      <button
+                        key={i}
+                        type="button"
+                        disabled={locked}
+                        aria-label={`${dateLabel(month, grid, i)}, no es de ${month.name.toLowerCase()}`}
+                        onClick={(e) => tap(i, e.timeStamp)}
+                        className={`${base} bg-slate-50 text-slate-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/60`}
+                      >
                         {c.day}
                         {abbr}
-                      </div>
+                      </button>
                     )
                   }
                   const style = isRight
                     ? 'border-2 border-tiam-green bg-tiam-green/15 text-slate-900'
-                    : isTried
-                      ? 'cursor-not-allowed border border-slate-200 bg-slate-200 text-slate-500 line-through'
-                      : isToday
-                        ? 'border-[3px] border-tiam-navy bg-tiam-blue text-white'
+                    : isToday
+                      ? 'border-[3px] border-tiam-navy bg-tiam-blue text-white'
+                      : isTried
+                        ? 'cursor-not-allowed border border-slate-200 bg-slate-200 text-slate-500 line-through'
                         : neighbour
-                          ? 'border border-dashed border-slate-300 bg-slate-50 text-slate-600 hover:border-tiam-blue/50'
-                          : 'border border-slate-200 bg-white text-slate-900 hover:border-tiam-blue/50'
-                  const ring = ringOn && i === aIdx ? 'ring-4 ring-tiam-orange motion-safe:animate-pulse' : ''
+                            ? 'border border-dashed border-slate-300 bg-slate-50 text-slate-600 hover:border-tiam-blue/50'
+                            : 'border border-slate-200 bg-white text-slate-900 hover:border-tiam-blue/50'
+                  // An inset ring: the card clips whatever sticks out, and the Monday and Sunday cells touch its sides.
+                  const ring = ringOn && i === aIdx ? 'ring-4 ring-inset ring-tiam-orange motion-safe:animate-pulse' : ''
                   return (
                     <button
                       key={i}
                       ref={i === aIdx ? ringRef : undefined}
                       type="button"
-                      disabled={locked || isTried}
+                      disabled={locked || (isTried && !isToday)}
                       aria-label={`${dateLabel(month, grid, i)}${isToday ? ', Hoy' : ''}${isTried ? ', ya probaste este día' : ''}`}
                       onClick={(e) => tap(i, e.timeStamp)}
                       className={`${base} transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/60 ${style} ${ring}`}
@@ -438,8 +466,8 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
       )}
 
       {done && (
-        <div ref={resultRef} className="mx-auto mt-4 max-w-md rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-5 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-tiam-green/15">
+        <div ref={resultRef} className="mx-auto mt-3 max-w-md rounded-3xl border border-tiam-green/20 bg-tiam-green/5 p-4 text-center">
+          <div className="mx-auto flex h-12 w-12 [@media(max-height:600px)]:hidden items-center justify-center rounded-full bg-tiam-green/15">
             <Sparkles className="h-6 w-6 text-tiam-green" />
           </div>
           <p className="mt-3 text-slate-600">Las fechas de este nivel:</p>
