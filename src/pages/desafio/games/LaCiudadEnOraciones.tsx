@@ -4,20 +4,23 @@ import type { GameProps } from '@/lib/challengeProgress'
 
 /**
  * "La ciudad en oraciones" — día 28, mes 6, lenguaje. A pen-and-paper day that is a `game` (not a `card`) because it
- * needs a picture: TIAM's own Flux illustration of a city corner (a bakery, a bus stop, a small plaza with a fountain)
+ * needs a picture: TIAM's own Flux illustration of a city corner (a bakery, a bus on the street, a small plaza with a fountain)
  * stays on screen while the player writes, on a sheet of paper or aloud, a few sentences about it. The mechanic, writing
  * sentences about a picture of a city, comes from a worksheet; the picture, the prompts and the wording are TIAM's own.
  *
  * NOTHING TO GET WRONG. Nothing is typed and nothing is checked: the player writes on paper (or says the sentences) and
  * taps "Ya las escribí" when done. The day reports `mistakes: 0` and `totalAttempts` = the number of prompts, once the
  * third level is finished. Every prompt can be answered from what is really drawn in the picture (the bakery with its
- * loaves and its awning, the woman in the yellow coat with a bag, the red bus and the person with the red umbrella, the
- * yellow taxi and the traffic light, the fountain, the older man on the bench with his dog and the pigeons, the girl with
- * the pink kite).
+ * loaves and its awning, the woman in the yellow coat with a paper bag and the two people next to her, the red and white
+ * bus with a person with a red umbrella at its door, the yellow taxi and the traffic light, the fountain, the older man on
+ * the bench with his dog on a leash and the pigeons, the girl holding a small red flag on a stick, a pink kite in the air).
+ * The prompts were rewritten after LOOKING at the picture: there is no bus stop and nobody waiting, so the bus prompt asks
+ * about the bus and the person at its door; the girl does not hold the kite, so her prompt asks what she holds; the woman
+ * is at a bakery, so her prompt is about what she prepares with the bread.
  *
  * THREE LEVELS, TWO PROMPTS EACH, the same picture. The ramp is what is asked of the writer: level 1 names and places
  * things ("a sentence about the bakery"), level 2 describes what people are doing, level 3 invents (what the woman will
- * cook, a person chosen by the player and three sentences that tell who it is, where they go and what happens). The
+ * prepare with her bread, a person chosen by the player and three sentences that tell who it is, where they go and what happens). The
  * picture is one fixed illustration and there is nothing drawn at mount, so "Repetir" shows the same day again.
  *
  * A short "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back. Per-level state lives in <LevelView>,
@@ -37,8 +40,8 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 1',
     title: 'Mirá y nombrá',
     prompts: [
-      'Escribí una oración sobre la panadería: qué se ve en su vidriera o quién está en la puerta.',
-      'Escribí una oración sobre el colectivo y las personas que lo esperan.',
+      'Escribí una oración sobre la panadería: qué se ve en su vidriera o quiénes están junto a ella.',
+      'Escribí una oración sobre el colectivo rojo y blanco: de qué color es o quién está junto a su puerta.',
     ],
   },
   {
@@ -46,14 +49,14 @@ const LEVELS: LevelDef[] = [
     title: 'Contá lo que pasa',
     prompts: [
       'Escribí una oración sobre lo que hace el señor sentado en el banco de la plaza.',
-      'Escribí una oración sobre la nena que está cerca de la fuente.',
+      'Escribí una oración sobre la nena que está cerca de la fuente: qué tiene en la mano.',
     ],
   },
   {
     name: 'Nivel 3',
     title: 'Imaginá',
     prompts: [
-      'Escribí dos oraciones: qué va a cocinar la mujer del tapado amarillo con lo que compró.',
+      'Escribí dos oraciones: qué va a preparar la mujer del tapado amarillo con el pan que compró.',
       'Elegí a una persona y escribí tres oraciones: quién es, a dónde va y qué le pasa.',
     ],
   },
@@ -61,7 +64,7 @@ const LEVELS: LevelDef[] = [
 const TOTAL_PROMPTS = LEVELS.reduce((n, l) => n + l.prompts.length, 0)
 
 const PICTURE_ALT =
-  'Ilustración de una esquina de ciudad en un día de sol: a la izquierda una panadería con toldo a rayas verdes y panes en la vidriera, una mujer con tapado amarillo y una bolsa; en el centro un colectivo rojo y blanco en la parada, con una persona con paraguas rojo, un taxi amarillo y un semáforo; a la derecha una plaza con una fuente, un señor sentado en un banco con un perro, palomas y una nena con un barrilete rosa. Atrás, edificios con balcones llenos de plantas.'
+  'Ilustración de una esquina de ciudad en un día de sol: a la izquierda una panadería con toldo a rayas verdes y panes en las estanterías de la vidriera, una mujer con tapado amarillo y una bolsa de papel, y otras dos personas a su lado; en el centro un colectivo rojo y blanco con una persona con paraguas rojo junto a la puerta, un taxi amarillo y un semáforo en rojo; a la derecha una plaza con una fuente, un señor de pelo canoso sentado en un banco con un perro con correa, palomas, una nena que sostiene un banderín rojo en un palito y un barrilete rosa en el aire. Atrás, edificios con balcones llenos de plantas.'
 // ── data:end ──
 
 const IMAGES = import.meta.glob('../../../assets/desafio/games/la-ciudad-en-oraciones/*.webp', {
