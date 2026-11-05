@@ -17,9 +17,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ORIGINAL CONTENT. Only the idea (a long word whose letters are all given) is borrowed. The nine words and the clues
  * are TIAM's own, everyday words for adults. A throwaway script (not committed) checks that the sorted letters are
- * exactly those of the word, that the word of the post is not here, that no clue contains its word and that none of the
- * nine words appears as a whole string (an answer or an option) in any other game of src/pages/desafio/games, months 1
- * to 6, "Palabras desordenadas" included. A word that only shows up inside someone else's sentence is not counted.
+ * exactly those of the word, that the word of the post is not here and that no clue contains its word. The answers were
+ * also searched across src/pages/desafio/games: none is an answer of another game that puts letters in order, while
+ * everyday words such as ALMOHADA, ESCALERA and CALENDARIO do appear in games of other families.
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word from its letters with nothing to go on): every word has a
  * clue, a second tip and its boxes on screen, so its length is visible. A wrong word costs ONE mistake (a double tap on
