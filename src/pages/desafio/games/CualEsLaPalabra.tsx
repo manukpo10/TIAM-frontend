@@ -29,9 +29,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * a short pause when a clue is finished, during which the board is off. A visible "Ayuda" button crosses out one word
  * that fails, for one mistake, so nobody is stuck on a clue they cannot decide.
  *
- * THREE LEVELS, ONE BOARD EACH (the tallerista asked for short days; the three boards are 3, 4 and 5 clues). The ramp:
+ * THREE LEVELS, ONE BOARD EACH (the tallerista asked for short days; the three boards are 3, 4 and 4 clues). The ramp:
  * level 1 is plain features (syllables and a letter inside); level 2 mixes syllables, letters and length;
- * level 3 has 10 words, five clues, two negations ("No termina en A") and an "or more". There is nothing to choose at
+ * level 3 has 8 words of eight to ten letters, four clues and two negations ("No termina en A", "No empieza con C") on top of counting four syllables, and no clue asks to count letters (counting nine of them was too heavy). There is nothing to choose at
  * mount (each level has one authored board and the words keep their order), so "Repetir" replays the same content.
  *
  * A short "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back. Per-level state lives in <LevelView>,
@@ -57,7 +57,7 @@ const WORDS: Record<string, string> = {
   melon: 'me-lón',
   pomelo: 'po-me-lo',
   cereza: 'ce-re-za',
-  anana: 'a-na-na',
+  anana: 'a-na-ná',
   palta: 'pal-ta',
   manteca: 'man-te-ca',
   pepino: 'pe-pi-no',
@@ -74,13 +74,11 @@ const WORDS: Record<string, string> = {
   batidora: 'ba-ti-do-ra',
   tostadora: 'tos-ta-do-ra',
   albahaca: 'al-ba-ha-ca',
-  berenjena: 'be-ren-je-na',
   lavandina: 'la-van-di-na',
   picaporte: 'pi-ca-por-te',
   calefactor: 'ca-le-fac-tor',
   abrelatas: 'a-bre-la-tas',
   pantufla: 'pan-tu-fla',
-  frazada: 'fra-za-da',
 }
 
 interface LevelDef {
@@ -113,17 +111,14 @@ const LEVELS: LevelDef[] = [
       'batidora',
       'tostadora',
       'albahaca',
-      'berenjena',
       'lavandina',
       'picaporte',
       'calefactor',
       'abrelatas',
       'pantufla',
-      'frazada',
     ],
     rules: [
       { kind: 'syllables', n: 4 },
-      { kind: 'atLeast', n: 9 },
       { kind: 'not', rule: { kind: 'ends', letter: 'A' } },
       { kind: 'has', letter: 'L' },
       { kind: 'not', rule: { kind: 'starts', letter: 'C' } },
