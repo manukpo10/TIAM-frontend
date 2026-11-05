@@ -3,8 +3,8 @@ import { ArrowRight, Check, Delete as BackspaceIcon, RotateCcw, Sparkles } from 
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "Frases con truco" — día 26, mes 6, lenguaje. A funny two-word phrase ("NADIE PARA") whose letters, shuffled, spell
- * ONE other word (PANADERÍA). The game gives a clue and one box per letter of the hidden word; the player taps the
+ * "Frases con truco" — día 26, mes 6, lenguaje. A funny two-word phrase ("LA DANESA") whose letters, shuffled, spell
+ * ONE other word (ENSALADA). The game gives a clue and one box per letter of the hidden word; the player taps the
  * letters of the phrase, in the order the hidden word needs, to fill the boxes. The mechanic comes from a worksheet of
  * odd phrases that hide a word; here the nine phrases, their hidden words and the clues are TIAM's own.
  *
