@@ -178,7 +178,7 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
         </p>
         <p className="mt-1 text-base text-slate-600">«sala» y «alas» tienen las mismas letras: s, a, l, a.</p>
       </div>
-      <div className="sticky bottom-2 z-10 mt-3 text-center">
+      <div className="sticky bottom-0 z-10 mt-3 rounded-2xl bg-white/95 py-2 text-center">
         <button
           type="button"
           onClick={(e) => onStart(e.timeStamp)}
