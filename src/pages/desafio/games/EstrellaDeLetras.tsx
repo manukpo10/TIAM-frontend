@@ -9,7 +9,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * mechanic comes from a worksheet where words are hidden in a star of letters joined by lines; here the star's shape,
  * its letters, the words and the clues are TIAM's own.
  *
- * WALKING THE LINES IS THE RULE, SO IT IS CHECKED. The star is data (EDGES: each tip is joined to the two nearest inner
+ * WALKING THE LINES IS THE RULE, SO IT IS CHECKED. The star is drawn as a tinted six-pointed silhouette with its lines in a dark slate (3:1 or more against the white and the tint; a pale line made it read as a hexagonal frame). The star is data (EDGES: each tip is joined to the two nearest inner
  * points and the six inner points form a ring) and the game only lets a tap continue from the last point to a point joined
  * to it (a tap anywhere else says "ese punto no está unido al anterior" and is not a mistake). A throwaway script
  * (not committed) searches the graph for every word of the day and confirms each can be spelled along edges, and lists
@@ -27,8 +27,8 @@ import type { GameProps } from '@/lib/challengeProgress'
  * so the same letter is used in more than one word. The ramp is the length (4 to 5 letters, then 6, then 6 to 8) and
  * how indirect the clue is. Each star is authored once, so "Repetir" replays exactly the same nine words.
  *
- * The points are buttons of 44 px; the star is as wide as the screen allows (up to 280 px) and smaller (244 px, its points
- * still 44 px) on a short phone; it lies with its tips left and right so it is wide, not tall, where the clue, the star, the boxes, the feedback and the buttons all stay on screen. A short "¿Cómo se
+ * The points are buttons of 44 px; the star is as wide as the screen allows (up to 280 px) and smaller (252 px, its points
+ * still 44 px, about 8 px apart) on a short phone; it lies with its tips left and right so it is wide, not tall, where the clue, the star, the boxes, the feedback and the buttons all stay on screen. A short "¿Cómo se
  * juega?" screen opens the day; "Repetir" never brings it back. Per-level state lives in <LevelView>, keyed by run +
  * level. A tap within SETTLE_MS of the tap that brought the level is ignored.
  *
@@ -161,10 +161,12 @@ const TOTAL_WORDS = LEVELS.reduce((n, l) => n + l.words.length, 0)
 /** Where each point sits on the star, as percentages of its box (10 wide : 9 high; the star has its tips left and right). */
 const TIP_X = 41
 const TIP_Y = 45.6
+/** The inner points sit at this fraction of the tips' distance from the centre: a regular hexagram has 0.577; 0.5 makes the points longer, so it reads as a star (the inner circles of 44 px still leave a gap of about 12 px). */
+const INNER = 0.5
 function pointPosition(i: number): { x: number; y: number } {
   const tip = i < 6
   const angle = ((60 * (tip ? i : i - 6) + (tip ? 0 : 30)) * Math.PI) / 180
-  const k = tip ? 1 : 1 / Math.sqrt(3)
+  const k = tip ? 1 : INNER
   return { x: 50 + TIP_X * k * Math.cos(angle), y: 50 + TIP_Y * k * Math.sin(angle) }
 }
 // ── data:end ──
@@ -208,6 +210,9 @@ function WordBoxes({ word, typed, right }: { word: string; typed: string; right:
   )
 }
 
+/** The color of the lines nobody has walked yet: slate-500, 4.7:1 on white and 4.2:1 on the star's tint (the lines are the rule). */
+const LINE_COLOR = '#64748B'
+
 /** The star: its lines, with the ones of the current walk in blue, and one 44 px button per point. */
 function Star({
   letters,
@@ -224,8 +229,17 @@ function Star({
 }) {
   const walked = new Set(walk.slice(1).map((n, k) => `${Math.min(walk[k], n)}-${Math.max(walk[k], n)}`))
   return (
-    <div className="relative mx-auto aspect-[10/9] w-full max-w-[280px] [@media(max-height:700px)]:max-w-[244px]">
+    <div className="relative mx-auto aspect-[10/9] w-full max-w-[252px] [@media(min-height:700px)]:max-w-[280px]">
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full" aria-hidden="true">
+        {/* The silhouette of the star (tip, corner, tip, corner...) with a soft tint, so the figure reads as a star and not as a
+            hexagonal frame. It is only decoration: the lines below are the rule. */}
+        <polygon
+          points={Array.from({ length: 12 }, (_, n) => {
+            const q = pointPosition(n % 2 === 0 ? n / 2 : 6 + (n - 1) / 2)
+            return `${q.x},${q.y}`
+          }).join(' ')}
+          fill="#E8F1FB"
+        />
         {EDGES.map(([a, b]) => {
           const p = pointPosition(a)
           const q = pointPosition(b)
@@ -237,8 +251,8 @@ function Star({
               y1={p.y}
               x2={q.x}
               y2={q.y}
-              stroke={on ? '#1B6FC4' : '#CBD5E1'}
-              strokeWidth={on ? 4 : 2}
+              stroke={on ? '#1B6FC4' : LINE_COLOR}
+              strokeWidth={on ? 5 : 3}
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
             />
@@ -408,7 +422,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
   }
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-3">
+    <div ref={topRef} className="px-2 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-1 [@media(max-height:700px)]:pt-1">
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
           {level.name}
@@ -422,7 +436,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
 
       {!done && (
         <>
-          <div className="mx-auto mt-2 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-1.5 text-center">
+          <div className="mx-auto mt-1 max-w-md rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-4 py-1 sm:mt-2 sm:py-1.5 text-center">
             <p className="text-base font-bold leading-snug text-slate-900 sm:text-xl">{current.clue}</p>
             <p className="text-base font-medium text-slate-600 [@media(max-height:700px)]:hidden">
               La palabra tiene {current.word.length} letras.
@@ -438,7 +452,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
           </div>
 
           {/* Feedback and buttons stay pinned to the bottom edge, so "Listo" is never below the fold. */}
-          <div className="sticky bottom-0 z-10 mx-auto mt-1 max-w-[340px] bg-white/95 pb-1 pt-1">
+          <div className="sticky bottom-0 z-10 mx-auto mt-1 max-w-[340px] bg-white/95 pb-0.5 pt-1">
             <p
               role="status"
               className={`min-h-[2.4rem] text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-600'}`}
