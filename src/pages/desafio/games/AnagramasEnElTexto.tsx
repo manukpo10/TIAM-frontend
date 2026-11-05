@@ -153,9 +153,9 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
   ]
   const tokens = tokenize(EXAMPLE.text)
   return (
-    <div className="mt-4 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-4 sm:p-6">
+    <div className="mt-3 rounded-3xl border border-tiam-blue/20 bg-tiam-blue/5 p-3 sm:p-6">
       <p className="text-center text-xl font-bold text-slate-900">¿Cómo se juega?</p>
-      <ol className="mt-3 space-y-3">
+      <ol className="mt-2 space-y-2">
         {steps.map((step, i) => (
           <li key={i} className="flex items-start gap-3 text-base leading-snug text-slate-700">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tiam-blue text-sm font-bold text-white">
@@ -165,9 +165,9 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
           </li>
         ))}
       </ol>
-      <div className="mt-3 rounded-2xl bg-white p-3 text-center">
+      <div className="mt-2 rounded-2xl bg-white p-2 text-center">
         <p className="text-base font-semibold text-slate-500">Por ejemplo:</p>
-        <p className="mt-1 text-lg font-medium leading-snug text-slate-900">
+        <p className="mt-1 text-base font-medium leading-snug text-slate-900">
           {tokens.map((t, i) => (
             <span key={i} className={EXAMPLE.pair.includes(t.key) ? 'rounded bg-tiam-green/20 px-0.5 font-bold' : ''}>
               {t.before}
@@ -178,7 +178,7 @@ function HowToPlay({ onStart }: { onStart: (at: number) => void }) {
         </p>
         <p className="mt-1 text-base text-slate-600">«sala» y «alas» tienen las mismas letras: s, a, l, a.</p>
       </div>
-      <div className="sticky bottom-3 z-10 mt-4 text-center">
+      <div className="sticky bottom-2 z-10 mt-3 text-center">
         <button
           type="button"
           onClick={(e) => onStart(e.timeStamp)}
@@ -267,7 +267,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
   }
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-3">
+    <div ref={topRef} className="px-3 pb-5 pt-4 sm:p-7 [@media(max-height:700px)]:pb-2 [@media(max-height:700px)]:pt-2">
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
           {level.name}
@@ -281,7 +281,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
         {level.prompt}
       </p>
 
-      <p className="mx-auto mt-2 max-w-md text-lg leading-[3rem] text-slate-900 [@media(max-height:700px)]:leading-[2.9rem]">
+      <p className="mx-auto mt-2 max-w-md text-lg leading-[3rem] text-slate-900 [@media(max-height:700px)]:leading-[2.75rem]">
         {tokens.map((t, i) => (
           <WordButton
             key={i}
@@ -302,13 +302,13 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
 
       <p
         role="status"
-        className={`mx-auto mt-1 min-h-[3.5rem] max-w-md text-center text-base font-medium ${hint?.ok ? 'text-green-700' : 'text-slate-600'}`}
+        className={`mx-auto mt-1 min-h-[2.5rem] max-w-md text-center text-base font-medium ${hint?.ok ? 'text-green-700' : 'text-slate-600'}`}
       >
         {hint?.text}
       </p>
 
       {!done && (
-        <div className="sticky bottom-3 z-10 mx-auto mt-2 max-w-md">
+        <div className="sticky bottom-2 z-10 mx-auto mt-1 max-w-md">
           <button
             type="button"
             disabled={selected.length < 2}
@@ -388,12 +388,12 @@ export function AnagramasEnElTexto({ onComplete }: GameProps) {
 
   if (phase === 'ready') {
     return (
-      <div className="px-5 pb-5 pt-4 sm:p-7">
+      <div className="px-3 pb-3 pt-3 sm:p-7">
         <div className="text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-tiam-blue/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-tiam-blue">
             {LEVELS[0].name}
           </span>
-          <h2 className="mt-3 text-xl font-bold text-slate-900 sm:text-2xl">Palabras con las mismas letras</h2>
+          <h2 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">Palabras con las mismas letras</h2>
         </div>
         <HowToPlay onStart={handleStart} />
       </div>
