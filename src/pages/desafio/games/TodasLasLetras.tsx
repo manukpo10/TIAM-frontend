@@ -58,7 +58,7 @@ const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
     words: [
-      { word: 'BUFANDA', display: 'bufanda', clue: 'Prenda larga de lana que se enrolla al cuello.', tip: 'Abriga el cuello y se usa con el gorro.' },
+      { word: 'BANDEJA', display: 'bandeja', clue: 'Tabla con bordes bajos para llevar las tazas y los platos a la mesa.', tip: 'Se usa para servir el desayuno en la cama.' },
       { word: 'ESCALERA', display: 'escalera', clue: 'Peldaños para subir de un piso al otro.', tip: 'Si el ascensor no anda, hay que usarla.' },
       { word: 'ALMOHADA', display: 'almohada', clue: 'Se apoya en la cama para descansar la cabeza.', tip: 'Tiene funda y se rellena con plumas o espuma.' },
     ],
