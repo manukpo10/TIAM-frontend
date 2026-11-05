@@ -66,7 +66,6 @@ const WORDS: Record<string, string> = {
   florero: 'flo-re-ro',
   estufa: 'es-tu-fa',
   candado: 'can-da-do',
-  campera: 'cam-pe-ra',
   cafetera: 'ca-fe-te-ra',
   termo: 'ter-mo',
   zocalo: 'zó-ca-lo',
@@ -97,7 +96,7 @@ const LEVELS: LevelDef[] = [
   },
   {
     name: 'Nivel 2',
-    board: ['cortina', 'florero', 'estufa', 'candado', 'campera', 'cafetera', 'termo', 'zocalo', 'lavabo'],
+    board: ['cortina', 'florero', 'estufa', 'candado', 'cafetera', 'termo', 'zocalo', 'lavabo'],
     rules: [
       { kind: 'syllables', n: 3 },
       { kind: 'has', letter: 'O' },
