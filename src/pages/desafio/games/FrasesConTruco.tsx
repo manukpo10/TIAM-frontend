@@ -10,14 +10,15 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * WHAT MAKES IT A DIFFERENT ACTIVITY FROM THE OTHER LETTER GAMES OF THE MONTH (días 7, 12, 16): the bank of letters is not
  * a separate tray, a tally or a ring of tiles: it is the PHRASE itself, written in two rows (one per word), and a tapped
- * letter is greyed out where it stands. The surprise of the game is that two ordinary words ("cien dados", "alma cero")
+ * letter is greyed out where it stands. The surprise of the game is that two ordinary words ("cien dados", "la danesa")
  * contain another word, so the player reads the phrase before looking at its letters.
  *
- * ORIGINAL CONTENT AND READ ALOUD. Only the idea (a phrase that hides a word) is borrowed. Each phrase is built so that
- * its letters are EXACTLY those of the hidden word, accents and spaces aside (a throwaway script, not committed, checks
- * it, and that no clue contains the hidden word or a word of its phrase), and each is a plain Spanish phrase that reads
- * naturally out loud in Rioplatense Spanish ("gris tero", "che son", "con nieta", "mirá tela": the accent on "mirá" is not shown,
- * the letters are the same). Nothing in them is rude. The hidden words are also not answers elsewhere in the month.
+ * ORIGINAL CONTENT AND ANAGRAMS. Only the idea (a phrase that hides a word) is borrowed. Each phrase is an ANAGRAM of its
+ * hidden word: its letters are EXACTLY those of the word, accents and spaces aside, and it is a plain Spanish phrase that
+ * is understood at once ("cien dados", "que chata", "café viste"). It is NOT a sound-alike: said aloud it does not sound like
+ * the hidden word, and the game never says it does. A throwaway script (not committed) checks the anagram, that no clue
+ * contains the hidden word, and that the hidden words are not answers of a similar game of earlier months. Nothing in the
+ * phrases is rude. Clue, tip and answer agree in number ("medias" and "efectivas" are asked in the plural).
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word with nothing to go on): every word has a clue, a second
  * tip and its boxes on screen, so its length is visible. A wrong word costs ONE mistake (a double tap on "Listo" cannot
@@ -26,9 +27,9 @@ import type { GameProps } from '@/lib/challengeProgress'
  * is ringed in the phrase so the word can be finished, so nobody is left stuck. "Borrar" takes back the last letter.
  * Nothing is red and nothing is timed but a short pause so the finished word is seen.
  *
- * THREE PHRASES A LEVEL. The ramp is the length of the hidden word (6 to 7 letters, then 8, then 8 to 9) and how
- * abstract it is: level 1 asks for things that can be pictured (the nights, socks, a fish), level 3 for words that are
- * ideas (a record, attention, something hidden), whose clue describes a meaning instead of an object. Each level has
+ * THREE PHRASES A LEVEL. The ramp is the length of the hidden word (6 letters, then 8, then 8 to 9) and how
+ * abstract it is: level 1 asks for things that can be pictured (socks, cinnamon, a crown), level 3 for words that are
+ * ideas (something hidden, something planned, something that works), whose clue describes a meaning instead of an object. Each level has
  * one authored set of three, in a fixed order, so "Repetir" replays exactly the same nine phrases.
  *
  * A short "¿Cómo se juega?" screen opens the day; "Repetir" never brings it back. Per-level state lives in <LevelView>,
@@ -61,38 +62,31 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 1',
     phrases: [
       {
-        phrase: 'CHE SON',
-        word: 'NOCHES',
-        display: 'noches',
-        clue: 'Parte del día en que ya no hay sol y casi todos duermen.',
-        tip: 'Vienen después del atardecer.',
-      },
-      {
         phrase: 'SI DAME',
         word: 'MEDIAS',
         display: 'medias',
-        clue: 'Prenda que se pone en los pies, debajo del calzado.',
+        clue: 'Prendas que se ponen en los pies, debajo del calzado.',
         tip: 'Se usan de a pares y abrigan en invierno.',
       },
       {
-        phrase: 'DE COPAS',
-        word: 'PESCADO',
-        display: 'pescado',
-        clue: 'Lo que se saca del río o del mar con una caña y después se cocina.',
-        tip: 'Se come a la plancha o frito, con limón.',
+        phrase: 'LA CENA',
+        word: 'CANELA',
+        display: 'canela',
+        clue: 'Especia marrón que viene en palitos enrollados.',
+        tip: 'Se le pone al arroz con leche y a las manzanas al horno.',
+      },
+      {
+        phrase: 'CARO NO',
+        word: 'CORONA',
+        display: 'corona',
+        clue: 'Aro de oro y joyas que usa un rey sobre la cabeza.',
+        tip: 'Brilla en la frente de reyes y reinas.',
       },
     ],
   },
   {
     name: 'Nivel 2',
     phrases: [
-      {
-        phrase: 'ALMA CERO',
-        word: 'CARAMELO',
-        display: 'caramelo',
-        clue: 'Golosina dura y dulce que se chupa.',
-        tip: 'Viene envuelto en un papelito.',
-      },
       {
         phrase: 'LA DANESA',
         word: 'ENSALADA',
@@ -101,11 +95,18 @@ const LEVELS: LevelDef[] = [
         tip: 'Lleva lechuga, tomate y cebolla.',
       },
       {
-        phrase: 'MIRA TELA',
-        word: 'MATERIAL',
-        display: 'material',
-        clue: 'Aquello de lo que está hecho un objeto: madera, vidrio o metal.',
-        tip: 'También se dice de lo que se usa para trabajar, como los útiles.',
+        phrase: 'QUE CHATA',
+        word: 'CHAQUETA',
+        display: 'chaqueta',
+        clue: 'Prenda de abrigo con mangas largas y botones o cierre por delante.',
+        tip: 'Se pone sobre la camisa antes de salir en invierno.',
+      },
+      {
+        phrase: 'INES TOCA',
+        word: 'ESTACION',
+        display: 'estación',
+        clue: 'Lugar donde para el tren y la gente sube o baja con valijas.',
+        tip: 'Tiene andenes, boletería y un reloj grande.',
       },
     ],
   },
@@ -113,25 +114,25 @@ const LEVELS: LevelDef[] = [
     name: 'Nivel 3',
     phrases: [
       {
-        phrase: 'GRIS TERO',
-        word: 'REGISTRO',
-        display: 'registro',
-        clue: 'Cuaderno o planilla donde se anotan datos para no olvidarlos.',
-        tip: 'Los consultorios y los comercios llevan uno.',
-      },
-      {
-        phrase: 'CON NIETA',
-        word: 'ATENCION',
-        display: 'atención',
-        clue: 'Lo que ponemos para escuchar sin distraernos.',
-        tip: 'Se pide cuando alguien necesita que lo escuchen.',
-      },
-      {
         phrase: 'CIEN DADOS',
         word: 'ESCONDIDA',
         display: 'escondida',
         clue: 'Dicho de una cosa que alguien puso fuera de la vista.',
         tip: 'Una sorpresa guardada en un cajón queda así.',
+      },
+      {
+        phrase: 'DAN PESOS',
+        word: 'PENSADOS',
+        display: 'pensados',
+        clue: 'Dicho de lo que se planeó con mucha calma, sin apuro.',
+        tip: 'Una decisión así se tomó después de darle muchas vueltas.',
+      },
+      {
+        phrase: 'CAFE VISTE',
+        word: 'EFECTIVAS',
+        display: 'efectivas',
+        clue: 'Dicho de las medidas o remedios que logran lo que se buscaba.',
+        tip: 'Los remedios que curan de verdad lo son.',
       },
     ],
   },
