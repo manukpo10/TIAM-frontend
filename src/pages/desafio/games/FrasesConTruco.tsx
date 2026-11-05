@@ -15,10 +15,10 @@ import type { GameProps } from '@/lib/challengeProgress'
  *
  * ORIGINAL CONTENT AND ANAGRAMS. Only the idea (a phrase that hides a word) is borrowed. Each phrase is an ANAGRAM of its
  * hidden word: its letters are EXACTLY those of the word, accents and spaces aside, and it is a plain Spanish phrase that
- * is understood at once ("cien dados", "que chata", "café viste"). It is NOT a sound-alike: said aloud it does not sound like
+ * is understood at once ("cien dados", "una menta", "café viste"). It is NOT a sound-alike: said aloud it does not sound like
  * the hidden word, and the game never says it does. A throwaway script (not committed) checks the anagram, that no clue
  * contains the hidden word, and that the hidden words are not answers of a similar game of earlier months. Nothing in the
- * phrases is rude. Clue, tip and answer agree in number ("medias" and "efectivas" are asked in the plural).
+ * phrases is rude. Clue, tip and answer agree in number ("medias", "aumentan", "pensados" and "efectivas" are asked in the plural).
  *
  * CLUES, NOT A BLIND GUESS (a word game never asks for a word with nothing to go on): every word has a clue, a second
  * tip and its boxes on screen, so its length is visible. A wrong word costs ONE mistake (a double tap on "Listo" cannot
@@ -95,11 +95,11 @@ const LEVELS: LevelDef[] = [
         tip: 'Lleva lechuga, tomate y cebolla.',
       },
       {
-        phrase: 'QUE CHATA',
-        word: 'CHAQUETA',
-        display: 'chaqueta',
-        clue: 'Prenda de abrigo con mangas largas y botones o cierre por delante.',
-        tip: 'Se pone sobre la camisa antes de salir en invierno.',
+        phrase: 'UNA MENTA',
+        word: 'AUMENTAN',
+        display: 'aumentan',
+        clue: 'Lo que hacen los precios cuando suben.',
+        tip: 'Se dice de los alquileres, las boletas y los precios de cada mes.',
       },
       {
         phrase: 'INES TOCA',
@@ -124,14 +124,14 @@ const LEVELS: LevelDef[] = [
         phrase: 'DAN PESOS',
         word: 'PENSADOS',
         display: 'pensados',
-        clue: 'Dicho de lo que se planeó con mucha calma, sin apuro.',
-        tip: 'Una decisión así se tomó después de darle muchas vueltas.',
+        clue: 'Así son los planes que se hacen con calma, sin apuro.',
+        tip: 'Así son los pasos que damos después de darles muchas vueltas.',
       },
       {
         phrase: 'CAFE VISTE',
         word: 'EFECTIVAS',
         display: 'efectivas',
-        clue: 'Dicho de las medidas o remedios que logran lo que se buscaba.',
+        clue: 'Así son las medidas o los remedios que logran lo que se buscaba.',
         tip: 'Los remedios que curan de verdad lo son.',
       },
     ],
