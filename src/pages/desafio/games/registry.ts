@@ -169,6 +169,7 @@ import { ArmaLaFigura } from './ArmaLaFigura'
 import { ElRosco } from './ElRosco'
 import { LaCiudadEnOraciones } from './LaCiudadEnOraciones'
 import { ElTicketDelDia } from './ElTicketDelDia'
+import { ElCalendario } from './ElCalendario'
 import { EstrellaDeLetras } from './EstrellaDeLetras'
 import { FrasesConTruco } from './FrasesConTruco'
 import { CualEsLaPalabra } from './CualEsLaPalabra'
@@ -361,7 +362,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     29: PintaSegunElCodigo,
     30: PalabraYSignificado,
   },
-  // Month 6: every day is built except 23 and 27 (undecided, "Por definir" in challengeContent.ts) and día 14, a
+  // Month 6: every day is built except 27 (undecided, "Por definir" in challengeContent.ts) and día 14, a
   // lápiz-y-papel CARD with no component. A day without an entry renders as its instructions card.
   6: {
     1: LaCamisetaCorrecta,
@@ -391,6 +392,7 @@ export const GAMES_BY_MONTH: Record<number, Partial<Record<number, ComponentType
     26: FrasesConTruco,
     25: CualEsLaPalabra,
     22: AnagramasEnElTexto,
+    23: ElCalendario,
   },
 }
 

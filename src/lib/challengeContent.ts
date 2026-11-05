@@ -582,10 +582,10 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
 //   Built so far: días 1-7 (semana 1). The instructions of the days still to
 //   come are written from the plan and will be adjusted to the real game when
 //   each one is built (keep type/area/title as they are).
-//   Días 23 and 27 are UNDECIDED: the plan found their worksheets repeated
-//   from earlier months (Insectos = month 4 "Anagramas por categoría",
-//   Relaciona = month 5 día 30), so they hold the proposed area and the title
-//   "Por definir" until the user chooses what replaces them.
+//   Días 23 and 27 had worksheets repeated from earlier months (Insectos =
+//   month 4 "Anagramas por categoría", Relaciona = month 5 día 30), so they are
+//   original games. Día 23 "El calendario" is built; día 27 still holds the
+//   proposed area and the title "Por definir" until it is.
 // ─────────────────────────────────────────────────────────────────────────────
 const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 1 — built ──────────────────────────────────────────────────────
@@ -646,14 +646,13 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 21, type: 'game', area: 'memoria', title: 'Una de cada una',
     instructions: 'Un juego de memoria: te pedimos de a una cosas de tu vida, por ejemplo un lugar al que fuiste esta semana. Escribilas, o pensalas y tocá «La pensé». Al final te mostramos tu lista. Subís de dificultad a medida que avanzás.' },
 
-  // ── Semana 4 — to build (23 and 27 are undecided) ─────────────────────────
+  // ── Semana 4 — to build (27 is undecided) ─────────────────────────────────
   { day: 22, type: 'game', area: 'atencion', title: 'Anagramas en el texto',
     instructions: 'Un juego de atención: leé un texto y tocá las palabras que tienen exactamente las mismas letras. Subís de dificultad a medida que avanzás.' },
-  // UNDECIDED (the user has not chosen yet): the worksheet planned for this day,
-  // "Insectos", repeats month 4's "Anagramas por categoría". Proposal: "El
-  // calendario" (if today is Tuesday the 12th, which day falls in 10 days?).
-  { day: 23, type: 'game', area: 'calculo', title: 'Por definir',
-    instructions: 'Este día todavía no está definido.' },
+  // Not from a worksheet: the planned one ("Insectos") repeated month 4's "Anagramas por categoría", so the day
+  // is an original calendar game.
+  { day: 23, type: 'game', area: 'calculo', title: 'El calendario',
+    instructions: 'Un juego de cálculo: leé la situación y tocá en el calendario el día que corresponde, contando desde «Hoy», que está marcado. Una semana son 7 días. En los niveles siguientes hay que contar semanas, ir hacia atrás y pasar al mes que viene. Subís de dificultad a medida que avanzás.' },
   { day: 24, type: 'game', area: 'lenguaje', title: 'El rosco',
     instructions: 'Un juego de lenguaje: en una fila de letras, leé la definición de cada una y escribí la palabra con el teclado de la pantalla. La pista dice si empieza con esa letra o si solo la contiene. Si no te sale, tocá «Paso»: esa letra vuelve más tarde. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'ejecutivas', title: '¿Cuál es?',
