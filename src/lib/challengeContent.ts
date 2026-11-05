@@ -655,7 +655,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 23, type: 'game', area: 'calculo', title: 'Por definir',
     instructions: 'Este día todavía no está definido.' },
   { day: 24, type: 'game', area: 'lenguaje', title: 'El rosco',
-    instructions: 'Un juego de lenguaje: en una rueda de letras, leé la definición de cada una y escribí la palabra con el teclado de la pantalla. La pista dice si empieza con esa letra o si solo la contiene. Si no te sale, tocá «Paso»: esa letra vuelve más tarde. Subís de dificultad a medida que avanzás.' },
+    instructions: 'Un juego de lenguaje: en una fila de letras, leé la definición de cada una y escribí la palabra con el teclado de la pantalla. La pista dice si empieza con esa letra o si solo la contiene. Si no te sale, tocá «Paso»: esa letra vuelve más tarde. Subís de dificultad a medida que avanzás.' },
   { day: 25, type: 'game', area: 'ejecutivas', title: '¿Cuál es?',
     instructions: 'Un juego de razonamiento: las pistas aparecen de a una. Tachá, tocándolas, las palabras que no la cumplen, hasta que quede una sola. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'lenguaje', title: 'Frases con truco',

@@ -3,7 +3,7 @@ import { ArrowRight, Check, Delete as BackspaceIcon, Eye, RotateCcw, SkipForward
 import type { GameProps } from '@/lib/challengeProgress'
 
 /**
- * "El rosco" — día 24, mes 6, lenguaje. A wheel of letters: each letter has a definition and the player writes the word
+ * "El rosco" — día 24, mes 6, lenguaje. A row of letters: each letter has a definition and the player writes the word
  * it defines, on an on-screen keyboard. The clue says whether the word STARTS WITH that letter or just CONTAINS it, so
  * the first letter is not given, only the number of letters (one box each). A word that does not come can be passed with
  * "Paso": the wheel goes on and the passed letters come back after the last one. The mechanic comes from a worksheet of
