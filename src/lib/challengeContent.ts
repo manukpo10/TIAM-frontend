@@ -584,8 +584,7 @@ const MONTH_5_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
 //   each one is built (keep type/area/title as they are).
 //   Días 23 and 27 had worksheets repeated from earlier months (Insectos =
 //   month 4 "Anagramas por categoría", Relaciona = month 5 día 30), so they are
-//   original games. Día 23 "El calendario" is built; día 27 still holds the
-//   proposed area and the title "Por definir" until it is.
+//   original games: día 23 "El calendario" and día 27 "La agenda de la semana".
 // ─────────────────────────────────────────────────────────────────────────────
 const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   // ── Semana 1 — built ──────────────────────────────────────────────────────
@@ -646,7 +645,7 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
   { day: 21, type: 'game', area: 'memoria', title: 'Una de cada una',
     instructions: 'Un juego de memoria: te pedimos de a una cosas de tu vida, por ejemplo un lugar al que fuiste esta semana. Escribilas, o pensalas y tocá «La pensé». Al final te mostramos tu lista. Subís de dificultad a medida que avanzás.' },
 
-  // ── Semana 4 — to build (27 is undecided) ─────────────────────────────────
+  // ── Semana 4 — built ──────────────────────────────────────────────────────
   { day: 22, type: 'game', area: 'atencion', title: 'Anagramas en el texto',
     instructions: 'Un juego de atención: leé un texto y tocá las palabras que tienen exactamente las mismas letras. Subís de dificultad a medida que avanzás.' },
   // Not from a worksheet: the planned one ("Insectos") repeated month 4's "Anagramas por categoría", so the day
@@ -659,11 +658,10 @@ const MONTH_6_DAYS_CONTENT: Omit<ChallengeDayContent, 'illustration'>[] = [
     instructions: 'Un juego de razonamiento: las pistas aparecen de a una. Tachá, tocándolas, las palabras que no la cumplen, hasta que quede una sola. Subís de dificultad a medida que avanzás.' },
   { day: 26, type: 'game', area: 'lenguaje', title: 'Frases con truco',
     instructions: 'Un juego de lenguaje: una frase de dos palabras graciosas esconde otra palabra. Con la pista, tocá las letras de la frase en el orden que arma la palabra escondida. Subís de dificultad a medida que avanzás.' },
-  // UNDECIDED (the user has not chosen yet): the worksheet planned for this day,
-  // "Relaciona", is the same one month 5 already used on its día 30. Proposal:
-  // "La agenda de la semana" (study a week's agenda, then answer without it).
-  { day: 27, type: 'game', area: 'memoria', title: 'Por definir',
-    instructions: 'Este día todavía no está definido.' },
+  // Not from a worksheet: the planned one ("Relaciona") is the same one month 5 already used on its día 30, so the
+  // day is an original study-then-answer game on a week's agenda.
+  { day: 27, type: 'game', area: 'memoria', title: 'La agenda de la semana',
+    instructions: 'Un juego de memoria: mirá con calma la agenda de la semana y, cuando estés listo, tocá «Ya la miré»: la agenda desaparece y te hacemos tres preguntas sobre lo que viste. Si te equivocás, podés volver a mirarla. En el último nivel hay que combinar datos, por ejemplo qué tenés el día después de algo. Subís de dificultad a medida que avanzás.' },
   // Lápiz y papel, but a 'game' day (not a card): an illustration of a city and
   // prompts to write about it, so the component shows the picture. No entry in
   // registry.ts until it is built.
