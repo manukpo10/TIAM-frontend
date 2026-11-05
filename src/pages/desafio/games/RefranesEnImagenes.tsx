@@ -67,7 +67,7 @@ const LEVELS: LevelDef[] = [
         image: 'gato',
         alt: 'Ilustración de un gato gris sentado en el piso de una habitación, con las dos patas delanteras metidas en grandes mitones rojos, y un ratoncito marrón parado muy cerca.',
         answer: 'Gato con guantes no caza ratones.',
-        wrong: ['Lo cortés no quita lo valiente.', 'Piedra que rueda no cría moho.', 'Cada loco con su tema.'],
+        wrong: ['Lo cortés no quita lo valiente.', 'Piedra que rueda no cría moho.', 'Más vale maña que fuerza.'],
         why: 'El gato tiene las patas metidas en mitones rojos y el ratón está al lado, tranquilo.',
       },
       {
@@ -100,7 +100,7 @@ const LEVELS: LevelDef[] = [
         image: 'nueces',
         alt: 'Ilustración de una trompeta que suena fuerte, con rayas de sonido a su alrededor, y al lado, sobre una tabla, solo dos nueces.',
         answer: 'Mucho ruido y pocas nueces.',
-        wrong: ['Hablando se entiende la gente.', 'Del dicho al hecho hay mucho trecho.', 'A buen entendedor, pocas palabras.'],
+        wrong: ['Las palabras se las lleva el viento.', 'Del dicho al hecho hay mucho trecho.', 'A buen entendedor, pocas palabras.'],
         why: 'La trompeta hace muchísimo ruido, pero sobre la tabla hay apenas dos nueces.',
       },
       {
@@ -126,7 +126,7 @@ const LEVELS: LevelDef[] = [
         image: 'canta',
         alt: 'Ilustración de un cántaro grande de barro con una grieta en zigzag de la que caen gotas, apoyado en el borde de un pozo de piedra con un balde de madera colgado.',
         answer: 'Tanto va el cántaro a la fuente que al fin se rompe.',
-        wrong: ['Agua que no has de beber, déjala correr.', 'No se puede nadar y guardar la ropa.', 'Cada olla tiene su tapa.'],
+        wrong: ['La gota que rebalsó el vaso.', 'No se puede nadar y guardar la ropa.', 'Cada olla tiene su tapa.'],
         why: 'El cántaro de barro ya tiene una grieta y pierde agua: de tanto ir a la fuente, se está rompiendo.',
       },
       {
