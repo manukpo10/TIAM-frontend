@@ -13,7 +13,7 @@ import type { GameProps } from '@/lib/challengeProgress'
  * IT ALWAYS ENDS, AND NOBODY IS STUCK. A pass is allowed only the FIRST time a letter comes up. When it comes back (second
  * round) "Paso" is replaced by "Ver la respuesta", which shows the word, marks the letter with an eye and costs one mistake,
  * so the wheel cannot go round for ever. Inside a turn a wrong word costs ONE mistake, empties the boxes and gives a hint
- * that grows with the misses on that word: the tip, then the first letter. Nothing is red and nothing is timed but a short
+ * that grows with the misses on that word: the tip, then the first two letters. Nothing is red and nothing is timed but a short
  * pause so the finished word (or the shown answer) is seen. Each letter of the wheel shows its state with an icon as well
  * as a colour: a check (right), a skip arrow (passed, waiting) or an eye (shown).
  *
@@ -24,12 +24,12 @@ import type { GameProps } from '@/lib/challengeProgress'
  * is used (the check script rejects them), nor the worksheet's.
  *
  * SHORT, AS THE TALLERISTA PREFERS: about three items a level is her preference, but a wheel of three letters is hardly a wheel,
- * so the wheels have 4, 4 and 5 letters (13 words). Ramp: level 1 plain "empieza con" words, level 2 mixes "contiene" with
+ * so the wheels have 4, 4 and 5 letters (13 words). The wheel is a row of circles (not a ring): a ring needs a centre label and a clue box beside it, which on a 320×568 phone pushes the last keyboard row under the sticky "Paso / Listo" bar. Ramp: level 1 plain "empieza con" words, level 2 mixes "contiene" with
  * rarer letters, level 3 has a five-letter wheel with long words and less direct clues. Each level is authored once, in
  * alphabetical order around the wheel, so "Repetir" replays exactly the same wheels.
  *
  * KEYBOARD. A to Z and Ñ (no accents: words are compared as plain letters and shown with their accent when found) and a key
- * to take back the last letter, seven to a row. The boxes are one per letter and never wrap, so a long word cannot push
+ * to take back the last letter, seven to a row, as wide as the screen allows (the card has no side padding to spare). The boxes are one per letter and never wrap, so a long word cannot push
  * the screen sideways. A tap within SETTLE_MS of the one that brought the level, or a letter or button while a right
  * word is shown, is ignored.
  *
@@ -128,10 +128,10 @@ const LEVELS: LevelDef[] = [
       {
         letter: 'Q',
         mode: 'C',
-        word: 'ORQUESTA',
-        display: 'orquesta',
-        clue: 'Grupo grande de músicos que tocan juntos, con un director.',
-        tip: 'Tiene violines, flautas y trompetas, entre otros instrumentos.',
+        word: 'BANQUETE',
+        display: 'banquete',
+        clue: 'Comida grande y festiva, con muchos invitados.',
+        tip: 'Se sirve en casamientos y en fiestas importantes.',
       },
     ],
   },
@@ -173,10 +173,10 @@ const LEVELS: LevelDef[] = [
       {
         letter: 'X',
         mode: 'C',
-        word: 'EXCURSION',
-        display: 'excursión',
-        clue: 'Paseo de un día, en grupo, para conocer un lugar.',
-        tip: 'Se organiza con guía y a veces con colectivo.',
+        word: 'EXTINTOR',
+        display: 'extintor',
+        clue: 'Aparato rojo que se usa para apagar un incendio.',
+        tip: 'Se guarda en la pared de la cocina o del garaje.',
       },
     ],
   },
@@ -207,52 +207,49 @@ const KEY_CLASS =
 const NEXT_BUTTON =
   'inline-flex min-h-[48px] scroll-mb-5 items-center justify-center gap-2 rounded-xl bg-tiam-blue px-5 font-semibold text-white hover:bg-tiam-blue-dark'
 
-/** The wheel: one circle per letter on a ring; the current one is filled, the others show their state with an icon. */
+/** The wheel, laid out as a row: one circle per letter, in the order of the wheel; the current one is filled and the others
+ * show their state with an icon. The level (or "2.ª vuelta") is written next to it. */
 function Wheel({ items, status, cur, label }: { items: ItemDef[]; status: Status[]; cur: number; label: string }) {
   const n = items.length
   return (
-    <div
-      role="img"
-      aria-label={`Rosco de ${n} letras: ${items.map((it, i) => `${it.letter} ${status[i] === 'right' ? 'resuelta' : status[i] === 'passed' ? 'pasada' : status[i] === 'shown' ? 'mostrada' : i === cur ? 'actual' : 'pendiente'}`).join(', ')}`}
-      className="relative mx-auto h-[116px] w-[116px] shrink-0"
-    >
-      <span className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm font-bold leading-tight text-slate-500">
-        {label}
-      </span>
-      {items.map((it, i) => {
-        const a = ((-90 + (360 / n) * i) * Math.PI) / 180
-        const x = 50 + 39 * Math.cos(a)
-        const y = 50 + 39 * Math.sin(a)
-        const s = status[i]
-        return (
-          <span
-            key={it.letter}
-            style={{ left: `${x}%`, top: `${y}%` }}
-            className={[
-              'absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 text-base font-extrabold',
-              s === 'right'
-                ? 'border-tiam-green bg-tiam-green/15 text-slate-900'
-                : s === 'shown'
-                  ? 'border-slate-300 bg-slate-100 text-slate-500'
-                  : i === cur
-                    ? 'border-tiam-blue bg-tiam-blue text-white ring-4 ring-tiam-blue/25'
-                    : s === 'passed'
-                      ? 'border-dashed border-tiam-orange bg-white text-slate-800'
-                      : 'border-slate-300 bg-white text-slate-800',
-            ].join(' ')}
-          >
-            {s === 'right' ? (
-              <Check className="h-4 w-4 text-tiam-green" strokeWidth={3} aria-hidden="true" />
-            ) : s === 'shown' ? (
-              <Eye className="h-4 w-4" aria-hidden="true" />
-            ) : s === 'passed' && i !== cur ? (
-              <SkipForward className="h-4 w-4 text-slate-700" aria-hidden="true" />
-            ) : (
-              it.letter
-            )}
-          </span>
-        )
-      })}
+    <div className="flex items-center justify-between gap-2">
+      <div
+        role="img"
+        aria-label={`Rosco de ${n} letras: ${items.map((it, i) => `${it.letter} ${status[i] === 'right' ? 'resuelta' : status[i] === 'passed' ? 'pasada' : status[i] === 'shown' ? 'mostrada' : i === cur ? 'actual' : 'pendiente'}`).join(', ')}`}
+        className="flex gap-1"
+      >
+        {items.map((it, i) => {
+          const s = status[i]
+          return (
+            <span
+              key={it.letter}
+              className={[
+                'flex h-8 w-8 items-center justify-center rounded-full border-2 text-base font-extrabold',
+                s === 'right'
+                  ? 'border-tiam-green bg-tiam-green/15 text-slate-900'
+                  : s === 'shown'
+                    ? 'border-slate-300 bg-slate-100 text-slate-500'
+                    : i === cur
+                      ? 'border-tiam-blue bg-tiam-blue text-white ring-4 ring-tiam-blue/25'
+                      : s === 'passed'
+                        ? 'border-dashed border-tiam-orange bg-white text-slate-800'
+                        : 'border-slate-300 bg-white text-slate-800',
+              ].join(' ')}
+            >
+              {s === 'right' ? (
+                <Check className="h-4 w-4 text-tiam-green" strokeWidth={3} aria-hidden="true" />
+              ) : s === 'shown' ? (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              ) : s === 'passed' && i !== cur ? (
+                <SkipForward className="h-4 w-4 text-slate-700" aria-hidden="true" />
+              ) : (
+                it.letter
+              )}
+            </span>
+          )
+        })}
+      </div>
+      <span className="shrink-0 text-base font-bold text-slate-500">{label}</span>
     </div>
   )
 }
@@ -367,6 +364,9 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
 
   /** Moves the wheel on: the next pending letter, then the passed ones, and the end when none is left. */
   function advance(next: Status[], from: number) {
+    // The first time no new letter is left, the wheel starts its second round: say so, even when the letter that comes
+    // back is the very one that was just passed.
+    const startsSecondRound = status[from] === 'pending'
     const pending = next.findIndex((s, i) => i > from && s === 'pending')
     const anyPending = next.findIndex((s) => s === 'pending')
     const passed = next.findIndex((s) => s === 'passed')
@@ -382,8 +382,14 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
     setMisses(0)
     setTone('idle')
     setHint(
-      pending < 0 && anyPending < 0 && next[to] === 'passed' && next[from] !== 'passed'
-        ? { text: 'Segunda vuelta: volvemos a las letras que pasaste.', ok: true }
+      pending < 0 && anyPending < 0 && startsSecondRound
+        ? {
+            text:
+              to === from
+                ? 'Ya no hay letras nuevas. Escribí esta o tocá «Ver la respuesta».'
+                : 'Ya no hay letras nuevas: volvemos a las que pasaste.',
+            ok: true,
+          }
         : null,
     )
   }
@@ -411,7 +417,7 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
     setTyped('')
     onMistake()
     setHint({
-      text: n === 1 ? `No es. ${item.tip}` : `No es. ${item.tip} Empieza con «${item.word[0]}» y tiene ${item.word.length} letras.`,
+      text: n === 1 ? `No es. ${item.tip}` : `No es. Empieza con «${item.word.slice(0, 2)}».`,
       ok: false,
     })
   }
@@ -436,31 +442,29 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
   const wheelLabel = done ? level.name : second ? '2.ª vuelta' : level.name
 
   return (
-    <div ref={topRef} className="px-5 pb-5 pt-3 sm:p-7 [@media(max-height:700px)]:pb-3 [@media(max-height:700px)]:pt-2">
+    <div ref={topRef} className="px-2 pb-1 pt-2 sm:p-7">
       {!done && (
         <>
-          <div className="flex items-center gap-3">
-            <Wheel items={items} status={status} cur={cur} label={wheelLabel} />
-            <div className="min-w-0 flex-1 rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-3 py-2">
-              <p className="text-sm font-bold leading-tight text-tiam-blue">
-                {item.mode === 'E' ? `Empieza con la ${item.letter}` : `Contiene la ${item.letter}`} · {item.word.length} letras
-              </p>
-              <p className="mt-0.5 text-base font-bold leading-snug text-slate-900">{item.clue}</p>
-            </div>
+          <Wheel items={items} status={status} cur={cur} label={wheelLabel} />
+          <div className="mt-2 rounded-2xl border-2 border-tiam-blue/30 bg-tiam-blue/5 px-3 py-1.5">
+            <p className="text-sm font-bold leading-tight text-tiam-blue">
+              {item.mode === 'E' ? `Empieza con la ${item.letter}` : `Contiene la ${item.letter}`} · {item.word.length} letras
+            </p>
+            <p className="mt-0.5 text-base font-bold leading-snug text-slate-900">{item.clue}</p>
           </div>
 
           <p
             role="status"
-            className={`mt-1 min-h-[2.2rem] text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-600'}`}
+            className={`min-h-[3rem] py-0.5 text-center text-base font-medium leading-snug ${hint?.ok ? 'text-green-700' : 'text-slate-600'}`}
           >
             {hint?.text}
           </p>
 
-          <div className="mx-auto max-w-md">
+          <div className="mx-auto max-w-md px-1">
             <WordBoxes word={item.word} typed={typed} tone={tone} />
           </div>
 
-          <div role="group" aria-label="Teclado de letras" className="mx-auto mt-2 grid max-w-[340px] grid-cols-7 gap-1">
+          <div role="group" aria-label="Teclado de letras" className="mx-auto mt-2 grid max-w-[420px] grid-cols-7 gap-[3px]">
             {LETTERS.map((ch) => (
               <button
                 key={ch}
@@ -484,21 +488,21 @@ function LevelView({ levelIdx, since, onMistake, onSolved, onNext, onRepeat }: L
             </button>
           </div>
 
-          <div className="sticky bottom-0 z-10 mx-auto mt-2 flex max-w-[340px] gap-2 bg-white/95 pb-1 pt-1">
+          <div className="sticky bottom-0 z-10 mx-auto mt-1 flex max-w-[420px] gap-2 bg-white/95 pb-1 pt-1">
             <button
               type="button"
               disabled={!typing}
               onClick={(e) => pass(e.timeStamp)}
-              className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-slate-300 bg-white px-3 text-lg font-bold text-slate-700 transition hover:border-tiam-blue/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 disabled:opacity-50"
+              className="flex min-h-[48px] flex-[3] items-center justify-center gap-2 whitespace-nowrap rounded-2xl border-2 border-slate-300 bg-white px-2 text-lg font-bold text-slate-700 transition hover:border-tiam-blue/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 disabled:opacity-50"
             >
-              {second ? <Eye className="h-5 w-5" aria-hidden="true" /> : <SkipForward className="h-5 w-5" aria-hidden="true" />}
+              {second ? null : <SkipForward className="h-5 w-5" aria-hidden="true" />}
               {second ? 'Ver la respuesta' : 'Paso'}
             </button>
             <button
               type="button"
               disabled={!typing || !complete}
               onClick={(e) => submit(e.timeStamp)}
-              className="flex min-h-[48px] flex-1 items-center justify-center rounded-2xl bg-tiam-blue px-4 text-xl font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500"
+              className="flex min-h-[48px] flex-[2] items-center justify-center rounded-2xl bg-tiam-blue px-4 text-xl font-bold text-white transition hover:bg-tiam-blue-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-tiam-blue/50 focus-visible:ring-offset-1 disabled:bg-slate-200 disabled:text-slate-500"
             >
               Listo
             </button>
