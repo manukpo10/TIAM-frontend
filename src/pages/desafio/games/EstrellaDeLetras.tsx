@@ -85,25 +85,25 @@ function findWalk(letters: string, word: string): number[] | null {
 const LEVELS: LevelDef[] = [
   {
     name: 'Nivel 1',
-    letters: 'ATFOSNZARLED',
+    letters: 'FRLFSNAOCOED',
     words: [
       {
-        word: 'TAZA',
-        display: 'taza',
-        clue: 'Recipiente con asa para tomar café o té.',
-        tip: 'Se apoya sobre un platito.',
-      },
-      {
-        word: 'FAROL',
-        display: 'farol',
-        clue: 'Luz de la calle o del auto que se prende de noche.',
-        tip: 'En la calle hay uno cada tanto.',
+        word: 'FOCO',
+        display: 'foco',
+        clue: 'Se enrosca en el techo para dar luz; también le decimos lamparita.',
+        tip: 'Cuando se quema, la pieza queda a oscuras.',
       },
       {
         word: 'SENDA',
         display: 'senda',
         clue: 'Caminito angosto entre el pasto, hecho de tanto pasar.',
         tip: 'Es más angosta que un camino.',
+      },
+      {
+        word: 'FAROL',
+        display: 'farol',
+        clue: 'Luz de la calle o del auto que se prende de noche.',
+        tip: 'En la calle hay uno cada tanto.',
       },
     ],
   },
@@ -133,13 +133,13 @@ const LEVELS: LevelDef[] = [
   },
   {
     name: 'Nivel 3',
-    letters: 'EVCEAASANTNT',
+    letters: 'SNPITAEARENT',
     words: [
       {
-        word: 'CANTANTE',
-        display: 'cantante',
-        clue: 'Artista que le pone voz a una canción.',
-        tip: 'En un recital es quien tiene el micrófono.',
+        word: 'PARIENTE',
+        display: 'pariente',
+        clue: 'Tío, prima o cuñado: alguien de tu familia.',
+        tip: 'En las fiestas se juntan todos alrededor de la mesa.',
       },
       {
         word: 'ESTANTE',
@@ -161,7 +161,7 @@ const TOTAL_WORDS = LEVELS.reduce((n, l) => n + l.words.length, 0)
 /** Where each point sits on the star, as percentages of its box (10 wide : 9 high; the star has its tips left and right). */
 const TIP_X = 41
 const TIP_Y = 45.6
-/** The inner points sit at this fraction of the tips' distance from the centre: a regular hexagram has 0.577; 0.5 makes the points longer, so it reads as a star (the inner circles of 44 px still leave a gap of about 12 px). */
+/** The inner points sit at this fraction of the tips' distance from the centre: a regular hexagram has 0.577; 0.5 makes the points longer, so it reads as a star (the inner circles of 44 px still leave a gap of about 8 px on the 252 px star of short phones). */
 const INNER = 0.5
 function pointPosition(i: number): { x: number; y: number } {
   const tip = i < 6
