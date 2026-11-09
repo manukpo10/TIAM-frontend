@@ -11,8 +11,10 @@
         "files": [
           { "key": "coleccion-completa-a4", "label": "Colección completa: los 4 cuadernos en 1 PDF", "paper": "A4", "sizeMb": 27 },
           { "key": "cuaderno-1-a4", "label": "Cuaderno 1 · Nivel inicial", "paper": "A4", "sizeMb": 7 },
+          { "key": "mandalas-para-pintar-a4", "label": "Regalo: Mandalas para pintar", "paper": "A4", "sizeMb": 10 },
           { "key": "coleccion-completa-carta", "label": "Colección completa: los 4 cuadernos en 1 PDF", "paper": "Carta", "sizeMb": 27 },
-          { "key": "cuaderno-1-carta", "label": "Cuaderno 1 · Nivel inicial", "paper": "Carta", "sizeMb": 7 }
+          { "key": "cuaderno-1-carta", "label": "Cuaderno 1 · Nivel inicial", "paper": "Carta", "sizeMb": 7 },
+          { "key": "mandalas-para-pintar-carta", "label": "Regalo: Mandalas para pintar", "paper": "Carta", "sizeMb": 10 }
         ]
       }
     ],
