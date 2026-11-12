@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight, Check, ChevronDown, CreditCard, Heart, Hourglass,
-  MessageCircle, Search, Send, ShieldCheck, Smartphone, Sparkles, Star, X,
+  MessageCircle, Search, Send, Smartphone, Sparkles, Star, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -21,6 +21,7 @@ import videoCompra from '@/assets/video-compra.mp4'
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock'
 import { AreasDeck } from '@/pages/desafio-30-dias/AreasDeck'
 import { AREA_CARDS } from '@/pages/desafio-30-dias/deckCards'
+import { PaymentMethods } from '@/pages/desafio-30-dias/PaymentMethods'
 import { PhoneMockups } from '@/pages/desafio-30-dias/PhoneMockups'
 
 /**
@@ -809,12 +810,7 @@ export function Desafio30DiasPage() {
                     Empezar ahora
                   </button>
 
-                  <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-base text-slate-600">
-                    <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                    Pagás con
-                    <img src={mercadoPagoLogo} alt="Mercado Pago" className="h-6 w-auto" />
-                  </p>
-                  <p className="mt-1 text-center text-base text-slate-600">TIAM no guarda los datos de tu tarjeta.</p>
+                  <PaymentMethods />
                 </div>
               </div>
             </div>
